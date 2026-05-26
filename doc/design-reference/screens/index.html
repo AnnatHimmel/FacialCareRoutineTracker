@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Glow Protocol — שגרת טיפוח</title>
+<style>
+  /* keep title on one line in the small top bar */
+</style>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%239e412c"/><stop offset="100%" stop-color="%23c66a52"/></linearGradient></defs><circle cx="16" cy="16" r="6.2" stroke="url(%23g)" stroke-width="2.1" fill="none"/><g stroke-width="1.7" stroke-linecap="round"><line x1="16" y1="6.8" x2="16" y2="2.4" stroke="%239e412c"/><line x1="20.75" y1="8.05" x2="22.6" y2="6.1" stroke="%23c66a52"/><line x1="23.95" y1="11.4" x2="27.6" y2="9.4" stroke="%239e412c"/><line x1="25.5" y1="16" x2="29.7" y2="16" stroke="%23c66a52"/><line x1="23.95" y1="20.6" x2="27.6" y2="22.6" stroke="%239e412c"/><line x1="20.75" y1="23.95" x2="22.6" y2="25.9" stroke="%23c66a52"/><line x1="16" y1="25.2" x2="16" y2="29.6" stroke="%239e412c"/><line x1="11.25" y1="23.95" x2="9.4" y2="25.9" stroke="%23c66a52"/><line x1="8.05" y1="20.6" x2="4.4" y2="22.6" stroke="%239e412c"/><line x1="6.5" y1="16" x2="2.3" y2="16" stroke="%23c66a52"/><line x1="8.05" y1="11.4" x2="4.4" y2="9.4" stroke="%239e412c"/><line x1="11.25" y1="8.05" x2="9.4" y2="6.1" stroke="%23c66a52"/></g></svg>' />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'surface': '#fff8f6',
+          'surface-dim': '#edd5cf',
+          'surface-bright': '#fff8f6',
+          'surface-lowest': '#ffffff',
+          'surface-low': '#fff1ed',
+          'surface-container': '#ffe9e4',
+          'surface-high': '#fce3dd',
+          'surface-highest': '#f6ddd8',
+          'on-surface': '#251815',
+          'on-surface-variant': '#56423e',
+          'outline': '#89726d',
+          'outline-variant': '#dcc0ba',
+          'primary': '#9e412c',
+          'on-primary': '#ffffff',
+          'primary-container': '#ff8b71',
+          'on-primary-container': '#752311',
+          'primary-fixed': '#ffdad3',
+          'primary-fixed-dim': '#ffb4a4',
+          'on-primary-fixed-variant': '#7f2a18',
+          'secondary': '#67600a',
+          'on-secondary': '#ffffff',
+          'secondary-container': '#ede282',
+          'on-secondary-container': '#6c6410',
+          'secondary-fixed': '#f0e585',
+          'secondary-fixed-dim': '#d3c96c',
+          'tertiary': '#874e58',
+          'tertiary-container': '#de99a4',
+          'tertiary-fixed': '#ffd9de',
+          'on-tertiary-container': '#63303a',
+          'error': '#ba1a1a',
+          'error-container': '#ffdad6',
+          'inverse-surface': '#3c2d29',
+          'inverse-on-surface': '#ffede9',
+        },
+        fontFamily: {
+          'display': ['Quicksand', 'sans-serif'],
+          'body': ['Quicksand', 'sans-serif'],
+          'label': ['"Plus Jakarta Sans"', 'sans-serif'],
+        },
+        boxShadow: {
+          'glow': '0 8px 30px rgba(255, 139, 113, 0.10)',
+          'glow-lg': '0 16px 48px -8px rgba(158, 65, 44, 0.18)',
+          'glow-sm': '0 2px 12px rgba(255, 139, 113, 0.10)',
+          'soft': '0 1px 2px rgba(37, 24, 21, 0.04), 0 4px 16px rgba(158, 65, 44, 0.06)',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html, body { background: #fff8f6; color: #251815; font-family: 'Quicksand', sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { min-height: 100dvh; overscroll-behavior-y: none; }
+  .ms { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; display: inline-block; line-height: 1; font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+  .ms-fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .label { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.01em; }
+  .label-sm { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.04em; font-weight: 700; }
+  .quick { font-family: 'Quicksand', sans-serif; }
+  /* phone shell */
+  .phone-shell {
+    width: 100%;
+    max-width: 420px;
+    min-height: 100dvh;
+    margin: 0 auto;
+    background: #fff8f6;
+    position: relative;
+  }
+  @media (min-width: 480px) {
+    body { background: linear-gradient(180deg, #fce3dd 0%, #fff1ed 50%, #ffe9e4 100%); padding: 24px 0; }
+    .phone-shell {
+      min-height: 880px;
+      border-radius: 44px;
+      box-shadow: 0 30px 80px rgba(158, 65, 44, 0.18), 0 0 0 10px #1a0f0c, 0 0 0 12px #2a1a15;
+      overflow: hidden;
+    }
+  }
+  /* hide scrollbars for category chip rail */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+  /* shimmer for streak banner */
+  .streak-gradient {
+    background:
+      radial-gradient(120% 70% at 100% 0%, rgba(255,255,255,0.35) 0%, transparent 50%),
+      linear-gradient(135deg, #ff8b71 0%, #f06b50 60%, #de7a5e 100%);
+  }
+  .glass {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  /* simple fade-in for tab transitions */
+  .screen-enter { animation: fadeIn .25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  /* striped placeholder */
+  .placeholder-stripe {
+    background-image: repeating-linear-gradient(135deg, #f6ddd8 0 6px, #fce3dd 6px 12px);
+  }
+  /* checkbox tick stroke animation */
+  .tick { transition: transform .15s ease; }
+  .done .tick { transform: scale(1); }
+  /* hide native scrollbar on the scroll area */
+  .scroll-area { overflow-y: auto; overflow-x: hidden; }
+  .scroll-area::-webkit-scrollbar { width: 0; }
+  /* drag handle */
+  .drag-dots {
+    background-image: radial-gradient(currentColor 1.2px, transparent 1.2px);
+    background-size: 4px 4px;
+    background-repeat: repeat;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="onboarding.jsx"></script>
+<script type="text/babel" src="screens.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

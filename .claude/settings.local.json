@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(mkdir -p extracted)",
+      "Bash(tar -xzf webfetch-1779545599301-c6b9dy.bin -C extracted)",
+      "Bash(mkdir -p c:/Workspace/FacialCareRoutineTracker/docs/design-reference/screens/screenshots)",
+      "Bash(cp C:/Users/annat/.claude/projects/c--Workspace-FacialCareRoutineTracker/0ad9df78-75ca-4df5-9e21-1d505e3f11c1/tool-results/extracted/skincareroutinetracker2/project/index.html c:/Workspace/FacialCareRoutineTracker/docs/design-reference/screens/)",
+      "Bash(cp C:/Users/annat/.claude/projects/c--Workspace-FacialCareRoutineTracker/0ad9df78-75ca-4df5-9e21-1d505e3f11c1/tool-results/extracted/skincareroutinetracker2/project/components.jsx c:/Workspace/FacialCareRoutineTracker/docs/design-reference/screens/)",
+      "Bash(cp C:/Users/annat/.claude/projects/c--Workspace-FacialCareRoutineTracker/0ad9df78-75ca-4df5-9e21-1d505e3f11c1/tool-results/extracted/skincareroutinetracker2/project/screens.jsx c:/Workspace/FacialCareRoutineTracker/docs/design-reference/screens/)",
+      "Bash(cp C:/Users/annat/.claude/projects/c--Workspace-FacialCareRoutineTracker/0ad9df78-75ca-4df5-9e21-1d505e3f11c1/tool-results/extracted/skincareroutinetracker2/project/app.jsx c:/Workspace/FacialCareRoutineTracker/docs/design-reference/screens/)",
+      "PowerShell(flutter --version 2>&1)",
+      "PowerShell(if \\($LASTEXITCODE -eq 0\\) { \"FLUTTER_OK\" } else { \"FLUTTER_NOT_FOUND\" })",
+      "PowerShell(dart --version 2>&1)",
+      "PowerShell(node --version 2>&1)",
+      "PowerShell(python --version 2>&1)"
+    ]
+  }
+}
