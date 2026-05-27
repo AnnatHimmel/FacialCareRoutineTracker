@@ -1,5 +1,5 @@
 ---
-name: Debug
+name: debug-only
 description: Diagnostic investigation skill. Finds root cause of unknown problems and reports findings. NEVER fixes - only diagnoses and recommends. Handoff to /fix-code after user approval. TRIGGER when: user reports a bug, describes unexpected behavior, mentions an error or exception, says something is broken/wrong/not working, or asks why something is not behaving as expected. SKIP when: user explicitly asks to fix a known bug (use Fix-Code instead).
 ---
 

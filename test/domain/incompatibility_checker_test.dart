@@ -1,0 +1,126 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:skincare_tracker/domain/entities/category.dart';
+import 'package:skincare_tracker/domain/entities/incompatibility_rule.dart';
+import 'package:skincare_tracker/domain/entities/master_product.dart';
+import 'package:skincare_tracker/domain/enums/rule_scope.dart';
+import 'package:skincare_tracker/domain/services/incompatibility_checker.dart';
+
+void main() {
+  final checker = IncompatibilityChecker();
+  final categories = <Category>[];
+
+  MasterProduct makeProduct(String id, String categoryId) => MasterProduct(
+        id: id,
+        name: id,
+        categoryId: categoryId,
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+      );
+
+  IncompatibilityRule productRule(String id, String pA, String pB, RuleScope scope) =>
+      IncompatibilityRule(
+        id: id,
+        entityA: RuleTarget(type: RuleTargetType.product, id: pA),
+        entityB: RuleTarget(type: RuleTargetType.product, id: pB),
+        scope: scope,
+      );
+
+  IncompatibilityRule categoryRule(String id, String cA, String cB, RuleScope scope) =>
+      IncompatibilityRule(
+        id: id,
+        entityA: RuleTarget(type: RuleTargetType.category, id: cA),
+        entityB: RuleTarget(type: RuleTargetType.category, id: cB),
+        scope: scope,
+      );
+
+  group('product conflicts', () {
+    test('detects product↔product conflict within morning', () {
+      final p1 = makeProduct('p1', 'cat');
+      final p2 = makeProduct('p2', 'cat');
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinMorning);
+
+      final conflicts = checker.getConflictsForDay(
+        morningProducts: [p1, p2],
+        eveningProducts: [],
+        rules: [rule],
+        categories: categories,
+        mutedRuleIds: {},
+      );
+
+      expect(conflicts.length, 1);
+      expect(conflicts.first.ruleId, 'r1');
+      expect(conflicts.first.isMuted, isFalse);
+    });
+
+    test('no conflict if products in different scope', () {
+      final p1 = makeProduct('p1', 'cat');
+      final p2 = makeProduct('p2', 'cat');
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinEvening);
+
+      final conflicts = checker.getConflictsForDay(
+        morningProducts: [p1, p2],
+        eveningProducts: [],
+        rules: [rule],
+        categories: categories,
+        mutedRuleIds: {},
+      );
+
+      expect(conflicts.isEmpty, isTrue);
+    });
+  });
+
+  group('category conflicts', () {
+    test('detects category↔category conflict', () {
+      final p1 = makeProduct('p1', 'cat-a');
+      final p2 = makeProduct('p2', 'cat-b');
+      final rule = categoryRule('r1', 'cat-a', 'cat-b', RuleScope.withinMorning);
+
+      final conflicts = checker.getConflictsForDay(
+        morningProducts: [p1, p2],
+        eveningProducts: [],
+        rules: [rule],
+        categories: categories,
+        mutedRuleIds: {},
+      );
+
+      expect(conflicts.length, 1);
+    });
+  });
+
+  group('muted conflicts', () {
+    test('muted conflict still appears but isMuted=true', () {
+      final p1 = makeProduct('p1', 'cat');
+      final p2 = makeProduct('p2', 'cat');
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinMorning);
+
+      final conflicts = checker.getConflictsForDay(
+        morningProducts: [p1, p2],
+        eveningProducts: [],
+        rules: [rule],
+        categories: categories,
+        mutedRuleIds: {'r1'},
+      );
+
+      expect(conflicts.length, 1);
+      expect(conflicts.first.isMuted, isTrue);
+    });
+  });
+
+  group('sameDayAcrossBoth scope', () {
+    test('detects conflict across morning and evening', () {
+      final pMorning = makeProduct('p1', 'cat');
+      final pEvening = makeProduct('p2', 'cat');
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.sameDayAcrossBoth);
+
+      final conflicts = checker.getConflictsForDay(
+        morningProducts: [pMorning],
+        eveningProducts: [pEvening],
+        rules: [rule],
+        categories: categories,
+        mutedRuleIds: {},
+      );
+
+      expect(conflicts.length, 1);
+    });
+  });
+}

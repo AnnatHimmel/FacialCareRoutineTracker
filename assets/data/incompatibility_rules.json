@@ -1,0 +1,16 @@
+{
+  "rules": [
+    {
+      "id": "rule-001",
+      "entityA": {"type": "product", "id": "prod-002"},
+      "entityB": {"type": "product", "id": "prod-003"},
+      "scope": "sameDayAcrossBoth"
+    },
+    {
+      "id": "rule-002",
+      "entityA": {"type": "category", "id": "cat-serum"},
+      "entityB": {"type": "category", "id": "cat-spf"},
+      "scope": "withinMorning"
+    }
+  ]
+}

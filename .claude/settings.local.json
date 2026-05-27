@@ -13,7 +13,15 @@
       "PowerShell(if \\($LASTEXITCODE -eq 0\\) { \"FLUTTER_OK\" } else { \"FLUTTER_NOT_FOUND\" })",
       "PowerShell(dart --version 2>&1)",
       "PowerShell(node --version 2>&1)",
-      "PowerShell(python --version 2>&1)"
+      "PowerShell(python --version 2>&1)",
+      "PowerShell(& \"C:\\\\Workspace\\\\utilities\\\\flutter\\\\bin\\\\flutter.bat\" --version 2>&1)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(/c/Workspace/utilities/flutter/bin/flutter devices *)",
+      "Bash(mv \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/Debug\" \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/debug-only\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Workspace\\FacialCareRoutineTracker\\.claude\\skills\\Debug"
     ]
   }
 }

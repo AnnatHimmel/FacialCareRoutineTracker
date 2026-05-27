@@ -1,0 +1,12 @@
+import 'dart:convert';
+
+String encodeIds(List<String> ids) => jsonEncode(ids);
+
+List<String> decodeIds(String json) =>
+    (jsonDecode(json) as List<dynamic>).cast<String>();
+
+String encodeWeekdays(Set<int> days) =>
+    jsonEncode(days.toList()..sort());
+
+Set<int> decodeWeekdays(String json) =>
+    (jsonDecode(json) as List<dynamic>).cast<int>().toSet();

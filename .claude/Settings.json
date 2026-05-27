@@ -14,7 +14,8 @@
       "Glob",
       "Grep",
       "Task",
-      "TodoWrite"
+      "TodoWrite",
+      "PowerShell"
     ],
     "deny": [],
     "defaultMode": "auto"

@@ -1,0 +1,1 @@
+enum Slot { morning, evening }

@@ -1,0 +1,77 @@
+{
+  "contentVersion": "1.0.0",
+  "categories": [
+    {"id": "cat-cleanser", "name": "ניקוי"},
+    {"id": "cat-serum", "name": "סרום / אקטיב"},
+    {"id": "cat-moisturizer", "name": "לחות"},
+    {"id": "cat-spf", "name": "הגנה"}
+  ],
+  "products": [
+    {
+      "id": "prod-001",
+      "name": "CeraVe Foaming Cleanser",
+      "categoryId": "cat-cleanser",
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "imageAsset": "assets/images/products/prod-001.jpg",
+      "comment": "מנקה עדין ולא מייבש, מתאים לשימוש יומיומי",
+      "morningConfig": {"order": 0, "frequency": {"type": "daily"}},
+      "eveningConfig": {"order": 0, "frequency": {"type": "daily"}}
+    },
+    {
+      "id": "prod-002",
+      "name": "The Ordinary Niacinamide 10%",
+      "categoryId": "cat-serum",
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "imageAsset": null,
+      "comment": null,
+      "morningConfig": {"order": 1, "frequency": {"type": "daily"}},
+      "eveningConfig": null
+    },
+    {
+      "id": "prod-003",
+      "name": "Paula's Choice BHA Exfoliant",
+      "categoryId": "cat-serum",
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "imageAsset": null,
+      "comment": "לא לשימוש יומיומי, עד 3 פעמים בשבוע",
+      "morningConfig": null,
+      "eveningConfig": {"order": 1, "frequency": {"type": "weeklyMax", "maxPerWeek": 3}}
+    },
+    {
+      "id": "prod-004",
+      "name": "CeraVe PM Moisturizer",
+      "categoryId": "cat-moisturizer",
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "imageAsset": null,
+      "comment": "מסדרת הלחות הלילית",
+      "morningConfig": null,
+      "eveningConfig": {"order": 2, "frequency": {"type": "daily"}}
+    },
+    {
+      "id": "prod-005",
+      "name": "Neutrogena Hydra Boost",
+      "categoryId": "cat-moisturizer",
+      "isDeprecated": true,
+      "addedInVersion": "1.0.0",
+      "imageAsset": null,
+      "comment": null,
+      "morningConfig": {"order": 2, "frequency": {"type": "daily"}},
+      "eveningConfig": null
+    },
+    {
+      "id": "prod-006",
+      "name": "La Roche-Posay SPF 50+",
+      "categoryId": "cat-spf",
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "imageAsset": null,
+      "comment": "הגנה רחבת ספקטרום, שימוש בוקר בלבד",
+      "morningConfig": {"order": 3, "frequency": {"type": "daily"}},
+      "eveningConfig": null
+    }
+  ]
+}

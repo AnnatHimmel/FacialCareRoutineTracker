@@ -1,0 +1,56 @@
+{
+  "@@locale": "he",
+  "appName": "מעקב שגרת טיפוח",
+  "navToday": "היום",
+  "navCalendar": "לוח שנה",
+  "navJournal": "יומן עור",
+  "navSettings": "הגדרות",
+  "slotMorning": "בוקר",
+  "slotEvening": "ערב",
+  "productSelectionTitle": "בחירת מוצרים",
+  "scheduleTitle": "תזמון מוצרים",
+  "orderTitle": "סדר מוצרים",
+  "streakCurrent": "ימי רצף",
+  "streakLongest": "הרצף הארוך",
+  "streakMissesThisWeek": "החסרות השבוע",
+  "streakMissesOf": "{current} מתוך {max}",
+  "@streakMissesOf": {
+    "placeholders": {
+      "current": {},
+      "max": {}
+    }
+  },
+  "warningDeprecated": "לא מומלץ עוד",
+  "warningIncompatible": "לא מומלץ לשימוש יחד",
+  "warningMute": "השתק",
+  "warningOverCap": "נבחרו יותר ימים מההמלצה",
+  "exportTitle": "ייצוא / ייבוא",
+  "exportAction": "ייצא עכשיו",
+  "importAction": "ייבא",
+  "importReplace": "החלפה",
+  "importMerge": "מיזוג",
+  "settingsTitle": "הגדרות",
+  "aboutTitle": "אודות / מה חדש",
+  "updateReviewTitle": "עדכון הושלם",
+  "backupReminderMessage": "גבי את הנתונים שלך",
+  "backupAction": "גיבוי",
+  "skinLogTitle": "יומן עור",
+  "skinLogPlaceholder": "איך העור שלך היום?",
+  "emptyRoutine": "אין מוצרים מתוכננים להיום",
+  "emptyJournal": "עדיין אין תמונות ביומן",
+  "continueAction": "המשך",
+  "saveAction": "שמור",
+  "resetOrder": "אפס לסדר מומלץ",
+  "dataIntactConfirmation": "כל הנתונים שלך שמורים ובשלמותם",
+  "before6amNote": "פעילות לפני 6:00 נרשמת ליום אמש",
+  "conflictChooserTitle": "התנגשות {current} מתוך {total}",
+  "@conflictChooserTitle": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "chooseArchive": "מהגיבוי",
+  "chooseDevice": "מהמכשיר",
+  "webStorageWarning": "תמונות מאוחסנות בנפח מוגבל. גיבוי מומלץ."
+}

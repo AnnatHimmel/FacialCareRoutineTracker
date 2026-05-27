@@ -61,6 +61,16 @@ Warm "golden hour" aesthetic: soft minimalism + glassmorphism.
 - **Elevation:** Colored ambient glows, not dark shadows. Glassmorphism (`backdrop-filter: blur(12px)`, 60% white) for sticky headers/nav.
 - **Spacing:** 8px base unit; 20px side margins on mobile; 40px+ between major sections.
 
+## TDD Requirement
+
+**All new code must follow RED → GREEN → REFACTOR. No exceptions.**
+
+1. **RED:** Write the test file first. Run `flutter test <test_file>` and confirm it **fails**. Do not proceed if the test passes — the test doesn't cover the new behavior yet.
+2. **GREEN:** Write the minimal implementation to make the test pass. Run again and confirm green.
+3. **REFACTOR:** Clean up if needed. Tests must still pass after.
+
+This applies to every task in `/6-ModifyLoop`, `/4-Execution`, and any ad-hoc code change. Never write implementation code before a failing test exists for it.
+
 ## Flutter Implementation Notes (PRD §14)
 
 - **Rebuild, don't embed.** HTML references specify appearance only — never use WebView for app screens.
