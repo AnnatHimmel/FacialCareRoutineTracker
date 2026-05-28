@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../shared/providers/root_providers.dart';
+import '../../shared/widgets/glow_app_bar.dart';
+import '../../shared/widgets/glow_card.dart';
 import '../../shared/widgets/routine_item_row.dart';
 
 class UpdateReviewScreen extends ConsumerStatefulWidget {
@@ -33,9 +35,8 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
     final reconcileAsync = ref.watch(_reconcileProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('עדכון הושלם', style: AppTypography.headlineMd),
-      ),
+      backgroundColor: AppColors.surface,
+      appBar: const GlowAppBar(showBack: true),
       body: reconcileAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
@@ -43,39 +44,41 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
         data: (result) {
           if (!result.isUpdateDetected) {
             return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.check_circle,
-                    size: 64,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'הכל מעודכן',
-                    style: AppTypography.headlineMd,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.go('/today'),
-                    child: const Text('חזור'),
-                  ),
-                ],
+              child: GlowCard(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      size: 64,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'הכל מעודכן',
+                      style: AppTypography.headlineMd,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.go('/today'),
+                      child: const Text('חזור'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
               // Data-intact confirmation
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.secondaryContainer,
-                  borderRadius: BorderRadius.circular(16),
-                ),
+              GlowCard(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                color: AppColors.secondaryFixed,
+                shadow: AppColors.glowSm,
                 child: Row(
                   children: [
                     const Icon(
@@ -88,8 +91,10 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                       child: Text(
                         'הנתונים שלך שמורים ועדיין קיימים',
                         style: AppTypography.bodyMd.copyWith(
-                          color: AppColors.onSecondaryContainer,
+                          color: AppColors.onSurface,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -98,78 +103,125 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
               const SizedBox(height: 24),
 
               // Export offer
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('לפני ההמשך:', style: AppTypography.headlineMd),
-                  TextButton.icon(
-                    onPressed: () => context.push('/export-import'),
-                    icon: const Icon(Icons.backup_outlined, size: 18),
-                    label: const Text('גבה נתונים'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      textStyle: AppTypography.labelSm,
+              GlowCard(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'לפני ההמשך:',
+                      style: AppTypography.headlineMd,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                    TextButton.icon(
+                      onPressed: () => context.push('/export-import'),
+                      icon: const Icon(Icons.backup_outlined, size: 18),
+                      label: const Text('גבה נתונים'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        textStyle: AppTypography.labelSm,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
 
               // New products
               if (result.newProducts.isNotEmpty) ...[
-                Text(
-                  'מוצרים חדשים (${result.newProducts.length})',
-                  style: AppTypography.headlineMd,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים',
-                  style: AppTypography.bodyMd.copyWith(
-                    color: AppColors.onSurfaceVariant,
+                GlowCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'מוצרים חדשים (${result.newProducts.length})',
+                        style: AppTypography.headlineMd.copyWith(
+                          color: AppColors.primary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים',
+                        style: AppTypography.bodyMd.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 12),
+                      for (int i = 0; i < result.newProducts.length; i++) ...[
+                        if (i > 0) const SizedBox(height: 8),
+                        RoutineItemRow(
+                          product: result.newProducts[i],
+                          isToggled: false,
+                          onToggle: () {},
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                for (final product in result.newProducts)
-                  RoutineItemRow(
-                    product: product,
-                    isToggled: false,
-                    onToggle: () {},
-                  ),
                 const SizedBox(height: 24),
               ],
 
               // Newly deprecated
               if (result.newlyDeprecatedSelected.isNotEmpty) ...[
-                Text(
-                  'מוצרים שאינם מומלצים עוד (${result.newlyDeprecatedSelected.length})',
-                  style: AppTypography.headlineMd.copyWith(
-                    color: AppColors.error,
+                GlowCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'מוצרים שאינם מומלצים עוד (${result.newlyDeprecatedSelected.length})',
+                        style: AppTypography.headlineMd.copyWith(
+                          color: AppColors.error,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'מוצרים אלה נמצאים ברשימה שלך אך אינם מומלצים עוד',
+                        style: AppTypography.bodyMd.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 12),
+                      for (int i = 0;
+                          i < result.newlyDeprecatedSelected.length;
+                          i++) ...[
+                        if (i > 0) const SizedBox(height: 8),
+                        RoutineItemRow(
+                          product: result.newlyDeprecatedSelected[i],
+                          isToggled: true,
+                          onToggle: () {},
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'מוצרים אלה נמצאים ברשימה שלך אך אינם מומלצים עוד',
-                  style: AppTypography.bodyMd.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                for (final product in result.newlyDeprecatedSelected)
-                  RoutineItemRow(
-                    product: product,
-                    isToggled: true,
-                    onToggle: () {},
-                  ),
                 const SizedBox(height: 24),
               ],
 
               // Acknowledge button
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: _acknowledging
                       ? null
                       : () => _acknowledge(result.currentContentVersion),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.onPrimary,
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
                   child: _acknowledging
                       ? const SizedBox(
                           width: 20,

@@ -21,12 +21,12 @@ class SoftWarningBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.glassFill,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant),
+        color: AppColors.tertiaryFixed,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.glowSm,
       ),
       child: Row(
         children: [
@@ -39,8 +39,8 @@ class SoftWarningBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style:
-                  AppTypography.labelMd.copyWith(color: AppColors.onSurface),
+              style: AppTypography.labelMd
+                  .copyWith(color: AppColors.onTertiaryContainer),
             ),
           ),
           ?customAction,

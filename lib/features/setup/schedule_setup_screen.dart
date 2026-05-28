@@ -11,6 +11,10 @@ import '../../domain/enums/slot.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/category_header.dart';
+import '../../shared/widgets/glass_bottom_nav.dart';
+import '../../shared/widgets/glow_app_bar.dart';
+import '../../shared/widgets/glow_card.dart';
+import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/slot_section_header.dart';
 import '../../shared/widgets/soft_warning_banner.dart';
 import '../../shared/widgets/weekday_picker.dart';
@@ -51,6 +55,14 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     );
   }
 
+  void _handleContinue(BuildContext context) {
+    if (widget.fromSetup) {
+      context.go('/setup/order?from=setup');
+    } else {
+      context.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final masterAsync = ref.watch(masterContentProvider);
@@ -62,21 +74,9 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     final mutedAsync = ref.watch(mutedConflictsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('תזמון מוצרים', style: AppTypography.headlineMd),
-        actions: [
-          TextButton(
-            onPressed: () => widget.fromSetup
-                ? context.go('/setup/order')
-                : context.pop(),
-            child: Text(
-              widget.fromSetup ? 'הבא' : 'שמור',
-              style:
-                  AppTypography.labelMd.copyWith(color: AppColors.primary),
-            ),
-          ),
-        ],
-      ),
+      backgroundColor: AppColors.surface,
+      appBar: GlowAppBar(showBack: !widget.fromSetup),
+      bottomNavigationBar: _buildSetupNav(context),
       body: masterAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
@@ -114,43 +114,57 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                   p.eveningConfig?.frequencyRule is WeeklyMaxRule)
               .toList();
 
-          return CustomScrollView(
-            slivers: [
-              if (morningOccasional.isEmpty && eveningOccasional.isEmpty)
-                SliverFillRemaining(
-                  child: Center(
-                    child: Text(
-                      'כל המוצרים שלך הם יומיים — אין צורך בתזמון',
-                      style: AppTypography.bodyMd.copyWith(
-                        color: AppColors.onSurfaceVariant,
+          final isEmpty =
+              morningOccasional.isEmpty && eveningOccasional.isEmpty;
+
+          return Column(
+            children: [
+              Expanded(
+                child: isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: Text(
+                            'כל המוצרים שלך הם יומיים — אין צורך בתזמון',
+                            style: AppTypography.bodyMd.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    : CustomScrollView(
+                        slivers: [
+                          _buildSlotSection(
+                            slot: Slot.morning,
+                            occasionalProducts: morningOccasional,
+                            schedules: schedules,
+                            master: master,
+                            mutedIds: mutedIds,
+                            morningScheduled: morningOccasional,
+                            eveningScheduled: eveningOccasional,
+                            allSchedules: schedules,
+                          ),
+                          _buildSlotSection(
+                            slot: Slot.evening,
+                            occasionalProducts: eveningOccasional,
+                            schedules: schedules,
+                            master: master,
+                            mutedIds: mutedIds,
+                            morningScheduled: morningOccasional,
+                            eveningScheduled: eveningOccasional,
+                            allSchedules: schedules,
+                          ),
+                          const SliverToBoxAdapter(
+                              child: SizedBox(height: 32)),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              else ...[
-                _buildSlotSection(
-                  slot: Slot.morning,
-                  occasionalProducts: morningOccasional,
-                  schedules: schedules,
-                  master: master,
-                  mutedIds: mutedIds,
-                  morningScheduled: morningOccasional,
-                  eveningScheduled: eveningOccasional,
-                  allSchedules: schedules,
-                ),
-                _buildSlotSection(
-                  slot: Slot.evening,
-                  occasionalProducts: eveningOccasional,
-                  schedules: schedules,
-                  master: master,
-                  mutedIds: mutedIds,
-                  morningScheduled: morningOccasional,
-                  eveningScheduled: eveningOccasional,
-                  allSchedules: schedules,
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
-              ],
+              ),
+              // ── Sticky bottom CTA ──────────────────────────────────────────
+              _BottomCta(
+                fromSetup: widget.fromSetup,
+                onTap: () => _handleContinue(context),
+              ),
             ],
           );
         },
@@ -168,7 +182,9 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     required List<MasterProduct> eveningScheduled,
     required List<WeekdaySchedule> allSchedules,
   }) {
-    if (occasionalProducts.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (occasionalProducts.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
     final isExpanded = _sectionExpanded[slot] ?? true;
 
@@ -190,51 +206,72 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     return SliverMainAxisGroup(
       slivers: [
         SliverToBoxAdapter(
-          child: SlotSectionHeader(
-            slot: slot,
-            productCount: occasionalProducts.length,
-            isExpanded: isExpanded,
-            onToggle: () => setState(
-              () => _sectionExpanded[slot] = !isExpanded,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: SlotSectionHeader(
+              slot: slot,
+              productCount: occasionalProducts.length,
+              isExpanded: isExpanded,
+              onToggle: () => setState(
+                () => _sectionExpanded[slot] = !isExpanded,
+              ),
             ),
           ),
         ),
         if (isExpanded) ...[
           for (final conflict in dayConflicts)
             SliverToBoxAdapter(
-              child: SoftWarningBanner(
-                message:
-                    '${conflict.$1} ו${conflict.$2} מתנגשים בימים משותפים',
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20, vertical: 4),
+                child: SoftWarningBanner(
+                  message:
+                      '${conflict.$1} ו${conflict.$2} מתנגשים בימים משותפים',
+                ),
               ),
             ),
           for (final categoryId in byCategory.keys)
             SliverMainAxisGroup(
               slivers: [
                 SliverToBoxAdapter(
-                  child: CategoryHeader(
-                    categoryName:
-                        categoryMap[categoryId]?.name ?? categoryId,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    child: CategoryHeader(
+                      categoryName:
+                          categoryMap[categoryId]?.name ?? categoryId,
+                    ),
                   ),
                 ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final product =
-                          byCategory[categoryId]![index];
-                      return _ProductScheduleRow(
-                        product: product,
-                        slot: slot,
-                        schedules: schedules,
-                        onChanged: (weekdays, existing) =>
-                            _updateSchedule(
-                          product.id,
-                          slot,
-                          weekdays,
-                          existing,
-                        ),
-                      );
-                    },
-                    childCount: byCategory[categoryId]!.length,
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final product =
+                            byCategory[categoryId]![index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: index <
+                                    byCategory[categoryId]!.length - 1
+                                ? 12
+                                : 0,
+                          ),
+                          child: _ProductScheduleCard(
+                            product: product,
+                            slot: slot,
+                            schedules: schedules,
+                            onChanged: (weekdays, existing) =>
+                                _updateSchedule(
+                              product.id,
+                              slot,
+                              weekdays,
+                              existing,
+                            ),
+                          ),
+                        );
+                      },
+                      childCount: byCategory[categoryId]!.length,
+                    ),
                   ),
                 ),
               ],
@@ -281,15 +318,47 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     }
     return result;
   }
+
+  Widget _buildSetupNav(BuildContext context) => GlassBottomNav(
+        currentIndex: -1,
+        onDestinationSelected: (i) {
+          const routes = ['/today', '/calendar', '/journal', '/settings'];
+          if (i < routes.length) context.go(routes[i]);
+        },
+        items: const [
+          GlassNavItem(
+            icon: Icons.wb_sunny_outlined,
+            selectedIcon: Icons.wb_sunny_rounded,
+            label: 'היום',
+          ),
+          GlassNavItem(
+            icon: Icons.calendar_today_outlined,
+            selectedIcon: Icons.calendar_today_rounded,
+            label: 'לוח שנה',
+          ),
+          GlassNavItem(
+            icon: Icons.auto_stories_outlined,
+            selectedIcon: Icons.auto_stories_rounded,
+            label: 'יומן',
+          ),
+          GlassNavItem(
+            icon: Icons.settings_outlined,
+            selectedIcon: Icons.settings_rounded,
+            label: 'הגדרות',
+          ),
+        ],
+      );
 }
 
-class _ProductScheduleRow extends ConsumerWidget {
+// ── Product card with weekday picker ──────────────────────────────────────────
+
+class _ProductScheduleCard extends ConsumerWidget {
   final MasterProduct product;
   final Slot slot;
   final List<WeekdaySchedule> schedules;
   final void Function(Set<int> weekdays, WeekdaySchedule? existing) onChanged;
 
-  const _ProductScheduleRow({
+  const _ProductScheduleCard({
     required this.product,
     required this.slot,
     required this.schedules,
@@ -307,48 +376,182 @@ class _ProductScheduleRow extends ConsumerWidget {
     final maxPerWeek = rule is WeeklyMaxRule ? rule.maxPerWeek : null;
     final overCap =
         maxPerWeek != null && selectedDays.length > maxPerWeek;
+    final count = selectedDays.length;
 
     final isLikelyLatin =
         product.name.codeUnits.every((c) => c < 128);
 
-    return Padding(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    return GlowCard(
+      padding: const EdgeInsets.all(16),
+      shadow: AppColors.glowSm,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // ── Product header: thumb + name + cap badge ─────────────────────
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
-                child: isLikelyLatin
-                    ? Directionality(
-                        textDirection: TextDirection.ltr,
-                        child: Text(
-                          product.name,
-                          style: AppTypography.bodyMd,
-                        ),
-                      )
-                    : Text(product.name,
-                        style: AppTypography.bodyMd),
+              ProductThumb(
+                imageAsset: product.imageAsset,
+                size: 44,
               ),
-              if (maxPerWeek != null)
-                Text(
-                  'עד $maxPerWeek פעמים/שבוע',
-                  style: AppTypography.labelSm.copyWith(
-                    color: overCap
-                        ? AppColors.tertiary
-                        : AppColors.onSurfaceVariant,
-                  ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    isLikelyLatin
+                        ? Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Text(
+                              product.name,
+                              style: AppTypography.bodyMd.copyWith(
+                                color: AppColors.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        : Text(
+                            product.name,
+                            style: AppTypography.bodyMd.copyWith(
+                              color: AppColors.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                          ),
+                    if (maxPerWeek != null)
+                      Text(
+                        'מומלץ: עד $maxPerWeek× בשבוע',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.labelSm.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                  ],
                 ),
+              ),
+              if (maxPerWeek != null) ...[
+                const SizedBox(width: 8),
+                _CapBadge(
+                  count: count,
+                  cap: maxPerWeek,
+                  overCap: overCap,
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
+          // ── Weekday picker ───────────────────────────────────────────────
           WeekdayPicker(
             selectedDays: selectedDays,
             onChanged: (days) => onChanged(days, existing),
             showOverCapWarning: overCap,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Count/cap badge (count/cap pill) ──────────────────────────────────────────
+
+class _CapBadge extends StatelessWidget {
+  final int count;
+  final int cap;
+  final bool overCap;
+
+  const _CapBadge({
+    required this.count,
+    required this.cap,
+    required this.overCap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg;
+    final Color fg;
+    if (count == 0) {
+      bg = AppColors.surfaceHigh;
+      fg = AppColors.onSurfaceVariant;
+    } else if (overCap) {
+      bg = AppColors.errorContainer;
+      fg = AppColors.error;
+    } else {
+      bg = AppColors.secondaryFixed;
+      fg = AppColors.onSecondaryContainer;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        '$count/$cap',
+        style: AppTypography.labelSm.copyWith(color: fg),
+      ),
+    );
+  }
+}
+
+// ── Sticky bottom CTA ─────────────────────────────────────────────────────────
+
+class _BottomCta extends StatelessWidget {
+  final bool fromSetup;
+  final VoidCallback onTap;
+
+  const _BottomCta({required this.fromSetup, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: AppColors.navGlow,
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGlowGradient,
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: AppColors.glowLg,
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(999),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    fromSetup ? 'הבא' : 'שמור',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.labelMd.copyWith(
+                      color: AppColors.onPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.check_rounded,
+                      color: AppColors.onPrimary, size: 20),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

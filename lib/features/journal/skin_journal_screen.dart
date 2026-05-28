@@ -6,6 +6,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/skin_log_entry.dart';
 import '../../shared/providers/root_providers.dart';
+import '../../shared/widgets/glow_app_bar.dart';
+import '../../shared/widgets/glow_card.dart';
 
 class SkinJournalScreen extends ConsumerWidget {
   const SkinJournalScreen({super.key});
@@ -15,9 +17,8 @@ class SkinJournalScreen extends ConsumerWidget {
     final allLogsAsync = ref.watch(_allSkinLogsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('יומן עור', style: AppTypography.headlineMd),
-      ),
+      backgroundColor: AppColors.surface,
+      appBar: const GlowAppBar(),
       body: allLogsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('שגיאה: $e')),
@@ -28,61 +29,21 @@ class SkinJournalScreen extends ConsumerWidget {
             ..sort((a, b) => b.date.compareTo(a.date));
 
           if (withPhotos.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.photo_album_outlined,
-                    size: 64,
-                    color: AppColors.outlineVariant,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'אין תמונות עדיין',
-                    style: AppTypography.headlineMd.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'הוסף תמונות ביומן העור היומי',
-                    style: AppTypography.bodyMd.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+            return _EmptyJournalState(
+              onAddEntry: () => context.push('/skin-log/new'),
             );
           }
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(12),
-            gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 6,
-              mainAxisSpacing: 6,
-            ),
-            itemCount: withPhotos.fold<int>(
-              0,
-              (sum, l) => sum + l.photoPaths.length,
-            ),
+          return ListView.separated(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            itemCount: withPhotos.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
-              // Find which entry and photo index correspond to this grid index
-              int offset = 0;
-              for (final log in withPhotos) {
-                if (index < offset + log.photoPaths.length) {
-                  final photoPath = log.photoPaths[index - offset];
-                  return _JournalPhotoTile(
-                    photoPath: photoPath,
-                    date: log.date,
-                    onTap: () => context.push('/skin-log/${log.date}'),
-                  );
-                }
-                offset += log.photoPaths.length;
-              }
-              return const SizedBox.shrink();
+              final log = withPhotos[index];
+              return _JournalEntryCard(
+                log: log,
+                onTap: () => context.push('/skin-log/${log.date}'),
+              );
             },
           );
         },
@@ -91,23 +52,156 @@ class SkinJournalScreen extends ConsumerWidget {
   }
 }
 
-class _JournalPhotoTile extends ConsumerStatefulWidget {
-  final String photoPath;
-  final String date;
+// ---------------------------------------------------------------------------
+// Single journal entry card
+// ---------------------------------------------------------------------------
+
+class _JournalEntryCard extends ConsumerWidget {
+  final SkinLogEntry log;
   final VoidCallback onTap;
 
-  const _JournalPhotoTile({
+  const _JournalEntryCard({required this.log, required this.onTap});
+
+  String _formatDate(String date) {
+    // date is "yyyy-MM-dd"
+    final parts = date.split('-');
+    if (parts.length != 3) return date;
+    final day = int.tryParse(parts[2]) ?? 0;
+    final month = int.tryParse(parts[1]) ?? 0;
+    final year = parts[0];
+    const hebrewMonths = [
+      '', 'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
+      'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
+    ];
+    final monthName = (month >= 1 && month <= 12) ? hebrewMonths[month] : '';
+    return '$day ב$monthName $year';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formattedDate = _formatDate(log.date);
+    final hasNote = log.notes != null && log.notes!.isNotEmpty;
+
+    return GlowCard(
+      padding: const EdgeInsets.all(16),
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Date heading — right-aligned (RTL natural)
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Text(
+              formattedDate,
+              style: AppTypography.headlineMd.copyWith(
+                color: AppColors.primary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Photos grid
+          _PhotoGrid(photoPaths: log.photoPaths, date: log.date),
+
+          // Note text (if any)
+          if (hasNote) ...[
+            const SizedBox(height: 12),
+            Text(
+              log.notes!,
+              style: AppTypography.bodyMd.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.right,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Photo grid inside a card (max 4 shown, rest collapsed)
+// ---------------------------------------------------------------------------
+
+class _PhotoGrid extends StatelessWidget {
+  final List<String> photoPaths;
+  final String date;
+
+  const _PhotoGrid({required this.photoPaths, required this.date});
+
+  @override
+  Widget build(BuildContext context) {
+    final display = photoPaths.take(4).toList();
+    final overflow = photoPaths.length - display.length;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cols = display.length == 1 ? 1 : 2;
+        final itemSize = cols == 1
+            ? constraints.maxWidth
+            : (constraints.maxWidth - 8) / 2;
+
+        final rows = <Widget>[];
+        for (var i = 0; i < display.length; i += cols) {
+          final rowItems = <Widget>[];
+          for (var c = 0; c < cols; c++) {
+            final idx = i + c;
+            if (idx < display.length) {
+              Widget thumb = _PhotoThumb(
+                photoPath: display[idx],
+                size: itemSize,
+                // Show "+N" overlay on last visible if more exist
+                overflowCount:
+                    (overflow > 0 && idx == display.length - 1) ? overflow : 0,
+              );
+              rowItems.add(thumb);
+            } else {
+              rowItems.add(SizedBox(width: itemSize, height: itemSize));
+            }
+            if (c < cols - 1) rowItems.add(const SizedBox(width: 8));
+          }
+          rows.add(Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: rowItems,
+          ));
+          if (i + cols < display.length) rows.add(const SizedBox(height: 8));
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: rows,
+        );
+      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Single photo thumbnail (lazy-loads bytes via PhotoRepository)
+// ---------------------------------------------------------------------------
+
+class _PhotoThumb extends ConsumerStatefulWidget {
+  final String photoPath;
+  final double size;
+  final int overflowCount;
+
+  const _PhotoThumb({
     required this.photoPath,
-    required this.date,
-    required this.onTap,
+    required this.size,
+    this.overflowCount = 0,
   });
 
   @override
-  ConsumerState<_JournalPhotoTile> createState() =>
-      _JournalPhotoTileState();
+  ConsumerState<_PhotoThumb> createState() => _PhotoThumbState();
 }
 
-class _JournalPhotoTileState extends ConsumerState<_JournalPhotoTile> {
+class _PhotoThumbState extends ConsumerState<_PhotoThumb> {
   Uint8List? _bytes;
   bool _loaded = false;
 
@@ -131,35 +225,146 @@ class _JournalPhotoTileState extends ConsumerState<_JournalPhotoTile> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: !_loaded
-            ? Container(
-                color: AppColors.surfaceContainer,
-                child: const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
+    Widget image;
+
+    if (!_loaded) {
+      image = Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainer,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    } else if (_bytes != null) {
+      image = ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.memory(
+          _bytes!,
+          width: widget.size,
+          height: widget.size,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else {
+      image = Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainer,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(
+          Icons.broken_image_outlined,
+          color: AppColors.outlineVariant,
+        ),
+      );
+    }
+
+    if (widget.overflowCount > 0) {
+      return Stack(
+        children: [
+          image,
+          // Overlay for "+N more" images
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.onSurface.withAlpha(128),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '+${widget.overflowCount}',
+                style: AppTypography.headlineMd.copyWith(
+                  color: AppColors.onPrimary,
                 ),
-              )
-            : _bytes != null
-                ? Image.memory(
-                    _bytes!,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                  )
-                : Container(
-                    color: AppColors.surfaceContainer,
-                    child: const Icon(
-                      Icons.broken_image_outlined,
-                      color: AppColors.outlineVariant,
-                    ),
-                  ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return image;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Empty state
+// ---------------------------------------------------------------------------
+
+class _EmptyJournalState extends StatelessWidget {
+  final VoidCallback onAddEntry;
+
+  const _EmptyJournalState({required this.onAddEntry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Peach icon disc
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: AppColors.primaryFixed,
+                shape: BoxShape.circle,
+                boxShadow: AppColors.glow,
+              ),
+              child: const Icon(
+                Icons.photo_album_outlined,
+                size: 40,
+                color: AppColors.primary,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            Text(
+              'אין תמונות עדיין',
+              style: AppTypography.headlineMd.copyWith(
+                color: AppColors.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              'הוסף תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך',
+              style: AppTypography.bodyMd.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 32),
+
+            // Pill CTA
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: onAddEntry,
+                child: const Text('התחל לתעד'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Provider
+// ---------------------------------------------------------------------------
 
 final _allSkinLogsProvider = StreamProvider<List<SkinLogEntry>>(
   (ref) =>

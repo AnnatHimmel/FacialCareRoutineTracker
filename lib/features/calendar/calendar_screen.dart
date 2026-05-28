@@ -8,6 +8,8 @@ import '../../domain/enums/day_completion_state.dart';
 import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/completion_indicator.dart';
+import '../../shared/widgets/glow_app_bar.dart';
+import '../../shared/widgets/glow_card.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
@@ -49,29 +51,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final today = boundary.effectiveDate(DateTime.now());
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('לוח שנה', style: AppTypography.headlineMd),
-      ),
+      backgroundColor: AppColors.surface,
+      appBar: const GlowAppBar(),
       body: Column(
         children: [
           // Month navigation
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
+          GlowCard(
+            margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            radius: 20,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  onPressed: _prevMonth,
-                  color: AppColors.onSurface,
-                ),
-                Text(
-                  _monthLabel(_displayMonth),
-                  style: AppTypography.headlineMd,
-                ),
                 IconButton(
                   icon: const Icon(Icons.chevron_left),
                   onPressed:
@@ -80,36 +71,57 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           : _nextMonth,
                   color: AppColors.onSurface,
                 ),
+                Text(
+                  _monthLabel(_displayMonth),
+                  style: AppTypography.headlineMd,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: _prevMonth,
+                  color: AppColors.onSurface,
+                ),
               ],
             ),
           ),
 
-          // Day-of-week headers (RTL: Sunday on right, Saturday on left)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
+          // Calendar grid wrapped in GlowCard (includes day-of-week headers)
+          GlowCard(
+            margin: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            padding: const EdgeInsets.all(8),
+            child: Column(
               children: [
-                _DayHeader('ש׳'),
-                _DayHeader('ו׳'),
-                _DayHeader('ה׳'),
-                _DayHeader('ד׳'),
-                _DayHeader('ג׳'),
-                _DayHeader('ב׳'),
-                _DayHeader('א׳'),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
+                // Day-of-week headers (RTL: Sunday on right, Saturday on left)
+                const Row(
+                  children: [
+                    _DayHeader('א׳'),
+                    _DayHeader('ב׳'),
+                    _DayHeader('ג׳'),
+                    _DayHeader('ד׳'),
+                    _DayHeader('ה׳'),
+                    _DayHeader('ו׳'),
+                    _DayHeader('ש׳'),
+                  ],
+                ),
 
-          // Calendar grid
-          Expanded(
-            child: recordsAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('שגיאה: $e')),
-              data: (records) {
-                return _buildGrid(records, today, context);
-              },
+                // Calendar grid
+                recordsAsync.when(
+                  loading: () =>
+                      const SizedBox(
+                        height: 200,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                  error: (e, _) =>
+                      SizedBox(
+                        height: 200,
+                        child: Center(child: Text('שגיאה: $e')),
+                      ),
+                  data: (records) {
+                    return _buildGrid(records, today, context);
+                  },
+                ),
+              ],
             ),
           ),
 
@@ -169,10 +181,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return GridView.count(
       crossAxisCount: 7,
-      padding: const EdgeInsets.all(12),
-      mainAxisSpacing: 4,
-      crossAxisSpacing: 4,
+      padding: const EdgeInsets.all(8),
+      mainAxisSpacing: 6,
+      crossAxisSpacing: 6,
       childAspectRatio: 0.9,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       // RTL: GridView already respects Directionality
       children: cells,
     );
@@ -216,8 +230,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       (DayCompletionState.missed, 'הוחמץ'),
       (DayCompletionState.noData, 'ללא נתונים'),
     ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+    return GlowCard(
+      margin: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      radius: 20,
       child: Wrap(
         spacing: 16,
         runSpacing: 4,
@@ -259,8 +275,10 @@ class _DayHeader extends StatelessWidget {
       child: Center(
         child: Text(
           label,
-          style: AppTypography.labelSm
-              .copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTypography.labelSm.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
@@ -286,11 +304,11 @@ class _DayCell extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          border: isToday
-              ? Border.all(color: AppColors.primary, width: 2)
-              : null,
-          borderRadius: BorderRadius.circular(10),
-          color: AppColors.surfaceContainer.withValues(alpha: 0.3),
+          color: isToday
+              ? AppColors.primaryFixed
+              : AppColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: AppColors.glowSm,
         ),
         padding: const EdgeInsets.all(4),
         child: Column(

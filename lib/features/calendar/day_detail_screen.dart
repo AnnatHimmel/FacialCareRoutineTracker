@@ -7,6 +7,7 @@ import '../../domain/entities/day_record.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
+import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
 
@@ -53,18 +54,15 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     final eveningRecord = eveningRecordAsync.valueOrNull;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _formatDateHebrew(widget.date),
-          style: AppTypography.headlineMd,
+      backgroundColor: AppColors.surface,
+      appBar: GlowAppBar(
+        showBack: true,
+        action: IconButton(
+          icon: const Icon(Icons.camera_alt_outlined),
+          color: AppColors.onSurfaceVariant,
+          onPressed: () => context.push('/skin-log/${widget.date}'),
+          tooltip: 'יומן עור',
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.camera_alt_outlined),
-            onPressed: () => context.push('/skin-log/${widget.date}'),
-            tooltip: 'יומן עור',
-          ),
-        ],
       ),
       body: masterAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -74,6 +72,19 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
 
           return CustomScrollView(
             slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Text(
+                    _formatDateHebrew(widget.date),
+                    textAlign: TextAlign.right,
+                    style: AppTypography.headlineMd.copyWith(
+                      color: AppColors.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
               _buildSlotSection(
                 slot: Slot.morning,
                 record: morningRecord,
@@ -87,11 +98,22 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
               if (morningRecord == null && eveningRecord == null)
                 SliverFillRemaining(
                   child: Center(
-                    child: Text(
-                      'אין נתונים ליום זה',
-                      style: AppTypography.bodyMd.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.calendar_today_outlined,
+                          size: 56,
+                          color: AppColors.primaryFixed,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'אין נתונים ליום זה',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -127,26 +149,37 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     return SliverMainAxisGroup(
       slivers: [
         SliverToBoxAdapter(
-          child: SlotSectionHeader(
-            slot: slot,
-            productCount: products.length,
-            isExpanded: isExpanded,
-            onToggle: () =>
-                setState(() => _sectionExpanded[slot] = !isExpanded),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+            child: SlotSectionHeader(
+              slot: slot,
+              productCount: products.length,
+              isExpanded: isExpanded,
+              onToggle: () =>
+                  setState(() => _sectionExpanded[slot] = !isExpanded),
+            ),
           ),
         ),
         if (isExpanded)
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final product = products[index];
-                return RoutineItemRow(
-                  product: product,
-                  isToggled: recorded.contains(product.id),
-                  onToggle: () => _toggleProduct(record, product.id),
-                );
-              },
-              childCount: products.length,
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final product = products[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index < products.length - 1 ? 8.0 : 0.0,
+                    ),
+                    child: RoutineItemRow(
+                      product: product,
+                      isToggled: recorded.contains(product.id),
+                      onToggle: () => _toggleProduct(record, product.id),
+                    ),
+                  );
+                },
+                childCount: products.length,
+              ),
             ),
           ),
       ],

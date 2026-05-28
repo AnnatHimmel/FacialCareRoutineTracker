@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../shared/providers/root_providers.dart';
+import '../../shared/widgets/glow_app_bar.dart';
+import '../../shared/widgets/glow_card.dart';
 import 'merge_conflict_screen.dart';
 
 class ExportImportScreen extends ConsumerStatefulWidget {
@@ -160,7 +162,6 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
         setState(() => _statusMessage = 'הנתונים הוחלפו בהצלחה');
       }
     } else {
-      // Merge flow — navigate to merge screen with bytes encoded
       final session = await service.startMerge(validation);
       if (!mounted) return;
       if (session.conflicts.isEmpty) {
@@ -169,7 +170,6 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
           setState(() => _statusMessage = 'המיזוג הושלם — לא נמצאו התנגשויות');
         }
       } else {
-        // Pass merge session via a state provider and navigate
         ref.read(pendingMergeSessionProvider.notifier).state = session;
         context.push('/export-import/merge');
       }
@@ -179,53 +179,55 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('ייצוא / ייבוא', style: AppTypography.headlineMd),
-      ),
+      backgroundColor: AppColors.surface,
+      appBar: const GlowAppBar(showBack: true),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         children: [
-          // Export section
           _SectionCard(
             icon: Icons.upload_outlined,
             title: 'ייצוא נתונים',
-            description:
-                'שמור גיבוי של כל הנתונים שלך כארכיון ZIP',
-            actionLabel: _exporting ? null : 'ייצוא',
+            description: 'שמור גיבוי של כל הנתונים שלך כארכיון ZIP',
+            actionLabel: 'ייצוא',
             isLoading: _exporting,
             onTap: _exporting ? null : _export,
           ),
           const SizedBox(height: 16),
 
-          // Import section
           _SectionCard(
             icon: Icons.download_outlined,
             title: 'ייבוא נתונים',
-            description:
-                'שחזר נתונים מגיבוי קיים (החלפה מלאה או מיזוג)',
-            actionLabel: _importing ? null : 'ייבוא',
+            description: 'שחזר נתונים מגיבוי קיים (החלפה מלאה או מיזוג)',
+            actionLabel: 'ייבוא',
             isLoading: _importing,
             onTap: _importing ? null : _pickAndImport,
           ),
 
-          // Status message
           if (_statusMessage != null) ...[
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _isError
-                    ? AppColors.errorContainer
-                    : AppColors.secondaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                _statusMessage!,
-                style: AppTypography.bodyMd.copyWith(
-                  color: _isError
-                      ? AppColors.error
-                      : AppColors.onSecondaryContainer,
-                ),
+            const SizedBox(height: 16),
+            GlowCard(
+              padding: const EdgeInsets.all(14),
+              color: _isError ? AppColors.errorContainer : AppColors.secondaryFixed,
+              shadow: AppColors.glowSm,
+              child: Row(
+                children: [
+                  Icon(
+                    _isError ? Icons.error_outline : Icons.check_circle_outline,
+                    color: _isError ? AppColors.error : AppColors.secondary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _statusMessage!,
+                      style: AppTypography.bodyMd.copyWith(
+                        color: _isError
+                            ? AppColors.error
+                            : AppColors.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -249,46 +251,68 @@ class _SectionCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.description,
-    required this.actionLabel,
+    this.actionLabel,
     required this.isLoading,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: AppColors.primary, size: 28),
-                const SizedBox(width: 12),
-                Text(title, style: AppTypography.headlineMd),
-              ],
+    return GlowCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryFixed,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 26),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTypography.headlineMd,
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            description,
+            style: AppTypography.bodyMd.copyWith(
+              color: AppColors.onSurfaceVariant,
             ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              style: AppTypography.bodyMd
-                  .copyWith(color: AppColors.onSurfaceVariant),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton(
-                      onPressed: onTap,
-                      child: Text(actionLabel ?? ''),
+            textAlign: TextAlign.right,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 16),
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: onTap,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.onPrimary,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-            ),
-          ],
-        ),
+                    child: Text(actionLabel ?? ''),
+                  ),
+                ),
+        ],
       ),
     );
   }
 }
-

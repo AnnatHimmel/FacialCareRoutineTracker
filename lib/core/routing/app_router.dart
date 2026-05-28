@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/l10n/generated/app_localizations.dart';
+import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../features/app_entry.dart';
 import '../../features/setup/product_selection_screen.dart';
 import '../../features/home/daily_home_screen.dart';
@@ -29,29 +30,31 @@ class _ShellScaffold extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) =>
-            navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.wb_sunny_outlined),
-            selectedIcon: const Icon(Icons.wb_sunny),
+      bottomNavigationBar: GlassBottomNav(
+        currentIndex: navigationShell.currentIndex,
+        onDestinationSelected: (index) => navigationShell.goBranch(
+          index,
+          initialLocation: index == navigationShell.currentIndex,
+        ),
+        items: [
+          GlassNavItem(
+            icon: Icons.wb_sunny_outlined,
+            selectedIcon: Icons.wb_sunny_rounded,
             label: l10n.navToday,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.calendar_today_outlined),
-            selectedIcon: const Icon(Icons.calendar_today),
+          GlassNavItem(
+            icon: Icons.calendar_today_outlined,
+            selectedIcon: Icons.calendar_today_rounded,
             label: l10n.navCalendar,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.photo_album_outlined),
-            selectedIcon: const Icon(Icons.photo_album),
+          GlassNavItem(
+            icon: Icons.auto_stories_outlined,
+            selectedIcon: Icons.auto_stories_rounded,
             label: l10n.navJournal,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings),
+          GlassNavItem(
+            icon: Icons.settings_outlined,
+            selectedIcon: Icons.settings_rounded,
             label: l10n.navSettings,
           ),
         ],

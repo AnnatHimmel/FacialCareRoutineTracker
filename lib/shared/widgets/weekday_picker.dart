@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
+/// 7 round/pill day-toggle chips, Sunday-first, RTL order.
+///
+/// Selected = peach fill (`primaryContainer` bg, `onPrimaryContainer` text).
+/// Unselected = `surfaceContainer` fill, `onSurfaceVariant` text.
+/// Optional over-cap warning inline below the row.
+///
+/// Public API is unchanged: [selectedDays], [onChanged], [showOverCapWarning].
 class WeekdayPicker extends StatelessWidget {
   final Set<int> selectedDays;
   final ValueChanged<Set<int>> onChanged;
@@ -19,7 +26,7 @@ class WeekdayPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -45,13 +52,13 @@ class WeekdayPicker extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.info_outline,
-                size: 16,
+                Icons.warning_rounded,
+                size: 14,
                 color: AppColors.tertiary,
               ),
               const SizedBox(width: 6),
               Text(
-                'מעל ההמלצה השבועית',
+                'מעבר למומלץ — שקלי להפחית',
                 style: AppTypography.labelSm
                     .copyWith(color: AppColors.tertiary),
               ),
@@ -80,20 +87,23 @@ class _DayChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surfaceContainer,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.outlineVariant,
-          ),
+          color: isSelected
+              ? AppColors.primaryContainer
+              : AppColors.surfaceContainer,
+          shape: BoxShape.circle,
+          boxShadow: isSelected ? AppColors.glowSm : null,
         ),
         alignment: Alignment.center,
         child: Text(
           label,
           style: AppTypography.labelMd.copyWith(
-            color: isSelected ? AppColors.onPrimary : AppColors.onSurfaceVariant,
+            color: isSelected
+                ? AppColors.onPrimaryContainer
+                : AppColors.onSurfaceVariant,
           ),
         ),
       ),

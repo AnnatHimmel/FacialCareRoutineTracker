@@ -16,6 +16,10 @@ class SkincareApp extends ConsumerWidget {
       supportedLocales: const [Locale('he')],
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       debugShowCheckedModeBanner: false,
+      builder: (context, child) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: child!,
+      ),
     );
   }
 }

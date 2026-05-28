@@ -31,12 +31,12 @@ class _BackupReminderBannerState
       data: (shouldShow) {
         if (!shouldShow) return const SizedBox.shrink();
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.glassFill,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.outlineVariant),
+            color: AppColors.secondaryFixed,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: AppColors.glowSm,
           ),
           child: Row(
             children: [

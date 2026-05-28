@@ -71,6 +71,20 @@ Warm "golden hour" aesthetic: soft minimalism + glassmorphism.
 
 This applies to every task in `/6-ModifyLoop`, `/4-Execution`, and any ad-hoc code change. Never write implementation code before a failing test exists for it.
 
+### Subagent Mapping for TDD Phases
+
+Delegate each phase to the matching specialized subagent to protect the main context window:
+
+| Phase | Subagent | When to use |
+|---|---|---|
+| RED | `test-writer` | Writing a new failing test from a requirement |
+| GREEN | `coder` | Implementing minimal code to pass the failing test |
+| REFACTOR | `refactorer` | Cleaning up after green — behavior must not change |
+| Verify | `test-runner` | Running existing tests to confirm pass/fail |
+| Explore | `Explore` | Any broad codebase search spanning 3+ queries |
+
+Hand each subagent a self-contained prompt: the requirement text, the relevant file paths, and what the previous phase produced. Do not re-derive in the main context what a subagent already found.
+
 ## Flutter Implementation Notes (PRD §14)
 
 - **Rebuild, don't embed.** HTML references specify appearance only — never use WebView for app screens.

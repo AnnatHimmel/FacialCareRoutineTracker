@@ -9,6 +9,7 @@ import '../../domain/entities/master_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../shared/providers/root_providers.dart';
+import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
 import '../../shared/widgets/streak_widget.dart';
@@ -133,31 +134,35 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
       for (final c in conflicts) ...<String>[c.productA.id, c.productB.id],
     };
 
+    // Done counts for slot headers
+    final morningRecorded = morningRecord?.recordedProductIds.toSet() ?? {};
+    final eveningRecorded = eveningRecord?.recordedProductIds.toSet() ?? {};
+    final morningDone =
+        morningProducts.where((p) => morningRecorded.contains(p.id)).length;
+    final eveningDone =
+        eveningProducts.where((p) => eveningRecorded.contains(p.id)).length;
+
     final isLoading = morningRoutineAsync.isLoading && eveningRoutineAsync.isLoading;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _formatDateHebrew(ref.read(effectiveDateProvider)),
-          style: AppTypography.headlineMd,
+      backgroundColor: AppColors.surface,
+      appBar: GlowAppBar(
+        action: IconButton(
+          icon: const Icon(Icons.photo_camera_outlined),
+          color: AppColors.onSurfaceVariant,
+          tooltip: l10n.navJournal,
+          onPressed: () => context.push('/skin-log/$dateStr'),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.photo_camera_outlined),
-            tooltip: l10n.navJournal,
-            onPressed: () => context.push('/skin-log/$dateStr'),
-          ),
-        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
               slivers: [
-                // Streak widget
+                // ── Streak banner ──────────────────────────────────────────
                 if (allRecords.isNotEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                       child: StreakWidget(
                         currentStreak: streakResult.currentStreak,
                         longestStreak: streakResult.longestStreak,
@@ -166,23 +171,68 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                     ),
                   ),
 
-                // Morning slot
-                _buildSlotSection(
-                  slot: Slot.morning,
-                  products: morningProducts,
-                  record: morningRecord,
-                  conflictProductIds: conflictProductIds,
+                // ── Page title ─────────────────────────────────────────────
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          _formatDateHebrew(ref.read(effectiveDateProvider)),
+                          textAlign: TextAlign.right,
+                          style: AppTypography.labelMd.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'טקסי טיפוח יומיים',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: AppTypography.headlineMd.copyWith(
+                            color: AppColors.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'התמקדי בבריאות העור שלך היום.',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
 
-                // Evening slot
-                _buildSlotSection(
-                  slot: Slot.evening,
-                  products: eveningProducts,
-                  record: eveningRecord,
-                  conflictProductIds: conflictProductIds,
-                ),
+                // ── Morning slot ───────────────────────────────────────────
+                if (morningProducts.isNotEmpty)
+                  _buildSlotSection(
+                    slot: Slot.morning,
+                    products: morningProducts,
+                    record: morningRecord,
+                    conflictProductIds: conflictProductIds,
+                    doneCount: morningDone,
+                  ),
 
-                // Empty state
+                // ── Evening slot ───────────────────────────────────────────
+                if (eveningProducts.isNotEmpty)
+                  _buildSlotSection(
+                    slot: Slot.evening,
+                    products: eveningProducts,
+                    record: eveningRecord,
+                    conflictProductIds: conflictProductIds,
+                    doneCount: eveningDone,
+                  ),
+
+                // ── Empty state ────────────────────────────────────────────
                 if (morningProducts.isEmpty && eveningProducts.isEmpty)
                   SliverFillRemaining(
                     child: Center(
@@ -212,55 +262,76 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                     ),
                   ),
 
+                // ── Journal CTA card ───────────────────────────────────────
+                if (morningProducts.isNotEmpty || eveningProducts.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                      child: _JournalCtaCard(dateStr: dateStr),
+                    ),
+                  ),
+
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
             ),
     );
   }
 
-  Widget _buildSlotSection({
+  SliverMainAxisGroup _buildSlotSection({
     required Slot slot,
     required List<MasterProduct> products,
     required DayRecord? record,
     required Set<String> conflictProductIds,
+    required int doneCount,
   }) {
-    if (products.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-
     final isExpanded = _sectionExpanded[slot] ?? true;
     final recorded = record?.recordedProductIds.toSet() ?? {};
 
     return SliverMainAxisGroup(
       slivers: [
+        // Section header
         SliverToBoxAdapter(
-          child: SlotSectionHeader(
-            slot: slot,
-            productCount: products.length,
-            isExpanded: isExpanded,
-            onToggle: () =>
-                setState(() => _sectionExpanded[slot] = !isExpanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SlotSectionHeader(
+              slot: slot,
+              productCount: products.length,
+              doneCount: doneCount,
+              isExpanded: isExpanded,
+              onToggle: () =>
+                  setState(() => _sectionExpanded[slot] = !isExpanded),
+            ),
           ),
         ),
+        // Product rows
         if (isExpanded)
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final product = products[index];
-                final isToggled = recorded.contains(product.id);
-                final hasConflict =
-                    conflictProductIds.contains(product.id);
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final product = products[index];
+                  final isToggled = recorded.contains(product.id);
+                  final hasConflict = conflictProductIds.contains(product.id);
 
-                return RoutineItemRow(
-                  product: product,
-                  isToggled: isToggled,
-                  onToggle: () {
-                    if (record != null) {
-                      _toggleProduct(record, product.id);
-                    }
-                  },
-                  hasConflict: hasConflict,
-                );
-              },
-              childCount: products.length,
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index < products.length - 1 ? 8.0 : 0.0,
+                    ),
+                    child: RoutineItemRow(
+                      product: product,
+                      isToggled: isToggled,
+                      onToggle: () {
+                        if (record != null) {
+                          _toggleProduct(record, product.id);
+                        }
+                      },
+                      hasConflict: hasConflict,
+                    ),
+                  );
+                },
+                childCount: products.length,
+              ),
             ),
           ),
       ],
@@ -273,6 +344,81 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
       'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
     ];
     return '${date.day} ב${months[date.month - 1]}';
+  }
+}
+
+// ── Journal CTA card ──────────────────────────────────────────────────────────
+
+class _JournalCtaCard extends StatelessWidget {
+  final String dateStr;
+
+  const _JournalCtaCard({required this.dateStr});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        gradient: AppColors.streakGradient,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: AppColors.glowLg,
+      ),
+      child: Row(
+        children: [
+          // Text (leading in RTL = visual right)
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'איך העור מרגיש?',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: AppTypography.bodyLg.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'תעדי את התקדמותך',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: AppTypography.labelMd.copyWith(
+                    color: const Color(0xCCFFFFFF),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          // CTA button (trailing in RTL = visual left)
+          SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () => context.push('/skin-log/$dateStr'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.inverseSurface,
+                foregroundColor: AppColors.inverseOnSurface,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                shape: const StadiumBorder(),
+                elevation: 0,
+              ),
+              child: Text(
+                'תיעוד עכשיו',
+                style: AppTypography.labelMd.copyWith(
+                  color: AppColors.inverseOnSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
