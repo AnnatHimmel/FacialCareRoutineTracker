@@ -44,9 +44,12 @@ class ReconciliationService {
         .map((s) => s.productId)
         .toSet();
 
-    // Products added in a version newer than lastKnown and not yet selected
+    // Products added strictly after lastKnown and not yet selected
     final newProducts = masterContent.products
-        .where((p) => !p.isDeprecated && !selectedIds.contains(p.id))
+        .where((p) =>
+            !p.isDeprecated &&
+            !selectedIds.contains(p.id) &&
+            _isNewerVersion(p.addedInVersion, lastKnown!))
         .toList();
 
     final newlyDeprecatedSelected = masterContent.products
@@ -63,4 +66,18 @@ class ReconciliationService {
 
   Future<void> acknowledgeUpdate(String version) =>
       _settings.setLastKnownMasterVersion(version);
+
+  /// Returns true if [candidate] is strictly newer than [reference] by semver.
+  static bool _isNewerVersion(String candidate, String reference) {
+    final c = _parts(candidate);
+    final r = _parts(reference);
+    for (var i = 0; i < 3; i++) {
+      if (c[i] > r[i]) return true;
+      if (c[i] < r[i]) return false;
+    }
+    return false; // equal
+  }
+
+  static List<int> _parts(String v) =>
+      v.split('.').map((s) => int.tryParse(s) ?? 0).toList();
 }

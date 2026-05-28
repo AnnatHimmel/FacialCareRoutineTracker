@@ -5,6 +5,7 @@ class SkinLogEntries extends Table {
   TextColumn get id => text()();
   TextColumn get date => text()();
   TextColumn get notes => text().nullable()();
+  TextColumn get skinState => text().nullable()();
   TextColumn get photoPathsJson => text()();
   IntColumn get lastModifiedMs => integer()();
 

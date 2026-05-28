@@ -109,5 +109,84 @@ void main() {
       // missesThisWeek should be 0 (no evening records = unscheduled)
       expect(result.missesThisWeek, 0);
     });
+
+    test('morning-only routine: complete mornings count as complete days', () {
+      // No evening records at all → morning-only routine
+      final records = [
+        done('2026-05-03', Slot.morning),
+        done('2026-05-04', Slot.morning),
+        done('2026-05-05', Slot.morning),
+      ];
+      final result = calc.compute(
+        allRecords: records,
+        asOf: DateTime(2026, 5, 6, 10),
+        boundary: boundary,
+      );
+      // 3 complete mornings (no evening scheduled) = streak of 3
+      expect(result.currentStreak, 3);
+    });
+  });
+
+  group('missed days do not increment streak', () {
+    // BUG 1: _contributingDaysInRange used _isScheduled, counting missed days
+    // Fix: _completeDaysInRange must use _isDone for every scheduled slot
+
+    test('2 complete days + 1 morning-missed day → streak 2, not 3', () {
+      // Week: May 3 (Sun) through May 9 (Sat)
+      // May 3: complete (morning + evening done)
+      // May 4: complete (morning + evening done)
+      // May 5: partial — morning scheduled+missed, evening done → NOT a complete day
+      // asOf: May 6 10am → yesterday = May 5
+      final records = [
+        done('2026-05-03', Slot.morning),
+        done('2026-05-03', Slot.evening),
+        done('2026-05-04', Slot.morning),
+        done('2026-05-04', Slot.evening),
+        missed('2026-05-05', Slot.morning), // scheduled but not recorded
+        done('2026-05-05', Slot.evening),
+      ];
+      final result = calc.compute(
+        allRecords: records,
+        asOf: DateTime(2026, 5, 6, 10),
+        boundary: boundary,
+      );
+      expect(result.currentStreak, 2);
+    });
+
+    test('1 complete day + 3 missed days (grace absorbs) → streak 1, not 4', () {
+      // May 3: complete
+      // May 4, 5, 6: each has 1 missed slot (3 misses total — within grace of 3)
+      // asOf: May 7 10am → yesterday = May 6
+      final records = [
+        done('2026-05-03', Slot.morning),
+        done('2026-05-03', Slot.evening),
+        missed('2026-05-04', Slot.morning),
+        missed('2026-05-05', Slot.morning),
+        missed('2026-05-06', Slot.morning),
+      ];
+      final result = calc.compute(
+        allRecords: records,
+        asOf: DateTime(2026, 5, 7, 10),
+        boundary: boundary,
+      );
+      // Streak stays alive (≤3 misses), but only 1 day was actually complete
+      expect(result.currentStreak, 1);
+    });
+
+    test('4 missed days in one week → streak resets to 0', () {
+      // May 3–6: each day has 1 morning miss = 4 misses → grace exhausted
+      final records = [
+        missed('2026-05-03', Slot.morning),
+        missed('2026-05-04', Slot.morning),
+        missed('2026-05-05', Slot.morning),
+        missed('2026-05-06', Slot.morning),
+      ];
+      final result = calc.compute(
+        allRecords: records,
+        asOf: DateTime(2026, 5, 7, 10),
+        boundary: boundary,
+      );
+      expect(result.currentStreak, 0);
+    });
   });
 }

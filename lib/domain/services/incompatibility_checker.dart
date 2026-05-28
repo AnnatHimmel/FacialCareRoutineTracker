@@ -2,6 +2,7 @@ import '../entities/category.dart';
 import '../entities/incompatibility_rule.dart';
 import '../entities/master_product.dart';
 import '../enums/rule_scope.dart';
+import '../enums/slot.dart';
 
 class ConflictInfo {
   final String ruleId;
@@ -60,16 +61,38 @@ class IncompatibilityChecker {
     return conflicts;
   }
 
-  /// Conflicts for selection screen (S1): check within a single slot's daily products.
+  /// Conflicts for selection screen (S1): scope-aware check.
+  /// [activeSlot] is the tab the user is currently on.
+  /// [otherSlotProducts] are already-selected products in the other slot.
   List<ConflictInfo> getConflictsForSelection({
+    required Slot activeSlot,
     required List<MasterProduct> slotProducts,
+    required List<MasterProduct> otherSlotProducts,
     required List<IncompatibilityRule> rules,
     required List<Category> categories,
     required Set<String> mutedRuleIds,
   }) {
     final conflicts = <ConflictInfo>[];
     for (final rule in rules) {
-      _checkWithinSlot(slotProducts, rule, categories, mutedRuleIds, conflicts);
+      switch (rule.scope) {
+        case RuleScope.withinMorning:
+          if (activeSlot == Slot.morning) {
+            _checkWithinSlot(slotProducts, rule, categories, mutedRuleIds, conflicts);
+          }
+        case RuleScope.withinEvening:
+          if (activeSlot == Slot.evening) {
+            _checkWithinSlot(slotProducts, rule, categories, mutedRuleIds, conflicts);
+          }
+        case RuleScope.sameDayAcrossBoth:
+          _checkAcrossSlots(
+            slotProducts,
+            otherSlotProducts,
+            rule,
+            categories,
+            mutedRuleIds,
+            conflicts,
+          );
+      }
     }
     return conflicts;
   }

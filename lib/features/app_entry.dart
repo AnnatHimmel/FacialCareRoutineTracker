@@ -9,33 +9,18 @@ class AppEntryPoint extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final setupAsync = ref.watch(onboardingCompletedProvider);
+    final startupAsync = ref.watch(silentStartupProvider);
 
-    return setupAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (_, stack) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) context.go('/setup/selection?from=setup');
-        });
-        return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
-      },
-      data: (completed) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) {
-            if (completed) {
-              context.go('/today');
-            } else {
-              context.go('/setup/selection?from=setup');
-            }
-          }
-        });
-        return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
-      },
-    );
+    if (setupAsync.isLoading || startupAsync.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final completed = setupAsync.valueOrNull ?? false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        context.go(completed ? '/today' : '/setup/selection?from=setup');
+      }
+    });
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

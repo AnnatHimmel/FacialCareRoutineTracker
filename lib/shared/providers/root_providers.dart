@@ -72,6 +72,14 @@ final reconciliationServiceProvider = Provider(
   ),
 );
 
+/// Runs reconciliation silently on every cold start.
+/// Override in tests to verify it is watched by AppEntryPoint.
+final silentStartupProvider = FutureProvider<void>((ref) async {
+  final svc = ref.read(reconciliationServiceProvider);
+  final result = await svc.reconcile();
+  await svc.acknowledgeUpdate(result.currentContentVersion);
+});
+
 final exportImportServiceProvider = Provider(
   (ref) => ExportImportService(
     ref.watch(userDataRepositoryProvider),

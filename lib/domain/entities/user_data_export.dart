@@ -207,6 +207,7 @@ class UserDataExport {
         'id': e.id,
         'date': e.date,
         'notes': e.notes,
+        'skinState': e.skinState,
         'photoPaths': e.photoPaths,
         'lastModified': e.lastModified.toIso8601String(),
       };
@@ -215,6 +216,7 @@ class UserDataExport {
         id: m['id'] as String,
         date: m['date'] as String,
         notes: m['notes'] as String?,
+        skinState: m['skinState'] as String?,
         photoPaths: (m['photoPaths'] as List<dynamic>).cast<String>(),
         lastModified: DateTime.parse(m['lastModified'] as String),
       );

@@ -117,6 +117,12 @@ When user describes a modification:
 
 3. If request is unclear, ask ONE clarifying question
    (Loop until clear, but don't over-ask)
+
+4. OUTPUT the recognized change type to the user:
+   ```
+   **Change type recognized:** [NEW_FEATURE / CHANGE / BUG_FIX / REFACTOR / PERFORMANCE / UI_CHANGE]
+   **Summary:** [One-sentence description of what the user wants]
+   ```
 ```
 
 ### Step 2: Impact Analysis
@@ -154,6 +160,8 @@ Read existing documentation and code to determine impact:
 ### Dependencies
 - Depends on: [existing components]
 - Affects: [downstream components]
+
+**After completing the analysis, write the full Impact Analysis block above as output to the user before proceeding to Step 3.**
 ```
 
 ### Step 3: Design Alignment

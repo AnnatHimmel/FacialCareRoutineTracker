@@ -155,6 +155,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
           id: Value(e.id),
           date: Value(e.date),
           notes: Value(e.notes),
+          skinState: Value(e.skinState),
           photoPathsJson: Value(encodeIds(e.photoPaths)),
           lastModifiedMs: Value(e.lastModified.millisecondsSinceEpoch),
         ),
@@ -287,6 +288,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
         id: r.id,
         date: r.date,
         notes: r.notes,
+        skinState: r.skinState,
         photoPaths: decodeIds(r.photoPathsJson),
         lastModified:
             DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),

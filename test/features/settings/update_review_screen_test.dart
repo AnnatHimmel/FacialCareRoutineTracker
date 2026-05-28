@@ -1,0 +1,189 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:skincare_tracker/domain/entities/day_record.dart';
+import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
+import 'package:skincare_tracker/domain/entities/master_product.dart';
+import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
+import 'package:skincare_tracker/domain/entities/order_override.dart';
+import 'package:skincare_tracker/domain/entities/product_selection.dart';
+import 'package:skincare_tracker/domain/entities/skin_log_entry.dart';
+import 'package:skincare_tracker/domain/entities/user_data_export.dart';
+import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
+import 'package:skincare_tracker/domain/enums/slot.dart';
+import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
+import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
+import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
+import 'package:skincare_tracker/domain/services/reconciliation_service.dart';
+import 'package:skincare_tracker/features/settings/update_review_screen.dart';
+import 'package:skincare_tracker/shared/providers/root_providers.dart';
+
+// ── Stubs (never called — reconcile() is overridden) ─────────────────────────
+
+class _StubMCR implements MasterContentRepository {
+  @override
+  Future<MasterContent> load() => throw UnimplementedError();
+}
+
+class _StubSR implements SettingsRepository {
+  @override Future<String?> getLastExportDate() => throw UnimplementedError();
+  @override Future<void> setLastExportDate(String d) => throw UnimplementedError();
+  @override Future<String?> getLastKnownMasterVersion() => throw UnimplementedError();
+  @override Future<void> setLastKnownMasterVersion(String v) => throw UnimplementedError();
+  @override Future<int> getUserSchemaVersion() => throw UnimplementedError();
+  @override Future<void> setUserSchemaVersion(int v) => throw UnimplementedError();
+  @override Future<int> getLongestStreak() => throw UnimplementedError();
+  @override Future<void> setLongestStreak(int s) => throw UnimplementedError();
+  @override Future<bool> getOnboardingCompleted() => throw UnimplementedError();
+  @override Future<void> setOnboardingCompleted(bool v) => throw UnimplementedError();
+}
+
+class _StubUDR implements UserDataRepository {
+  @override Stream<List<ProductSelection>> watchSelections(Slot s) => throw UnimplementedError();
+  @override Future<void> upsertSelection(ProductSelection s) => throw UnimplementedError();
+  @override Stream<WeekdaySchedule?> watchSchedule(String p, Slot s) => throw UnimplementedError();
+  @override Stream<List<WeekdaySchedule>> watchAllSchedules() => throw UnimplementedError();
+  @override Future<void> upsertSchedule(WeekdaySchedule s) => throw UnimplementedError();
+  @override Stream<OrderOverride?> watchOrderOverride(Slot s) => throw UnimplementedError();
+  @override Future<void> upsertOrderOverride(OrderOverride o) => throw UnimplementedError();
+  @override Future<void> deleteOrderOverride(Slot s) => throw UnimplementedError();
+  @override Stream<DayRecord?> watchDayRecord(String d, Slot s) => throw UnimplementedError();
+  @override Future<DayRecord> snapshotAndGetDayRecord(String d, Slot s, List<String> ids, String v) => throw UnimplementedError();
+  @override Future<void> updateDayRecord(DayRecord r) => throw UnimplementedError();
+  @override Stream<List<DayRecord>> watchDayRecordsForMonth(String ym) => throw UnimplementedError();
+  @override Stream<List<DayRecord>> watchAllDayRecords() => throw UnimplementedError();
+  @override Stream<SkinLogEntry?> watchSkinLog(String d) => throw UnimplementedError();
+  @override Future<void> upsertSkinLog(SkinLogEntry e) => throw UnimplementedError();
+  @override Stream<List<SkinLogEntry>> watchAllSkinLogs() => throw UnimplementedError();
+  @override Stream<List<MutedConflict>> watchMutedConflicts() => throw UnimplementedError();
+  @override Future<void> muteConflict(MutedConflict m) => throw UnimplementedError();
+  @override Future<void> unmuteConflict(String ruleId) => throw UnimplementedError();
+  @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
+  @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
+}
+
+// ── Fake ReconciliationService ────────────────────────────────────────────────
+
+class _FakeReconciliationService extends ReconciliationService {
+  final ReconciliationResult fixedResult;
+  bool acknowledged = false;
+  String? acknowledgedVersion;
+
+  _FakeReconciliationService(this.fixedResult)
+      : super(_StubMCR(), _StubUDR(), _StubSR());
+
+  @override
+  Future<ReconciliationResult> reconcile() async => fixedResult;
+
+  @override
+  Future<void> acknowledgeUpdate(String version) async {
+    acknowledged = true;
+    acknowledgedVersion = version;
+  }
+}
+
+// ── Test helpers ──────────────────────────────────────────────────────────────
+
+MasterProduct _product(String id, String name, {bool isDeprecated = false}) =>
+    MasterProduct(
+      id: id,
+      name: name,
+      categoryId: 'cat1',
+      isDeprecated: isDeprecated,
+      addedInVersion: '1.0.0',
+      morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+    );
+
+Widget _wrap(_FakeReconciliationService service) {
+  final router = GoRouter(
+    initialLocation: '/update-review',
+    routes: [
+      GoRoute(
+        path: '/update-review',
+        builder: (_, __) => const UpdateReviewScreen(),
+      ),
+      GoRoute(
+        path: '/today',
+        builder: (_, __) => const Scaffold(body: Text('today-screen')),
+      ),
+      GoRoute(
+        path: '/export-import',
+        builder: (_, __) => const Scaffold(body: Text('export-import-screen')),
+      ),
+    ],
+  );
+  return ProviderScope(
+    overrides: [
+      reconciliationServiceProvider.overrideWith((_) => service),
+    ],
+    child: MaterialApp.router(routerConfig: router),
+  );
+}
+
+void main() {
+  group('UpdateReviewScreen', () {
+    testWidgets('no update → shows הכל מעודכן', (tester) async {
+      final svc = _FakeReconciliationService(const ReconciliationResult(
+        isUpdateDetected: false,
+        newProducts: [],
+        newlyDeprecatedSelected: [],
+        currentContentVersion: '1.0.0',
+      ));
+
+      await tester.pumpWidget(_wrap(svc));
+      await tester.pumpAndSettle();
+
+      expect(find.text('הכל מעודכן'), findsOneWidget);
+    });
+
+    testWidgets('update detected → new products section listed', (tester) async {
+      final svc = _FakeReconciliationService(ReconciliationResult(
+        isUpdateDetected: true,
+        newProducts: [_product('p1', 'סרום ויטמין C')],
+        newlyDeprecatedSelected: [],
+        currentContentVersion: '1.1.0',
+      ));
+
+      await tester.pumpWidget(_wrap(svc));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('מוצרים חדשים'), findsOneWidget);
+      expect(find.text('סרום ויטמין C'), findsOneWidget);
+    });
+
+    testWidgets('update detected → deprecated products section listed', (tester) async {
+      final svc = _FakeReconciliationService(ReconciliationResult(
+        isUpdateDetected: true,
+        newProducts: [],
+        newlyDeprecatedSelected: [_product('p2', 'קרם ישן', isDeprecated: true)],
+        currentContentVersion: '1.1.0',
+      ));
+
+      await tester.pumpWidget(_wrap(svc));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('שאינם מומלצים עוד'), findsOneWidget);
+      expect(find.text('קרם ישן'), findsWidgets);
+    });
+
+    testWidgets('acknowledge button calls acknowledgeUpdate with correct version',
+        (tester) async {
+      final svc = _FakeReconciliationService(const ReconciliationResult(
+        isUpdateDetected: true,
+        newProducts: [],
+        newlyDeprecatedSelected: [],
+        currentContentVersion: '1.1.0',
+      ));
+
+      await tester.pumpWidget(_wrap(svc));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('הבנתי, המשך'));
+      await tester.pumpAndSettle();
+
+      expect(svc.acknowledged, isTrue);
+      expect(svc.acknowledgedVersion, '1.1.0');
+    });
+  });
+}

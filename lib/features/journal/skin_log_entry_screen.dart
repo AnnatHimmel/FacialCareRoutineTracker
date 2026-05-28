@@ -50,6 +50,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
   void _initFromEntry(SkinLogEntry entry) {
     if (!_dirty) {
       _notesController.text = entry.notes ?? '';
+      _selectedSkinState = entry.skinState;
     }
   }
 
@@ -128,6 +129,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
               notes: _notesController.text.isEmpty
                   ? null
                   : _notesController.text,
+              skinState: _selectedSkinState,
               lastModified: DateTime.now(),
             ),
           );
@@ -248,12 +250,13 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                               foreground: AppColors.onTertiaryContainer,
                               selectedBackground:
                                   AppColors.tertiaryContainer,
-                              onTap: () => setState(
-                                () => _selectedSkinState =
+                              onTap: () => setState(() {
+                                _selectedSkinState =
                                     _selectedSkinState == 'calm'
                                         ? null
-                                        : 'calm',
-                              ),
+                                        : 'calm';
+                                _dirty = true;
+                              }),
                             ),
                             _SkinStateChip(
                               label: 'לח',
@@ -262,12 +265,13 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                               foreground: AppColors.onSecondaryContainer,
                               selectedBackground:
                                   AppColors.secondaryContainer,
-                              onTap: () => setState(
-                                () => _selectedSkinState =
+                              onTap: () => setState(() {
+                                _selectedSkinState =
                                     _selectedSkinState == 'moist'
                                         ? null
-                                        : 'moist',
-                              ),
+                                        : 'moist';
+                                _dirty = true;
+                              }),
                             ),
                             _SkinStateChip(
                               label: 'שמני',
@@ -276,12 +280,13 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                               foreground: AppColors.primary,
                               selectedBackground:
                                   AppColors.primaryFixedDim,
-                              onTap: () => setState(
-                                () => _selectedSkinState =
+                              onTap: () => setState(() {
+                                _selectedSkinState =
                                     _selectedSkinState == 'oily'
                                         ? null
-                                        : 'oily',
-                              ),
+                                        : 'oily';
+                                _dirty = true;
+                              }),
                             ),
                           ],
                         ),

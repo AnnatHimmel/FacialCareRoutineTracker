@@ -62,9 +62,9 @@ class StreakCalculator {
         break;
       }
 
-      // Count days with at least one scheduled slot (contributes to streak)
+      // Count only days where every scheduled slot is done
       final int contributingDays =
-          _contributingDaysInRange(lookup, weekStart, rangeEnd, boundary);
+          _completeDaysInRange(lookup, weekStart, rangeEnd, boundary);
       currentStreak += contributingDays;
 
       if (currentStreak > longestStreak) longestStreak = currentStreak;
@@ -125,7 +125,7 @@ class StreakCalculator {
     return misses;
   }
 
-  int _contributingDaysInRange(
+  int _completeDaysInRange(
     Map<String, DayRecord> lookup,
     DateTime from,
     DateTime through,
@@ -137,7 +137,10 @@ class StreakCalculator {
       final d = boundary.formatDate(cursor);
       final morning = lookup['${d}_${Slot.morning.name}'];
       final evening = lookup['${d}_${Slot.evening.name}'];
-      if (_isScheduled(morning) || _isScheduled(evening)) {
+      final anyScheduled = _isScheduled(morning) || _isScheduled(evening);
+      final morningOk = !_isScheduled(morning) || _isDone(morning);
+      final eveningOk = !_isScheduled(evening) || _isDone(evening);
+      if (anyScheduled && morningOk && eveningOk) {
         count++;
       }
       cursor = cursor.add(const Duration(days: 1));

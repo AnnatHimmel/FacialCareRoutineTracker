@@ -1618,6 +1618,17 @@ class $SkinLogEntriesTable extends SkinLogEntries
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _skinStateMeta = const VerificationMeta(
+    'skinState',
+  );
+  @override
+  late final GeneratedColumn<String> skinState = GeneratedColumn<String>(
+    'skin_state',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _photoPathsJsonMeta = const VerificationMeta(
     'photoPathsJson',
   );
@@ -1645,6 +1656,7 @@ class $SkinLogEntriesTable extends SkinLogEntries
     id,
     date,
     notes,
+    skinState,
     photoPathsJson,
     lastModifiedMs,
   ];
@@ -1677,6 +1689,12 @@ class $SkinLogEntriesTable extends SkinLogEntries
       context.handle(
         _notesMeta,
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('skin_state')) {
+      context.handle(
+        _skinStateMeta,
+        skinState.isAcceptableOrUnknown(data['skin_state']!, _skinStateMeta),
       );
     }
     if (data.containsKey('photo_paths_json')) {
@@ -1722,6 +1740,10 @@ class $SkinLogEntriesTable extends SkinLogEntries
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      skinState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}skin_state'],
+      ),
       photoPathsJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}photo_paths_json'],
@@ -1743,12 +1765,14 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
   final String id;
   final String date;
   final String? notes;
+  final String? skinState;
   final String photoPathsJson;
   final int lastModifiedMs;
   const SkinLogRow({
     required this.id,
     required this.date,
     this.notes,
+    this.skinState,
     required this.photoPathsJson,
     required this.lastModifiedMs,
   });
@@ -1759,6 +1783,9 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
     map['date'] = Variable<String>(date);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || skinState != null) {
+      map['skin_state'] = Variable<String>(skinState);
     }
     map['photo_paths_json'] = Variable<String>(photoPathsJson);
     map['last_modified_ms'] = Variable<int>(lastModifiedMs);
@@ -1772,6 +1799,9 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      skinState: skinState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(skinState),
       photoPathsJson: Value(photoPathsJson),
       lastModifiedMs: Value(lastModifiedMs),
     );
@@ -1786,6 +1816,7 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
       id: serializer.fromJson<String>(json['id']),
       date: serializer.fromJson<String>(json['date']),
       notes: serializer.fromJson<String?>(json['notes']),
+      skinState: serializer.fromJson<String?>(json['skinState']),
       photoPathsJson: serializer.fromJson<String>(json['photoPathsJson']),
       lastModifiedMs: serializer.fromJson<int>(json['lastModifiedMs']),
     );
@@ -1797,6 +1828,7 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
       'id': serializer.toJson<String>(id),
       'date': serializer.toJson<String>(date),
       'notes': serializer.toJson<String?>(notes),
+      'skinState': serializer.toJson<String?>(skinState),
       'photoPathsJson': serializer.toJson<String>(photoPathsJson),
       'lastModifiedMs': serializer.toJson<int>(lastModifiedMs),
     };
@@ -1806,12 +1838,14 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
     String? id,
     String? date,
     Value<String?> notes = const Value.absent(),
+    Value<String?> skinState = const Value.absent(),
     String? photoPathsJson,
     int? lastModifiedMs,
   }) => SkinLogRow(
     id: id ?? this.id,
     date: date ?? this.date,
     notes: notes.present ? notes.value : this.notes,
+    skinState: skinState.present ? skinState.value : this.skinState,
     photoPathsJson: photoPathsJson ?? this.photoPathsJson,
     lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
   );
@@ -1820,6 +1854,7 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
       id: data.id.present ? data.id.value : this.id,
       date: data.date.present ? data.date.value : this.date,
       notes: data.notes.present ? data.notes.value : this.notes,
+      skinState: data.skinState.present ? data.skinState.value : this.skinState,
       photoPathsJson: data.photoPathsJson.present
           ? data.photoPathsJson.value
           : this.photoPathsJson,
@@ -1835,6 +1870,7 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('notes: $notes, ')
+          ..write('skinState: $skinState, ')
           ..write('photoPathsJson: $photoPathsJson, ')
           ..write('lastModifiedMs: $lastModifiedMs')
           ..write(')'))
@@ -1843,7 +1879,7 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
 
   @override
   int get hashCode =>
-      Object.hash(id, date, notes, photoPathsJson, lastModifiedMs);
+      Object.hash(id, date, notes, skinState, photoPathsJson, lastModifiedMs);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1851,6 +1887,7 @@ class SkinLogRow extends DataClass implements Insertable<SkinLogRow> {
           other.id == this.id &&
           other.date == this.date &&
           other.notes == this.notes &&
+          other.skinState == this.skinState &&
           other.photoPathsJson == this.photoPathsJson &&
           other.lastModifiedMs == this.lastModifiedMs);
 }
@@ -1859,6 +1896,7 @@ class SkinLogEntriesCompanion extends UpdateCompanion<SkinLogRow> {
   final Value<String> id;
   final Value<String> date;
   final Value<String?> notes;
+  final Value<String?> skinState;
   final Value<String> photoPathsJson;
   final Value<int> lastModifiedMs;
   final Value<int> rowid;
@@ -1866,6 +1904,7 @@ class SkinLogEntriesCompanion extends UpdateCompanion<SkinLogRow> {
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.notes = const Value.absent(),
+    this.skinState = const Value.absent(),
     this.photoPathsJson = const Value.absent(),
     this.lastModifiedMs = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1874,6 +1913,7 @@ class SkinLogEntriesCompanion extends UpdateCompanion<SkinLogRow> {
     required String id,
     required String date,
     this.notes = const Value.absent(),
+    this.skinState = const Value.absent(),
     required String photoPathsJson,
     required int lastModifiedMs,
     this.rowid = const Value.absent(),
@@ -1885,6 +1925,7 @@ class SkinLogEntriesCompanion extends UpdateCompanion<SkinLogRow> {
     Expression<String>? id,
     Expression<String>? date,
     Expression<String>? notes,
+    Expression<String>? skinState,
     Expression<String>? photoPathsJson,
     Expression<int>? lastModifiedMs,
     Expression<int>? rowid,
@@ -1893,6 +1934,7 @@ class SkinLogEntriesCompanion extends UpdateCompanion<SkinLogRow> {
       if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (notes != null) 'notes': notes,
+      if (skinState != null) 'skin_state': skinState,
       if (photoPathsJson != null) 'photo_paths_json': photoPathsJson,
       if (lastModifiedMs != null) 'last_modified_ms': lastModifiedMs,
       if (rowid != null) 'rowid': rowid,
@@ -1903,6 +1945,7 @@ class SkinLogEntriesCompanion extends UpdateCompanion<SkinLogRow> {
     Value<String>? id,
     Value<String>? date,
     Value<String?>? notes,
+    Value<String?>? skinState,
     Value<String>? photoPathsJson,
     Value<int>? lastModifiedMs,
     Value<int>? rowid,
@@ -1911,6 +1954,7 @@ class SkinLogEntriesCompanion extends UpdateCompanion<SkinLogRow> {
       id: id ?? this.id,
       date: date ?? this.date,
       notes: notes ?? this.notes,
+      skinState: skinState ?? this.skinState,
       photoPathsJson: photoPathsJson ?? this.photoPathsJson,
       lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
       rowid: rowid ?? this.rowid,
@@ -1928,6 +1972,9 @@ class SkinLogEntriesCompanion extends UpdateCompanion<SkinLogRow> {
     }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
+    }
+    if (skinState.present) {
+      map['skin_state'] = Variable<String>(skinState.value);
     }
     if (photoPathsJson.present) {
       map['photo_paths_json'] = Variable<String>(photoPathsJson.value);
@@ -1947,6 +1994,7 @@ class SkinLogEntriesCompanion extends UpdateCompanion<SkinLogRow> {
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('notes: $notes, ')
+          ..write('skinState: $skinState, ')
           ..write('photoPathsJson: $photoPathsJson, ')
           ..write('lastModifiedMs: $lastModifiedMs, ')
           ..write('rowid: $rowid')
@@ -3112,6 +3160,7 @@ typedef $$SkinLogEntriesTableCreateCompanionBuilder =
       required String id,
       required String date,
       Value<String?> notes,
+      Value<String?> skinState,
       required String photoPathsJson,
       required int lastModifiedMs,
       Value<int> rowid,
@@ -3121,6 +3170,7 @@ typedef $$SkinLogEntriesTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> date,
       Value<String?> notes,
+      Value<String?> skinState,
       Value<String> photoPathsJson,
       Value<int> lastModifiedMs,
       Value<int> rowid,
@@ -3147,6 +3197,11 @@ class $$SkinLogEntriesTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get skinState => $composableBuilder(
+    column: $table.skinState,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3185,6 +3240,11 @@ class $$SkinLogEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get skinState => $composableBuilder(
+    column: $table.skinState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get photoPathsJson => $composableBuilder(
     column: $table.photoPathsJson,
     builder: (column) => ColumnOrderings(column),
@@ -3213,6 +3273,9 @@ class $$SkinLogEntriesTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get skinState =>
+      $composableBuilder(column: $table.skinState, builder: (column) => column);
 
   GeneratedColumn<String> get photoPathsJson => $composableBuilder(
     column: $table.photoPathsJson,
@@ -3261,6 +3324,7 @@ class $$SkinLogEntriesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> date = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<String?> skinState = const Value.absent(),
                 Value<String> photoPathsJson = const Value.absent(),
                 Value<int> lastModifiedMs = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3268,6 +3332,7 @@ class $$SkinLogEntriesTableTableManager
                 id: id,
                 date: date,
                 notes: notes,
+                skinState: skinState,
                 photoPathsJson: photoPathsJson,
                 lastModifiedMs: lastModifiedMs,
                 rowid: rowid,
@@ -3277,6 +3342,7 @@ class $$SkinLogEntriesTableTableManager
                 required String id,
                 required String date,
                 Value<String?> notes = const Value.absent(),
+                Value<String?> skinState = const Value.absent(),
                 required String photoPathsJson,
                 required int lastModifiedMs,
                 Value<int> rowid = const Value.absent(),
@@ -3284,6 +3350,7 @@ class $$SkinLogEntriesTableTableManager
                 id: id,
                 date: date,
                 notes: notes,
+                skinState: skinState,
                 photoPathsJson: photoPathsJson,
                 lastModifiedMs: lastModifiedMs,
                 rowid: rowid,

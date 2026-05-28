@@ -210,8 +210,24 @@ class _ProductSelectionScreenState
     final selectedInSlot =
         slotProducts.where((p) => selectedIds.contains(p.id)).toList();
 
+    final otherSlot = _activeSlot == Slot.morning ? Slot.evening : Slot.morning;
+    final otherSelections =
+        _activeSlot == Slot.morning ? eveningSelections : morningSelections;
+    final otherSelectedIds = otherSelections
+        .where((s) => s.isSelected)
+        .map((s) => s.productId)
+        .toSet();
+    final selectedInOtherSlot = master.products
+        .where((p) =>
+            !p.isDeprecated &&
+            p.configForSlot(otherSlot) != null &&
+            otherSelectedIds.contains(p.id))
+        .toList();
+
     final conflicts = checker.getConflictsForSelection(
+      activeSlot: _activeSlot,
       slotProducts: selectedInSlot,
+      otherSlotProducts: selectedInOtherSlot,
       rules: master.rules,
       categories: master.categories,
       mutedRuleIds: mutedIds,
