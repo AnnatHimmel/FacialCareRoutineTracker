@@ -37,6 +37,11 @@ class _StubSR implements SettingsRepository {
   @override Future<void> setLongestStreak(int s) => throw UnimplementedError();
   @override Future<bool> getOnboardingCompleted() => throw UnimplementedError();
   @override Future<void> setOnboardingCompleted(bool v) => throw UnimplementedError();
+  @override Future<String?> getUserName() async => null;
+  @override Future<void> setUserName(String name) async {}
+  @override Future<String?> getUserGender() async => null;
+  @override Future<void> setUserGender(String gender) async {}
+  @override Future<void> clearUserProfile() => throw UnimplementedError();
 }
 
 class _StubUDR implements UserDataRepository {

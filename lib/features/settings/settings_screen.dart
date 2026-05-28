@@ -54,7 +54,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 8),
 
           // ── Section: שגרת הטיפוח שלי ──────────────────────────────────────
-          _SectionLabel(label: 'שגרת הטיפוח שלי'),
+          const _SectionLabel(label: 'שגרת הטיפוח שלי'),
           const SizedBox(height: 8),
 
           _SettingsRow(
@@ -81,7 +81,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // ── Section: נתונים ───────────────────────────────────────────────
-          _SectionLabel(label: 'נתונים'),
+          const _SectionLabel(label: 'נתונים'),
           const SizedBox(height: 8),
 
           _SettingsRow(
@@ -94,7 +94,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // ── Section: מידע ─────────────────────────────────────────────────
-          _SectionLabel(label: 'מידע'),
+          const _SectionLabel(label: 'מידע'),
           const SizedBox(height: 8),
 
           _SettingsRow(
@@ -122,10 +122,103 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ],
 
+          const SizedBox(height: 24),
+
+          // ── Section: חשבון ────────────────────────────────────────────────
+          const _SectionLabel(label: 'חשבון'),
+          const SizedBox(height: 8),
+
+          GlowCard(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            shadow: AppColors.glowSm,
+            onTap: () => _confirmLogout(context, ref),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: const BoxDecoration(
+                    color: AppColors.errorContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.logout,
+                    color: AppColors.error,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'התנתקות',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: AppTypography.bodyMd.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.error,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        'איפוס פרופיל וחזרה להתחלה',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: AppTypography.labelSm.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.chevron_left,
+                  color: AppColors.onSurfaceVariant,
+                  size: 22,
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 32),
         ],
       ),
     );
+  }
+}
+
+// ── Logout confirmation dialog ────────────────────────────────────────────────
+
+Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('התנתקות', textAlign: TextAlign.right),
+      content: const Text(
+        'פעולה זו תאפס את הפרופיל שלך ותחזיר אותך למסך ההתחלה. הנתונים שלך יישמרו.',
+        textAlign: TextAlign.right,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: const Text('ביטול'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: const Text('התנתקי', style: TextStyle(color: AppColors.error)),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true && context.mounted) {
+    await ref.read(settingsRepositoryProvider).clearUserProfile();
+    ref.invalidate(onboardingCompletedProvider);
+    if (context.mounted) context.go('/');
   }
 }
 

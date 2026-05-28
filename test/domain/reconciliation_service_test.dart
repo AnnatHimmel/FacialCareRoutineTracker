@@ -36,6 +36,11 @@ class FakeSettingsRepo implements SettingsRepository {
   @override Future<void> setLongestStreak(int s) async {}
   @override Future<bool> getOnboardingCompleted() async => true;
   @override Future<void> setOnboardingCompleted(bool v) async {}
+  @override Future<String?> getUserName() async => null;
+  @override Future<void> setUserName(String name) async {}
+  @override Future<String?> getUserGender() async => null;
+  @override Future<void> setUserGender(String gender) async {}
+  @override Future<void> clearUserProfile() async {}
 }
 
 class FakeUserRepo implements UserDataRepository {

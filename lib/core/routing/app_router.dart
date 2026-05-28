@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../features/app_entry.dart';
+import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/setup/product_selection_screen.dart';
 import '../../features/home/daily_home_screen.dart';
 import '../../features/calendar/calendar_screen.dart';
@@ -71,6 +72,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const AppEntryPoint(),
+    ),
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => OnboardingScreen(
+        onFinish: () => context.go('/today'),
+      ),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) =>

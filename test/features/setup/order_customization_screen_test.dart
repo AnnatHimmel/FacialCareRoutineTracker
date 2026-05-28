@@ -89,6 +89,10 @@ class _FakeSR implements SettingsRepository {
   }
 
   @override Future<bool> getOnboardingCompleted() async => false;
+  @override Future<String?> getUserName() async => null;
+  @override Future<void> setUserName(String name) async {}
+  @override Future<String?> getUserGender() async => null;
+  @override Future<void> setUserGender(String gender) async {}
   @override Future<String?> getLastExportDate() => throw UnimplementedError();
   @override Future<void> setLastExportDate(String d) => throw UnimplementedError();
   @override Future<String?> getLastKnownMasterVersion() => throw UnimplementedError();
@@ -97,6 +101,7 @@ class _FakeSR implements SettingsRepository {
   @override Future<void> setUserSchemaVersion(int v) => throw UnimplementedError();
   @override Future<int> getLongestStreak() => throw UnimplementedError();
   @override Future<void> setLongestStreak(int s) => throw UnimplementedError();
+  @override Future<void> clearUserProfile() => throw UnimplementedError();
 }
 
 // ── Test data ─────────────────────────────────────────────────────────────────

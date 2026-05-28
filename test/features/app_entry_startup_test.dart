@@ -54,7 +54,7 @@ void main() {
       expect(find.text('home'), findsOneWidget);
     });
 
-    testWidgets('silentStartupProvider runs before routing to /setup/selection',
+    testWidgets('silentStartupProvider runs before routing to /onboarding',
         (tester) async {
       bool startupRan = false;
 
@@ -63,8 +63,8 @@ void main() {
         onStartupRan: () => startupRan = true,
         extraRoutes: [
           GoRoute(
-            path: '/setup/selection',
-            builder: (context, state) => const Scaffold(body: Text('setup')),
+            path: '/onboarding',
+            builder: (context, state) => const Scaffold(body: Text('onboarding')),
           ),
         ],
       ));
@@ -73,7 +73,7 @@ void main() {
 
       expect(startupRan, isTrue,
           reason: 'silentStartupProvider must run even on first launch');
-      expect(find.text('setup'), findsOneWidget);
+      expect(find.text('onboarding'), findsOneWidget);
     });
 
     testWidgets('app routes to /today (not S14) regardless of startup result',

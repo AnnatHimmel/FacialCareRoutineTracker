@@ -72,9 +72,9 @@ void main() {
         onboardingCompleted: false,
         extraRoutes: [
           GoRoute(
-            path: '/setup/selection',
+            path: '/onboarding',
             builder: (_, state) =>
-                const Scaffold(body: Text('setup')),
+                const Scaffold(body: Text('onboarding')),
           ),
         ],
       ));
@@ -84,22 +84,22 @@ void main() {
     });
 
     testWidgets(
-        'navigates to /setup/selection when onboarding is not completed',
+        'navigates to /onboarding when onboarding is not completed',
         (tester) async {
       await tester.pumpWidget(buildTestApp(
         onboardingCompleted: false,
         extraRoutes: [
           GoRoute(
-            path: '/setup/selection',
+            path: '/onboarding',
             builder: (_, state) =>
-                const Scaffold(body: Text('setup')),
+                const Scaffold(body: Text('onboarding')),
           ),
         ],
       ));
 
       await tester.pumpAndSettle();
 
-      expect(find.text('setup'), findsOneWidget);
+      expect(find.text('onboarding'), findsOneWidget);
     });
 
     testWidgets('navigates to /today when onboarding is already completed',
@@ -118,6 +118,110 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('home'), findsOneWidget);
+    });
+  });
+
+  // ── SettingsRepositoryImpl — user profile ───────────────────────────────────
+
+  group('SettingsRepositoryImpl — user profile', () {
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test('getUserName() returns null when never set', () async {
+      final repo = SettingsRepositoryImpl();
+      expect(await repo.getUserName(), isNull);
+    });
+
+    test('setUserName() persists value and getUserName() returns it', () async {
+      final repo = SettingsRepositoryImpl();
+      await repo.setUserName('Anna');
+      expect(await repo.getUserName(), equals('Anna'));
+    });
+
+    test('getUserGender() returns null when never set', () async {
+      final repo = SettingsRepositoryImpl();
+      expect(await repo.getUserGender(), isNull);
+    });
+
+    test('setUserGender() persists value and getUserGender() returns it',
+        () async {
+      final repo = SettingsRepositoryImpl();
+      await repo.setUserGender('female');
+      expect(await repo.getUserGender(), equals('female'));
+    });
+
+    test('userName persists across two SettingsRepositoryImpl instances',
+        () async {
+      final writer = SettingsRepositoryImpl();
+      await writer.setUserName('Anna');
+      final reader = SettingsRepositoryImpl();
+      expect(await reader.getUserName(), equals('Anna'));
+    });
+
+    test('userGender persists across two SettingsRepositoryImpl instances',
+        () async {
+      final writer = SettingsRepositoryImpl();
+      await writer.setUserGender('female');
+      final reader = SettingsRepositoryImpl();
+      expect(await reader.getUserGender(), equals('female'));
+    });
+  });
+
+  // ── SettingsRepositoryImpl — clearUserProfile ───────────────────────────────
+
+  group('SettingsRepositoryImpl — clearUserProfile', () {
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test(
+        'should_clear_all_user_profile_fields_when_clearUserProfile_is_called_on_populated_repo',
+        () async {
+      /// Given: a SettingsRepositoryImpl with onboarding_completed, user_name, and user_gender set
+      final repo = SettingsRepositoryImpl();
+      await repo.setOnboardingCompleted(true);
+      await repo.setUserName('Anna');
+      await repo.setUserGender('female');
+
+      /// When: clearUserProfile is called
+      await repo.clearUserProfile();
+
+      /// Then: all three fields return their default/null values
+      expect(await repo.getOnboardingCompleted(), isFalse);
+      expect(await repo.getUserName(), isNull);
+      expect(await repo.getUserGender(), isNull);
+    });
+
+    test(
+        'should_not_error_when_clearUserProfile_is_called_on_empty_repo',
+        () async {
+      /// Given: a fresh SettingsRepositoryImpl with no values set
+      final repo = SettingsRepositoryImpl();
+
+      /// When: clearUserProfile is called on an empty repo
+      /// Then: no error is thrown and defaults are still returned
+      await repo.clearUserProfile();
+      expect(await repo.getOnboardingCompleted(), isFalse);
+      expect(await repo.getUserName(), isNull);
+      expect(await repo.getUserGender(), isNull);
+    });
+
+    test(
+        'should_allow_repopulation_after_clearUserProfile_is_called',
+        () async {
+      /// Given: a SettingsRepositoryImpl with values set and then cleared
+      final repo = SettingsRepositoryImpl();
+      await repo.setOnboardingCompleted(true);
+      await repo.setUserName('Anna');
+      await repo.setUserGender('female');
+      await repo.clearUserProfile();
+
+      /// When: new values are set after clearing
+      await repo.setOnboardingCompleted(true);
+      await repo.setUserName('Bob');
+      await repo.setUserGender('male');
+
+      /// Then: the new values persist and can be read
+      expect(await repo.getOnboardingCompleted(), isTrue);
+      expect(await repo.getUserName(), equals('Bob'));
+      expect(await repo.getUserGender(), equals('male'));
     });
   });
 }

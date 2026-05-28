@@ -13,4 +13,12 @@ abstract class SettingsRepository {
 
   Future<bool> getOnboardingCompleted();
   Future<void> setOnboardingCompleted(bool value);
+
+  Future<String?> getUserName();
+  Future<void> setUserName(String name);
+
+  Future<String?> getUserGender();
+  Future<void> setUserGender(String gender);
+
+  Future<void> clearUserProfile();
 }
