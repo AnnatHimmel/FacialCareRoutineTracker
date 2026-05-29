@@ -169,7 +169,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                   GlowCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -306,7 +306,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                     ),
                     color: AppColors.primaryFixed.withOpacity(0.2),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Section title
                         Text(

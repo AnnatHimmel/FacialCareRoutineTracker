@@ -9,6 +9,22 @@ Date: 2026-05-26
 
 A personal skincare routine tracker built as a single Flutter codebase targeting Android (sideloaded APK) and Web (iPhone/Safari + any browser). An admin encodes expertise as a bundled, read-only master product list; users select their owned products and receive a correctly-ordered daily routine. Tracking is optional and lightweight. All user data lives locally on-device; no backend is required for the free product.
 
+A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusively by the admin at content-authoring time. It is not part of the Flutter app and is never deployed to users.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  Admin Portal (admin/)                   │
+│  Node.js Express server + HTML/JS frontend               │
+│  • Scrapes YesStyle / OliveYoung / iHerb for product data│
+│  • Editable product cards; category management           │
+│  • Downloads updated master_products.json                │
+│  Runs locally: localhost:3001 — admin only               │
+└───────────────────────┬─────────────────────────────────┘
+                        │  exports master_products.json
+                        ▼
+              assets/data/master_products.json  ◄── Flutter app bundles at build time
+```
+
 ### 1.1 Architecture Style
 
 **Layered Clean Architecture** with **Feature-First** organization inside the Presentation layer.

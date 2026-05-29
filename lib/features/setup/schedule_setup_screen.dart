@@ -398,7 +398,7 @@ class _ProductScheduleCard extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     isLikelyLatin
                         ? Directionality(

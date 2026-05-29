@@ -37,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -45,7 +45,19 @@ class AppDatabase extends _$AppDatabase {
           await m.createAll();
         },
         onUpgrade: (m, from, to) async {
-          if (from < 2) {
+          if (from < 3) {
+            // Recreate day_records in case an early dev database was missing
+            // resolved_at_master_version (added before the first formal version).
+            await m.alterTable(
+              TableMigration(
+                dayRecords,
+                columnTransformer: {
+                  dayRecords.resolvedAtMasterVersion:
+                      const CustomExpression("'1.0.0'"),
+                },
+              ),
+            );
+            // Add skin_state column to skin_log_entries (added in v2).
             await m.alterTable(TableMigration(skinLogEntries));
           }
         },

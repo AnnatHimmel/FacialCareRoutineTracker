@@ -1,7 +1,46 @@
 # Work Plan
 Project: Skincare Routine Tracker
 Created: 2026-05-26
-Total Tasks: 35
+Total Tasks: 35 + 6 MOD tasks (Admin Portal)
+
+---
+
+## Admin Portal Modification (2026-05-28)
+
+### MOD-001: Node.js Admin Server — DONE
+**Description**: Express server on port 3001. Endpoints: POST /api/scrape, GET /api/master-products, POST /api/export. Serves static files from admin/public/.
+**Files**: `admin/server.js`, `admin/package.json`
+**Status**: ✅ Implemented
+
+### MOD-002: YesStyle Scraper Parser — DONE
+**Description**: `parseYesStyle(html)` using cheerio. Selectors: h1.pdp-name, span.brand-name, img.product-image, div.product-description.
+**Files**: `admin/scrapers/yestyle.js`
+**Status**: ✅ Implemented (awaiting test run — Node.js not installed on dev machine)
+
+### MOD-003: OliveYoung Scraper Parser — DONE
+**Description**: `parseOliveYoung(html)` using cheerio. Selectors: p.prd_name, p.prd_brand, div.prd_detail_img img, div.prd_desc.
+**Files**: `admin/scrapers/oliveyoung.js`
+**Status**: ✅ Implemented (awaiting test run)
+
+### MOD-004: iHerb Scraper Parser — DONE
+**Description**: `parseIHerb(html)` using cheerio. Selectors: h1#name, span.brand-name, img#iherb-product-image, #product-overview p.
+**Files**: `admin/scrapers/iherb.js`
+**Status**: ✅ Implemented (awaiting test run)
+
+### MOD-005: Scraper Index + HTTP Fetcher — DONE
+**Description**: `scrapeUrl(url)` dispatches to the right parser based on URL hostname. Fetches via axios with User-Agent. Returns empty card with error field on failure.
+**Files**: `admin/scrapers/index.js`
+**Status**: ✅ Implemented
+
+### MOD-006: Admin Portal Frontend — DONE
+**Description**: Single-page HTML/JS/CSS admin UI. Two-column layout: sidebar (current products + add category) + main (URL import, product cards, export).
+**Files**: `admin/public/index.html`, `admin/public/app.js`, `admin/public/style.css`
+**Status**: ✅ Implemented
+
+### MOD-007: Test Suite for Scrapers — DONE
+**Description**: 27 Jest tests for all three parsers (happy path + missing-field edge cases per scraper). Run: `cd admin && npm install && npm test`.
+**Files**: `admin/test/scrapers.test.js`
+**Status**: ✅ Written — pending first run (requires Node.js install on dev machine)
 
 ---
 

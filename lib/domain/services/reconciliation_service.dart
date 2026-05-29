@@ -29,7 +29,7 @@ class ReconciliationService {
     final lastKnown = await _settings.getLastKnownMasterVersion();
     final currentVersion = masterContent.manifest.contentVersion;
 
-    if (lastKnown == currentVersion) {
+    if (lastKnown == null || lastKnown == currentVersion) {
       return ReconciliationResult(
         isUpdateDetected: false,
         newProducts: [],
@@ -49,7 +49,7 @@ class ReconciliationService {
         .where((p) =>
             !p.isDeprecated &&
             !selectedIds.contains(p.id) &&
-            _isNewerVersion(p.addedInVersion, lastKnown!))
+            _isNewerVersion(p.addedInVersion, lastKnown))
         .toList();
 
     final newlyDeprecatedSelected = masterContent.products

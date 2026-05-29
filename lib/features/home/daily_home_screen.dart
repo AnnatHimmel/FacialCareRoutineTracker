@@ -176,7 +176,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 28, 20, 4),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           _formatDateHebrew(ref.read(effectiveDateProvider)),
@@ -368,7 +368,7 @@ class _JournalCtaCard extends StatelessWidget {
           // Text (leading in RTL = visual right)
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(

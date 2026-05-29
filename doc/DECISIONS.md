@@ -36,6 +36,28 @@ Persists architectural and implementation decisions across task contexts. Each a
 
 ---
 
+### Admin Portal
+
+#### MOD-DEC-001: Admin Portal as a Separate Node.js Tool
+**Date**: 2026-05-28
+**Request**: Admin wants to bulk-import products from YesStyle/OliveYoung/iHerb URLs and edit them before bundling.
+**Decision**: Build a standalone Node.js + Express local web server (`admin/`) with a vanilla HTML/JS frontend. The tool scrapes product pages server-side (avoiding CORS), presents editable product cards, and downloads the final `master_products.json`. It is never part of the Flutter app.
+**Rationale**: Server-side scraping bypasses CORS entirely. Node.js has mature scraping libraries (axios + cheerio). A separate tool keeps admin authoring logic out of the user app. Local-only run model means no auth needed, no deployment costs.
+**Alternatives Rejected**: Client-side fetch (CORS blocked); adding admin screens to Flutter app (bloats APK, poor UX for content authoring); headless browser (heavier, slower startup).
+**Affects Tasks**: MOD-001 through MOD-006.
+
+#### MOD-DEC-002: Scraper Fallback to Manual Entry
+**Date**: 2026-05-28
+**Decision**: If a retailer page fails to scrape (network error, anti-bot, HTML change), the portal creates an empty card with the URL saved as a reference field, allowing admin to fill fields manually. Scraper failures are surfaced per-card, not as a global error.
+**Rationale**: Scrapers are brittle by nature. Admin productivity should not be blocked by a single failing URL. The URL is preserved for manual lookup.
+
+#### MOD-DEC-003: Export-Only — No Auto-Write
+**Date**: 2026-05-28
+**Decision**: The admin portal never writes directly to `assets/data/master_products.json`. The "Save" action always triggers a browser file download. The admin copies the file manually.
+**Rationale**: Prevents accidental overwrite. Keeps the tool safe even if run from a wrong directory. Clear audit trail — admin explicitly places the file.
+
+---
+
 ### Data Architecture
 
 #### DEC-004: Stable String IDs for All Records

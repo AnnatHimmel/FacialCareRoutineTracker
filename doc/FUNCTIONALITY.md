@@ -102,6 +102,21 @@ The Admin authors content at **build time** (bundled data, not a runtime UI). Th
 19. **Product Deprecation (UC-2):** Admin marks a product deprecated. Ships in next release. Product remains in data forever (never deleted).
 20. **Release (UC-3):** Admin assigns version ID and master-list content version; records changelog. Distributed as APK (Android) or updated web host.
 
+### Admin Portal (web-only, separate tool — UC-AP)
+A standalone local web app (`admin/`) that the admin runs on their machine to build and maintain the master product list without hand-editing JSON.
+
+**UC-AP1 — Bulk URL Import:** Admin pastes one or more product page URLs (YesStyle, OliveYoung, iHerb) into an import panel. The portal's server-side scraper fetches each page and auto-extracts: product name, brand, image URL, and any available description. One card is created per URL. Graceful fallback if scraping fails — card is created in blank/manual-entry mode with the URL saved as reference.
+
+**UC-AP2 — Product Card Editing:** Each scraped or manually-created product is displayed as an editable card with fields: name (pre-filled from scrape), category (dropdown from existing categories), morning slot (on/off, order, frequency), evening slot (on/off, order, frequency), comment (Hebrew text, admin-authored), image asset path, deprecated flag. Category list and current products are loaded from the live `assets/data/master_products.json`.
+
+**UC-AP3 — Category Management:** Admin can add new categories (id + Hebrew name) directly in the portal. New categories appear immediately in product card dropdowns.
+
+**UC-AP4 — Product List Review:** A sidebar shows all current products (from the bundled JSON), grouped by category, with inline deprecation toggle. Admin can reorder products within a category by drag-and-drop to set canonical `order` values.
+
+**UC-AP5 — Export JSON:** "Save to file" button downloads the updated `master_products.json` ready to drop into `assets/data/`. The admin then commits and rebuilds the Flutter app. The portal never auto-writes to the file system — download is always explicit.
+
+**Access model:** Local only — runs as `node admin/server.js`, opens on `localhost:3001`. No authentication needed (local-machine tool). Not deployed to any public URL in v1.0.
+
 ### Deferred Premium (post-v1.0, Web only)
 21. **License Activation (UC-21, S15):** Web-only. User enters admin-issued license key to unlock cloud backup & on-demand restore. Not sync. Restore reuses UC-17's Replace/Merge logic. No in-app purchasing — key issued by invitation out of band.
 

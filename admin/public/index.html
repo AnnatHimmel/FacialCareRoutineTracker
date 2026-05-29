@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skincare Admin — Master Product List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+      <h2>Current Products</h2>
+      <div id="sidebar-list"></div>
+      <button id="add-category-btn">+ Add Category</button>
+      <div id="add-category-form">
+        <input id="new-cat-id" type="text" placeholder="Category ID (e.g. cat-toner)">
+        <input id="new-cat-name" type="text" placeholder="Hebrew name (e.g. טונר)">
+        <button id="add-category-confirm">Add</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main id="main">
+      <!-- IMPORT PANEL -->
+      <section id="import-panel">
+        <h2>Import Products</h2>
+        <textarea id="urls-input" placeholder="Paste product URLs, one per line (YesStyle, OliveYoung, iHerb)"></textarea>
+        <button id="fetch-btn">Fetch &amp; Create Cards</button>
+        <div id="loading">Loading... please wait</div>
+      </section>
+
+      <!-- CARDS GRID -->
+      <div id="cards-grid"></div>
+    </main>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer-bar">
+    <button id="add-blank-btn">+ Add Blank Card</button>
+    <button id="save-btn">Save master_products.json</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -134,7 +134,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                 GlowCard(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'מוצרים חדשים (${result.newProducts.length})',
@@ -173,7 +173,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                 GlowCard(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'מוצרים שאינם מומלצים עוד (${result.newlyDeprecatedSelected.length})',

@@ -59,7 +59,7 @@ class PremiumScreen extends StatelessWidget {
                   GlowCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'מפתח הפעלה',
