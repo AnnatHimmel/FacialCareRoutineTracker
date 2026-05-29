@@ -721,7 +721,6 @@ class _CategoryChipRail extends StatelessWidget {
       height: 40,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        reverse: true, // RTL — chips read right-to-left
         children: [
           const SizedBox(width: 4),
           // "הכל" chip
