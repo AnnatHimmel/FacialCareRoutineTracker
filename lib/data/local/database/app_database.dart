@@ -58,7 +58,7 @@ class AppDatabase extends _$AppDatabase {
               ),
             );
             // Add skin_state column to skin_log_entries (added in v2).
-            await m.alterTable(TableMigration(skinLogEntries));
+            await m.addColumn(skinLogEntries, skinLogEntries.skinState);
           }
         },
       );
