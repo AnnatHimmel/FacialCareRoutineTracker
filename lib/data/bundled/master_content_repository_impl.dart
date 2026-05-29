@@ -104,9 +104,7 @@ class MasterContentRepositoryImpl implements MasterContentRepository {
       );
 
   RuleScope _parseScope(String s) => switch (s) {
-        'withinMorning' => RuleScope.withinMorning,
-        'withinEvening' => RuleScope.withinEvening,
-        'sameDayAcrossBoth' => RuleScope.sameDayAcrossBoth,
+        'withinSlot' => RuleScope.withinSlot,
         _ => RuleScope.sameDayAcrossBoth,
       };
 

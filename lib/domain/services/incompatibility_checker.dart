@@ -31,22 +31,9 @@ class IncompatibilityChecker {
     final conflicts = <ConflictInfo>[];
     for (final rule in rules) {
       switch (rule.scope) {
-        case RuleScope.withinMorning:
-          _checkWithinSlot(
-            morningProducts,
-            rule,
-            categories,
-            mutedRuleIds,
-            conflicts,
-          );
-        case RuleScope.withinEvening:
-          _checkWithinSlot(
-            eveningProducts,
-            rule,
-            categories,
-            mutedRuleIds,
-            conflicts,
-          );
+        case RuleScope.withinSlot:
+          _checkWithinSlot(morningProducts, rule, categories, mutedRuleIds, conflicts);
+          _checkWithinSlot(eveningProducts, rule, categories, mutedRuleIds, conflicts);
         case RuleScope.sameDayAcrossBoth:
           _checkAcrossSlots(
             morningProducts,
@@ -75,14 +62,8 @@ class IncompatibilityChecker {
     final conflicts = <ConflictInfo>[];
     for (final rule in rules) {
       switch (rule.scope) {
-        case RuleScope.withinMorning:
-          if (activeSlot == Slot.morning) {
-            _checkWithinSlot(slotProducts, rule, categories, mutedRuleIds, conflicts);
-          }
-        case RuleScope.withinEvening:
-          if (activeSlot == Slot.evening) {
-            _checkWithinSlot(slotProducts, rule, categories, mutedRuleIds, conflicts);
-          }
+        case RuleScope.withinSlot:
+          _checkWithinSlot(slotProducts, rule, categories, mutedRuleIds, conflicts);
         case RuleScope.sameDayAcrossBoth:
           _checkAcrossSlots(
             slotProducts,

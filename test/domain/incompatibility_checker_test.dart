@@ -38,7 +38,7 @@ void main() {
     test('detects product↔product conflict within morning', () {
       final p1 = makeProduct('p1', 'cat');
       final p2 = makeProduct('p2', 'cat');
-      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinMorning);
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinSlot);
 
       final conflicts = checker.getConflictsForDay(
         morningProducts: [p1, p2],
@@ -53,14 +53,14 @@ void main() {
       expect(conflicts.first.isMuted, isFalse);
     });
 
-    test('no conflict if products in different scope', () {
+    test('no conflict when products are in different slots', () {
       final p1 = makeProduct('p1', 'cat');
       final p2 = makeProduct('p2', 'cat');
-      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinEvening);
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinSlot);
 
       final conflicts = checker.getConflictsForDay(
-        morningProducts: [p1, p2],
-        eveningProducts: [],
+        morningProducts: [p1],
+        eveningProducts: [p2],
         rules: [rule],
         categories: categories,
         mutedRuleIds: {},
@@ -74,7 +74,7 @@ void main() {
     test('detects category↔category conflict', () {
       final p1 = makeProduct('p1', 'cat-a');
       final p2 = makeProduct('p2', 'cat-b');
-      final rule = categoryRule('r1', 'cat-a', 'cat-b', RuleScope.withinMorning);
+      final rule = categoryRule('r1', 'cat-a', 'cat-b', RuleScope.withinSlot);
 
       final conflicts = checker.getConflictsForDay(
         morningProducts: [p1, p2],
@@ -92,7 +92,7 @@ void main() {
     test('muted conflict still appears but isMuted=true', () {
       final p1 = makeProduct('p1', 'cat');
       final p2 = makeProduct('p2', 'cat');
-      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinMorning);
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinSlot);
 
       final conflicts = checker.getConflictsForDay(
         morningProducts: [p1, p2],
@@ -125,17 +125,11 @@ void main() {
     });
   });
 
-  // ── BUG 4 — getConflictsForSelection ignores rule scope ───────────────────
-  //
-  // getConflictsForSelection must accept an activeSlot and otherSlotProducts.
-  // withinMorning/withinEvening rules apply only to the matching active slot.
-  // sameDayAcrossBoth rules check active-slot products against the other slot.
-
   group('getConflictsForSelection — scope filtering', () {
-    test('withinMorning rule + morning active slot → conflict found', () {
+    test('withinSlot rule + both products in active slot → conflict found', () {
       final p1 = makeProduct('p1', 'cat');
       final p2 = makeProduct('p2', 'cat');
-      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinMorning);
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinSlot);
 
       final conflicts = checker.getConflictsForSelection(
         activeSlot: Slot.morning,
@@ -149,15 +143,15 @@ void main() {
       expect(conflicts.length, 1);
     });
 
-    test('withinMorning rule + evening active slot → no conflict', () {
+    test('withinSlot rule + only one product in active slot → no conflict', () {
       final p1 = makeProduct('p1', 'cat');
       final p2 = makeProduct('p2', 'cat');
-      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinMorning);
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinSlot);
 
       final conflicts = checker.getConflictsForSelection(
-        activeSlot: Slot.evening,
-        slotProducts: [p1, p2],
-        otherSlotProducts: [],
+        activeSlot: Slot.morning,
+        slotProducts: [p1],
+        otherSlotProducts: [p2],
         rules: [rule],
         categories: categories,
         mutedRuleIds: {},
@@ -166,10 +160,10 @@ void main() {
       expect(conflicts.isEmpty, isTrue);
     });
 
-    test('withinEvening rule + evening active slot → conflict found', () {
+    test('withinSlot rule + both products in evening slot → conflict found', () {
       final p1 = makeProduct('p1', 'cat');
       final p2 = makeProduct('p2', 'cat');
-      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinEvening);
+      final rule = productRule('r1', 'p1', 'p2', RuleScope.withinSlot);
 
       final conflicts = checker.getConflictsForSelection(
         activeSlot: Slot.evening,
@@ -202,10 +196,8 @@ void main() {
 
     test('sameDayAcrossBoth rule: other product not selected → no conflict', () {
       final pMorning = makeProduct('p1', 'cat');
-      final pEvening = makeProduct('p2', 'cat');
       final rule = productRule('r1', 'p1', 'p2', RuleScope.sameDayAcrossBoth);
 
-      // pEvening is NOT in otherSlotProducts → no conflict
       final conflicts = checker.getConflictsForSelection(
         activeSlot: Slot.morning,
         slotProducts: [pMorning],

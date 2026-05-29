@@ -295,7 +295,7 @@
       "imageAsset": "assets/images/products/medicube_deep_vita_a_retinol_serum.jpg",
       "comment": "סרום אנטי-אייג'ינג מרוכז עם רטינול (ויטמין A) המסייע בצמצום מראה קמטים, מיצוק העור, שיפור האלסטיות וחידוש המרקם יחד עם הזנה עמוקה",
       "morningConfig": null,
-      "eveningConfig": {"order": 0, "frequency": {"type": "daily"}}
+      "eveningConfig": {"order": 0, "frequency": {"type": "weeklyMax", "maxPerWeek": 7}}
     },
     {
       "id": "prod-033",

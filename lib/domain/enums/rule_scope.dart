@@ -1,1 +1,1 @@
-enum RuleScope { withinMorning, withinEvening, sameDayAcrossBoth }
+enum RuleScope { withinSlot, sameDayAcrossBoth }

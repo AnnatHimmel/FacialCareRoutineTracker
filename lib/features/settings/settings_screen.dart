@@ -37,7 +37,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'ברוכה הבאה ל־Glow Protocol',
+                  'ברוכה הבאה ל־The Glow Protocol',
                   style: AppTypography.labelMd.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),
