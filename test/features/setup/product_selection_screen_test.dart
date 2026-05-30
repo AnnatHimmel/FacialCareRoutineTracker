@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skincare_tracker/shared/widgets/glass_bottom_nav.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
 import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
@@ -92,14 +93,17 @@ Widget _wrap({
   required MasterContent master,
   _FakeUDR? udr,
   bool fromSetup = false,
+  bool isTabDestination = false,
 }) {
   final router = GoRouter(
     initialLocation: '/setup/selection',
     routes: [
       GoRoute(
         path: '/setup/selection',
-        builder: (_, __) =>
-            ProductSelectionScreen(fromSetup: fromSetup),
+        builder: (_, __) => ProductSelectionScreen(
+          fromSetup: fromSetup,
+          isTabDestination: isTabDestination,
+        ),
       ),
       GoRoute(
         path: '/setup/schedule',
@@ -198,6 +202,26 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('schedule-from=setup'), findsOneWidget);
+    });
+
+    testWidgets('isTabDestination: true → no standalone GlassBottomNav',
+        (tester) async {
+      final master = _masterWith([_product('p1', 'קרם', 'cat1')], [cat1]);
+
+      await tester.pumpWidget(_wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GlassBottomNav), findsNothing);
+    });
+
+    testWidgets('isTabDestination: false → standalone GlassBottomNav present',
+        (tester) async {
+      final master = _masterWith([_product('p1', 'קרם', 'cat1')], [cat1]);
+
+      await tester.pumpWidget(_wrap(master: master, isTabDestination: false));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GlassBottomNav), findsOneWidget);
     });
   });
 }

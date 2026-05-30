@@ -1,6 +1,6 @@
 {
-    "name": "מעקב שגרת טיפוח",
-    "short_name": "טיפוח",
+    "name": "The Glow Protocol",
+    "short_name": "Glow",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#fff8f6",

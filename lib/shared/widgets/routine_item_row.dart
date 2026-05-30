@@ -5,15 +5,15 @@ import '../../domain/entities/master_product.dart';
 import '../../domain/enums/slot.dart';
 import 'product_thumb.dart';
 
-/// Routine row — a white pill holding a circular product thumbnail, the product
-/// name + subtitle, and a circular action button. Used on S1 (select / "I own
-/// this"), S4 & S7 (done / "I did this"), and S3 (drag-to-reorder).
+/// Routine row — used on S1 (select), S4/S7 (done), and S3 (drag-to-reorder).
 ///
-/// Reference: `components.jsx` `RoutineRow`. Variant is derived from the
-/// existing flags so all call sites keep their current API:
-///   • [isDraggable] → drag handle, no toggle button
-///   • [isOwnershipContext] → "select" (+ / ✓) button
-///   • otherwise → "done" (check) button; checked → peach fill + strikethrough
+/// Variants derived from flags:
+///   • [isDraggable]          → drag handle, no toggle
+///   • [isOwnershipContext]   → "select" (+/✓) action button on trailing side;
+///                              tapping the row has no effect
+///   • otherwise ("done")    → tapping the ROW toggles done; a chevron on the
+///                              trailing side expands/collapses details; the
+///                              thumbnail shows a small ✓ badge when done
 class RoutineItemRow extends StatefulWidget {
   final MasterProduct product;
   final bool isToggled;
@@ -47,8 +47,10 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
 
   static bool _isLikelyLatin(String s) => s.codeUnits.every((c) => c < 128);
 
-  bool get _isDoneChecked =>
-      !widget.isOwnershipContext && !widget.isDraggable && widget.isToggled;
+  bool get _isDoneVariant =>
+      !widget.isOwnershipContext && !widget.isDraggable;
+
+  bool get _isDoneChecked => _isDoneVariant && widget.isToggled;
 
   String? get _subtitle {
     if (widget.subtitle != null) return widget.subtitle;
@@ -71,9 +73,8 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
     final product = widget.product;
     final checkedDone = _isDoneChecked;
 
-    final nameColor = checkedDone
-        ? AppColors.onSurfaceVariant
-        : AppColors.onSurface;
+    final nameColor =
+        checkedDone ? AppColors.onSurfaceVariant : AppColors.onSurface;
 
     final name = Text(
       product.name,
@@ -92,8 +93,80 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
 
     final subtitle = _subtitle;
 
+    final rowContent = Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              if (widget.isDraggable)
+                const Padding(
+                  padding: EdgeInsets.only(left: 4),
+                  child: Icon(Icons.drag_indicator,
+                      color: AppColors.outline, size: 22),
+                ),
+
+              // Thumbnail with optional done-badge overlay
+              _ThumbnailWithBadge(
+                imageAsset: product.imageAsset,
+                isDone: checkedDone,
+              ),
+              const SizedBox(width: 12),
+
+              // Name + subtitle
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: name),
+                        if (product.isDeprecated) ...[
+                          const SizedBox(width: 6),
+                          _deprecatedPill(),
+                        ],
+                      ],
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: AppTypography.labelSm.copyWith(
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0,
+                          color: checkedDone
+                              ? AppColors.onSurfaceVariant.withValues(alpha: 0.7)
+                              : AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+
+              // Trailing: conflict icon, then action/chevron
+              if (widget.hasConflict && !widget.isDraggable)
+                _conflictButton(),
+
+              // Done variant: chevron to expand/collapse (tap stops propagation)
+              if (_isDoneVariant && !widget.isDraggable)
+                _chevronButton()
+              else if (widget.isOwnershipContext)
+                _selectActionButton(),
+            ],
+          ),
+          _buildExpandedSection(product),
+        ],
+      ),
+    );
+
     return Semantics(
-      label: '${product.name}, ${widget.isToggled ? "נבחר" : "לא נבחר"}',
+      label: '${product.name}, ${widget.isToggled ? "בוצע" : "לא בוצע"}',
       button: true,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -106,75 +179,27 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
           boxShadow: AppColors.glowSm,
           border: checkedDone
               ? null
-              : Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.4)),
+              : Border.all(
+                  color: AppColors.outlineVariant.withValues(alpha: 0.4)),
         ),
         child: Material(
           type: MaterialType.transparency,
-          child: InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
-            borderRadius: BorderRadius.circular(_expanded ? 24 : 9999),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      if (widget.isDraggable)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 4),
-                          child: Icon(Icons.drag_indicator,
-                              color: AppColors.outline, size: 22),
-                        ),
-                      ProductThumb(imageAsset: product.imageAsset, size: 52),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(child: name),
-                                if (product.isDeprecated) ...[
-                                  const SizedBox(width: 6),
-                                  _deprecatedPill(),
-                                ],
-                              ],
-                            ),
-                            if (subtitle != null) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                subtitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.right,
-                                style: AppTypography.labelSm.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0,
-                                  color: AppColors.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (widget.hasConflict && !widget.isDraggable)
-                        _conflictButton(),
-                      if (!widget.isDraggable) _actionButton(checkedDone),
-                    ],
-                  ),
-                  _buildExpanded(product),
-                ],
-              ),
-            ),
-          ),
+          // Done variant: tapping the row toggles done.
+          // Select/drag variant: no row-level tap.
+          child: _isDoneVariant
+              ? InkWell(
+                  onTap: widget.onToggle,
+                  borderRadius:
+                      BorderRadius.circular(_expanded ? 24 : 9999),
+                  child: rowContent,
+                )
+              : rowContent,
         ),
       ),
     );
   }
 
-  Widget _buildExpanded(MasterProduct product) {
+  Widget _buildExpandedSection(MasterProduct product) {
     final hasComment = product.comment != null && product.comment!.isNotEmpty;
     return AnimatedCrossFade(
       duration: const Duration(milliseconds: 200),
@@ -205,8 +230,8 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                 ),
                 child: Text(
                   'מוצר זה אינו מומלץ עוד',
-                  style:
-                      AppTypography.labelMd.copyWith(color: AppColors.error),
+                  style: AppTypography.labelMd
+                      .copyWith(color: AppColors.error),
                 ),
               ),
             ],
@@ -223,7 +248,8 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
           borderRadius: BorderRadius.circular(9999),
         ),
         child: Text('לא מומלץ',
-            style: AppTypography.labelSm.copyWith(color: AppColors.error)),
+            style:
+                AppTypography.labelSm.copyWith(color: AppColors.error)),
       );
 
   Widget _conflictButton() => GestureDetector(
@@ -235,35 +261,33 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
         ),
       );
 
-  Widget _actionButton(bool checkedDone) {
-    final select = widget.isOwnershipContext;
+  // Chevron that expands/collapses details; stops propagation so it doesn't
+  // also fire the row's onToggle.
+  Widget _chevronButton() => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => setState(() => _expanded = !_expanded),
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Center(
+            child: Icon(
+              _expanded
+                  ? Icons.expand_less_rounded
+                  : Icons.expand_more_rounded,
+              color: AppColors.onSurfaceVariant,
+              size: 20,
+            ),
+          ),
+        ),
+      );
+
+  Widget _selectActionButton() {
     final checked = widget.isToggled;
-
-    late final Color bg;
-    late final Color fg;
-    late final IconData icon;
-    Border? border;
-
-    if (select) {
-      icon = checked ? Icons.check : Icons.add;
-      if (checked) {
-        bg = AppColors.primary;
-        fg = AppColors.onPrimary;
-      } else {
-        bg = AppColors.primaryFixed;
-        fg = AppColors.primary;
-      }
-    } else {
-      icon = Icons.check;
-      if (checked) {
-        bg = AppColors.primary;
-        fg = AppColors.onPrimary;
-      } else {
-        bg = Colors.transparent;
-        fg = AppColors.primary;
-        border = Border.all(color: AppColors.primary, width: 2);
-      }
-    }
+    final Color bg =
+        checked ? AppColors.primary : AppColors.primaryFixed;
+    final Color fg =
+        checked ? AppColors.onPrimary : AppColors.primary;
+    final IconData icon = checked ? Icons.check : Icons.add;
 
     return GestureDetector(
       onTap: widget.onToggle,
@@ -274,11 +298,53 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
         decoration: BoxDecoration(
           color: bg,
           shape: BoxShape.circle,
-          border: border,
           boxShadow: checked ? AppColors.glowSm : null,
         ),
         child: Icon(icon, color: fg, size: 20),
       ),
+    );
+  }
+}
+
+// ── Thumbnail with optional done checkmark badge ──────────────────────────────
+
+class _ThumbnailWithBadge extends StatelessWidget {
+  final String? imageAsset;
+  final bool isDone;
+
+  const _ThumbnailWithBadge({
+    required this.imageAsset,
+    required this.isDone,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ProductThumb(imageAsset: imageAsset, size: 52),
+        if (isDone)
+          Positioned(
+            // -start-0.5 -bottom-0.5 in RTL = visual bottom-right
+            bottom: -2,
+            right: -2,
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: AppColors.soft,
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                color: Colors.white,
+                size: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

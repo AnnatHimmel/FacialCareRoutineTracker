@@ -40,20 +40,22 @@ const CATEGORIES = [
 
 const TODAY_ROUTINE = {
   morning: [
-    { id: 'gentle-milk', name: 'Gentle Milk Cleanser', thumb: 'cleanser', subtitle: 'ניקוי • 2 לחיצות' },
-    { id: 'vitc-bright', name: 'Vitamin C Brightener', thumb: 'vitc', subtitle: 'סרום • 3 טיפות' },
-    { id: 'spf-invisible', name: 'Invisible SPF 50', thumb: 'spf', subtitle: 'הגנה • אורך אצבע' },
+    { id: 'gentle-milk', name: 'Gentle Milk Cleanser', thumb: 'cleanser', subtitle: 'ניקוי • 2 לחיצות', desc: 'מנקה עדין על בסיס חלב. למרוח על פנים יבשות, לעסות בעדינות ולשטוף במים פושרים.' },
+    { id: 'vitc-bright', name: 'Vitamin C Brightener', thumb: 'vitc', subtitle: 'סרום • 3 טיפות', desc: 'סרום ויטמין C להבהרה. למרוח 3 טיפות על עור נקי לפני הלחות וההגנה.' },
+    { id: 'spf-invisible', name: 'Invisible SPF 50', thumb: 'spf', subtitle: 'הגנה • אורך אצבע', desc: 'הגנה רחבת טווח. למרוח כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר, גם ביום מעונן.' },
   ],
   evening: [
-    { id: 'retinol', name: '0.5% Retinol Serum', thumb: 'retinol', subtitle: 'טיפול • גודל אפונה' },
-    { id: 'night-repair', name: 'Night Repair Cream', thumb: 'cream', subtitle: 'לחות • שכבה נדיבה' },
+    { id: 'retinol', name: '0.5% Retinol Serum', thumb: 'retinol', subtitle: 'טיפול • גודל אפונה', desc: 'רטינול לחידוש העור. כמות בגודל אפונה על עור יבש, להימנע מאזור העיניים. לשימוש בערב בלבד.' },
+    { id: 'night-repair', name: 'Night Repair Cream', thumb: 'cream', subtitle: 'לחות • שכבה נדיבה', desc: 'קרם לילה עשיר לנעילת הלחות. למרוח שכבה נדיבה כשלב אחרון בשגרת הערב.' },
   ],
 };
 
 // ===================== HOME (S4) =====================
 function HomeScreen({ goTo, userName }) {
   const [done, setDone] = useStateS({ 'gentle-milk': true });
+  const [expandedId, setExpandedId] = useStateS(null);
   const toggle = (id) => setDone(d => ({ ...d, [id]: !d[id] }));
+  const toggleExpand = (id) => setExpandedId(cur => cur === id ? null : id);
 
   const amDone = TODAY_ROUTINE.morning.filter(p => done[p.id]).length;
   const pmDone = TODAY_ROUTINE.evening.filter(p => done[p.id]).length;
@@ -107,9 +109,13 @@ function HomeScreen({ goTo, userName }) {
         </div>
 
         {/* Header */}
-        <div className="text-center mt-7 mb-4">
+        <div className="text-center mt-7 mb-3">
           <p className="quick text-[13px] text-primary font-bold mb-1">יום שני{userName ? ` · שלום ${userName.split(' ')[0]}` : ''}</p>
           <h2 className="quick font-bold text-[24px] text-on-surface">השגרה שלך היום</h2>
+          <p className="quick text-[12px] text-on-surface-variant mt-1 flex items-center justify-center gap-1">
+            <Icon name="touch_app" size={14} />
+            הקישי על מוצר לסימון כבוצע
+          </p>
         </div>
 
         {/* Morning slot */}
@@ -122,6 +128,8 @@ function HomeScreen({ goTo, userName }) {
               variant="done"
               checked={!!done[p.id]}
               onToggle={() => toggle(p.id)}
+              expanded={expandedId === p.id}
+              onExpand={() => toggleExpand(p.id)}
             />
           ))}
         </div>
@@ -136,6 +144,8 @@ function HomeScreen({ goTo, userName }) {
               variant="done"
               checked={!!done[p.id]}
               onToggle={() => toggle(p.id)}
+              expanded={expandedId === p.id}
+              onExpand={() => toggleExpand(p.id)}
             />
           ))}
         </div>
@@ -160,17 +170,240 @@ function HomeScreen({ goTo, userName }) {
   );
 }
 
+// ===================== ADD CUSTOM PRODUCT (bottom sheet) =====================
+function AddProductSheet({ slot, onAdd, onClose }) {
+  const [name, setName] = useStateS('');
+  const [cat, setCat] = useStateS('serum');
+  const [routine, setRoutine] = useStateS(slot === 'morning' ? 'AM' : 'PM');
+  const [isDaily, setIsDaily] = useStateS(true);
+  const [maxWeek, setMaxWeek] = useStateS(3);
+  const [image, setImage] = useStateS(null);
+  const fileRef = useRefS(null);
+
+  const onPickImage = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      // downscale to a small square thumbnail to keep localStorage light
+      const img = new Image();
+      img.onload = () => {
+        const S = 200;
+        const canvas = document.createElement('canvas');
+        canvas.width = S; canvas.height = S;
+        const ctx = canvas.getContext('2d');
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, S, S);
+        setImage(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const catChoices = CATEGORIES.filter(c => c.id !== 'all');
+  const routineChoices = [
+    { id: 'AM', label: 'בוקר' },
+    { id: 'PM', label: 'ערב' },
+    { id: 'BOTH', label: 'בוקר + ערב' },
+  ];
+
+  const submit = () => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const tags = routine === 'BOTH' ? ['AM', 'PM'] : [routine];
+    onAdd({
+      id: 'custom-' + Date.now().toString(36),
+      name: trimmed,
+      category: cat,
+      thumb: null,
+      image: image || null,
+      fallbackIcon: 'spa',
+      subtitle: 'מוצר אישי',
+      tags,
+      frequency: isDaily ? 'daily' : { max: maxWeek },
+      custom: true,
+      desc: 'מוצר שהוספת בעצמך לשגרה.',
+    });
+  };
+
+  return ReactDOM.createPortal(
+    <div className="absolute inset-0 z-50 flex flex-col justify-end" dir="rtl">
+      {/* scrim */}
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={onClose}></div>
+
+      {/* sheet */}
+      <div className="relative bg-surface rounded-t-[32px] shadow-glow-lg max-h-[88%] overflow-y-auto scroll-area animate-[fadeIn_.2s_ease-out]">
+        <div className="sticky top-0 bg-surface px-5 pt-3 pb-2">
+          <div className="w-10 h-1 rounded-full bg-outline-variant/60 mx-auto mb-3"></div>
+          <div className="flex items-center justify-between">
+            <button onClick={onClose} className="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-high transition" aria-label="סגירה">
+              <Icon name="close" size={22} />
+            </button>
+            <h3 className="quick font-bold text-[18px] text-on-surface">הוספת מוצר משלי</h3>
+          </div>
+        </div>
+
+        <div className="px-5 pb-5 space-y-4">
+          {/* Image picker — circular slot */}
+          <div className="flex flex-col items-center pt-1">
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
+            <button
+              onClick={() => fileRef.current && fileRef.current.click()}
+              className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center transition active:scale-95 border-2 border-dashed border-primary-container/60 bg-primary-fixed/25"
+              aria-label="הוספת תמונה"
+            >
+              {image ? (
+                <img src={image} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <Icon name="add_a_photo" size={28} className="text-primary" />
+              )}
+            </button>
+            <button
+              onClick={() => image ? setImage(null) : (fileRef.current && fileRef.current.click())}
+              className="quick text-[12px] font-bold text-primary mt-2"
+            >
+              {image ? 'הסרת תמונה' : 'הוספת תמונה (לא חובה)'}
+            </button>
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className="quick text-[13px] font-bold text-on-surface mb-1.5 block text-right">שם המוצר</label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="לדוגמה: סרום לחות אישי"
+              autoFocus
+              className="w-full h-12 bg-white rounded-full px-4 quick text-[15px] text-on-surface border border-outline-variant/40 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-right transition"
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="quick text-[13px] font-bold text-on-surface mb-1.5 block text-right">קטגוריה</label>
+            <div className="flex flex-wrap gap-1.5">
+              {catChoices.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => setCat(c.id)}
+                  className={`px-4 h-9 rounded-full quick font-bold text-[13px] transition active:scale-95 ${
+                    cat === c.id ? 'bg-primary text-white shadow-glow-sm' : 'bg-white text-on-surface-variant border border-outline-variant/40'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Routine slot */}
+          <div>
+            <label className="quick text-[13px] font-bold text-on-surface mb-1.5 block text-right">שגרה</label>
+            <div className="flex gap-1.5">
+              {routineChoices.map(o => (
+                <button
+                  key={o.id}
+                  onClick={() => setRoutine(o.id)}
+                  className={`flex-1 h-11 rounded-full quick font-bold text-[14px] transition active:scale-95 ${
+                    routine === o.id ? 'bg-tertiary text-white shadow-glow-sm' : 'bg-white text-on-surface-variant border border-outline-variant/40'
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Frequency */}
+          <div>
+            <label className="quick text-[13px] font-bold text-on-surface mb-1.5 block text-right">תדירות</label>
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setIsDaily(true)}
+                className={`flex-1 h-11 rounded-full quick font-bold text-[14px] transition active:scale-95 ${
+                  isDaily ? 'bg-primary text-white shadow-glow-sm' : 'bg-white text-on-surface-variant border border-outline-variant/40'
+                }`}
+              >
+                יומי
+              </button>
+              <button
+                onClick={() => setIsDaily(false)}
+                className={`flex-1 h-11 rounded-full quick font-bold text-[14px] transition active:scale-95 ${
+                  !isDaily ? 'bg-primary text-white shadow-glow-sm' : 'bg-white text-on-surface-variant border border-outline-variant/40'
+                }`}
+              >
+                כמה פעמים בשבוע
+              </button>
+            </div>
+            {!isDaily && (
+              <div className="flex items-center justify-end gap-2 mt-2.5">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setMaxWeek(n)}
+                      className={`w-9 h-9 rounded-full quick font-bold text-[14px] transition ${
+                        maxWeek === n ? 'bg-primary text-white' : 'bg-white text-on-surface-variant border border-outline-variant/40'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+                <span className="quick text-[13px] text-on-surface-variant">פעמים בשבוע:</span>
+              </div>
+            )}
+          </div>
+
+          {/* Submit */}
+          <button
+            onClick={submit}
+            disabled={!name.trim()}
+            className="w-full h-14 rounded-full bg-gradient-to-l from-primary to-primary-container text-white quick font-bold text-[16px] shadow-glow-lg active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+          >
+            <Icon name="add" size={20} />
+            הוספה לשגרה שלי
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.getElementById('phone-overlay')
+  );
+}
+
 // ===================== PRODUCTS (S1 — selection) =====================
-function ProductsScreen({ goTo, openProduct, selected, setSelected }) {
+function ProductsScreen({ goTo, openProduct, selected, setSelected, customProducts = [], setCustomProducts }) {
   const [slot, setSlot] = useStateS('morning');
   const [cat, setCat] = useStateS('all');
   const [q, setQ] = useStateS('');
+  const [onlyMine, setOnlyMine] = useStateS(false);
+  const [showAdd, setShowAdd] = useStateS(false);
 
   const toggle = (id) => setSelected(s => ({ ...s, [id]: !s[id] }));
+  const ALL_PRODUCTS = [...MASTER_PRODUCTS, ...customProducts];
   const totalSelected = Object.values(selected).filter(Boolean).length;
-  const occasionalSelectedCount = MASTER_PRODUCTS.filter(p => selected[p.id] && p.frequency !== 'daily').length;
+  const occasionalSelectedCount = ALL_PRODUCTS.filter(p => selected[p.id] && p.frequency !== 'daily').length;
 
-  const filtered = MASTER_PRODUCTS.filter(p => {
+  // count selected in the current slot
+  const slotTag = slot === 'morning' ? 'AM' : 'PM';
+  const slotSelectedCount = ALL_PRODUCTS.filter(p => selected[p.id] && p.tags.includes(slotTag)).length;
+
+  const goToEvening = () => {
+    setSlot('evening'); setCat('all'); setQ(''); setOnlyMine(false);
+    const sc = document.querySelector('.phone-scroll'); if (sc) sc.scrollTop = 0;
+  };
+
+  const addCustom = (prod) => {
+    setCustomProducts(list => [...list, prod]);
+    setSelected(s => ({ ...s, [prod.id]: true }));
+    setShowAdd(false);
+  };
+
+  const filtered = ALL_PRODUCTS.filter(p => {
+    if (onlyMine && !selected[p.id]) return false;
     if (cat !== 'all' && p.category !== cat) return false;
     if (slot === 'morning' && !p.tags.includes('AM')) return false;
     if (slot === 'evening' && !p.tags.includes('PM')) return false;
@@ -179,59 +412,67 @@ function ProductsScreen({ goTo, openProduct, selected, setSelected }) {
   });
 
   return (
-    <div className="screen-enter pb-40">
+    <div className="screen-enter">
       <AppBar />
 
       <div className="px-5 pt-2">
-        {/* Step indicator */}
-        <StepIndicator current={1} steps={['בחירה', 'תזמון']} />
+        {/* Step indicator — 3 phases */}
+        <StepIndicator current={slot === 'morning' ? 1 : 2} steps={['בוקר', 'ערב', 'תזמון']} />
 
-        {/* AM/PM toggle */}
-        <div className="relative flex p-1 bg-surface-low rounded-full mt-4" role="tablist">
+        {/* Phase header (progress, not a free toggle — tap morning to step back) */}
+        <div className="relative flex p-1 bg-surface-low rounded-full mt-4">
           <button
-            role="tab"
-            aria-selected={slot === 'morning'}
             onClick={() => setSlot('morning')}
+            disabled={slot === 'morning'}
             className={`relative flex-1 h-11 rounded-full quick font-bold text-[15px] flex items-center justify-center gap-2 transition-all ${
               slot === 'morning' ? 'bg-primary-container text-white shadow-glow-sm' : 'text-on-surface-variant'
             }`}
           >
             <Icon name="wb_sunny" fill size={18} />
             בוקר
+            {slot === 'evening' && <Icon name="check" size={16} className="text-secondary" />}
           </button>
-          <button
-            role="tab"
-            aria-selected={slot === 'evening'}
-            onClick={() => setSlot('evening')}
+          <div
             className={`relative flex-1 h-11 rounded-full quick font-bold text-[15px] flex items-center justify-center gap-2 transition-all ${
-              slot === 'evening' ? 'bg-tertiary text-white shadow-glow-sm' : 'text-on-surface-variant'
+              slot === 'evening' ? 'bg-tertiary text-white shadow-glow-sm' : 'text-on-surface-variant/60'
             }`}
           >
             <Icon name="dark_mode" fill size={18} />
             ערב
-          </button>
+          </div>
         </div>
         <p className="text-center quick text-[13px] text-on-surface-variant mt-2">
-          בניית שגרת <span className="font-bold text-primary">{slot === 'morning' ? 'הבוקר' : 'הערב'}</span> שלך • <span className="font-bold">{totalSelected}</span> מוצרים נבחרו
+          {slot === 'morning' ? 'שלב 1 — ' : 'שלב 2 — '}
+          בחירת מוצרי <span className="font-bold text-primary">{slot === 'morning' ? 'הבוקר' : 'הערב'}</span> שלך • <span className="font-bold">{slotSelectedCount}</span> נבחרו
         </p>
 
-        {/* Search */}
-        <div className="relative mt-4">
-          <input
-            type="text"
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            placeholder="חיפוש במוצרי המערכת..."
-            className="w-full h-12 bg-surface-low rounded-full ps-12 pe-5 quick text-[15px] placeholder:text-outline/60 text-on-surface border-none focus:ring-2 focus:ring-primary/30 outline-none text-right"
-          />
-          <span className="absolute start-4 top-1/2 -translate-y-1/2 text-outline">
-            <Icon name="search" size={20} />
-          </span>
+        {/* Search + compact "add my own product" button (kept off the list area) */}
+        <div className="mt-4 flex items-center gap-2">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              placeholder="חיפוש במוצרי המערכת..."
+              className="w-full h-12 bg-surface-low rounded-full ps-12 pe-5 quick text-[15px] placeholder:text-outline/60 text-on-surface border-none focus:ring-2 focus:ring-primary/30 outline-none text-right"
+            />
+            <span className="absolute start-4 top-1/2 -translate-y-1/2 text-outline">
+              <Icon name="search" size={20} />
+            </span>
+          </div>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex-shrink-0 h-12 w-12 rounded-full bg-primary text-white flex items-center justify-center shadow-glow-sm active:scale-90 transition"
+            aria-label="הוספת מוצר משלי"
+            title="הוספת מוצר משלי"
+          >
+            <Icon name="add" size={24} />
+          </button>
         </div>
 
         {/* Category chips */}
-        <div className="mt-3 -mx-1 overflow-x-auto no-scrollbar">
-          <div className="flex gap-2 px-1 py-1 min-w-max flex-row-reverse justify-end">
+        <div className="mt-3 -mx-1 overflow-x-auto no-scrollbar" dir="rtl">
+          <div className="flex gap-2 px-1 py-1 min-w-max">
             {CATEGORIES.map(c => {
               const active = cat === c.id;
               return (
@@ -251,11 +492,50 @@ function ProductsScreen({ goTo, openProduct, selected, setSelected }) {
           </div>
         </div>
 
-        {/* Product list */}
-        <div className="mt-4 space-y-2.5">
+        {/* Filter row: All vs. My products — clear segmented control */}
+        <div className="flex items-center justify-between gap-3 mt-4" dir="rtl">
+          <div className="flex p-1 bg-surface-low rounded-full" role="tablist">
+            <button
+              onClick={() => setOnlyMine(false)}
+              aria-selected={!onlyMine}
+              className={`h-9 px-4 rounded-full quick font-bold text-[13px] flex items-center gap-1.5 transition ${
+                !onlyMine ? 'bg-white text-primary shadow-glow-sm' : 'text-on-surface-variant'
+              }`}
+            >
+              <Icon name="apps" size={16} />
+              כל המוצרים
+            </button>
+            <button
+              onClick={() => setOnlyMine(true)}
+              aria-selected={onlyMine}
+              className={`h-9 px-4 rounded-full quick font-bold text-[13px] flex items-center gap-1.5 transition ${
+                onlyMine ? 'bg-white text-primary shadow-glow-sm' : 'text-on-surface-variant'
+              }`}
+            >
+              <Icon name="check_circle" fill={onlyMine} size={16} />
+              שלי
+              <span className={`label-sm text-[10px] rounded-full px-1.5 py-0.5 ${
+                onlyMine ? 'bg-primary text-white' : 'bg-primary-fixed/60 text-primary'
+              }`}>{totalSelected}</span>
+            </button>
+          </div>
+          {/* Active-filter clear button — only shows when a narrowing filter is on */}
+          {(onlyMine || cat !== 'all' || q) && (
+            <button
+              onClick={() => { setOnlyMine(false); setCat('all'); setQ(''); }}
+              className="flex items-center gap-1 quick font-bold text-[13px] text-on-surface-variant hover:text-primary transition flex-shrink-0"
+            >
+              <Icon name="close" size={16} />
+              נקה סינון
+            </button>
+          )}
+        </div>
+
+        {/* Product list — extra bottom padding so the last item clears the pinned CTA + nav */}
+        <div className="mt-4 space-y-2.5 pb-2">
           {filtered.length === 0 && (
             <div className="text-center py-12 text-on-surface-variant quick text-[14px]">
-              לא נמצאו מוצרים תואמים.
+              {onlyMine ? 'עדיין לא בחרת מוצרים בשגרה זו.' : 'לא נמצאו מוצרים תואמים.'}
             </div>
           )}
           {filtered.map(p => (
@@ -268,6 +548,7 @@ function ProductsScreen({ goTo, openProduct, selected, setSelected }) {
                 item={{ ...p, subtitle: p.frequency === 'daily' ? p.subtitle : `${p.subtitle} • עד ${p.frequency.max}× בשבוע` }}
                 variant="select"
                 checked={!!selected[p.id]}
+                badge={p.custom ? 'שלי' : null}
                 onToggle={(e) => { if (e && e.stopPropagation) e.stopPropagation(); toggle(p.id); }}
               />
             </div>
@@ -275,22 +556,49 @@ function ProductsScreen({ goTo, openProduct, selected, setSelected }) {
         </div>
       </div>
 
-      {/* Sticky "Continue to scheduling" CTA */}
-      <div className="sticky bottom-24 z-30 px-5 mt-6">
+      {showAdd && (
+        <AddProductSheet
+          slot={slot}
+          onAdd={addCustom}
+          onClose={() => setShowAdd(false)}
+        />
+      )}
+
+      {/* Pinned flow bar — advances morning → evening → timing */}
+      <div className="sticky bottom-[84px] z-30 px-5 pt-3 pb-2 bg-gradient-to-t from-surface via-surface/95 to-transparent">
+        {slot === 'evening' && (
+          <button
+            onClick={() => { setSlot('morning'); const sc = document.querySelector('.phone-scroll'); if (sc) sc.scrollTop = 0; }}
+            className="w-full mb-2 h-10 rounded-full bg-surface-low text-on-surface quick font-bold text-[14px] flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
+          >
+            <Icon name="arrow_forward" size={18} />
+            חזרה לבחירת הבוקר
+          </button>
+        )}
         <button
-          onClick={() => goTo('schedule')}
-          disabled={totalSelected === 0}
-          className="w-full h-14 rounded-full bg-gradient-to-l from-primary to-primary-container text-white quick font-bold text-[16px] shadow-glow-lg active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          onClick={slot === 'morning' ? goToEvening : () => goTo('schedule')}
+          className="w-full h-14 rounded-full bg-gradient-to-l from-primary to-primary-container text-white quick font-bold text-[16px] shadow-glow-lg active:scale-[0.98] transition flex items-center justify-center gap-2"
         >
-          <Icon name="arrow_back" size={20} />
-          המשך לתזמון
-          {occasionalSelectedCount > 0 && (
-            <span className="label-sm text-[11px] bg-white/30 px-2 py-0.5 rounded-full">
-              {occasionalSelectedCount} לתזמון
-            </span>
+          {slot === 'morning' ? (
+            <>
+              <Icon name="dark_mode" fill size={20} />
+              המשך לבחירת הערב
+            </>
+          ) : (
+            <>
+              <Icon name="event" size={20} />
+              המשך לתזמון
+              {occasionalSelectedCount > 0 && (
+                <span className="label-sm text-[11px] bg-white/30 px-2 py-0.5 rounded-full">
+                  {occasionalSelectedCount} לתזמון
+                </span>
+              )}
+            </>
           )}
         </button>
       </div>
+      {/* spacer equal to bottom-nav height so the pinned CTA rests just above it at full scroll */}
+      <div className="h-[84px]" aria-hidden="true"></div>
     </div>
   );
 }
@@ -508,7 +816,7 @@ function JournalScreen({ goTo }) {
 function ProfileScreen({ goTo, name, setName, gender, setGender }) {
 
   const items = [
-    { id: 'select', icon: 'tune', label: 'בחירה ותזמון מוצרים', subtitle: 'שני שלבים: בחירה ↔ תזמון שבועי', screen: 'products' },
+    { id: 'select', icon: 'tune', label: 'בחירה ותזמון מוצרים', subtitle: 'בוקר ← ערב ← תזמון שבועי', screen: 'products' },
     { id: 'order', icon: 'reorder', label: 'סדר השגרה', subtitle: 'גרור לסידור אישי', screen: 'order' },
     { id: 'export', icon: 'cloud_download', label: 'ייצוא וייבוא', subtitle: 'גיבוי מקומי של הנתונים' },
     { id: 'reset-onboarding', icon: 'restart_alt', label: 'שחזר הצגת מסך הפתיחה', subtitle: 'לצרכי תצוגה / דמו' },
@@ -842,23 +1150,44 @@ Object.assign(window, {
 // For each selected occasional product: pick weekdays. Show:
 //  - per-product weekly cap soft warning when over
 //  - day-level conflict warnings (same slot, incompatible actives)
-function ScheduleScreen({ selected, schedule, setSchedule, goBack, onDone }) {
+function ScheduleScreen({ selected, schedule, setSchedule, customProducts = [], goBack, onDone }) {
   const [slot, setSlot] = useStateS('evening'); // most occasional products are PM
 
+  const ALL_PRODUCTS = [...MASTER_PRODUCTS, ...customProducts];
+
   // selected occasional products in the chosen slot
-  const occasionalInSlot = MASTER_PRODUCTS.filter(p =>
+  const occasionalInSlot = ALL_PRODUCTS.filter(p =>
     selected[p.id] && p.frequency !== 'daily' && p.tags.includes(slot === 'morning' ? 'AM' : 'PM')
   );
 
   // Daily products that auto-run every day (read-only context for conflict checking)
-  const dailyInSlot = MASTER_PRODUCTS.filter(p =>
+  const dailyInSlot = ALL_PRODUCTS.filter(p =>
     selected[p.id] && p.frequency === 'daily' && p.tags.includes(slot === 'morning' ? 'AM' : 'PM')
   );
 
+  const isDailyProduct = (id) => {
+    const p = ALL_PRODUCTS.find(x => x.id === id);
+    return p && p.frequency === 'daily';
+  };
+
+  // Effective scheduled days for a product:
+  //  - daily product with no explicit schedule → every day
+  //  - otherwise → whatever is stored
+  const effectiveDays = (productId) => {
+    const stored = schedule[productId];
+    if (stored && Object.keys(stored).length) return stored;
+    if (isDailyProduct(productId)) return { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true, 6: true };
+    return {};
+  };
+
   const toggleDay = (productId, dayId) => {
     setSchedule(prev => {
-      const cur = prev[productId] || {};
-      const next = { ...cur };
+      // start from effective set so a daily product's first edit removes one day from the full week
+      let cur = prev[productId];
+      if ((!cur || !Object.keys(cur).length) && isDailyProduct(productId)) {
+        cur = { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true, 6: true };
+      }
+      const next = { ...(cur || {}) };
       if (next[dayId]) delete next[dayId];
       else next[dayId] = true;
       return { ...prev, [productId]: next };
@@ -866,13 +1195,13 @@ function ScheduleScreen({ selected, schedule, setSchedule, goBack, onDone }) {
   };
 
   // Returns count of days a product is scheduled this week.
-  const daysCount = (productId) => Object.values(schedule[productId] || {}).filter(Boolean).length;
+  const daysCount = (productId) => Object.values(effectiveDays(productId)).filter(Boolean).length;
 
-  // Build day -> products list for this slot (occasional + daily)
+  // Build day -> products list for this slot (occasional + daily, both schedule-aware)
   const productsOnDay = (dayId) => {
-    const list = [...dailyInSlot]; // daily are everyday
-    occasionalInSlot.forEach(p => {
-      if (schedule[p.id] && schedule[p.id][dayId]) list.push(p);
+    const list = [];
+    [...dailyInSlot, ...occasionalInSlot].forEach(p => {
+      if (effectiveDays(p.id)[dayId]) list.push(p);
     });
     return list;
   };
@@ -902,12 +1231,12 @@ function ScheduleScreen({ selected, schedule, setSchedule, goBack, onDone }) {
       <AppBar back onBack={goBack} />
 
       <div className="px-5 pt-2">
-        <StepIndicator current={2} steps={['בחירה', 'תזמון']} />
+        <StepIndicator current={3} steps={['בוקר', 'ערב', 'תזמון']} />
 
         <div className="text-center mt-4 mb-4">
           <h2 className="quick font-bold text-[22px] text-on-surface">תזמון מוצרים שבועי</h2>
           <p className="quick text-[13px] text-on-surface-variant mt-1">
-            בחרי באילו ימים להשתמש במוצרים שאינם יומיומיים
+            בחרי באילו ימים להשתמש בכל מוצר — יומיים ואקראיים
           </p>
         </div>
 
@@ -962,24 +1291,6 @@ function ScheduleScreen({ selected, schedule, setSchedule, goBack, onDone }) {
                 </li>
               ))}
             </ul>
-          </div>
-        )}
-
-        {/* Daily products (informational, no toggles) */}
-        {dailyInSlot.length > 0 && (
-          <div className="mt-4">
-            <h3 className="quick font-bold text-[14px] text-on-surface-variant text-right mb-2 px-1">
-              מוצרים יומיים <span className="quick text-[12px] font-medium opacity-70">({dailyInSlot.length})</span>
-            </h3>
-            <div className="bg-surface-low rounded-[24px] p-3 space-y-1.5" dir="rtl">
-              {dailyInSlot.map(p => (
-                <div key={p.id} className="flex items-center gap-2 px-2">
-                  <Icon name="check_circle" fill size={16} className="text-secondary" />
-                  <span className="quick text-[14px] text-on-surface" dir="ltr">{p.name}</span>
-                  <span className="quick text-[12px] text-on-surface-variant me-auto">כל יום</span>
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
@@ -1052,6 +1363,72 @@ function ScheduleScreen({ selected, schedule, setSchedule, goBack, onDone }) {
             );
           })}
         </div>
+
+        {/* Daily products — default to every day, but days can be customized */}
+        {dailyInSlot.length > 0 && (
+          <div className="mt-4">
+            <h3 className="quick font-bold text-[14px] text-on-surface-variant text-right mb-2 px-1">
+              מוצרים יומיים <span className="quick text-[12px] font-medium opacity-70">({dailyInSlot.length})</span>
+            </h3>
+            <div className="space-y-3">
+              {dailyInSlot.map(p => {
+                const days = effectiveDays(p.id);
+                const count = daysCount(p.id);
+                const everyDay = count === 7;
+                return (
+                  <div key={p.id} className="bg-white rounded-[24px] p-4 shadow-glow-sm" dir="rtl">
+                    <div className="flex items-center gap-3 mb-3">
+                      <ProductThumb id={p.thumb} size={44} fallbackIcon={p.fallbackIcon || 'spa'} />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="quick font-bold text-[15px] text-on-surface truncate text-right" dir="ltr">{p.name}</h4>
+                        <p className="quick text-[11px] text-on-surface-variant text-right">
+                          מומלץ: <span className="font-bold">כל יום</span>
+                        </p>
+                      </div>
+                      <span className={`label-sm text-[11px] px-2.5 py-1 rounded-full ${
+                        count === 0 ? 'bg-error-container text-error' :
+                        everyDay ? 'bg-secondary-fixed text-on-secondary-container' :
+                        'bg-primary-fixed/60 text-primary'
+                      }`}>
+                        {everyDay ? 'כל יום' : `${count}/7`}
+                      </span>
+                    </div>
+
+                    {/* Weekday picker — Sunday first (right side in RTL) */}
+                    <div className="flex gap-1.5 justify-between" dir="rtl">
+                      {WEEKDAYS.map(d => {
+                        const on = !!days[d.id];
+                        return (
+                          <button
+                            key={d.id}
+                            onClick={() => toggleDay(p.id, d.id)}
+                            className={`flex-1 aspect-square rounded-full quick font-bold text-[14px] transition active:scale-90 ${
+                              on
+                                ? 'bg-primary text-white shadow-glow-sm'
+                                : 'bg-surface-low text-on-surface-variant hover:bg-primary-fixed/40'
+                            }`}
+                            aria-pressed={on}
+                            aria-label={`${d.label} ${on ? 'מסומן' : ''}`}
+                          >
+                            {d.short}'
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {count === 0 && (
+                      <div className="mt-2.5 flex items-center gap-1.5 text-[11px] quick text-error" dir="rtl">
+                        <Icon name="warning" size={14} />
+                        לא נבחר אף יום — המוצר לא ישובץ בשגרה
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* Sticky save CTA */}

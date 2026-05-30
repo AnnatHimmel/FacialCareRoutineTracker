@@ -9,6 +9,7 @@ import '../../data/repositories_impl/user_data_repository_impl.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/muted_conflict.dart';
 import '../../domain/entities/product_selection.dart';
+import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../domain/repositories/photo_repository.dart';
@@ -120,6 +121,10 @@ final allDayRecordsProvider = StreamProvider(
   (ref) => ref.watch(userDataRepositoryProvider).watchAllDayRecords(),
 );
 
+final customProductsProvider = StreamProvider<List<UserCustomProduct>>(
+  (ref) => ref.watch(userDataRepositoryProvider).watchCustomProducts(),
+);
+
 // ── Per-day routine provider ──────────────────────────────────────────────────
 
 typedef _DailyRoutineParams = ({String date, Slot slot});
@@ -128,16 +133,20 @@ final dailyRoutineProvider =
     StreamProvider.family<List<MasterProduct>, _DailyRoutineParams>(
   (ref, params) async* {
     final masterContent = await ref.watch(masterContentProvider.future);
-    final allProducts = masterContent.products;
     final boundary = ref.watch(dayBoundaryServiceProvider);
     final resolver = ref.watch(routineResolverProvider);
     final userRepo = ref.watch(userDataRepositoryProvider);
 
-    await for (final selections
-        in userRepo.watchSelections(params.slot)) {
+    await for (final selections in userRepo.watchSelections(params.slot)) {
+      final customProds = await userRepo.watchCustomProducts().first;
       final schedules = await userRepo.watchAllSchedules().first;
       final orderOverride =
           await userRepo.watchOrderOverride(params.slot).first;
+
+      final allProducts = [
+        ...masterContent.products,
+        ...customProds.map((p) => p.toMasterProduct()),
+      ];
 
       yield resolver.resolve(
         date: boundary.parseDate(params.date),

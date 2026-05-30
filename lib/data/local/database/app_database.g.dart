@@ -2263,6 +2263,588 @@ class MutedConflictsCompanion extends UpdateCompanion<MutedConflictRow> {
   }
 }
 
+class $UserCustomProductsTable extends UserCustomProducts
+    with TableInfo<$UserCustomProductsTable, CustomProductRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UserCustomProductsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _photoKeyMeta = const VerificationMeta(
+    'photoKey',
+  );
+  @override
+  late final GeneratedColumn<String> photoKey = GeneratedColumn<String>(
+    'photo_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _inMorningMeta = const VerificationMeta(
+    'inMorning',
+  );
+  @override
+  late final GeneratedColumn<bool> inMorning = GeneratedColumn<bool>(
+    'in_morning',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("in_morning" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _inEveningMeta = const VerificationMeta(
+    'inEvening',
+  );
+  @override
+  late final GeneratedColumn<bool> inEvening = GeneratedColumn<bool>(
+    'in_evening',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("in_evening" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _isDailyMeta = const VerificationMeta(
+    'isDaily',
+  );
+  @override
+  late final GeneratedColumn<bool> isDaily = GeneratedColumn<bool>(
+    'is_daily',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_daily" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _timesPerWeekMeta = const VerificationMeta(
+    'timesPerWeek',
+  );
+  @override
+  late final GeneratedColumn<int> timesPerWeek = GeneratedColumn<int>(
+    'times_per_week',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastModifiedMsMeta = const VerificationMeta(
+    'lastModifiedMs',
+  );
+  @override
+  late final GeneratedColumn<int> lastModifiedMs = GeneratedColumn<int>(
+    'last_modified_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    photoKey,
+    categoryId,
+    inMorning,
+    inEvening,
+    isDaily,
+    timesPerWeek,
+    lastModifiedMs,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_custom_products';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CustomProductRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('photo_key')) {
+      context.handle(
+        _photoKeyMeta,
+        photoKey.isAcceptableOrUnknown(data['photo_key']!, _photoKeyMeta),
+      );
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('in_morning')) {
+      context.handle(
+        _inMorningMeta,
+        inMorning.isAcceptableOrUnknown(data['in_morning']!, _inMorningMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_inMorningMeta);
+    }
+    if (data.containsKey('in_evening')) {
+      context.handle(
+        _inEveningMeta,
+        inEvening.isAcceptableOrUnknown(data['in_evening']!, _inEveningMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_inEveningMeta);
+    }
+    if (data.containsKey('is_daily')) {
+      context.handle(
+        _isDailyMeta,
+        isDaily.isAcceptableOrUnknown(data['is_daily']!, _isDailyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_isDailyMeta);
+    }
+    if (data.containsKey('times_per_week')) {
+      context.handle(
+        _timesPerWeekMeta,
+        timesPerWeek.isAcceptableOrUnknown(
+          data['times_per_week']!,
+          _timesPerWeekMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_modified_ms')) {
+      context.handle(
+        _lastModifiedMsMeta,
+        lastModifiedMs.isAcceptableOrUnknown(
+          data['last_modified_ms']!,
+          _lastModifiedMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastModifiedMsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CustomProductRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CustomProductRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      photoKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_key'],
+      ),
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      )!,
+      inMorning: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}in_morning'],
+      )!,
+      inEvening: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}in_evening'],
+      )!,
+      isDaily: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_daily'],
+      )!,
+      timesPerWeek: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}times_per_week'],
+      ),
+      lastModifiedMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_modified_ms'],
+      )!,
+    );
+  }
+
+  @override
+  $UserCustomProductsTable createAlias(String alias) {
+    return $UserCustomProductsTable(attachedDatabase, alias);
+  }
+}
+
+class CustomProductRow extends DataClass
+    implements Insertable<CustomProductRow> {
+  final String id;
+  final String name;
+  final String? photoKey;
+  final String categoryId;
+  final bool inMorning;
+  final bool inEvening;
+  final bool isDaily;
+  final int? timesPerWeek;
+  final int lastModifiedMs;
+  const CustomProductRow({
+    required this.id,
+    required this.name,
+    this.photoKey,
+    required this.categoryId,
+    required this.inMorning,
+    required this.inEvening,
+    required this.isDaily,
+    this.timesPerWeek,
+    required this.lastModifiedMs,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || photoKey != null) {
+      map['photo_key'] = Variable<String>(photoKey);
+    }
+    map['category_id'] = Variable<String>(categoryId);
+    map['in_morning'] = Variable<bool>(inMorning);
+    map['in_evening'] = Variable<bool>(inEvening);
+    map['is_daily'] = Variable<bool>(isDaily);
+    if (!nullToAbsent || timesPerWeek != null) {
+      map['times_per_week'] = Variable<int>(timesPerWeek);
+    }
+    map['last_modified_ms'] = Variable<int>(lastModifiedMs);
+    return map;
+  }
+
+  UserCustomProductsCompanion toCompanion(bool nullToAbsent) {
+    return UserCustomProductsCompanion(
+      id: Value(id),
+      name: Value(name),
+      photoKey: photoKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoKey),
+      categoryId: Value(categoryId),
+      inMorning: Value(inMorning),
+      inEvening: Value(inEvening),
+      isDaily: Value(isDaily),
+      timesPerWeek: timesPerWeek == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timesPerWeek),
+      lastModifiedMs: Value(lastModifiedMs),
+    );
+  }
+
+  factory CustomProductRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CustomProductRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      photoKey: serializer.fromJson<String?>(json['photoKey']),
+      categoryId: serializer.fromJson<String>(json['categoryId']),
+      inMorning: serializer.fromJson<bool>(json['inMorning']),
+      inEvening: serializer.fromJson<bool>(json['inEvening']),
+      isDaily: serializer.fromJson<bool>(json['isDaily']),
+      timesPerWeek: serializer.fromJson<int?>(json['timesPerWeek']),
+      lastModifiedMs: serializer.fromJson<int>(json['lastModifiedMs']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'photoKey': serializer.toJson<String?>(photoKey),
+      'categoryId': serializer.toJson<String>(categoryId),
+      'inMorning': serializer.toJson<bool>(inMorning),
+      'inEvening': serializer.toJson<bool>(inEvening),
+      'isDaily': serializer.toJson<bool>(isDaily),
+      'timesPerWeek': serializer.toJson<int?>(timesPerWeek),
+      'lastModifiedMs': serializer.toJson<int>(lastModifiedMs),
+    };
+  }
+
+  CustomProductRow copyWith({
+    String? id,
+    String? name,
+    Value<String?> photoKey = const Value.absent(),
+    String? categoryId,
+    bool? inMorning,
+    bool? inEvening,
+    bool? isDaily,
+    Value<int?> timesPerWeek = const Value.absent(),
+    int? lastModifiedMs,
+  }) => CustomProductRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    photoKey: photoKey.present ? photoKey.value : this.photoKey,
+    categoryId: categoryId ?? this.categoryId,
+    inMorning: inMorning ?? this.inMorning,
+    inEvening: inEvening ?? this.inEvening,
+    isDaily: isDaily ?? this.isDaily,
+    timesPerWeek: timesPerWeek.present ? timesPerWeek.value : this.timesPerWeek,
+    lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
+  );
+  CustomProductRow copyWithCompanion(UserCustomProductsCompanion data) {
+    return CustomProductRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      photoKey: data.photoKey.present ? data.photoKey.value : this.photoKey,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      inMorning: data.inMorning.present ? data.inMorning.value : this.inMorning,
+      inEvening: data.inEvening.present ? data.inEvening.value : this.inEvening,
+      isDaily: data.isDaily.present ? data.isDaily.value : this.isDaily,
+      timesPerWeek: data.timesPerWeek.present
+          ? data.timesPerWeek.value
+          : this.timesPerWeek,
+      lastModifiedMs: data.lastModifiedMs.present
+          ? data.lastModifiedMs.value
+          : this.lastModifiedMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CustomProductRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('photoKey: $photoKey, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('inMorning: $inMorning, ')
+          ..write('inEvening: $inEvening, ')
+          ..write('isDaily: $isDaily, ')
+          ..write('timesPerWeek: $timesPerWeek, ')
+          ..write('lastModifiedMs: $lastModifiedMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    photoKey,
+    categoryId,
+    inMorning,
+    inEvening,
+    isDaily,
+    timesPerWeek,
+    lastModifiedMs,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CustomProductRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.photoKey == this.photoKey &&
+          other.categoryId == this.categoryId &&
+          other.inMorning == this.inMorning &&
+          other.inEvening == this.inEvening &&
+          other.isDaily == this.isDaily &&
+          other.timesPerWeek == this.timesPerWeek &&
+          other.lastModifiedMs == this.lastModifiedMs);
+}
+
+class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String?> photoKey;
+  final Value<String> categoryId;
+  final Value<bool> inMorning;
+  final Value<bool> inEvening;
+  final Value<bool> isDaily;
+  final Value<int?> timesPerWeek;
+  final Value<int> lastModifiedMs;
+  final Value<int> rowid;
+  const UserCustomProductsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.photoKey = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.inMorning = const Value.absent(),
+    this.inEvening = const Value.absent(),
+    this.isDaily = const Value.absent(),
+    this.timesPerWeek = const Value.absent(),
+    this.lastModifiedMs = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  UserCustomProductsCompanion.insert({
+    required String id,
+    required String name,
+    this.photoKey = const Value.absent(),
+    required String categoryId,
+    required bool inMorning,
+    required bool inEvening,
+    required bool isDaily,
+    this.timesPerWeek = const Value.absent(),
+    required int lastModifiedMs,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       categoryId = Value(categoryId),
+       inMorning = Value(inMorning),
+       inEvening = Value(inEvening),
+       isDaily = Value(isDaily),
+       lastModifiedMs = Value(lastModifiedMs);
+  static Insertable<CustomProductRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? photoKey,
+    Expression<String>? categoryId,
+    Expression<bool>? inMorning,
+    Expression<bool>? inEvening,
+    Expression<bool>? isDaily,
+    Expression<int>? timesPerWeek,
+    Expression<int>? lastModifiedMs,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (photoKey != null) 'photo_key': photoKey,
+      if (categoryId != null) 'category_id': categoryId,
+      if (inMorning != null) 'in_morning': inMorning,
+      if (inEvening != null) 'in_evening': inEvening,
+      if (isDaily != null) 'is_daily': isDaily,
+      if (timesPerWeek != null) 'times_per_week': timesPerWeek,
+      if (lastModifiedMs != null) 'last_modified_ms': lastModifiedMs,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  UserCustomProductsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String?>? photoKey,
+    Value<String>? categoryId,
+    Value<bool>? inMorning,
+    Value<bool>? inEvening,
+    Value<bool>? isDaily,
+    Value<int?>? timesPerWeek,
+    Value<int>? lastModifiedMs,
+    Value<int>? rowid,
+  }) {
+    return UserCustomProductsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      photoKey: photoKey ?? this.photoKey,
+      categoryId: categoryId ?? this.categoryId,
+      inMorning: inMorning ?? this.inMorning,
+      inEvening: inEvening ?? this.inEvening,
+      isDaily: isDaily ?? this.isDaily,
+      timesPerWeek: timesPerWeek ?? this.timesPerWeek,
+      lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (photoKey.present) {
+      map['photo_key'] = Variable<String>(photoKey.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (inMorning.present) {
+      map['in_morning'] = Variable<bool>(inMorning.value);
+    }
+    if (inEvening.present) {
+      map['in_evening'] = Variable<bool>(inEvening.value);
+    }
+    if (isDaily.present) {
+      map['is_daily'] = Variable<bool>(isDaily.value);
+    }
+    if (timesPerWeek.present) {
+      map['times_per_week'] = Variable<int>(timesPerWeek.value);
+    }
+    if (lastModifiedMs.present) {
+      map['last_modified_ms'] = Variable<int>(lastModifiedMs.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserCustomProductsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('photoKey: $photoKey, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('inMorning: $inMorning, ')
+          ..write('inEvening: $inEvening, ')
+          ..write('isDaily: $isDaily, ')
+          ..write('timesPerWeek: $timesPerWeek, ')
+          ..write('lastModifiedMs: $lastModifiedMs, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2275,6 +2857,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DayRecordsTable dayRecords = $DayRecordsTable(this);
   late final $SkinLogEntriesTable skinLogEntries = $SkinLogEntriesTable(this);
   late final $MutedConflictsTable mutedConflicts = $MutedConflictsTable(this);
+  late final $UserCustomProductsTable userCustomProducts =
+      $UserCustomProductsTable(this);
   late final SelectionsDao selectionsDao = SelectionsDao(this as AppDatabase);
   late final SchedulesDao schedulesDao = SchedulesDao(this as AppDatabase);
   late final OrderOverridesDao orderOverridesDao = OrderOverridesDao(
@@ -2285,6 +2869,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final MutedConflictsDao mutedConflictsDao = MutedConflictsDao(
     this as AppDatabase,
   );
+  late final UserCustomProductsDao userCustomProductsDao =
+      UserCustomProductsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2296,6 +2882,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     dayRecords,
     skinLogEntries,
     mutedConflicts,
+    userCustomProducts,
   ];
 }
 
@@ -3548,6 +4135,301 @@ typedef $$MutedConflictsTableProcessedTableManager =
       MutedConflictRow,
       PrefetchHooks Function()
     >;
+typedef $$UserCustomProductsTableCreateCompanionBuilder =
+    UserCustomProductsCompanion Function({
+      required String id,
+      required String name,
+      Value<String?> photoKey,
+      required String categoryId,
+      required bool inMorning,
+      required bool inEvening,
+      required bool isDaily,
+      Value<int?> timesPerWeek,
+      required int lastModifiedMs,
+      Value<int> rowid,
+    });
+typedef $$UserCustomProductsTableUpdateCompanionBuilder =
+    UserCustomProductsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String?> photoKey,
+      Value<String> categoryId,
+      Value<bool> inMorning,
+      Value<bool> inEvening,
+      Value<bool> isDaily,
+      Value<int?> timesPerWeek,
+      Value<int> lastModifiedMs,
+      Value<int> rowid,
+    });
+
+class $$UserCustomProductsTableFilterComposer
+    extends Composer<_$AppDatabase, $UserCustomProductsTable> {
+  $$UserCustomProductsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoKey => $composableBuilder(
+    column: $table.photoKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get inMorning => $composableBuilder(
+    column: $table.inMorning,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get inEvening => $composableBuilder(
+    column: $table.inEvening,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDaily => $composableBuilder(
+    column: $table.isDaily,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get timesPerWeek => $composableBuilder(
+    column: $table.timesPerWeek,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastModifiedMs => $composableBuilder(
+    column: $table.lastModifiedMs,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$UserCustomProductsTableOrderingComposer
+    extends Composer<_$AppDatabase, $UserCustomProductsTable> {
+  $$UserCustomProductsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get photoKey => $composableBuilder(
+    column: $table.photoKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get inMorning => $composableBuilder(
+    column: $table.inMorning,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get inEvening => $composableBuilder(
+    column: $table.inEvening,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDaily => $composableBuilder(
+    column: $table.isDaily,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get timesPerWeek => $composableBuilder(
+    column: $table.timesPerWeek,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastModifiedMs => $composableBuilder(
+    column: $table.lastModifiedMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$UserCustomProductsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UserCustomProductsTable> {
+  $$UserCustomProductsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get photoKey =>
+      $composableBuilder(column: $table.photoKey, builder: (column) => column);
+
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get inMorning =>
+      $composableBuilder(column: $table.inMorning, builder: (column) => column);
+
+  GeneratedColumn<bool> get inEvening =>
+      $composableBuilder(column: $table.inEvening, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDaily =>
+      $composableBuilder(column: $table.isDaily, builder: (column) => column);
+
+  GeneratedColumn<int> get timesPerWeek => $composableBuilder(
+    column: $table.timesPerWeek,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastModifiedMs => $composableBuilder(
+    column: $table.lastModifiedMs,
+    builder: (column) => column,
+  );
+}
+
+class $$UserCustomProductsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $UserCustomProductsTable,
+          CustomProductRow,
+          $$UserCustomProductsTableFilterComposer,
+          $$UserCustomProductsTableOrderingComposer,
+          $$UserCustomProductsTableAnnotationComposer,
+          $$UserCustomProductsTableCreateCompanionBuilder,
+          $$UserCustomProductsTableUpdateCompanionBuilder,
+          (
+            CustomProductRow,
+            BaseReferences<
+              _$AppDatabase,
+              $UserCustomProductsTable,
+              CustomProductRow
+            >,
+          ),
+          CustomProductRow,
+          PrefetchHooks Function()
+        > {
+  $$UserCustomProductsTableTableManager(
+    _$AppDatabase db,
+    $UserCustomProductsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UserCustomProductsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UserCustomProductsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UserCustomProductsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> photoKey = const Value.absent(),
+                Value<String> categoryId = const Value.absent(),
+                Value<bool> inMorning = const Value.absent(),
+                Value<bool> inEvening = const Value.absent(),
+                Value<bool> isDaily = const Value.absent(),
+                Value<int?> timesPerWeek = const Value.absent(),
+                Value<int> lastModifiedMs = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => UserCustomProductsCompanion(
+                id: id,
+                name: name,
+                photoKey: photoKey,
+                categoryId: categoryId,
+                inMorning: inMorning,
+                inEvening: inEvening,
+                isDaily: isDaily,
+                timesPerWeek: timesPerWeek,
+                lastModifiedMs: lastModifiedMs,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String?> photoKey = const Value.absent(),
+                required String categoryId,
+                required bool inMorning,
+                required bool inEvening,
+                required bool isDaily,
+                Value<int?> timesPerWeek = const Value.absent(),
+                required int lastModifiedMs,
+                Value<int> rowid = const Value.absent(),
+              }) => UserCustomProductsCompanion.insert(
+                id: id,
+                name: name,
+                photoKey: photoKey,
+                categoryId: categoryId,
+                inMorning: inMorning,
+                inEvening: inEvening,
+                isDaily: isDaily,
+                timesPerWeek: timesPerWeek,
+                lastModifiedMs: lastModifiedMs,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$UserCustomProductsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UserCustomProductsTable,
+      CustomProductRow,
+      $$UserCustomProductsTableFilterComposer,
+      $$UserCustomProductsTableOrderingComposer,
+      $$UserCustomProductsTableAnnotationComposer,
+      $$UserCustomProductsTableCreateCompanionBuilder,
+      $$UserCustomProductsTableUpdateCompanionBuilder,
+      (
+        CustomProductRow,
+        BaseReferences<
+          _$AppDatabase,
+          $UserCustomProductsTable,
+          CustomProductRow
+        >,
+      ),
+      CustomProductRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3564,4 +4446,6 @@ class $AppDatabaseManager {
       $$SkinLogEntriesTableTableManager(_db, _db.skinLogEntries);
   $$MutedConflictsTableTableManager get mutedConflicts =>
       $$MutedConflictsTableTableManager(_db, _db.mutedConflicts);
+  $$UserCustomProductsTableTableManager get userCustomProducts =>
+      $$UserCustomProductsTableTableManager(_db, _db.userCustomProducts);
 }

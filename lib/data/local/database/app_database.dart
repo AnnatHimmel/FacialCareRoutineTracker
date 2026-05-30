@@ -6,12 +6,14 @@ import 'tables/order_overrides.dart';
 import 'tables/day_records.dart';
 import 'tables/skin_log_entries.dart';
 import 'tables/muted_conflicts.dart';
+import 'tables/user_custom_products.dart';
 import 'daos/selections_dao.dart';
 import 'daos/schedules_dao.dart';
 import 'daos/order_overrides_dao.dart';
 import 'daos/day_records_dao.dart';
 import 'daos/skin_log_dao.dart';
 import 'daos/muted_conflicts_dao.dart';
+import 'daos/user_custom_products_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -23,6 +25,7 @@ part 'app_database.g.dart';
     DayRecords,
     SkinLogEntries,
     MutedConflicts,
+    UserCustomProducts,
   ],
   daos: [
     SelectionsDao,
@@ -31,13 +34,14 @@ part 'app_database.g.dart';
     DayRecordsDao,
     SkinLogDao,
     MutedConflictsDao,
+    UserCustomProductsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -59,6 +63,9 @@ class AppDatabase extends _$AppDatabase {
             );
             // Add skin_state column to skin_log_entries (added in v2).
             await m.addColumn(skinLogEntries, skinLogEntries.skinState);
+          }
+          if (from < 4) {
+            await m.createTable(userCustomProducts);
           }
         },
       );

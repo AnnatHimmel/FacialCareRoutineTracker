@@ -118,6 +118,12 @@ abstract class AppLocalizations {
   /// **'יומן עור'**
   String get navJournal;
 
+  /// No description provided for @navProducts.
+  ///
+  /// In he, this message translates to:
+  /// **'המוצרים שלי'**
+  String get navProducts;
+
   /// No description provided for @navSettings.
   ///
   /// In he, this message translates to:

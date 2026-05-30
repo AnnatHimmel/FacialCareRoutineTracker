@@ -25,8 +25,8 @@ const PRODUCT_IMAGES = {
   bottle: "https://lh3.googleusercontent.com/aida-public/AB6AXuCS3dHdFP0aGvW4ogyTKKMxUPQ0ZGOE64a2PvsCokP9dQko4BfIvaagXfMqg0zfCC864RmTsinQm2A8AyFg8sF_HUtzjgDY7-NfoXPGH2ojaPj1zlQTB7MeSQlAbspLIivggN2IjwMi_CEuY2QP46g1TUml9hqEsI_wyHAdF34kcWmPO02g7cuMc-0hRRTEamrceXLwUB3Bs16RKElnPmg18Wi2uW3jr4e1yOl8_aUlP_kW-Z1fM1EjOm0fGqJcE1RzvMfTw7oU38jA",
 };
 
-function ProductThumb({ id, size = 56, fallbackIcon = "spa" }) {
-  const src = PRODUCT_IMAGES[id];
+function ProductThumb({ id, src: srcProp, size = 56, fallbackIcon = "spa" }) {
+  const src = srcProp || PRODUCT_IMAGES[id];
   if (src) {
     return (
       <div
@@ -211,12 +211,17 @@ function BottomNav({ current, onChange }) {
 // ---------- Routine item row (collapsed) ----------
 // Used on S1 (selection / "I own this"), S4 (daily home / "I did this today"), S3 (reorder).
 // `variant`: "select" | "done" | "drag"
-function RoutineRow({ item, variant = "done", checked, onToggle, draggable, onDragStart, onDragOver, onDrop, deprecated = false }) {
+function RoutineRow({ item, variant = "done", checked, onToggle, draggable, onDragStart, onDragOver, onDrop, deprecated = false, badge = null, expanded = false, onExpand, details }) {
   const isCheckedDone = variant === 'done' && checked;
+  const isDoneVariant = variant === 'done';
   const bgCls = isCheckedDone
     ? 'bg-primary-fixed/45 border-transparent'
     : 'bg-white border-outline-variant/20';
-  const baseCls = `group rounded-full p-2 ps-4 pe-3 flex items-center gap-3 shadow-glow-sm border transition-all ${bgCls}`;
+  const shapeCls = expanded ? 'rounded-[26px]' : 'rounded-full';
+  const baseCls = `group ${shapeCls} p-2 ps-4 pe-3 shadow-glow-sm border transition-all ${bgCls} ${isDoneVariant ? 'cursor-pointer select-none active:scale-[0.99]' : ''}`;
+
+  const handleRowClick = isDoneVariant ? () => onToggle && onToggle() : undefined;
+
   return (
     <div
       className={baseCls}
@@ -224,56 +229,84 @@ function RoutineRow({ item, variant = "done", checked, onToggle, draggable, onDr
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
+      onClick={handleRowClick}
+      role={isDoneVariant ? 'button' : undefined}
+      aria-pressed={isDoneVariant ? !!checked : undefined}
     >
-      {variant === "drag" ? (
-        <div className="text-outline/40 cursor-grab active:cursor-grabbing pe-1" aria-hidden="true">
-          <Icon name="drag_indicator" size={22} />
-        </div>
-      ) : null}
+      <div className="flex items-center gap-3">
+        {variant === "drag" ? (
+          <div className="text-outline/40 cursor-grab active:cursor-grabbing pe-1" aria-hidden="true">
+            <Icon name="drag_indicator" size={22} />
+          </div>
+        ) : null}
 
-      <ProductThumb id={item.thumb} size={52} fallbackIcon={item.fallbackIcon || "spa"} />
-
-      <div className="flex-1 min-w-0 text-right">
-        <div className="flex items-center gap-2 justify-start">
-          {deprecated && (
-            <span className="label-sm text-[10px] text-error bg-error-container px-1.5 py-0.5 rounded-full" title="לא מומלץ עוד">לא מומלץ</span>
+        {/* Thumbnail with a small "done" check badge overlay (no horizontal space cost) */}
+        <div className="relative flex-shrink-0">
+          <ProductThumb id={item.thumb} src={item.image} size={50} fallbackIcon={item.fallbackIcon || "spa"} />
+          {isCheckedDone && (
+            <span className="absolute -bottom-0.5 -start-0.5 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center border-2 border-white shadow-sm">
+              <Icon name="check" size={14} />
+            </span>
           )}
-          <h4 className={`quick font-bold text-[16px] leading-tight truncate text-right flex-1 ${
-            isCheckedDone ? 'text-on-surface-variant/70 line-through decoration-1 decoration-on-surface-variant/60' : 'text-on-surface'
-          }`}>{item.name}</h4>
         </div>
-        <p className={`quick text-[12px] leading-tight mt-0.5 truncate text-right ${
-          isCheckedDone ? 'text-on-surface-variant/70' : 'text-on-surface-variant'
-        }`}>
-          {item.subtitle}
-        </p>
+
+        <div className="flex-1 min-w-0 text-right">
+          <div className="flex items-center gap-2 justify-start">
+            {deprecated && (
+              <span className="label-sm text-[10px] text-error bg-error-container px-1.5 py-0.5 rounded-full" title="לא מומלץ עוד">לא מומלץ</span>
+            )}
+            {badge && (
+              <span className="label-sm text-[10px] text-primary bg-primary-fixed/70 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                <Icon name="person" size={11} />
+                {badge}
+              </span>
+            )}
+            <h4 className={`quick font-bold text-[16px] leading-tight truncate text-right flex-1 ${
+              isCheckedDone ? 'text-on-surface-variant/70 line-through decoration-1 decoration-on-surface-variant/60' : 'text-on-surface'
+            }`}>{item.name}</h4>
+          </div>
+          <p className={`quick text-[12px] leading-tight mt-0.5 truncate text-right ${
+            isCheckedDone ? 'text-on-surface-variant/70' : 'text-on-surface-variant'
+          }`}>
+            {item.subtitle}
+          </p>
+        </div>
+
+        {/* expand chevron — specific tap target, doesn't toggle done */}
+        {isDoneVariant && onExpand && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onExpand(); }}
+            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-high transition"
+            aria-label={expanded ? 'כווץ פרטים' : 'הצג פרטים'}
+            aria-expanded={expanded}
+          >
+            <Icon name={expanded ? 'expand_less' : 'expand_more'} size={20} />
+          </button>
+        )}
+
+        {variant === "select" ? (
+          <button
+            onClick={onToggle}
+            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 ${
+              checked
+                ? 'bg-primary text-white shadow-glow-sm'
+                : 'bg-primary-fixed/60 text-primary hover:bg-primary-fixed'
+            }`}
+            aria-label={checked ? 'הסר מהבחירה' : 'בחר מוצר'}
+          >
+            <Icon name={checked ? "check" : "add"} size={22} />
+          </button>
+        ) : null}
       </div>
 
-      {variant === "select" ? (
-        <button
-          onClick={onToggle}
-          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 ${
-            checked
-              ? 'bg-primary text-white shadow-glow-sm'
-              : 'bg-primary-fixed/60 text-primary hover:bg-primary-fixed'
-          }`}
-          aria-label={checked ? 'הסר מהבחירה' : 'בחר מוצר'}
-        >
-          <Icon name={checked ? "check" : "add"} size={22} />
-        </button>
-      ) : variant === "done" ? (
-        <button
-          onClick={onToggle}
-          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 ${
-            checked
-              ? 'bg-primary text-white shadow-glow-sm'
-              : 'bg-transparent text-primary border-2 border-primary/60 hover:border-primary hover:bg-primary-fixed/30'
-          }`}
-          aria-label={checked ? 'בטל סימון' : 'סמן שביצעתי'}
-        >
-          <Icon name="check" size={20} />
-        </button>
-      ) : null}
+      {/* expandable details */}
+      {isDoneVariant && expanded && (
+        <div className="mt-2 pt-3 ps-1 pe-1 border-t border-outline-variant/30 text-right" dir="rtl" onClick={(e) => e.stopPropagation()}>
+          <p className="quick text-[13px] text-on-surface-variant leading-relaxed">
+            {details || item.desc || 'אין פרטים נוספים על מוצר זה.'}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

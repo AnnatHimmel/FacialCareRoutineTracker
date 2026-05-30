@@ -44,14 +44,14 @@ class _ShellScaffold extends StatelessWidget {
             label: l10n.navToday,
           ),
           GlassNavItem(
+            icon: Icons.spa_outlined,
+            selectedIcon: Icons.spa_rounded,
+            label: l10n.navProducts,
+          ),
+          GlassNavItem(
             icon: Icons.calendar_today_outlined,
             selectedIcon: Icons.calendar_today_rounded,
             label: l10n.navCalendar,
-          ),
-          GlassNavItem(
-            icon: Icons.auto_stories_outlined,
-            selectedIcon: Icons.auto_stories_rounded,
-            label: l10n.navJournal,
           ),
           GlassNavItem(
             icon: Icons.settings_outlined,
@@ -94,16 +94,26 @@ final appRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/calendar',
-              builder: (context, state) => const CalendarScreen(),
+              path: '/products',
+              builder: (context, state) =>
+                  const ProductSelectionScreen(isTabDestination: true),
+              routes: [
+                // Step 3 of the products flow — schedule setup.
+                // Nested inside the shell branch so the bottom nav stays visible.
+                GoRoute(
+                  path: 'schedule',
+                  builder: (context, state) =>
+                      const ScheduleSetupScreen(fromProducts: true),
+                ),
+              ],
             ),
           ],
         ),
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/journal',
-              builder: (context, state) => const SkinJournalScreen(),
+              path: '/calendar',
+              builder: (context, state) => const CalendarScreen(),
             ),
           ],
         ),
@@ -139,6 +149,12 @@ final appRouter = GoRouter(
         final fromSetup = state.uri.queryParameters['from'] == 'setup';
         return OrderCustomizationScreen(fromSetup: fromSetup);
       },
+    ),
+
+    // Skin journal (accessible from calendar)
+    GoRoute(
+      path: '/journal',
+      builder: (context, state) => const SkinJournalScreen(),
     ),
 
     // Detail routes

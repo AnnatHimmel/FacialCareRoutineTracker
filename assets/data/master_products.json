@@ -129,8 +129,8 @@
       "addedInVersion": "1.0.0",
       "imageAsset": "assets/images/products/isntree_hyper_acid_30_serum.jpg",
       "comment": "סרום פילינג עוצמתי המשלב 4 חומצות לחידוש מרקם העור, ניקוי נקבוביות והבהרה",
-      "morningConfig": {"order": 0, "frequency": {"type": "daily"}},
-      "eveningConfig": {"order": 2, "frequency": {"type": "daily"}}
+      "morningConfig": null,
+      "eveningConfig": {"order": 2, "frequency": {"type": "weeklyMax", "maxPerWeek": 3}}
     },
     {
       "id": "prod-018",
@@ -217,8 +217,8 @@
       "addedInVersion": "1.0.0",
       "imageAsset": "assets/images/products/derma_e_acne_blemish_control_serum.jpg",
       "comment": "סרום טיפולי לעור מעורב עד שמן, מסייע במניעה וטיפול בפגמי עור, ניקוי נקבוביות והאיזון בלוטות החלב",
-      "morningConfig": {"order": 0, "frequency": {"type": "daily"}},
-      "eveningConfig": {"order": 0, "frequency": {"type": "daily"}}
+      "morningConfig": null,
+      "eveningConfig": {"order": 0, "frequency": {"type": "weeklyMax", "maxPerWeek": 3}}
     },
     {
       "id": "prod-026",

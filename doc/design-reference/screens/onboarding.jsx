@@ -20,8 +20,7 @@ function OnboardingScreen({ selected, setSelected, onFinish, setName, setGender,
 
   // Sun shape background ornament
   return (
-    <div className="phone-shell" dir="rtl">
-      <div className="relative min-h-[100dvh] bg-surface flex flex-col">
+    <div className="relative min-h-[100dvh] bg-surface flex flex-col" dir="rtl">
         {/* Top: progress bar */}
         <div className="px-5 pt-6 pb-2">
           <div className="flex items-center justify-between mb-2">
@@ -100,7 +99,6 @@ function OnboardingScreen({ selected, setSelected, onFinish, setName, setGender,
           </div>
         )}
       </div>
-    </div>
   );
 }
 

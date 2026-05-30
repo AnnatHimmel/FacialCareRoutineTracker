@@ -21,6 +21,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get navJournal => 'יומן עור';
 
   @override
+  String get navProducts => 'המוצרים שלי';
+
+  @override
   String get navSettings => 'הגדרות';
 
   @override

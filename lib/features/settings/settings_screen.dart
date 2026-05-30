@@ -58,20 +58,6 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 8),
 
           _SettingsRow(
-            icon: Icons.tune_outlined,
-            label: 'בחירת מוצרים',
-            subtitle: 'בחרי את המוצרים שברשותך',
-            onTap: () => context.push('/setup/selection'),
-          ),
-          const SizedBox(height: 12),
-          _SettingsRow(
-            icon: Icons.calendar_today_outlined,
-            label: 'תזמון מוצרים',
-            subtitle: 'קבעי ימים ושעות לכל מוצר',
-            onTap: () => context.push('/setup/schedule'),
-          ),
-          const SizedBox(height: 12),
-          _SettingsRow(
             icon: Icons.reorder,
             label: 'סדר מוצרים',
             subtitle: 'גרורי לסידור אישי',

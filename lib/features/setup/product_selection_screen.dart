@@ -12,17 +12,22 @@ import '../../domain/repositories/master_content_repository.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../shared/providers/root_providers.dart';
-import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/soft_warning_banner.dart';
+import 'add_custom_product_sheet.dart';
 
 const _uuid = Uuid();
 
 class ProductSelectionScreen extends ConsumerStatefulWidget {
   final bool fromSetup;
+  final bool isTabDestination;
 
-  const ProductSelectionScreen({super.key, this.fromSetup = false});
+  const ProductSelectionScreen({
+    super.key,
+    this.fromSetup = false,
+    this.isTabDestination = false,
+  });
 
   @override
   ConsumerState<ProductSelectionScreen> createState() =>
@@ -31,21 +36,17 @@ class ProductSelectionScreen extends ConsumerStatefulWidget {
 
 class _ProductSelectionScreenState
     extends ConsumerState<ProductSelectionScreen> {
-  // ── active slot (AM/PM toggle) ────────────────────────────────────────────
-  Slot _activeSlot = Slot.morning;
+  // ── 3-step wizard state: 1=morning, 2=evening ─────────────────────────────
+  int _currentStep = 1;
 
-  // ── search query ──────────────────────────────────────────────────────────
+  Slot get _activeSlot =>
+      _currentStep == 1 ? Slot.morning : Slot.evening;
+
+  // ── filters ───────────────────────────────────────────────────────────────
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
-
-  // ── active category filter (null = all) ───────────────────────────────────
   String? _activeCategoryId;
-
-  // ── slot-section expand state (kept for parity with old behavior) ─────────
-  final Map<Slot, bool> _sectionExpanded = {
-    Slot.morning: true,
-    Slot.evening: true,
-  };
+  bool _onlyMine = false;
 
   @override
   void initState() {
@@ -59,6 +60,35 @@ class _ProductSelectionScreenState
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  // ── step navigation ───────────────────────────────────────────────────────
+
+  void _goToEvening() {
+    setState(() {
+      _currentStep = 2;
+      _searchController.clear();
+      _activeCategoryId = null;
+      _onlyMine = false;
+    });
+    // Scroll to top if possible — handled by key reset via setState
+  }
+
+  void _backToMorning() {
+    setState(() {
+      _currentStep = 1;
+      _searchController.clear();
+      _activeCategoryId = null;
+      _onlyMine = false;
+    });
+  }
+
+  void _goToSchedule(BuildContext context) {
+    if (widget.fromSetup) {
+      context.push('/setup/schedule?from=setup');
+    } else {
+      context.push('/products/schedule');
+    }
   }
 
   // ── data mutations ────────────────────────────────────────────────────────
@@ -94,15 +124,14 @@ class _ProductSelectionScreenState
   }
 
   Future<void> _muteConflict(String ruleId) async {
-    final repo = ref.read(userDataRepositoryProvider);
-    await repo.muteConflict(
-      MutedConflict(id: _uuid.v4(), ruleId: ruleId, mutedAt: DateTime.now()),
-    );
+    await ref.read(userDataRepositoryProvider).muteConflict(
+          MutedConflict(
+              id: _uuid.v4(), ruleId: ruleId, mutedAt: DateTime.now()),
+        );
   }
 
   Future<void> _unmuteConflict(String ruleId) async {
-    final repo = ref.read(userDataRepositoryProvider);
-    await repo.unmuteConflict(ruleId);
+    await ref.read(userDataRepositoryProvider).unmuteConflict(ruleId);
   }
 
   // ── build ─────────────────────────────────────────────────────────────────
@@ -116,20 +145,10 @@ class _ProductSelectionScreenState
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: GlowAppBar(
-        showBack: !widget.fromSetup,
-        onBack: () => context.pop(),
-        action: !widget.fromSetup
-            ? TextButton(
-                onPressed: () => context.pop(),
-                child: Text(
-                  'שמור',
-                  style: AppTypography.labelMd.copyWith(color: AppColors.primary),
-                ),
-              )
-            : null,
-      ),
-      bottomNavigationBar: _buildSetupNav(context),
+      appBar: const GlowAppBar(),
+      // The shell scaffold provides the bottom nav when isTabDestination.
+      // During setup / onboarding there is no bottom nav (matches JSX).
+      bottomNavigationBar: null,
       body: masterAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('שגיאה: $e')),
@@ -144,11 +163,10 @@ class _ProductSelectionScreenState
               ? morningSelections
               : eveningSelections;
 
-          final allSelections = [...morningSelections, ...eveningSelections];
-          final totalSelected = allSelections
+          final slotSelectedCount = (_activeSlot == Slot.morning
+                  ? morningSelections
+                  : eveningSelections)
               .where((s) => s.isSelected)
-              .map((s) => s.productId)
-              .toSet()
               .length;
 
           return _buildBody(
@@ -159,7 +177,7 @@ class _ProductSelectionScreenState
             currentSelections: currentSelections,
             mutedIds: mutedIds,
             checker: checker,
-            totalSelected: totalSelected,
+            slotSelectedCount: slotSelectedCount,
           );
         },
       ),
@@ -174,27 +192,31 @@ class _ProductSelectionScreenState
     required List<ProductSelection> currentSelections,
     required Set<String> mutedIds,
     required IncompatibilityChecker checker,
-    required int totalSelected,
+    required int slotSelectedCount,
   }) {
-    // Products for the active slot, not deprecated
     final slotProducts = master.products
         .where(
-          (p) =>
-              !p.isDeprecated && p.configForSlot(_activeSlot) != null,
+          (p) => !p.isDeprecated && p.configForSlot(_activeSlot) != null,
         )
         .toList();
 
-    // Apply search filter
+    // "Only mine" filter
+    final selectedIds = currentSelections
+        .where((s) => s.isSelected)
+        .map((s) => s.productId)
+        .toSet();
+
+    final afterMine = _onlyMine
+        ? slotProducts.where((p) => selectedIds.contains(p.id)).toList()
+        : slotProducts;
+
     final afterSearch = _query.isEmpty
-        ? slotProducts
-        : slotProducts
-            .where(
-              (p) =>
-                  p.name.toLowerCase().contains(_query.toLowerCase()),
-            )
+        ? afterMine
+        : afterMine
+            .where((p) =>
+                p.name.toLowerCase().contains(_query.toLowerCase()))
             .toList();
 
-    // Apply category filter
     final filtered = _activeCategoryId == null
         ? afterSearch
         : afterSearch
@@ -202,15 +224,11 @@ class _ProductSelectionScreenState
             .toList();
 
     // Conflict detection for current slot
-    final selectedIds = currentSelections
-        .where((s) => s.isSelected)
-        .map((s) => s.productId)
-        .toSet();
-
     final selectedInSlot =
         slotProducts.where((p) => selectedIds.contains(p.id)).toList();
 
-    final otherSlot = _activeSlot == Slot.morning ? Slot.evening : Slot.morning;
+    final otherSlot =
+        _activeSlot == Slot.morning ? Slot.evening : Slot.morning;
     final otherSelections =
         _activeSlot == Slot.morning ? eveningSelections : morningSelections;
     final otherSelectedIds = otherSelections
@@ -233,7 +251,7 @@ class _ProductSelectionScreenState
       mutedRuleIds: mutedIds,
     );
 
-    // Categories that appear in the current slot
+    // Categories for the current slot
     final slotCategoryIds = slotProducts.map((p) => p.categoryId).toSet();
     final slotCategories = master.categories
         .where((c) => slotCategoryIds.contains(c.id))
@@ -243,31 +261,29 @@ class _ProductSelectionScreenState
       children: [
         CustomScrollView(
           slivers: [
-            // ── controls ─────────────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Step wizard indicator (onboarding flow only)
-                    if (widget.fromSetup) ...[
-                      const _StepIndicator(
-                        currentStep: 1,
-                        steps: ['בחירה', 'תזמון'],
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                    // AM / PM toggle
-                    _SlotToggle(
-                      activeSlot: _activeSlot,
-                      onChanged: (slot) =>
-                          setState(() => _activeSlot = slot),
+                    // ── 3-step indicator (always shown) ─────────────────────
+                    _StepIndicator(
+                      currentStep: _currentStep,
+                      steps: const ['בוקר', 'ערב', 'תזמון'],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ── Slot progress toggle ─────────────────────────────────
+                    _SlotProgressToggle(
+                      currentStep: _currentStep,
+                      onBackToMorning: _currentStep == 2 ? _backToMorning : null,
                     ),
                     const SizedBox(height: 8),
-                    // subtitle
+
+                    // ── Subtitle ─────────────────────────────────────────────
                     Text(
-                      'בניית שגרת ${_activeSlot == Slot.morning ? 'הבוקר' : 'הערב'} שלך • $totalSelected מוצרים נבחרו',
+                      'שלב $_currentStep — בחירת מוצרי ${_activeSlot == Slot.morning ? 'הבוקר' : 'הערב'} שלך • $slotSelectedCount נבחרו',
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -276,23 +292,48 @@ class _ProductSelectionScreenState
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Search field
-                    _SearchField(controller: _searchController),
+
+                    // ── Search field + add custom product button ────────────
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _SearchField(controller: _searchController),
+                        ),
+                        const SizedBox(width: 8),
+                        _AddProductButton(
+                          onTap: () => showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => const AddCustomProductSheet(),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
-                    // Category chip rail
+
+                    // ── Category chip rail ───────────────────────────────────
                     _CategoryChipRail(
                       categories: slotCategories,
                       activeCategoryId: _activeCategoryId,
                       onSelect: (id) =>
                           setState(() => _activeCategoryId = id),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
+
+                    // ── All / Mine filter row ────────────────────────────────
+                    _AllMineFilterRow(
+                      onlyMine: _onlyMine,
+                      totalSelected: selectedInSlot.length,
+                      onToggle: (v) => setState(() => _onlyMine = v),
+                    ),
+                    const SizedBox(height: 4),
                   ],
                 ),
               ),
             ),
 
-            // ── conflict banners ──────────────────────────────────────────────
+            // ── Conflict banners ──────────────────────────────────────────────
             for (final conflict in conflicts.where((c) => !c.isMuted))
               SliverToBoxAdapter(
                 child: Padding(
@@ -326,7 +367,7 @@ class _ProductSelectionScreenState
                 ),
               ),
 
-            // ── empty state ───────────────────────────────────────────────────
+            // ── Empty state ───────────────────────────────────────────────────
             if (filtered.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,
@@ -334,7 +375,9 @@ class _ProductSelectionScreenState
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 48),
                     child: Text(
-                      'לא נמצאו מוצרים תואמים.',
+                      _onlyMine
+                          ? 'עדיין לא בחרת מוצרים בשגרה זו.'
+                          : 'לא נמצאו מוצרים תואמים.',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyMd.copyWith(
                         color: AppColors.onSurfaceVariant,
@@ -344,7 +387,7 @@ class _ProductSelectionScreenState
                 ),
               ),
 
-            // ── flat product list ─────────────────────────────────────────────
+            // ── Product list ──────────────────────────────────────────────────
             if (filtered.isNotEmpty)
               SliverToBoxAdapter(
                 child: Padding(
@@ -365,25 +408,22 @@ class _ProductSelectionScreenState
                 ),
               ),
 
-            // bottom padding so last card clears the sticky CTA
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: widget.fromSetup ? 96 : 32,
-              ),
-            ),
+            // Bottom padding clears the sticky CTA
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
 
-        // ── sticky bottom CTA (fromSetup only) ────────────────────────────────
-        if (widget.fromSetup)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _BottomCta(
-              onPressed: () => context.go('/setup/schedule?from=setup'),
-            ),
+        // ── Sticky bottom CTA ─────────────────────────────────────────────────
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: _BottomCta(
+            currentStep: _currentStep,
+            onStep1: _goToEvening,
+            onStep2: () => _goToSchedule(context),
           ),
+        ),
       ],
     );
   }
@@ -403,61 +443,19 @@ class _ProductSelectionScreenState
     return RoutineItemRow(
       product: product,
       isToggled: isToggled,
-      onToggle: () => _toggleSelection(
-        product,
-        _activeSlot,
-        currentSelections,
-      ),
+      onToggle: () => _toggleSelection(product, _activeSlot, currentSelections),
       isOwnershipContext: true,
       hasConflict: hasConflict,
-      onConflictTap: hasConflict ? () => _expandAllSections() : null,
     );
   }
-
-  void _expandAllSections() {
-    setState(() {
-      _sectionExpanded[Slot.morning] = true;
-      _sectionExpanded[Slot.evening] = true;
-    });
-  }
-
-  Widget _buildSetupNav(BuildContext context) => GlassBottomNav(
-        currentIndex: -1,
-        onDestinationSelected: (i) {
-          const routes = ['/today', '/calendar', '/journal', '/settings'];
-          if (i < routes.length) context.go(routes[i]);
-        },
-        items: const [
-          GlassNavItem(
-            icon: Icons.wb_sunny_outlined,
-            selectedIcon: Icons.wb_sunny_rounded,
-            label: 'היום',
-          ),
-          GlassNavItem(
-            icon: Icons.calendar_today_outlined,
-            selectedIcon: Icons.calendar_today_rounded,
-            label: 'לוח שנה',
-          ),
-          GlassNavItem(
-            icon: Icons.auto_stories_outlined,
-            selectedIcon: Icons.auto_stories_rounded,
-            label: 'יומן',
-          ),
-          GlassNavItem(
-            icon: Icons.settings_outlined,
-            selectedIcon: Icons.settings_rounded,
-            label: 'הגדרות',
-          ),
-        ],
-      );
 }
 
-// ── Step wizard indicator ──────────────────────────────────────────────────────
+// ── 3-step indicator ──────────────────────────────────────────────────────────
 
 enum _StepState { active, done, inactive }
 
 class _StepIndicator extends StatelessWidget {
-  final int currentStep; // 1-indexed
+  final int currentStep; // 1-indexed; max 2 for this screen (3 is on schedule screen)
   final List<String> steps;
 
   const _StepIndicator({required this.currentStep, required this.steps});
@@ -466,7 +464,6 @@ class _StepIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      // RTL: first child appears visually on the right
       textDirection: TextDirection.rtl,
       children: [
         for (int i = 0; i < steps.length; i++) ...[
@@ -555,13 +552,16 @@ class _StepChip extends StatelessWidget {
   }
 }
 
-// ── AM / PM segmented pill toggle ─────────────────────────────────────────────
+// ── Slot progress toggle (forward-only progress indicator) ────────────────────
 
-class _SlotToggle extends StatelessWidget {
-  final Slot activeSlot;
-  final ValueChanged<Slot> onChanged;
+class _SlotProgressToggle extends StatelessWidget {
+  final int currentStep; // 1 or 2
+  final VoidCallback? onBackToMorning; // null when already on morning
 
-  const _SlotToggle({required this.activeSlot, required this.onChanged});
+  const _SlotProgressToggle({
+    required this.currentStep,
+    required this.onBackToMorning,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -575,79 +575,87 @@ class _SlotToggle extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _ToggleTab(
-            label: 'בוקר',
-            icon: Icons.wb_sunny_rounded,
-            active: activeSlot == Slot.morning,
-            activeColor: AppColors.primaryContainer,
-            onTap: () => onChanged(Slot.morning),
-          ),
-          _ToggleTab(
-            label: 'ערב',
-            icon: Icons.dark_mode_rounded,
-            active: activeSlot == Slot.evening,
-            activeColor: AppColors.tertiary,
-            onTap: () => onChanged(Slot.evening),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ToggleTab extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool active;
-  final Color activeColor;
-  final VoidCallback onTap;
-
-  const _ToggleTab({
-    required this.label,
-    required this.icon,
-    required this.active,
-    required this.activeColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          decoration: BoxDecoration(
-            color: active ? activeColor : Colors.transparent,
-            borderRadius: BorderRadius.circular(9999),
-            boxShadow: active ? AppColors.glowSm : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.labelMd.copyWith(
-                  color: active
-                      ? AppColors.onPrimary
-                      : AppColors.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
+          // Morning tab — clickable to go back when on evening
+          Expanded(
+            child: GestureDetector(
+              onTap: onBackToMorning,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                decoration: BoxDecoration(
+                  color: currentStep == 1
+                      ? AppColors.primaryContainer
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(9999),
+                  boxShadow:
+                      currentStep == 1 ? AppColors.glowSm : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'בוקר',
+                      style: AppTypography.labelMd.copyWith(
+                        color: currentStep >= 1
+                            ? (currentStep == 1
+                                ? AppColors.onPrimary
+                                : AppColors.onSurface)
+                            : AppColors.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    if (currentStep == 1)
+                      const Icon(Icons.wb_sunny_rounded,
+                          size: 18, color: AppColors.onPrimary)
+                    else
+                      const Icon(Icons.check_rounded,
+                          size: 16, color: AppColors.secondary),
+                  ],
                 ),
               ),
-              const SizedBox(width: 6),
-              Icon(
-                icon,
-                size: 18,
-                color: active
-                    ? AppColors.onPrimary
-                    : AppColors.onSurfaceVariant,
-              ),
-            ],
+            ),
           ),
-        ),
+
+          // Evening tab — visual indicator only (not interactive from step 1)
+          Expanded(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              decoration: BoxDecoration(
+                color: currentStep == 2
+                    ? AppColors.tertiary
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(9999),
+                boxShadow: currentStep == 2 ? AppColors.glowSm : null,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'ערב',
+                    style: AppTypography.labelMd.copyWith(
+                      color: currentStep == 2
+                          ? AppColors.onPrimary
+                          : AppColors.onSurfaceVariant
+                              .withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.dark_mode_rounded,
+                    size: 18,
+                    color: currentStep == 2
+                        ? AppColors.onPrimary
+                        : AppColors.onSurfaceVariant
+                            .withValues(alpha: 0.4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -672,11 +680,7 @@ class _SearchField extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 16),
-          const Icon(
-            Icons.search_rounded,
-            color: AppColors.outline,
-            size: 20,
-          ),
+          const Icon(Icons.search_rounded, color: AppColors.outline, size: 20),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -723,7 +727,6 @@ class _CategoryChipRail extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         children: [
           const SizedBox(width: 4),
-          // "הכל" chip
           _CategoryChip(
             label: 'הכל',
             active: activeCategoryId == null,
@@ -734,9 +737,8 @@ class _CategoryChipRail extends StatelessWidget {
             _CategoryChip(
               label: cat.name,
               active: activeCategoryId == cat.id,
-              onTap: () => onSelect(
-                activeCategoryId == cat.id ? null : cat.id,
-              ),
+              onTap: () =>
+                  onSelect(activeCategoryId == cat.id ? null : cat.id),
             ),
           ],
           const SizedBox(width: 4),
@@ -751,11 +753,8 @@ class _CategoryChip extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
 
-  const _CategoryChip({
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
+  const _CategoryChip(
+      {required this.label, required this.active, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -763,8 +762,7 @@ class _CategoryChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: active ? AppColors.primary : AppColors.primaryFixed,
           borderRadius: BorderRadius.circular(9999),
@@ -775,7 +773,8 @@ class _CategoryChip extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTypography.labelMd.copyWith(
-            color: active ? AppColors.onPrimary : AppColors.onPrimaryContainer,
+            color:
+                active ? AppColors.onPrimary : AppColors.onPrimaryContainer,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -784,51 +783,224 @@ class _CategoryChip extends StatelessWidget {
   }
 }
 
-// ── Bottom CTA ────────────────────────────────────────────────────────────────
+// ── All / Mine segmented filter row ──────────────────────────────────────────
 
-class _BottomCta extends StatelessWidget {
-  final VoidCallback onPressed;
+class _AllMineFilterRow extends StatelessWidget {
+  final bool onlyMine;
+  final int totalSelected;
+  final ValueChanged<bool> onToggle;
 
-  const _BottomCta({required this.onPressed});
+  const _AllMineFilterRow({
+    required this.onlyMine,
+    required this.totalSelected,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // Segmented control (RTL: first item is visually rightmost)
+        Container(
+          height: 40,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceLow,
+            borderRadius: BorderRadius.circular(9999),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _FilterTab(
+                label: 'כל המוצרים',
+                icon: Icons.apps_rounded,
+                active: !onlyMine,
+                onTap: () => onToggle(false),
+              ),
+              const SizedBox(width: 4),
+              _FilterTab(
+                label: 'שלי',
+                icon: Icons.check_circle_rounded,
+                active: onlyMine,
+                onTap: () => onToggle(true),
+                badge: totalSelected > 0 ? '$totalSelected' : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FilterTab extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool active;
+  final VoidCallback onTap;
+  final String? badge;
+
+  const _FilterTab({
+    required this.label,
+    required this.icon,
+    required this.active,
+    required this.onTap,
+    this.badge,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(9999),
+          boxShadow: active ? AppColors.glowSm : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: active ? AppColors.primary : AppColors.onSurfaceVariant,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: AppTypography.labelSm.copyWith(
+                color:
+                    active ? AppColors.primary : AppColors.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (badge != null) ...[
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: active
+                      ? AppColors.primary
+                      : AppColors.primaryFixed,
+                  borderRadius: BorderRadius.circular(9999),
+                ),
+                child: Text(
+                  badge!,
+                  style: AppTypography.labelSm.copyWith(
+                    fontSize: 10,
+                    color: active
+                        ? AppColors.onPrimary
+                        : AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Sticky bottom CTA ─────────────────────────────────────────────────────────
+
+class _BottomCta extends StatelessWidget {
+  final int currentStep;
+  final VoidCallback onStep1;
+  final VoidCallback onStep2;
+
+  const _BottomCta({
+    required this.currentStep,
+    required this.onStep1,
+    required this.onStep2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isStep1 = currentStep == 1;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       decoration: BoxDecoration(
         color: AppColors.surface.withAlpha(230),
         boxShadow: AppColors.navGlow,
       ),
-      child: Container(
-        height: 56,
-        decoration: BoxDecoration(
-          gradient: AppColors.primaryGlowGradient,
-          borderRadius: BorderRadius.circular(9999),
-          boxShadow: AppColors.glowSm,
-        ),
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: onPressed,
-            borderRadius: BorderRadius.circular(9999),
-            child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'המשך לתזמון',
-                    style: AppTypography.labelMd.copyWith(
-                      color: AppColors.onPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Primary CTA
+          Container(
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGlowGradient,
+              borderRadius: BorderRadius.circular(9999),
+              boxShadow: AppColors.glowSm,
+            ),
+            child: Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: isStep1 ? onStep1 : onStep2,
+                borderRadius: BorderRadius.circular(9999),
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!isStep1) ...[
+                        const Icon(Icons.event_rounded,
+                            color: AppColors.onPrimary, size: 20),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        isStep1 ? 'המשך לבחירת הערב' : 'המשך לתזמון',
+                        style: AppTypography.labelMd.copyWith(
+                          color: AppColors.onPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      if (isStep1) ...[
+                        const SizedBox(width: 8),
+                        const Icon(Icons.dark_mode_rounded,
+                            color: AppColors.onPrimary, size: 20),
+                      ],
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward_rounded,
-                      color: AppColors.onPrimary, size: 20),
-                ],
+                ),
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Add product button ────────────────────────────────────────────────────────
+
+class _AddProductButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AddProductButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: const BoxDecoration(
+          color: AppColors.primaryFixed,
+          shape: BoxShape.circle,
+          boxShadow: AppColors.glowSm,
+        ),
+        child: const Icon(
+          Icons.add_rounded,
+          color: AppColors.primary,
+          size: 24,
         ),
       ),
     );

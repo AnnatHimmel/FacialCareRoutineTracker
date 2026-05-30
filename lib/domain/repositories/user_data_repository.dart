@@ -4,6 +4,7 @@ import '../entities/order_override.dart';
 import '../entities/day_record.dart';
 import '../entities/skin_log_entry.dart';
 import '../entities/muted_conflict.dart';
+import '../entities/user_custom_product.dart';
 import '../entities/user_data_export.dart';
 import '../enums/slot.dart';
 
@@ -37,6 +38,10 @@ abstract class UserDataRepository {
   Stream<List<MutedConflict>> watchMutedConflicts();
   Future<void> muteConflict(MutedConflict m);
   Future<void> unmuteConflict(String ruleId);
+
+  Stream<List<UserCustomProduct>> watchCustomProducts();
+  Future<void> upsertCustomProduct(UserCustomProduct p);
+  Future<void> deleteCustomProduct(String id);
 
   Future<UserDataExport> exportAllData();
   Future<void> replaceAllData(UserDataExport export);

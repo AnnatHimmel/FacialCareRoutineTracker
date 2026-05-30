@@ -179,7 +179,10 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _formatDateHebrew(ref.read(effectiveDateProvider)),
+                          _buildDayLabel(
+                            ref.read(effectiveDateProvider),
+                            ref.watch(_userNameProvider).valueOrNull,
+                          ),
                           textAlign: TextAlign.right,
                           style: AppTypography.labelMd.copyWith(
                             color: AppColors.primary,
@@ -188,7 +191,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'טקסי טיפוח יומיים',
+                          'השגרה שלך היום',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.right,
@@ -199,7 +202,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'התמקדי בבריאות העור שלך היום.',
+                          'הקישי על מוצר לסימון בוצע',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.right,
@@ -338,12 +341,15 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
     );
   }
 
-  String _formatDateHebrew(DateTime date) {
-    const months = [
-      'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-      'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
+  static String _buildDayLabel(DateTime date, String? userName) {
+    const days = [
+      'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת', 'ראשון',
     ];
-    return '${date.day} ב${months[date.month - 1]}';
+    final day = days[date.weekday - 1]; // weekday: Mon=1 … Sun=7
+    final name = userName != null && userName.trim().isNotEmpty
+        ? userName.trim().split(' ').first
+        : null;
+    return name != null ? 'יום $day • שלום $name' : 'יום $day';
   }
 }
 
@@ -427,4 +433,8 @@ final _dayRecordProvider =
   (ref, params) => ref
       .watch(userDataRepositoryProvider)
       .watchDayRecord(params.date, params.slot),
+);
+
+final _userNameProvider = FutureProvider<String?>(
+  (ref) => ref.watch(settingsRepositoryProvider).getUserName(),
 );

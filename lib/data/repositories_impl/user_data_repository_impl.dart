@@ -7,6 +7,7 @@ import '../../domain/entities/muted_conflict.dart';
 import '../../domain/entities/order_override.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/skin_log_entry.dart';
+import '../../domain/entities/user_custom_product.dart';
 import '../../domain/entities/user_data_export.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
@@ -189,6 +190,34 @@ class UserDataRepositoryImpl implements UserDataRepository {
   Future<void> unmuteConflict(String ruleId) =>
       _db.mutedConflictsDao.deleteByRuleId(ruleId);
 
+  // ── Custom products ───────────────────────────────────────────────────────
+
+  @override
+  Stream<List<UserCustomProduct>> watchCustomProducts() =>
+      _db.userCustomProductsDao.watchAll().map(
+            (rows) => rows.map(_customProductFromRow).toList(),
+          );
+
+  @override
+  Future<void> upsertCustomProduct(UserCustomProduct p) =>
+      _db.userCustomProductsDao.upsert(
+        UserCustomProductsCompanion(
+          id: Value(p.id),
+          name: Value(p.name),
+          photoKey: Value(p.photoKey),
+          categoryId: Value(p.categoryId),
+          inMorning: Value(p.inMorning),
+          inEvening: Value(p.inEvening),
+          isDaily: Value(p.isDaily),
+          timesPerWeek: Value(p.timesPerWeek),
+          lastModifiedMs: Value(p.lastModified.millisecondsSinceEpoch),
+        ),
+      );
+
+  @override
+  Future<void> deleteCustomProduct(String id) =>
+      _db.userCustomProductsDao.deleteById(id);
+
   // ── Export / Import ───────────────────────────────────────────────────────
 
   @override
@@ -298,6 +327,19 @@ class UserDataRepositoryImpl implements UserDataRepository {
         id: r.id,
         ruleId: r.ruleId,
         mutedAt: DateTime.fromMillisecondsSinceEpoch(r.mutedAtMs),
+      );
+
+  UserCustomProduct _customProductFromRow(CustomProductRow r) =>
+      UserCustomProduct(
+        id: r.id,
+        name: r.name,
+        photoKey: r.photoKey,
+        categoryId: r.categoryId,
+        inMorning: r.inMorning,
+        inEvening: r.inEvening,
+        isDaily: r.isDaily,
+        timesPerWeek: r.timesPerWeek,
+        lastModified: DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),
       );
 
   DayRecordsCompanion _dayRecordToCompanion(DayRecord r) =>
