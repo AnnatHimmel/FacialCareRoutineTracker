@@ -57,6 +57,7 @@ class MasterContentRepositoryImpl implements MasterContentRepository {
   Category _parseCategory(Map<String, dynamic> m) => Category(
         id: m['id'] as String,
         name: m['name'] as String,
+        order: m['order'] as int,
       );
 
   MasterProduct _parseProduct(Map<String, dynamic> m) => MasterProduct(

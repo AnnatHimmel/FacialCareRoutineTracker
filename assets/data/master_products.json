@@ -1,14 +1,14 @@
 {
   "contentVersion": "1.0.0",
   "categories": [
-    {"id": "cat-cleanser-step1", "name": "ניקוי שלב 1"},
-    {"id": "cat-cleanser-step2", "name": "ניקוי שלב 2"},
-    {"id": "cat-toner", "name": "טונר / אסנס"},
-    {"id": "cat-serum", "name": "סרום / אקטיב"},
-    {"id": "cat-retinoid", "name": "רטינואידים"},
-    {"id": "cat-moisturizer", "name": "לחות"},
-    {"id": "cat-spf", "name": "הגנה"},
-    {"id": "cat-oil", "name": "שמנים"}
+    {"id": "cat-cleanser-step1", "name": "ניקוי שלב 1", "order": 1},
+    {"id": "cat-cleanser-step2", "name": "ניקוי שלב 2", "order": 2},
+    {"id": "cat-retinoid", "name": "רטינואידים", "order": 3},
+    {"id": "cat-toner", "name": "טונר / אסנס", "order": 4},
+    {"id": "cat-serum", "name": "סרום / אקטיב", "order": 5},
+    {"id": "cat-moisturizer", "name": "לחות", "order": 6},
+    {"id": "cat-oil", "name": "שמנים", "order": 7},
+    {"id": "cat-spf", "name": "הגנה", "order": 8}
   ],
   "products": [
     {

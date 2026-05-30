@@ -217,11 +217,22 @@ class _ProductSelectionScreenState
                 p.name.toLowerCase().contains(_query.toLowerCase()))
             .toList();
 
-    final filtered = _activeCategoryId == null
-        ? afterSearch
-        : afterSearch
-            .where((p) => p.categoryId == _activeCategoryId)
-            .toList();
+    final categoryOrderById = {
+      for (final cat in master.categories) cat.id: cat.order,
+    };
+
+    final filtered = List<MasterProduct>.of(
+      _activeCategoryId == null
+          ? afterSearch
+          : afterSearch.where((p) => p.categoryId == _activeCategoryId),
+    )..sort((a, b) {
+        final catA = categoryOrderById[a.categoryId] ?? 9999;
+        final catB = categoryOrderById[b.categoryId] ?? 9999;
+        if (catA != catB) return catA.compareTo(catB);
+        final orderA = a.configForSlot(_activeSlot)?.order ?? 9999;
+        final orderB = b.configForSlot(_activeSlot)?.order ?? 9999;
+        return orderA.compareTo(orderB);
+      });
 
     // Conflict detection for current slot
     final selectedInSlot =

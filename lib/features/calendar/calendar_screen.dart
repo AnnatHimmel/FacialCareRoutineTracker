@@ -33,16 +33,35 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     super.initState();
     final now = DateTime.now();
     _displayMonth = DateTime(now.year, now.month);
+    _selectedDay =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  String _todayStr() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
   void _prevMonth() => setState(() {
-        _selectedDay = null;
-        _displayMonth = DateTime(_displayMonth.year, _displayMonth.month - 1);
+        final newMonth =
+            DateTime(_displayMonth.year, _displayMonth.month - 1);
+        _displayMonth = newMonth;
+        final now = DateTime.now();
+        _selectedDay =
+            (newMonth.year == now.year && newMonth.month == now.month)
+                ? _todayStr()
+                : null;
       });
 
   void _nextMonth() => setState(() {
-        _selectedDay = null;
-        _displayMonth = DateTime(_displayMonth.year, _displayMonth.month + 1);
+        final newMonth =
+            DateTime(_displayMonth.year, _displayMonth.month + 1);
+        _displayMonth = newMonth;
+        final now = DateTime.now();
+        _selectedDay =
+            (newMonth.year == now.year && newMonth.month == now.month)
+                ? _todayStr()
+                : null;
       });
 
   @override
@@ -86,12 +105,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               children: [
                 // ── Stats row ────────────────────────────────────────────
                 _StatsRow(avgPct: avgPct, progressPct: progressPct),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
                 // ── Month nav ────────────────────────────────────────────
                 GlowCard(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                      horizontal: 8, vertical: 2),
                   radius: 20,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -118,11 +137,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
-                // ── Calendar grid ────────────────────────────────────────
+                // ── Calendar grid + legend ──────────────────────────────
                 GlowCard(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(6),
                   child: Column(
                     children: [
                       const Row(
@@ -137,12 +156,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         ],
                       ),
                       _buildGrid(records, today),
+                      _buildLegend(),
                     ],
                   ),
                 ),
-
-                // ── Legend ───────────────────────────────────────────────
-                _buildLegend(),
 
                 // ── Day detail ───────────────────────────────────────────
                 if (_selectedDay != null) ...[
@@ -203,10 +220,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return GridView.count(
       crossAxisCount: 7,
-      padding: const EdgeInsets.all(8),
-      mainAxisSpacing: 6,
-      crossAxisSpacing: 6,
-      childAspectRatio: 0.9,
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+      mainAxisSpacing: 3,
+      crossAxisSpacing: 4,
+      childAspectRatio: 1.05,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: cells,
@@ -248,23 +265,25 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       (DayCompletionState.missed, 'הוחמץ'),
       (DayCompletionState.noData, 'ללא נתונים'),
     ];
-    return GlowCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      radius: 20,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
       child: Wrap(
-        spacing: 16,
+        spacing: 12,
         runSpacing: 4,
+        alignment: WrapAlignment.center,
         children: [
           for (final (state, label) in items)
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CompletionIndicator(state: state, size: 20),
-                const SizedBox(width: 4),
+                CompletionIndicator(state: state, size: 10),
+                const SizedBox(width: 3),
                 Text(
                   label,
-                  style: AppTypography.labelSm
-                      .copyWith(color: AppColors.onSurfaceVariant),
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),
@@ -895,23 +914,27 @@ class _DayCell extends StatelessWidget {
               : null,
         ),
         padding: const EdgeInsets.all(4),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '$day',
-              style: AppTypography.labelSm.copyWith(
-                color: (isToday || isSelected)
-                    ? AppColors.primary
-                    : AppColors.onSurface,
-                fontWeight: (isToday || isSelected)
-                    ? FontWeight.bold
-                    : FontWeight.normal,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$day',
+                style: AppTypography.labelSm.copyWith(
+                  color: (isToday || isSelected)
+                      ? AppColors.primary
+                      : AppColors.onSurface,
+                  fontWeight: (isToday || isSelected)
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            CompletionIndicator(state: state, size: 18),
-          ],
+              const SizedBox(height: 2),
+              CompletionIndicator(state: state, size: 16),
+            ],
+          ),
         ),
       ),
     );

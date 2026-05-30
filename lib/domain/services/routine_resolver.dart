@@ -1,3 +1,4 @@
+import '../entities/category.dart';
 import '../entities/master_product.dart';
 import '../entities/product_selection.dart';
 import '../entities/weekday_schedule.dart';
@@ -11,6 +12,7 @@ class RoutineResolver {
     required DateTime date,
     required Slot slot,
     required List<MasterProduct> allProducts,
+    required List<Category> categories,
     required List<ProductSelection> selections,
     required List<WeekdaySchedule> schedules,
     required OrderOverride? orderOverride,
@@ -45,29 +47,40 @@ class RoutineResolver {
       };
     }).toList();
 
+    final categoryOrderById = {
+      for (final cat in categories) cat.id: cat.order,
+    };
+
+    int categoryThenSlotOrder(MasterProduct a, MasterProduct b) {
+      final catA = categoryOrderById[a.categoryId] ?? 9999;
+      final catB = categoryOrderById[b.categoryId] ?? 9999;
+      if (catA != catB) return catA.compareTo(catB);
+      final orderA = _slotOrder(a, slot);
+      final orderB = _slotOrder(b, slot);
+      return orderA.compareTo(orderB);
+    }
+
     if (orderOverride != null && orderOverride.slot == slot) {
-      final orderMap = {
+      final overrideMap = {
         for (var i = 0; i < orderOverride.orderedProductIds.length; i++)
           orderOverride.orderedProductIds[i]: i,
       };
       active.sort((a, b) {
-        final ai = orderMap[a.id] ?? 9999;
-        final bi = orderMap[b.id] ?? 9999;
-        if (ai != bi) return ai.compareTo(bi);
-        final ao = _adminOrder(a, slot);
-        final bo = _adminOrder(b, slot);
-        return ao.compareTo(bo);
+        final ai = overrideMap[a.id];
+        final bi = overrideMap[b.id];
+        if (ai != null && bi != null) return ai.compareTo(bi);
+        if (ai != null) return -1;
+        if (bi != null) return 1;
+        return categoryThenSlotOrder(a, b);
       });
     } else {
-      active.sort(
-        (a, b) => _adminOrder(a, slot).compareTo(_adminOrder(b, slot)),
-      );
+      active.sort(categoryThenSlotOrder);
     }
 
     return active;
   }
 
-  int _adminOrder(MasterProduct p, Slot slot) =>
+  int _slotOrder(MasterProduct p, Slot slot) =>
       (slot == Slot.morning ? p.morningConfig?.order : p.eveningConfig?.order) ??
       999;
 }

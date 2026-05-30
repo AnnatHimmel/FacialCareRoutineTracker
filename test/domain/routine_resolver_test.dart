@@ -60,6 +60,7 @@ void main() {
         date: DateTime(2026, 5, 15, 10), // 10am Friday
         slot: Slot.morning,
         allProducts: [p3, p1, p2],
+        categories: [],
         selections: [sel('p1', Slot.morning), sel('p2', Slot.morning), sel('p3', Slot.morning)],
         schedules: [],
         orderOverride: null,
@@ -75,6 +76,7 @@ void main() {
         date: DateTime(2026, 5, 15, 10),
         slot: Slot.morning,
         allProducts: [p1, p2],
+        categories: [],
         selections: [sel('p1', Slot.morning)],
         schedules: [],
         orderOverride: null,
@@ -93,6 +95,7 @@ void main() {
         date: wednesday,
         slot: Slot.evening,
         allProducts: [p],
+        categories: [],
         selections: [sel('p1', Slot.evening)],
         schedules: [sched('p1', Slot.evening, {3})], // Wednesday=3
         orderOverride: null,
@@ -108,6 +111,7 @@ void main() {
         date: thursday,
         slot: Slot.evening,
         allProducts: [p],
+        categories: [],
         selections: [sel('p1', Slot.evening)],
         schedules: [sched('p1', Slot.evening, {3})], // Wednesday only
         orderOverride: null,
@@ -132,6 +136,7 @@ void main() {
         date: DateTime(2026, 5, 15, 10),
         slot: Slot.morning,
         allProducts: [p1, p2, p3],
+        categories: [],
         selections: [
           sel('p1', Slot.morning),
           sel('p2', Slot.morning),
@@ -159,6 +164,7 @@ void main() {
         date: DateTime(2026, 5, 15, 10),
         slot: Slot.morning,
         allProducts: [p],
+        categories: [],
         selections: [sel('p-dep', Slot.morning)],
         schedules: [],
         orderOverride: null,

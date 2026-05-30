@@ -152,6 +152,7 @@ final dailyRoutineProvider =
         date: boundary.parseDate(params.date),
         slot: params.slot,
         allProducts: allProducts,
+        categories: masterContent.categories,
         selections: selections,
         schedules: schedules,
         orderOverride: orderOverride,

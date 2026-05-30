@@ -239,21 +239,30 @@ class _OrderCustomizationScreenState
         .where((p) => !p.isDeprecated && selectedIds.contains(p.id) && p.configForSlot(slot) != null)
         .toList();
 
+    final categoryOrderById = {
+      for (final cat in master.categories) cat.id: cat.order,
+    };
+
+    int adminOrder(MasterProduct a, MasterProduct b) {
+      final catA = categoryOrderById[a.categoryId] ?? 9999;
+      final catB = categoryOrderById[b.categoryId] ?? 9999;
+      if (catA != catB) return catA.compareTo(catB);
+      return (a.configForSlot(slot)?.order ?? 9999)
+          .compareTo(b.configForSlot(slot)?.order ?? 9999);
+    }
+
     final orderIds = localOrder ?? override?.orderedProductIds;
     if (orderIds != null) {
       products.sort((a, b) {
         final ai = orderIds.indexOf(a.id);
         final bi = orderIds.indexOf(b.id);
-        if (ai < 0 && bi < 0) return 0;
-        if (ai < 0) return 1;
-        if (bi < 0) return -1;
-        return ai.compareTo(bi);
+        if (ai >= 0 && bi >= 0) return ai.compareTo(bi);
+        if (ai >= 0) return -1;
+        if (bi >= 0) return 1;
+        return adminOrder(a, b);
       });
     } else {
-      products.sort(
-        (a, b) => (a.configForSlot(slot)?.order ?? 0)
-            .compareTo(b.configForSlot(slot)?.order ?? 0),
-      );
+      products.sort(adminOrder);
     }
     return products;
   }

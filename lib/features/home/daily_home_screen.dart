@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
@@ -79,7 +78,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final dateStr = _todayStr;
 
     final morningRoutineAsync =
@@ -146,14 +144,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: GlowAppBar(
-        action: IconButton(
-          icon: const Icon(Icons.photo_camera_outlined),
-          color: AppColors.onSurfaceVariant,
-          tooltip: l10n.navJournal,
-          onPressed: () => context.push('/skin-log/$dateStr'),
-        ),
-      ),
+      appBar: const GlowAppBar(),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
