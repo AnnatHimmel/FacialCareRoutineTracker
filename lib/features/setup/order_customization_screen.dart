@@ -12,6 +12,7 @@ import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
+import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
 
@@ -192,32 +193,10 @@ class _OrderCustomizationScreenState
                     boxShadow: AppColors.navGlow,
                   ),
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-                  child: SizedBox(
-                    width: double.infinity,
+                  child: PrimaryButton(
+                    label: widget.fromSetup ? 'סיום והתחלה' : 'שמירת הסדר החדש',
+                    onTap: () => _save(context),
                     height: 56,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGlowGradient,
-                        borderRadius: BorderRadius.circular(9999),
-                        boxShadow: AppColors.glowLg,
-                      ),
-                      child: TextButton(
-                        onPressed: () => _save(context),
-                        style: TextButton.styleFrom(
-                          shape: const StadiumBorder(),
-                          padding: EdgeInsets.zero,
-                        ),
-                        child: Text(
-                          widget.fromSetup ? 'סיום והתחלה' : 'שמירת הסדר החדש',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.bodyLg.copyWith(
-                            color: AppColors.onPrimary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ),

@@ -60,8 +60,8 @@ Widget _wrap({
 }
 
 void main() {
-  const cat1 = Category(id: 'cat1', name: 'לחות');
-  const cat2 = Category(id: 'cat2', name: 'ניקוי');
+  const cat1 = Category(id: 'cat1', name: 'לחות', order: 1);
+  const cat2 = Category(id: 'cat2', name: 'ניקוי', order: 2);
 
   group('OnboardingScreen', () {
     testWidgets('Step 1 displays welcome headline "ברוכה הבאה"',

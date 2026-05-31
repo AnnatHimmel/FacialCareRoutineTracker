@@ -7,6 +7,7 @@ import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
+import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/product_thumb.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -186,9 +187,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Column(
             children: [
-              _buildGradientButton(
+              PrimaryButton(
                 label: 'בואי נתחיל',
-                icon: Icons.arrow_forward,
+                leadingIcon: Icons.arrow_forward,
                 onTap: _next,
               ),
               const SizedBox(height: 8),
@@ -228,34 +229,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildGradientButton({
-    required String label,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: AppColors.primaryGlowGradient,
-          borderRadius: BorderRadius.circular(99),
-        ),
-        child: ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            shape: const StadiumBorder(),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-          onPressed: onTap,
-          icon: Icon(icon, color: Colors.white),
-          label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStep2() {
+Widget _buildStep2() {
     final canContinue = _name.trim().isNotEmpty && _gender != null;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),

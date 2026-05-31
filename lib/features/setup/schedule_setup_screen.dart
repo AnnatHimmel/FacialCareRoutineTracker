@@ -4,25 +4,29 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../domain/entities/category.dart';
+import '../../domain/entities/incompatibility_rule.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/rule_scope.dart';
 import '../../domain/enums/slot.dart';
-import '../../domain/repositories/master_content_repository.dart';
+import '../../domain/services/incompatibility_checker.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
+import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/product_thumb.dart';
-import '../../shared/widgets/soft_warning_banner.dart';
 import '../../shared/widgets/weekday_picker.dart';
 
 const _uuid = Uuid();
 
+// Hebrew weekday labels (Sunday-first)
+const _dayLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+const _dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+
 class ScheduleSetupScreen extends ConsumerStatefulWidget {
   final bool fromSetup;
-  /// True when accessed as step 3 from the products nav-tab flow
-  /// (i.e. pushed via /products/schedule within the shell).
   final bool fromProducts;
 
   const ScheduleSetupScreen({
@@ -38,6 +42,7 @@ class ScheduleSetupScreen extends ConsumerStatefulWidget {
 
 class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
   Slot _activeSlot = Slot.morning;
+  int? _openConflictDay; // which day's conflict detail panel is open
 
   Future<void> _updateSchedule(
     String productId,
@@ -45,16 +50,15 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     Set<int> weekdays,
     WeekdaySchedule? existing,
   ) async {
-    final repo = ref.read(userDataRepositoryProvider);
-    await repo.upsertSchedule(
-      WeekdaySchedule(
-        id: existing?.id ?? _uuid.v4(),
-        productId: productId,
-        slot: slot,
-        weekdays: weekdays,
-        lastModified: DateTime.now(),
-      ),
-    );
+    await ref.read(userDataRepositoryProvider).upsertSchedule(
+          WeekdaySchedule(
+            id: existing?.id ?? _uuid.v4(),
+            productId: productId,
+            slot: slot,
+            weekdays: weekdays,
+            lastModified: DateTime.now(),
+          ),
+        );
   }
 
   void _handleContinue(BuildContext context) {
@@ -67,11 +71,18 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
 
   bool get _isProductsFlow => widget.fromProducts && !widget.fromSetup;
 
+  void _switchSlot(Slot slot) {
+    setState(() {
+      _activeSlot = slot;
+      _openConflictDay = null; // close conflict panel on slot change
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final masterAsync = ref.watch(masterContentProvider);
-    final morningSelectionsAsync = ref.watch(selectionsProvider(Slot.morning));
-    final eveningSelectionsAsync = ref.watch(selectionsProvider(Slot.evening));
+    final morningAsync = ref.watch(selectionsProvider(Slot.morning));
+    final eveningAsync = ref.watch(selectionsProvider(Slot.evening));
     final schedulesAsync = ref.watch(allSchedulesProvider);
     final mutedAsync = ref.watch(mutedConflictsProvider);
     final customAsync = ref.watch(customProductsProvider);
@@ -84,8 +95,8 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('שגיאה: $e')),
         data: (master) {
-          final morningSelections = morningSelectionsAsync.valueOrNull ?? [];
-          final eveningSelections = eveningSelectionsAsync.valueOrNull ?? [];
+          final morningSelections = morningAsync.valueOrNull ?? [];
+          final eveningSelections = eveningAsync.valueOrNull ?? [];
           final schedules = schedulesAsync.valueOrNull ?? [];
           final mutedIds =
               (mutedAsync.valueOrNull ?? []).map((m) => m.ruleId).toSet();
@@ -105,21 +116,43 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .map((s) => s.productId)
               .toSet();
 
+          final categoryOrderById = {
+            for (final cat in master.categories) cat.id: cat.order,
+          };
+
+          int slotOrder(MasterProduct p, Slot slot) =>
+              (slot == Slot.morning
+                  ? p.morningConfig?.order
+                  : p.eveningConfig?.order) ??
+              999;
+
+          int categoryThenSlotOrder(
+              MasterProduct a, MasterProduct b, Slot slot) {
+            final catA = categoryOrderById[a.categoryId] ?? 9999;
+            final catB = categoryOrderById[b.categoryId] ?? 9999;
+            if (catA != catB) return catA.compareTo(catB);
+            return slotOrder(a, slot).compareTo(slotOrder(b, slot));
+          }
+
           final morningProducts = allProducts
               .where((p) =>
                   !p.isDeprecated &&
                   morningSelectedIds.contains(p.id) &&
                   p.morningConfig != null)
-              .toList();
+              .toList()
+            ..sort((a, b) => categoryThenSlotOrder(a, b, Slot.morning));
           final eveningProducts = allProducts
               .where((p) =>
                   !p.isDeprecated &&
                   eveningSelectedIds.contains(p.id) &&
                   p.eveningConfig != null)
-              .toList();
+              .toList()
+            ..sort((a, b) => categoryThenSlotOrder(a, b, Slot.evening));
 
-          final activeProducts =
-              _activeSlot == Slot.morning ? morningProducts : eveningProducts;
+          final activeProducts = _activeSlot == Slot.morning
+              ? morningProducts
+              : eveningProducts;
+
           final occasional = activeProducts
               .where((p) =>
                   p.configForSlot(_activeSlot)?.frequencyRule is WeeklyMaxRule)
@@ -129,22 +162,53 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                   p.configForSlot(_activeSlot)?.frequencyRule is DailyRule)
               .toList();
 
-          // Same-day conflicts (shown on evening tab)
-          final dayConflicts = _computeDayConflicts(
-              morningProducts, eveningProducts, schedules, master, mutedIds);
+          final isEmpty =
+              morningProducts.isEmpty && eveningProducts.isEmpty;
 
-          final isEmpty = morningProducts.isEmpty && eveningProducts.isEmpty;
+          // Per-slot conflict days (used for tab markers + week strip)
+          final checker = ref.read(incompatibilityCheckerProvider);
+          final withinSlotRules = master.rules
+              .where((r) => r.scope == RuleScope.withinSlot)
+              .toList();
+
+          List<int> conflictDaysFor(
+              Slot slot, List<MasterProduct> slotProducts) {
+            final result = <int>[];
+            for (int d = 0; d < 7; d++) {
+              final onDay = slotProducts.where((p) {
+                final sched = schedules
+                    .where((s) => s.productId == p.id && s.slot == slot)
+                    .firstOrNull;
+                if (sched != null && sched.weekdays.isNotEmpty) {
+                  return sched.weekdays.contains(d);
+                }
+                return p.configForSlot(slot)?.frequencyRule is DailyRule;
+              }).toList();
+              final conflicts = checker.getConflictsForSelection(
+                activeSlot: slot,
+                slotProducts: onDay,
+                otherSlotProducts: [],
+                rules: withinSlotRules,
+                categories: master.categories,
+                mutedRuleIds: mutedIds,
+              );
+              if (conflicts.any((c) => !c.isMuted)) result.add(d);
+            }
+            return result;
+          }
+
+          final activeConflictDays =
+              conflictDaysFor(_activeSlot, activeProducts);
+          final otherSlot =
+              _activeSlot == Slot.morning ? Slot.evening : Slot.morning;
+          final otherProducts =
+              _activeSlot == Slot.morning ? eveningProducts : morningProducts;
+          final otherConflictDays =
+              conflictDaysFor(otherSlot, otherProducts);
 
           return Column(
             children: [
-              // ── Step 3 indicator (products flow only) ──────────────────────
-              if (_isProductsFlow)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-                  child: _ScheduleStepIndicator(),
-                ),
-
-              // ── Slot tab switcher ───────────────────────────────────────────
+              // Slot tab switcher
               if (!isEmpty)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -152,7 +216,9 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                     activeSlot: _activeSlot,
                     hasMorning: morningProducts.isNotEmpty,
                     hasEvening: eveningProducts.isNotEmpty,
-                    onSelect: (Slot slot) => setState(() => _activeSlot = slot),
+                    morningHasConflict: conflictDaysFor(Slot.morning, morningProducts).isNotEmpty,
+                    eveningHasConflict: conflictDaysFor(Slot.evening, eveningProducts).isNotEmpty,
+                    onSelect: _switchSlot,
                   ),
                 ),
 
@@ -173,24 +239,81 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                     : CustomScrollView(
                         key: ValueKey(_activeSlot),
                         slivers: [
-                          // Conflict banners
-                          if (_activeSlot == Slot.evening)
-                            for (final c in dayConflicts)
-                              SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      20, 12, 20, 0),
-                                  child: SoftWarningBanner(
-                                    message:
-                                        '${c.$1} ו${c.$2} מתנגשים בימים משותפים',
+                          // Week-at-a-glance card
+                          if (activeProducts.isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                                child: _WeekAtAGlanceCard(
+                                  slot: _activeSlot,
+                                  products: activeProducts,
+                                  schedules: schedules,
+                                  conflictDays: activeConflictDays,
+                                  openDay: _openConflictDay,
+                                  onDayTap: (d) => setState(() {
+                                    _openConflictDay =
+                                        _openConflictDay == d ? null : d;
+                                  }),
+                                  onCloseDetail: () =>
+                                      setState(() => _openConflictDay = null),
+                                  checker: checker,
+                                  withinSlotRules: withinSlotRules,
+                                  categories: master.categories,
+                                  mutedIds: mutedIds,
+                                ),
+                              ),
+                            ),
+
+                          // Cross-slot hint banner — current slot is clean, other has issues
+                          if (activeConflictDays.isEmpty &&
+                              otherConflictDays.isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                child: GestureDetector(
+                                  onTap: () => _switchSlot(otherSlot),
+                                  child: Container(
+                                    padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.errorContainer
+                                          .withAlpha(128),
+                                      borderRadius:
+                                          BorderRadius.circular(18),
+                                      border: Border.all(
+                                          color: AppColors.error
+                                              .withAlpha(64)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.warning_rounded,
+                                            size: 17,
+                                            color: AppColors.error),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            'יש התנגשות ב${otherSlot == Slot.morning ? 'שגרת בוקר' : 'שגרת ערב'} — הקישי לתיקון',
+                                            style:
+                                                AppTypography.labelSm.copyWith(
+                                              color: AppColors.onSurface,
+                                              fontSize: 12,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ),
+                                        const Icon(Icons.chevron_left_rounded,
+                                            size: 18,
+                                            color: AppColors.error),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
+                            ),
 
                           // Occasional sub-section
                           if (occasional.isNotEmpty)
                             _buildSubSection(
-                              label: 'מוצרים אקראיים',
+                              label: 'לא לשימוש יומי',
                               count: occasional.length,
                               products: occasional,
                               slot: _activeSlot,
@@ -200,22 +323,26 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                           // Daily sub-section
                           if (daily.isNotEmpty)
                             _buildSubSection(
-                              label: 'מוצרים יומיים',
+                              label: 'יומיים',
                               count: daily.length,
                               products: daily,
                               slot: _activeSlot,
                               schedules: schedules,
                             ),
 
-                          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                          const SliverToBoxAdapter(
+                              child: SizedBox(height: 32)),
                         ],
                       ),
               ),
 
-              // ── Sticky bottom CTA ──────────────────────────────────────────
+              // Sticky bottom CTA
               _BottomCta(
                 fromSetup: widget.fromSetup,
                 isProductsFlow: _isProductsFlow,
+                hasConflicts: activeConflictDays.isNotEmpty,
+                activeSlotLabel:
+                    _activeSlot == Slot.morning ? 'בוקר' : 'ערב',
                 onTap: () => _handleContinue(context),
               ),
             ],
@@ -274,38 +401,6 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     );
   }
 
-  List<(String, String)> _computeDayConflicts(
-    List<MasterProduct> morningProducts,
-    List<MasterProduct> eveningProducts,
-    List<WeekdaySchedule> schedules,
-    MasterContent master,
-    Set<String> mutedIds,
-  ) {
-    final result = <(String, String)>[];
-    final checker = ref.read(incompatibilityCheckerProvider);
-    final allConflicts = checker.getConflictsForDay(
-      morningProducts: morningProducts,
-      eveningProducts: eveningProducts,
-      rules: master.rules
-          .where((r) => r.scope == RuleScope.sameDayAcrossBoth)
-          .toList(),
-      categories: master.categories,
-      mutedRuleIds: mutedIds,
-    );
-    for (final c in allConflicts.where((c) => !c.isMuted)) {
-      final aSchedule =
-          schedules.where((s) => s.productId == c.productA.id).firstOrNull;
-      final bSchedule =
-          schedules.where((s) => s.productId == c.productB.id).firstOrNull;
-      if (aSchedule != null && bSchedule != null) {
-        if (aSchedule.weekdays.intersection(bSchedule.weekdays).isNotEmpty) {
-          result.add((c.productA.name, c.productB.name));
-        }
-      }
-    }
-    return result;
-  }
-
   Widget _buildSetupNav(BuildContext context) => GlassBottomNav(
         currentIndex: -1,
         onDestinationSelected: (i) {
@@ -337,18 +432,380 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
       );
 }
 
-// ── Slot tab switcher (בוקר / ערב) ───────────────────────────────────────────
+// ── Week-at-a-glance card ─────────────────────────────────────────────────────
+
+class _WeekAtAGlanceCard extends StatelessWidget {
+  final Slot slot;
+  final List<MasterProduct> products;
+  final List<WeekdaySchedule> schedules;
+  final List<int> conflictDays;
+  final int? openDay;
+  final ValueChanged<int> onDayTap;
+  final VoidCallback onCloseDetail;
+  final IncompatibilityChecker checker;
+  final List<IncompatibilityRule> withinSlotRules;
+  final List<Category> categories;
+  final Set<String> mutedIds;
+
+  const _WeekAtAGlanceCard({
+    required this.slot,
+    required this.products,
+    required this.schedules,
+    required this.conflictDays,
+    required this.openDay,
+    required this.onDayTap,
+    required this.onCloseDetail,
+    required this.checker,
+    required this.withinSlotRules,
+    required this.categories,
+    required this.mutedIds,
+  });
+
+  int _countOnDay(int dayId) {
+    return products.where((p) {
+      final sched = schedules
+          .where((s) => s.productId == p.id && s.slot == slot)
+          .firstOrNull;
+      if (sched != null && sched.weekdays.isNotEmpty) {
+        return sched.weekdays.contains(dayId);
+      }
+      return p.configForSlot(slot)?.frequencyRule is DailyRule;
+    }).length;
+  }
+
+  List<(MasterProduct, MasterProduct)> _conflictPairsOnDay(int dayId) {
+    final onDay = products.where((p) {
+      final sched = schedules
+          .where((s) => s.productId == p.id && s.slot == slot)
+          .firstOrNull;
+      if (sched != null && sched.weekdays.isNotEmpty) {
+        return sched.weekdays.contains(dayId);
+      }
+      return p.configForSlot(slot)?.frequencyRule is DailyRule;
+    }).toList();
+    final conflicts = checker.getConflictsForSelection(
+      activeSlot: slot,
+      slotProducts: onDay,
+      otherSlotProducts: const [],
+      rules: withinSlotRules,
+      categories: categories,
+      mutedRuleIds: mutedIds,
+    );
+    return conflicts
+        .where((c) => !c.isMuted)
+        .map((c) => (c.productA, c.productB))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasConflicts = conflictDays.isNotEmpty;
+
+    return GlowCard(
+      padding: const EdgeInsets.all(12),
+      shadow: AppColors.glowSm,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Card header
+          Row(
+            children: [
+              Text(
+                'מבט שבועי',
+                style: AppTypography.labelMd.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12.5,
+                  color: AppColors.onSurface,
+                ),
+              ),
+              const Spacer(),
+              if (hasConflicts)
+                Row(
+                  children: [
+                    const Icon(Icons.touch_app_rounded,
+                        size: 12, color: AppColors.error),
+                    const SizedBox(width: 4),
+                    Text(
+                      'הקישי על יום מסומן',
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.error,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Text(
+                  'מספר מוצרים ביום',
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                    fontSize: 10.5,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Day cells row
+          Row(
+            children: [
+              for (int d = 0; d < 7; d++) ...[
+                if (d > 0) const SizedBox(width: 6),
+                Expanded(
+                  child: _DayCell(
+                    label: _dayLabels[d],
+                    count: _countOnDay(d),
+                    isConflict: conflictDays.contains(d),
+                    isOpen: openDay == d,
+                    onTap: conflictDays.contains(d) ? () => onDayTap(d) : null,
+                  ),
+                ),
+              ],
+            ],
+          ),
+
+          // Inline conflict detail panel
+          if (openDay != null && conflictDays.contains(openDay!))
+            _ConflictDetailPanel(
+              dayLabel: _dayNames[openDay!],
+              pairs: _conflictPairsOnDay(openDay!),
+              onClose: onCloseDetail,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DayCell extends StatelessWidget {
+  final String label;
+  final int count;
+  final bool isConflict;
+  final bool isOpen;
+  final VoidCallback? onTap;
+
+  const _DayCell({
+    required this.label,
+    required this.count,
+    required this.isConflict,
+    required this.isOpen,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: AppTypography.labelSm.copyWith(
+            fontSize: 10,
+            color: isConflict
+                ? AppColors.error
+                : AppColors.onSurfaceVariant,
+            fontWeight: isConflict ? FontWeight.w700 : FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        GestureDetector(
+          onTap: onTap,
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              decoration: BoxDecoration(
+                color: isConflict
+                    ? AppColors.error
+                    : count > 0
+                        ? AppColors.neutralFill
+                        : AppColors.neutralFill.withAlpha(8),
+                borderRadius: BorderRadius.circular(12),
+                border: isOpen
+                    ? Border.all(
+                        color: AppColors.error, width: 2)
+                    : null,
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Text(
+                    count > 0 ? '$count' : '·',
+                    style: AppTypography.labelMd.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: isConflict
+                          ? Colors.white
+                          : count > 0
+                              ? AppColors.onSurface
+                              : AppColors.onSurfaceVariant.withAlpha(102),
+                    ),
+                  ),
+                  if (isConflict)
+                    Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border:
+                              Border.all(color: AppColors.error, width: 1),
+                        ),
+                        child: const Icon(Icons.priority_high_rounded,
+                            size: 9, color: AppColors.error),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ConflictDetailPanel extends StatelessWidget {
+  final String dayLabel;
+  final List<(MasterProduct, MasterProduct)> pairs;
+  final VoidCallback onClose;
+
+  const _ConflictDetailPanel({
+    required this.dayLabel,
+    required this.pairs,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.errorContainer.withAlpha(128),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.error.withAlpha(64)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.error,
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                  child: Text(
+                    dayLabel,
+                    style: AppTypography.labelSm.copyWith(
+                      color: Colors.white,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'לא מומלץ לשלב',
+                    style: AppTypography.labelMd.copyWith(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: onClose,
+                  child: const Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Icon(Icons.close_rounded,
+                        size: 17, color: AppColors.error),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            for (final (a, b) in pairs) ...[
+              Row(
+                children: [
+                  ProductThumb(imageAsset: a.imageAsset, size: 28),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      a.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                      style: AppTypography.labelSm.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11.5,
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(Icons.close_rounded,
+                        size: 12, color: AppColors.error),
+                  ),
+                  Expanded(
+                    child: Text(
+                      b.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.left,
+                      style: AppTypography.labelSm.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11.5,
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  ProductThumb(imageAsset: b.imageAsset, size: 28),
+                ],
+              ),
+              if (pairs.last != (a, b)) const SizedBox(height: 8),
+            ],
+            const SizedBox(height: 8),
+            Text(
+              'הזיזי אחד מהם ליום אחר, או השאירי כך — לא נחסום.',
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.onSurfaceVariant,
+                fontSize: 11,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Slot tab switcher ─────────────────────────────────────────────────────────
 
 class _SlotTabSwitcher extends StatelessWidget {
   final Slot activeSlot;
   final bool hasMorning;
   final bool hasEvening;
+  final bool morningHasConflict;
+  final bool eveningHasConflict;
   final ValueChanged<Slot> onSelect;
 
   const _SlotTabSwitcher({
     required this.activeSlot,
     required this.hasMorning,
     required this.hasEvening,
+    required this.morningHasConflict,
+    required this.eveningHasConflict,
     required this.onSelect,
   });
 
@@ -364,18 +821,20 @@ class _SlotTabSwitcher extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _Tab(
+          _SlotTab(
             label: 'בוקר',
             icon: Icons.wb_sunny_rounded,
             active: activeSlot == Slot.morning,
             isMorning: true,
+            hasConflict: morningHasConflict,
             onTap: hasMorning ? () => onSelect(Slot.morning) : null,
           ),
-          _Tab(
+          _SlotTab(
             label: 'ערב',
             icon: Icons.dark_mode_rounded,
             active: activeSlot == Slot.evening,
             isMorning: false,
+            hasConflict: eveningHasConflict,
             onTap: hasEvening ? () => onSelect(Slot.evening) : null,
           ),
         ],
@@ -384,28 +843,29 @@ class _SlotTabSwitcher extends StatelessWidget {
   }
 }
 
-class _Tab extends StatelessWidget {
+class _SlotTab extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool active;
   final bool isMorning;
+  final bool hasConflict;
   final VoidCallback? onTap;
 
-  const _Tab({
+  const _SlotTab({
     required this.label,
     required this.icon,
     required this.active,
     required this.isMorning,
+    required this.hasConflict,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final Color activeBg =
+    final activeBg =
         isMorning ? AppColors.primaryContainer : AppColors.tertiary;
-    const Color activeText = AppColors.onPrimary;
-    final Color inactiveText =
-        AppColors.onSurfaceVariant.withValues(alpha: 0.6);
+    const activeText = AppColors.onPrimary;
+    final inactiveText = AppColors.onSurfaceVariant.withValues(alpha: 0.6);
 
     return Expanded(
       child: GestureDetector(
@@ -429,11 +889,25 @@ class _Tab extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Icon(
-                icon,
-                size: 18,
-                color: active ? activeText : inactiveText,
-              ),
+              Icon(icon,
+                  size: 18,
+                  color: active ? activeText : inactiveText),
+              if (hasConflict) ...[
+                const SizedBox(width: 4),
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: active ? Colors.white : AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.priority_high_rounded,
+                    size: 11,
+                    color: active ? AppColors.error : Colors.white,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -442,7 +916,7 @@ class _Tab extends StatelessWidget {
   }
 }
 
-// ── Product card with weekday picker ──────────────────────────────────────────
+// ── Product schedule card ─────────────────────────────────────────────────────
 
 class _ProductScheduleCard extends ConsumerWidget {
   final MasterProduct product;
@@ -465,30 +939,26 @@ class _ProductScheduleCard extends ConsumerWidget {
     final rule = product.configForSlot(slot)?.frequencyRule;
     final isDaily = rule is DailyRule;
     final maxPerWeek = rule is WeeklyMaxRule ? rule.maxPerWeek : null;
-    // Daily products default to all 7 days when no schedule has been saved yet
     final selectedDays = existing?.weekdays ??
         (isDaily ? {0, 1, 2, 3, 4, 5, 6} : <int>{});
-    final overCap =
-        maxPerWeek != null && selectedDays.length > maxPerWeek;
     final count = selectedDays.length;
+    final overCap = maxPerWeek != null && count > maxPerWeek;
+    final dailyNoDay = isDaily && count == 0;
 
     final isLikelyLatin =
         product.name.codeUnits.every((c) => c < 128);
 
     return GlowCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       shadow: AppColors.glowSm,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Product header: thumb + name + cap badge ─────────────────────
+          // Product header: thumb + name + badge
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ProductThumb(
-                imageAsset: product.imageAsset,
-                size: 44,
-              ),
+              ProductThumb(imageAsset: product.imageAsset, size: 40),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -502,6 +972,7 @@ class _ProductScheduleCard extends ConsumerWidget {
                               style: AppTypography.bodyMd.copyWith(
                                 color: AppColors.onSurface,
                                 fontWeight: FontWeight.w700,
+                                fontSize: 13.5,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -512,189 +983,110 @@ class _ProductScheduleCard extends ConsumerWidget {
                             style: AppTypography.bodyMd.copyWith(
                               color: AppColors.onSurface,
                               fontWeight: FontWeight.w700,
+                              fontSize: 13.5,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.right,
                           ),
-                    if (isDaily)
-                      Text(
-                        'יומי',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.labelSm.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                        textAlign: TextAlign.right,
-                      )
-                    else if (maxPerWeek != null)
-                      Text(
-                        'מומלץ: עד $maxPerWeek× בשבוע',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.labelSm.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                        textAlign: TextAlign.right,
+                    Text(
+                      isDaily
+                          ? 'מומלץ: כל יום'
+                          : maxPerWeek != null
+                              ? 'מומלץ: עד $maxPerWeek× בשבוע'
+                              : '',
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 10.5,
                       ),
+                      textAlign: TextAlign.right,
+                    ),
                   ],
                 ),
               ),
-              if (maxPerWeek != null) ...[
-                const SizedBox(width: 8),
-                _CapBadge(
-                  count: count,
-                  cap: maxPerWeek,
-                  overCap: overCap,
+              const SizedBox(width: 8),
+              // Count badge
+              if (maxPerWeek != null)
+                _CountBadge(text: '$count/$maxPerWeek', isError: overCap)
+              else if (isDaily)
+                _CountBadge(
+                  text: count == 7 ? 'כל יום' : '$count/7',
+                  isError: dailyNoDay,
                 ),
-              ],
             ],
           ),
-          const SizedBox(height: 14),
-          // ── Weekday picker ───────────────────────────────────────────────
+          const SizedBox(height: 12),
+
+          // Weekday picker
           WeekdayPicker(
             selectedDays: selectedDays,
             onChanged: (days) => onChanged(days, existing),
             showOverCapWarning: overCap,
           ),
+
+          // Inline warnings
+          if (overCap) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.warning_rounded,
+                    size: 13, color: AppColors.error),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'מעבר למומלץ — שקלי להפחית ל־$maxPerWeek ימים',
+                    style: AppTypography.labelSm
+                        .copyWith(color: AppColors.error, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+          ] else if (dailyNoDay) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.warning_rounded,
+                    size: 13, color: AppColors.error),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'לא נבחר יום — המוצר לא ישובץ',
+                    style: AppTypography.labelSm
+                        .copyWith(color: AppColors.error, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-// ── Count/cap badge (count/cap pill) ──────────────────────────────────────────
+// ── Count / cap badge ─────────────────────────────────────────────────────────
 
-class _CapBadge extends StatelessWidget {
-  final int count;
-  final int cap;
-  final bool overCap;
+class _CountBadge extends StatelessWidget {
+  final String text;
+  final bool isError;
 
-  const _CapBadge({
-    required this.count,
-    required this.cap,
-    required this.overCap,
-  });
+  const _CountBadge({required this.text, required this.isError});
 
   @override
   Widget build(BuildContext context) {
-    final Color bg;
-    final Color fg;
-    if (count == 0) {
-      bg = AppColors.surfaceHigh;
-      fg = AppColors.onSurfaceVariant;
-    } else if (overCap) {
-      bg = AppColors.errorContainer;
-      fg = AppColors.error;
-    } else {
-      bg = AppColors.secondaryFixed;
-      fg = AppColors.onSecondaryContainer;
-    }
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: bg,
+        color: isError ? AppColors.error : AppColors.neutralFill,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        '$count/$cap',
-        style: AppTypography.labelSm.copyWith(color: fg),
+        text,
+        style: AppTypography.labelSm.copyWith(
+          color: isError ? Colors.white : AppColors.onSurfaceVariant,
+          fontSize: 11,
+        ),
       ),
-    );
-  }
-}
-
-// ── Step 3 indicator (shown on schedule screen in products flow) ──────────────
-
-class _ScheduleStepIndicator extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    const steps = ['בוקר', 'ערב', 'תזמון'];
-    const currentStep = 3;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      textDirection: TextDirection.rtl,
-      children: [
-        for (int i = 0; i < steps.length; i++) ...[
-          if (i > 0)
-            Container(
-              width: 24,
-              height: 1,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              color: i < currentStep
-                  ? AppColors.secondary
-                  : AppColors.outlineVariant.withAlpha(128),
-            ),
-          _StepChip(
-            number: i + 1,
-            label: steps[i],
-            isDone: i + 1 < currentStep,
-            isActive: i + 1 == currentStep,
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _StepChip extends StatelessWidget {
-  final int number;
-  final String label;
-  final bool isDone;
-  final bool isActive;
-
-  const _StepChip({
-    required this.number,
-    required this.label,
-    required this.isDone,
-    required this.isActive,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Color bg = isDone
-        ? AppColors.secondary
-        : isActive
-            ? AppColors.primary
-            : AppColors.surfaceHigh;
-    final Color fg =
-        (isDone || isActive) ? AppColors.onPrimary : AppColors.onSurfaceVariant;
-    final Color labelColor = isActive
-        ? AppColors.primary
-        : isDone
-            ? AppColors.onSurface
-            : AppColors.onSurfaceVariant.withAlpha(178);
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-          child: isDone
-              ? Icon(Icons.check, size: 14, color: fg)
-              : Center(
-                  child: Text(
-                    '$number',
-                    style: AppTypography.labelSm.copyWith(
-                      color: fg,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                    ),
-                  ),
-                ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: AppTypography.labelMd.copyWith(
-            color: labelColor,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -704,11 +1096,15 @@ class _StepChip extends StatelessWidget {
 class _BottomCta extends StatelessWidget {
   final bool fromSetup;
   final bool isProductsFlow;
+  final bool hasConflicts;
+  final String activeSlotLabel;
   final VoidCallback onTap;
 
   const _BottomCta({
     required this.fromSetup,
     required this.isProductsFlow,
+    required this.hasConflicts,
+    required this.activeSlotLabel,
     required this.onTap,
   });
 
@@ -721,46 +1117,32 @@ class _BottomCta extends StatelessWidget {
             : 'שמור';
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surface,
         boxShadow: AppColors.navGlow,
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGlowGradient,
-            borderRadius: BorderRadius.circular(999),
-            boxShadow: AppColors.glowLg,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          PrimaryButton(
+            label: label,
+            onTap: onTap,
+            trailingIcon: Icons.check_rounded,
+            height: 56,
           ),
-          child: Material(
-            type: MaterialType.transparency,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(999),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.labelMd.copyWith(
-                      color: AppColors.onPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.check_rounded,
-                      color: AppColors.onPrimary, size: 20),
-                ],
+          if (hasConflicts) ...[
+            const SizedBox(height: 6),
+            Text(
+              'עדיין יש ימי התנגשות ב$activeSlotLabel',
+              textAlign: TextAlign.center,
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.error,
+                fontSize: 11,
               ),
             ),
-          ),
-        ),
+          ],
+        ],
       ),
     );
   }

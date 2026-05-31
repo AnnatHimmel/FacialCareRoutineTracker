@@ -163,7 +163,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 const Icon(
-                  Icons.chevron_left,
+                  Icons.chevron_right,
                   color: AppColors.onSurfaceVariant,
                   size: 22,
                 ),
@@ -302,7 +302,7 @@ class _SettingsRow extends StatelessWidget {
 
           // Trailing chevron (RTL last → visual left, navigation indicator)
           const Icon(
-            Icons.chevron_left,
+            Icons.chevron_right,
             color: AppColors.onSurfaceVariant,
             size: 22,
           ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/master_product.dart';
-import '../../domain/enums/slot.dart';
+import 'fixed_slot_chip.dart';
 import 'product_thumb.dart';
 
 /// Routine row — used on S1 (select), S4/S7 (done), and S3 (drag-to-reorder).
@@ -52,29 +52,23 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
 
   bool get _isDoneChecked => _isDoneVariant && widget.isToggled;
 
+  bool get _isFlexible =>
+      widget.product.morningConfig != null &&
+      widget.product.eveningConfig != null;
+
+  bool get _showSlotChip =>
+      widget.subtitle == null && !_isFlexible;
+
   String? get _subtitle {
     if (widget.subtitle != null) return widget.subtitle;
-    final c = widget.product.comment;
-    if (c != null && c.trim().isNotEmpty) return c;
-    return _amPmLabel();
-  }
-
-  String? _amPmLabel() {
-    final am = widget.product.configForSlot(Slot.morning) != null;
-    final pm = widget.product.configForSlot(Slot.evening) != null;
-    if (am && pm) return 'בוקר • ערב';
-    if (am) return 'בוקר';
-    if (pm) return 'ערב';
-    return null;
+    if (_isFlexible) return 'בוקר • ערב';
+    return null; // fixed products: chip shown instead
   }
 
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
     final checkedDone = _isDoneChecked;
-
-    final nameColor =
-        checkedDone ? AppColors.onSurfaceVariant : AppColors.onSurface;
 
     final name = Text(
       product.name,
@@ -85,16 +79,15 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
           _isLikelyLatin(product.name) ? TextDirection.ltr : TextDirection.rtl,
       style: AppTypography.bodyMd.copyWith(
         fontWeight: FontWeight.w700,
-        color: nameColor,
-        decoration: checkedDone ? TextDecoration.lineThrough : null,
-        decorationColor: AppColors.onSurfaceVariant,
+        fontSize: 14.5,
+        color: AppColors.onSurface,
       ),
     );
 
     final subtitle = _subtitle;
 
     final rowContent = Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+      padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
       child: Column(
         children: [
           Row(
@@ -128,7 +121,13 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                         ],
                       ],
                     ),
-                    if (subtitle != null) ...[
+                    if (_showSlotChip) ...[
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: FixedSlotChip(product: product),
+                      ),
+                    ] else if (subtitle != null) ...[
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
@@ -138,9 +137,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                         style: AppTypography.labelSm.copyWith(
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0,
-                          color: checkedDone
-                              ? AppColors.onSurfaceVariant.withValues(alpha: 0.7)
-                              : AppColors.onSurfaceVariant,
+                          color: AppColors.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -173,14 +170,15 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           color: checkedDone
-              ? AppColors.primaryFixed
+              ? AppColors.primaryFixed.withAlpha(77)
               : AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(_expanded ? 24 : 9999),
-          boxShadow: AppColors.glowSm,
-          border: checkedDone
-              ? null
-              : Border.all(
-                  color: AppColors.outlineVariant.withValues(alpha: 0.4)),
+          borderRadius: BorderRadius.circular(_expanded ? 26 : 9999),
+          boxShadow: checkedDone ? null : AppColors.glowSm,
+          border: Border.all(
+            color: checkedDone
+                ? AppColors.primary.withAlpha(77)
+                : Colors.transparent,
+          ),
         ),
         child: Material(
           type: MaterialType.transparency,
@@ -190,7 +188,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
               ? InkWell(
                   onTap: widget.onToggle,
                   borderRadius:
-                      BorderRadius.circular(_expanded ? 24 : 9999),
+                      BorderRadius.circular(_expanded ? 26 : 9999),
                   child: rowContent,
                 )
               : rowContent,
@@ -207,7 +205,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
           _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
       firstChild: const SizedBox(width: double.infinity),
       secondChild: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 12, 8, 4),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -266,16 +264,18 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
   Widget _chevronButton() => GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => setState(() => _expanded = !_expanded),
-        child: SizedBox(
-          width: 36,
-          height: 36,
-          child: Center(
-            child: Icon(
-              _expanded
-                  ? Icons.expand_less_rounded
-                  : Icons.expand_more_rounded,
+        child: Container(
+          width: 40,
+          height: 40,
+          margin: const EdgeInsets.only(right: 8),
+          alignment: Alignment.center,
+          child: AnimatedRotation(
+            turns: _expanded ? 0.5 : 0,
+            duration: const Duration(milliseconds: 200),
+            child: const Icon(
+              Icons.expand_more_rounded,
               color: AppColors.onSurfaceVariant,
-              size: 20,
+              size: 22,
             ),
           ),
         ),
@@ -325,9 +325,8 @@ class _ThumbnailWithBadge extends StatelessWidget {
         ProductThumb(imageAsset: imageAsset, size: 52),
         if (isDone)
           Positioned(
-            // -start-0.5 -bottom-0.5 in RTL = visual bottom-right
             bottom: -2,
-            right: -2,
+            left: -2,
             child: Container(
               width: 22,
               height: 22,

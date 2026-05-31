@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
@@ -191,11 +192,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     if (parts.length != 3) return dateStr;
     final day = int.tryParse(parts[2]) ?? 0;
     final month = int.tryParse(parts[1]) ?? 1;
-    const months = [
-      'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-      'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
-    ];
-    return '$day ב${months[month - 1]}';
+    return '$day ב${HebrewDateStrings.months[month - 1]}';
   }
 }
 

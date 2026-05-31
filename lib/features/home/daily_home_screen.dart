@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
@@ -333,10 +334,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
   }
 
   static String _buildDayLabel(DateTime date, String? userName) {
-    const days = [
-      'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת', 'ראשון',
-    ];
-    final day = days[date.weekday - 1]; // weekday: Mon=1 … Sun=7
+    final day = HebrewDateStrings.weekdays[date.weekday - 1]; // weekday: Mon=1 … Sun=7
     final name = userName != null && userName.trim().isNotEmpty
         ? userName.trim().split(' ').first
         : null;

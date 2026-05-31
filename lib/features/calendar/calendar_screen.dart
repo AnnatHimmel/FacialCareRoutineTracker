@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
@@ -12,6 +13,7 @@ import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/completion_indicator.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
+import '../../shared/widgets/skin_state_chip.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // SCREEN
@@ -318,11 +320,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   String _monthLabel(DateTime date) {
-    const months = [
-      'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-      'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
-    ];
-    return '${months[date.month - 1]} ${date.year}';
+    return '${HebrewDateStrings.months[date.month - 1]} ${date.year}';
   }
 
   static String _dateStr(DateTime date) =>
@@ -624,7 +622,10 @@ class _DayDetailSection extends ConsumerWidget {
             ],
             if (skinState != null) ...[
               const SizedBox(height: 12),
-              _buildSkinStateChip(skinState),
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: SkinStateChip(state: skinState),
+              ),
             ],
           ] else ...[
             const SizedBox(height: 8),
@@ -640,44 +641,7 @@ class _DayDetailSection extends ConsumerWidget {
     );
   }
 
-  Widget _buildSkinStateChip(String state) {
-    final info = switch (state) {
-      'calm' => (
-          'רגוע',
-          AppColors.tertiaryFixed,
-          AppColors.onTertiaryContainer
-        ),
-      'moist' => (
-          'לח',
-          AppColors.secondaryFixed,
-          AppColors.onSecondaryContainer
-        ),
-      'oily' => ('שמני', AppColors.primaryFixed, AppColors.primary),
-      _ => null,
-    };
-    if (info == null) return const SizedBox.shrink();
-    final (label, bg, fg) = info;
-    return Align(
-      alignment: AlignmentDirectional.centerEnd,
-      child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.labelSm.copyWith(
-            color: fg,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProductsCard(
+Widget _buildProductsCard(
     List<String> resolvedIds,
     Set<String> recordedSet,
     Map<String, String> productNames,

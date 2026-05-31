@@ -11,6 +11,7 @@ import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
 import 'package:skincare_tracker/domain/entities/skin_log_entry.dart';
+import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
@@ -104,6 +105,9 @@ class _FakeUDR implements UserDataRepository {
   @override Future<void> unmuteConflict(String ruleId) => throw UnimplementedError();
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
+  @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
+  @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
+  @override Future<void> deleteCustomProduct(String id) async {}
 }
 
 // ── Test data ─────────────────────────────────────────────────────────────────
@@ -119,7 +123,7 @@ final _morningProduct = MasterProduct(
 
 final _master = MasterContent(
   products: [_morningProduct],
-  categories: [const Category(id: 'cat1', name: 'לחות')],
+  categories: [const Category(id: 'cat1', name: 'לחות', order: 1)],
   rules: [],
   manifest: const MasterListManifest(
     contentVersion: '1.0.0',
@@ -217,8 +221,8 @@ void main() {
       await tester.pumpWidget(_wrap(master: _master, udr: udr));
       await tester.pumpAndSettle();
 
-      // Tap the action button (check icon), not the row — the row tap only expands
-      await tester.tap(find.byIcon(Icons.check).first);
+      // Tap the product row (done variant — InkWell wraps the whole row)
+      await tester.tap(find.text('קרם בוקר').first);
       await tester.pumpAndSettle();
 
       expect(udr.updateCalled, isTrue);

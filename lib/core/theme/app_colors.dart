@@ -55,6 +55,11 @@ abstract final class AppColors {
   static const Color inverseOnSurface = Color(0xFFFFEDE9);
   static const Color inversePrimary = Color(0xFFFFB4A4);
 
+  // Hue-neutral fill for "healthy" states on the schedule screen — deliberately
+  // NOT a warm tint so it can't be confused with primary or error colors.
+  // CSS equivalent: rgba(0,0,0,0.06)
+  static const Color neutralFill = Color(0x0F000000);
+
   // ── Glassmorphism ──────────────────────────────────────────────────────────
   static const Color glassFill = Color(0xD9FFF1ED); // surface-low @ ~85%
   static const double glassBlurSigma = 12.0;

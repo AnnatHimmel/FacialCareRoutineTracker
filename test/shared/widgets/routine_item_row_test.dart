@@ -28,11 +28,12 @@ void main() {
         ),
       ));
 
-      await tester.tap(find.byType(GestureDetector).last);
+      // The done-variant row is an InkWell; tap the product name to hit it.
+      await tester.tap(find.text('Test Product'));
       expect(toggled, isTrue);
     });
 
-    testWidgets('isToggled: true → done-check button shows filled peach icon',
+    testWidgets('isToggled: true → done-check badge overlays thumbnail',
         (tester) async {
       await tester.pumpWidget(_wrap(
         RoutineItemRow(
@@ -42,8 +43,9 @@ void main() {
         ),
       ));
 
-      // Filled check icon present (done context, isToggled = true)
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      // The done-check badge uses check_rounded; add icon must be absent.
+      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.add), findsNothing);
     });
 
     testWidgets('hasConflict: true → conflict indicator (warning icon) visible',
@@ -156,7 +158,7 @@ void main() {
       expect(find.byIcon(Icons.add), findsNothing);
     });
 
-    testWidgets('slot config renders am/pm label for morning-only product',
+    testWidgets('fixed morning-only product shows slot chip (בוקר בלבד)',
         (tester) async {
       final product = MasterProduct(
         id: 'p1',
@@ -175,7 +177,7 @@ void main() {
         ),
       ));
 
-      expect(find.text('בוקר'), findsOneWidget);
+      expect(find.text('בוקר בלבד'), findsOneWidget);
     });
   });
 }

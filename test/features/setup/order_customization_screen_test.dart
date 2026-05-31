@@ -10,6 +10,7 @@ import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
 import 'package:skincare_tracker/domain/entities/skin_log_entry.dart';
+import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
@@ -78,6 +79,9 @@ class _FakeUDR implements UserDataRepository {
   @override Future<void> unmuteConflict(String ruleId) => throw UnimplementedError();
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
+  @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
+  @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
+  @override Future<void> deleteCustomProduct(String id) async {}
 }
 
 class _FakeSR implements SettingsRepository {
@@ -117,7 +121,7 @@ MasterProduct _product(String id, String name) => MasterProduct(
 
 MasterContent _master(List<MasterProduct> products) => MasterContent(
       products: products,
-      categories: [const Category(id: 'cat1', name: 'לחות')],
+      categories: [const Category(id: 'cat1', name: 'לחות', order: 1)],
       rules: [],
       manifest: const MasterListManifest(
         contentVersion: '1.0.0',

@@ -10,12 +10,14 @@ import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
 import 'package:skincare_tracker/domain/entities/skin_log_entry.dart';
+import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
 import 'package:skincare_tracker/features/setup/schedule_setup_screen.dart';
+import 'package:skincare_tracker/shared/widgets/weekday_picker.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
 
 // ── Fakes ─────────────────────────────────────────────────────────────────────
@@ -73,6 +75,9 @@ class _FakeUDR implements UserDataRepository {
   @override Future<void> unmuteConflict(String ruleId) => throw UnimplementedError();
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
+  @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
+  @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
+  @override Future<void> deleteCustomProduct(String id) async {}
 }
 
 // ── Test data ─────────────────────────────────────────────────────────────────
@@ -97,7 +102,7 @@ MasterProduct _dailyProduct(String id, String name) => MasterProduct(
 
 MasterContent _master(List<MasterProduct> products) => MasterContent(
       products: products,
-      categories: [const Category(id: 'cat1', name: 'לחות')],
+      categories: [const Category(id: 'cat1', name: 'לחות', order: 1)],
       rules: [],
       manifest: const MasterListManifest(
         contentVersion: '1.0.0',
@@ -114,6 +119,7 @@ ProductSelection _sel(String productId, Slot slot) => ProductSelection(
       lastModified: DateTime(2024, 1, 1),
     );
 
+// Router wrapper — use for navigation-testing tests.
 Widget _wrap({
   required MasterContent master,
   _FakeUDR? udr,
@@ -145,6 +151,20 @@ Widget _wrap({
   );
 }
 
+// Direct wrapper — use for interaction tests that don't need navigation.
+// Uses fromProducts:true so no GlassBottomNav BackdropFilter is inserted.
+Widget _wrapDirect({required MasterContent master, _FakeUDR? udr}) {
+  return ProviderScope(
+    overrides: [
+      masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
+      userDataRepositoryProvider.overrideWithValue(udr ?? _FakeUDR()),
+    ],
+    child: MaterialApp(
+      home: ScheduleSetupScreen(fromProducts: true),
+    ),
+  );
+}
+
 void main() {
   group('ScheduleSetupScreen', () {
     testWidgets('WeeklyMax morning product shown when selected', (tester) async {
@@ -159,7 +179,7 @@ void main() {
       expect(find.text('סרום ויטמין C'), findsOneWidget);
     });
 
-    testWidgets('DailyRule product not shown — empty state message', (tester) async {
+    testWidgets('DailyRule product shown in יומיים section', (tester) async {
       final product = _dailyProduct('p1', 'קרם לחות');
       final udr = _FakeUDR(
         morningSelections: [_sel('p1', Slot.morning)],
@@ -168,10 +188,8 @@ void main() {
       await tester.pumpWidget(_wrap(master: _master([product]), udr: udr));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('כל המוצרים שלך הם יומיים — אין צורך בתזמון'),
-        findsOneWidget,
-      );
+      // Daily products are now shown in the "יומיים" sub-section
+      expect(find.text('קרם לחות'), findsOneWidget);
     });
 
     testWidgets('fromSetup: true → CTA label is הבא', (tester) async {
@@ -218,11 +236,16 @@ void main() {
       final product = _weeklyProduct('p1', 'סרום');
       final udr = _FakeUDR(morningSelections: [_sel('p1', Slot.morning)]);
 
-      await tester.pumpWidget(_wrap(master: _master([product]), udr: udr));
+      // Use direct wrapper to avoid GoRouter's navigation barrier at scroll depth
+      await tester.pumpWidget(_wrapDirect(master: _master([product]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Tap Sunday ('א׳') in the weekday picker to schedule it
-      await tester.tap(find.text('א׳').first);
+      // Tap the first GestureDetector inside the WeekdayPicker (Sunday chip)
+      final pickerChip = find.descendant(
+        of: find.byType(WeekdayPicker),
+        matching: find.byType(GestureDetector),
+      ).first;
+      await tester.tap(pickerChip);
       await tester.pumpAndSettle();
 
       expect(udr.upsertScheduleCalled, isTrue);

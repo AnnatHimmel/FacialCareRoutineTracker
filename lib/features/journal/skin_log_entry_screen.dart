@@ -10,6 +10,7 @@ import '../../domain/entities/skin_log_entry.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
+import '../../shared/widgets/skin_state_chip.dart';
 
 const _uuid = Uuid();
 final _picker = ImagePicker();
@@ -58,6 +59,45 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
     if (_photoCache.containsKey(path)) return;
     final bytes = await ref.read(photoRepositoryProvider).readPhoto(path);
     if (mounted) setState(() => _photoCache[path] = bytes);
+  }
+
+  void _showPhotoSourceSheet(BuildContext context) {
+    if (kIsWeb) {
+      _pickPhoto(fromCamera: false);
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('צלם תמונה'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickPhoto(fromCamera: true);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('בחר מהגלריה'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickPhoto(fromCamera: false);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _pickPhoto({required bool fromCamera}) async {
@@ -243,48 +283,30 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                           runSpacing: 8,
                           alignment: WrapAlignment.end,
                           children: [
-                            _SkinStateChip(
-                              label: 'רגוע',
+                            SkinStateChip(
+                              state: 'calm',
                               selected: _selectedSkinState == 'calm',
-                              background: AppColors.tertiaryFixed,
-                              foreground: AppColors.onTertiaryContainer,
-                              selectedBackground:
-                                  AppColors.tertiaryContainer,
                               onTap: () => setState(() {
                                 _selectedSkinState =
-                                    _selectedSkinState == 'calm'
-                                        ? null
-                                        : 'calm';
+                                    _selectedSkinState == 'calm' ? null : 'calm';
                                 _dirty = true;
                               }),
                             ),
-                            _SkinStateChip(
-                              label: 'לח',
+                            SkinStateChip(
+                              state: 'moist',
                               selected: _selectedSkinState == 'moist',
-                              background: AppColors.secondaryFixed,
-                              foreground: AppColors.onSecondaryContainer,
-                              selectedBackground:
-                                  AppColors.secondaryContainer,
                               onTap: () => setState(() {
                                 _selectedSkinState =
-                                    _selectedSkinState == 'moist'
-                                        ? null
-                                        : 'moist';
+                                    _selectedSkinState == 'moist' ? null : 'moist';
                                 _dirty = true;
                               }),
                             ),
-                            _SkinStateChip(
-                              label: 'שמני',
+                            SkinStateChip(
+                              state: 'oily',
                               selected: _selectedSkinState == 'oily',
-                              background: AppColors.primaryFixed,
-                              foreground: AppColors.primary,
-                              selectedBackground:
-                                  AppColors.primaryFixedDim,
                               onTap: () => setState(() {
                                 _selectedSkinState =
-                                    _selectedSkinState == 'oily'
-                                        ? null
-                                        : 'oily';
+                                    _selectedSkinState == 'oily' ? null : 'oily';
                                 _dirty = true;
                               }),
                             ),
@@ -431,9 +453,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
       children: [
         // Add photo button (dashed, circular peach icon)
         _AddPhotoButton(
-          onPickFromCamera:
-              kIsWeb ? null : () => _pickPhoto(fromCamera: true),
-          onPickFromGallery: () => _pickPhoto(fromCamera: false),
+          onTap: () => _showPhotoSourceSheet(context),
         ),
         // Existing photos
         for (final path in photos)
@@ -448,72 +468,17 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
   }
 }
 
-// ── Skin-state choice chip ──────────────────────────────────────────────────
+// ── Add-photo dashed card ───────────────────────────────────────────────────
 
-class _SkinStateChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final Color background;
-  final Color foreground;
-  final Color selectedBackground;
+class _AddPhotoButton extends StatelessWidget {
   final VoidCallback onTap;
 
-  const _SkinStateChip({
-    required this.label,
-    required this.selected,
-    required this.background,
-    required this.foreground,
-    required this.selectedBackground,
-    required this.onTap,
-  });
+  const _AddPhotoButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color: selected ? selectedBackground : background,
-          borderRadius: BorderRadius.circular(9999),
-          border: selected
-              ? Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
-                  width: 1.5,
-                )
-              : null,
-        ),
-        child: Text(
-          label,
-          style: AppTypography.labelSm.copyWith(
-            color: foreground,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Add-photo dashed card ───────────────────────────────────────────────────
-
-class _AddPhotoButton extends StatelessWidget {
-  final VoidCallback? onPickFromCamera;
-  final VoidCallback onPickFromGallery;
-
-  const _AddPhotoButton({
-    required this.onPickFromCamera,
-    required this.onPickFromGallery,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Single tap → gallery (or camera on web); long-press → camera on Android
-    return GestureDetector(
-      onTap: onPickFromGallery,
-      onLongPress: onPickFromCamera,
       child: Container(
         width: 110,
         height: 110,

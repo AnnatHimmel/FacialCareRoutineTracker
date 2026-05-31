@@ -41,6 +41,7 @@ dev_dependencies:
   drift_dev: ^2.18.0
   riverpod_generator: ^2.4.3
   mockito: ^5.4.4
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   generate: true
@@ -49,3 +50,11 @@ flutter:
   assets:
     - assets/data/
     - assets/images/products/
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: false
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#fce8e2"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+  min_sdk_android: 21

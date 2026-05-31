@@ -7,6 +7,7 @@ import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
 import 'package:skincare_tracker/domain/entities/skin_log_entry.dart';
+import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
@@ -44,6 +45,9 @@ class _FakeUDR implements UserDataRepository {
   @override Future<void> unmuteConflict(String ruleId) => throw UnimplementedError();
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
+  @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
+  @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
+  @override Future<void> deleteCustomProduct(String id) async {}
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -132,11 +136,11 @@ void main() {
       await tester.tap(find.byIcon(Icons.chevron_right));
       await tester.pumpAndSettle();
 
-      // Tap day '1' — will navigate to /day/<year>-<month>-01
+      // Tap day '1' — the screen expands an inline detail section (not navigation)
       await tester.tap(find.text('1').first);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('day-'), findsOneWidget);
+      expect(find.textContaining('יומן יומיומי'), findsOneWidget);
     });
 
     testWidgets('legend items are shown', (tester) async {

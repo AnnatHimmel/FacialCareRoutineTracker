@@ -51,16 +51,11 @@ class WeekdayPicker extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(
-                Icons.warning_rounded,
-                size: 14,
-                color: AppColors.tertiary,
-              ),
+              const Icon(Icons.warning_rounded, size: 14, color: AppColors.error),
               const SizedBox(width: 6),
               Text(
                 'מעבר למומלץ — שקלי להפחית',
-                style: AppTypography.labelSm
-                    .copyWith(color: AppColors.tertiary),
+                style: AppTypography.labelSm.copyWith(color: AppColors.error),
               ),
             ],
           ),
