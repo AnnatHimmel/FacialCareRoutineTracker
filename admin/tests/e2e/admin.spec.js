@@ -188,6 +188,58 @@ test.describe('Ordering tab', () => {
   });
 });
 
+// ─── Frequency field behaviour ────────────────────────────────────────────
+
+test.describe('Frequency fields', () => {
+  test.beforeEach(async ({ page }) => {
+    await waitForLoad(page);
+  });
+
+  test('weeklyMax max input is hidden when frequency is daily', async ({ page }) => {
+    const freqType = page.locator('.product-card').first().locator('.f-morning-freq-type');
+    await freqType.selectOption('daily');
+    const maxInput = page.locator('.product-card').first().locator('.f-morning-freq-max');
+    await expect(maxInput).toBeHidden();
+  });
+
+  test('weeklyMax max input appears when weeklyMax is selected', async ({ page }) => {
+    const freqType = page.locator('.product-card').first().locator('.f-morning-freq-type');
+    await freqType.selectOption('weeklyMax');
+    const maxInput = page.locator('.product-card').first().locator('.f-morning-freq-max');
+    await expect(maxInput).toBeVisible();
+  });
+
+  test('saved JSON uses maxPerWeek key (not max) for weeklyMax frequency', async ({ page }) => {
+    const fs = require('fs');
+    const path = require('path');
+
+    // Set the first morning-enabled product to weeklyMax with max=3
+    const cards = page.locator('.product-card');
+    let targetCard = null;
+    for (let i = 0; i < await cards.count(); i++) {
+      const enabled = cards.nth(i).locator('.f-morning-enabled');
+      if (await enabled.isChecked()) { targetCard = cards.nth(i); break; }
+    }
+    if (!targetCard) test.skip();
+
+    await targetCard.locator('.f-morning-freq-type').selectOption('weeklyMax');
+    await targetCard.locator('.f-morning-freq-max').fill('3');
+
+    await page.click('#save-btn');
+    // Wait for the flash-saved confirmation
+    await expect(page.locator('#save-btn')).toHaveText('Saved ✓', { timeout: 5000 });
+
+    const jsonPath = path.join(__dirname, '..', '..', '..', 'assets', 'data', 'master_products.json');
+    const saved = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    const product = saved.products.find(p => {
+      return p.morningConfig && p.morningConfig.frequency.type === 'weeklyMax';
+    });
+    expect(product).toBeTruthy();
+    expect(product.morningConfig.frequency.maxPerWeek).toBeDefined();
+    expect(product.morningConfig.frequency.max).toBeUndefined();
+  });
+});
+
 // ─── Incompatibilities tab ────────────────────────────────────────────────
 
 test.describe('Incompatibilities tab', () => {

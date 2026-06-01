@@ -2,137 +2,242 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
-/// Streak banner — the warm "golden hour" gradient pebble at the top of the
-/// home screen. Shows the current streak prominently, the personal best, and
-/// (optionally) the weekly grace budget as a slim progress bar.
-///
-/// Reference: home screen (`_2/screen.png`) — peach gradient card with a glassy
-/// flame disc and white text.
 class StreakWidget extends StatelessWidget {
   final int currentStreak;
   final int longestStreak;
-  final int? weekMissesUsed;
-  final int weekMissBudget;
+
+  /// Slot-misses used this week (matches StreakResult.missesThisWeek).
+  final int gracesUsed;
+  final int gracesTotal;
 
   const StreakWidget({
     super.key,
     required this.currentStreak,
     required this.longestStreak,
-    this.weekMissesUsed,
-    this.weekMissBudget = 3,
+    required this.gracesUsed,
+    this.gracesTotal = 3,
   });
 
-  static const Color _onGradient = Color(0xFFFFFFFF);
-  static const Color _onGradientDim = Color(0xCCFFFFFF);
+  static const Color _white = Color(0xFFFFFFFF);
+  static const Color _whiteDim = Color(0xCCFFFFFF); // 80 %
 
   @override
   Widget build(BuildContext context) {
-    final remaining =
-        weekMissesUsed == null ? null : (weekMissBudget - weekMissesUsed!).clamp(0, weekMissBudget);
-
+    final gracesLeft = (gracesTotal - gracesUsed).clamp(0, gracesTotal);
     final subtitle = currentStreak > 0
         ? 'את בדרך הנכונה לזוהר מושלם!'
         : 'כל יום נחשב — נתחיל היום ✨';
 
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: AppColors.streakGradient,
         borderRadius: BorderRadius.circular(28),
         boxShadow: AppColors.glowLg,
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'רצף של $currentStreak ימים',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.bodyMd.copyWith(
-                    color: _onGradient,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 17,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.labelMd.copyWith(color: _onGradientDim),
-                ),
-                if (remaining != null) ...[
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // ── Upper content ─────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Hero: flame + big number + label  (leading / right in RTL)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('חסד שבועי',
-                          style: AppTypography.labelSm
-                              .copyWith(color: _onGradientDim)),
-                      Text('$remaining/$weekMissBudget',
-                          style: AppTypography.labelSm
-                              .copyWith(color: _onGradient)),
+                      Semantics(
+                        label: '$currentStreak ימים ברצף',
+                        excludeSemantics: true,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(top: 5),
+                              child: Icon(
+                                Icons.local_fire_department_rounded,
+                                color: _white,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$currentStreak',
+                              style: AppTypography.displayLg.copyWith(
+                                color: _white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 64,
+                                height: 1.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'ימים ברצף',
+                        style: AppTypography.labelSm.copyWith(
+                          color: _whiteDim,
+                          fontSize: 10,
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(9999),
-                    child: LinearProgressIndicator(
-                      value: weekMissBudget > 0 ? remaining / weekMissBudget : 0,
-                      minHeight: 6,
-                      backgroundColor: const Color(0x33FFFFFF),
-                      valueColor: const AlwaysStoppedAnimation<Color>(_onGradient),
+                  const SizedBox(width: 16),
+                  // Copy: encouragement + best-streak chip  (trailing / left in RTL)
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.labelSm.copyWith(color: _whiteDim),
+                        ),
+                        const SizedBox(height: 8),
+                        _BestStreakChip(bestStreak: longestStreak),
+                      ],
                     ),
                   ),
                 ],
-                const SizedBox(height: 10),
-                Text(
-                  'שיא אישי · $longestStreak ימים',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.labelSm.copyWith(color: _onGradientDim),
-                ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(width: 16),
-          _FlameDisc(streak: currentStreak),
+
+          // ── Hairline separator ────────────────────────────────────────────
+          Container(height: 1, color: Colors.white.withAlpha(51)), // 20 %
+
+          // ── Grace meter ───────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+            child: _GraceMeter(total: gracesTotal, left: gracesLeft),
+          ),
         ],
       ),
     );
   }
 }
 
-class _FlameDisc extends StatelessWidget {
-  final int streak;
-  const _FlameDisc({required this.streak});
+// ── Best-streak chip ──────────────────────────────────────────────────────────
+
+class _BestStreakChip extends StatelessWidget {
+  final int bestStreak;
+  const _BestStreakChip({required this.bestStreak});
+
+  static const Color _white = Color(0xFFFFFFFF);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 68,
-      height: 68,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: Color(0x33FFFFFF),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(38), // 15 %
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.local_fire_department_rounded,
-              color: Color(0xFFFFFFFF), size: 30),
+          const Icon(Icons.emoji_events_rounded, color: _white, size: 14),
+          const SizedBox(width: 5),
           Text(
-            '$streak',
+            'שיא אישי · $bestStreak ימים',
             style: AppTypography.labelSm.copyWith(
-              color: const Color(0xFFFFFFFF),
+              color: _white,
               fontWeight: FontWeight.w700,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Grace meter ───────────────────────────────────────────────────────────────
+
+class _GraceMeter extends StatelessWidget {
+  final int total;
+  final int left;
+  const _GraceMeter({required this.total, required this.left});
+
+  static const Color _whiteDim = Color(0xCCFFFFFF);
+
+  @override
+  Widget build(BuildContext context) {
+    final isExhausted = left == 0;
+    final label = isExhausted ? 'אין חסדים' : '$left חסדים השבוע';
+    final semanticLabel =
+        isExhausted ? 'אין חסדים נותרו השבוע' : '$left חסדים נותרו השבוע';
+
+    return Semantics(
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Leading (right in RTL): shield icon + label
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isExhausted ? Icons.shield : Icons.shield_outlined,
+                color: _whiteDim,
+                size: 14,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: AppTypography.labelSm.copyWith(color: _whiteDim),
+              ),
+            ],
+          ),
+          // Trailing (left in RTL): heart tokens
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (int i = 0; i < total; i++) ...[
+                if (i > 0) const SizedBox(width: 4),
+                _GraceToken(available: i < left),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Grace token (heart circle) ────────────────────────────────────────────────
+
+class _GraceToken extends StatelessWidget {
+  final bool available;
+  const _GraceToken({required this.available});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: available ? Colors.white : Colors.white.withAlpha(26), // 10 %
+        border: available
+            ? null
+            : Border.all(
+                color: Colors.white.withAlpha(64), // 25 %
+                width: 1.5,
+              ),
+      ),
+      child: Icon(
+        available ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+        size: 14,
+        color: available ? AppColors.primary : Colors.white.withAlpha(153),
       ),
     );
   }

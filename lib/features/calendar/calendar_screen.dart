@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
 import '../../domain/entities/skin_log_entry.dart';
+import '../../domain/services/calendar_stats.dart';
 import '../../domain/enums/day_completion_state.dart';
 import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
@@ -82,21 +83,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: GlowAppBar(
-        action: IconButton(
-          icon: const Icon(Icons.photo_library_outlined),
-          color: AppColors.onSurfaceVariant,
-          onPressed: () => context.push('/journal'),
-          tooltip: 'יומן עור',
-        ),
-      ),
+      appBar: const GlowAppBar(),
       body: recordsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('שגיאה: $e')),
         data: (records) {
           final prevRecords = prevRecordsAsync.valueOrNull ?? [];
-          final avgPct = _computeMonthAvg(records);
-          final prevAvgPct = _computeMonthAvg(prevRecords);
+          final todayStr = _dateStr(today);
+          final avgPct = computeMonthAvg(records, today: todayStr);
+          final prevAvgPct = computeMonthAvg(prevRecords, today: todayStr);
           final progressPct =
               prevRecords.isEmpty ? null : avgPct - prevAvgPct;
 
@@ -292,31 +287,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         ],
       ),
     );
-  }
-
-  double _computeMonthAvg(List<DayRecord> records) {
-    if (records.isEmpty) return 0.0;
-    final Map<String, List<DayRecord>> byDate = {};
-    for (final r in records) {
-      (byDate[r.date] ??= []).add(r);
-    }
-    double total = 0.0;
-    int count = 0;
-    for (final dayRecs in byDate.values) {
-      int scheduled = 0;
-      int done = 0;
-      for (final r in dayRecs) {
-        if (r.resolvedProductIds.isNotEmpty) {
-          scheduled += r.resolvedProductIds.length;
-          done += r.recordedProductIds.length;
-        }
-      }
-      if (scheduled > 0) {
-        total += done / scheduled;
-        count++;
-      }
-    }
-    return count > 0 ? (total / count).clamp(0.0, 1.0) : 0.0;
   }
 
   String _monthLabel(DateTime date) {

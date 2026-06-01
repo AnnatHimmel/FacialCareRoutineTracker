@@ -36,9 +36,10 @@ class StreakCalculator {
     final effectiveToday = boundary.effectiveDate(asOf);
     final yesterday = effectiveToday.subtract(const Duration(days: 1));
 
-    // Compute missesThisWeek for current calendar week (including today)
+    // Compute missesThisWeek through yesterday only — today's incomplete slots
+    // are not yet "missed" since the day hasn't ended.
     final todayWeekSunday = _weekSunday(effectiveToday);
-    final missesThisWeek = _weekMisses(lookup, todayWeekSunday, effectiveToday, boundary);
+    final missesThisWeek = _weekMisses(lookup, todayWeekSunday, yesterday, boundary);
 
     // Walk backward week by week, starting from the week containing yesterday
     int currentStreak = 0;
@@ -62,9 +63,9 @@ class StreakCalculator {
         break;
       }
 
-      // Count only days where every scheduled slot is done
+      // Grace covers the misses; count all days with at least one scheduled slot
       final int contributingDays =
-          _completeDaysInRange(lookup, weekStart, rangeEnd, boundary);
+          _scheduledDaysInRange(lookup, weekStart, rangeEnd, boundary);
       currentStreak += contributingDays;
 
       if (currentStreak > longestStreak) longestStreak = currentStreak;
@@ -125,7 +126,7 @@ class StreakCalculator {
     return misses;
   }
 
-  int _completeDaysInRange(
+  int _scheduledDaysInRange(
     Map<String, DayRecord> lookup,
     DateTime from,
     DateTime through,
@@ -137,12 +138,7 @@ class StreakCalculator {
       final d = boundary.formatDate(cursor);
       final morning = lookup['${d}_${Slot.morning.name}'];
       final evening = lookup['${d}_${Slot.evening.name}'];
-      final anyScheduled = _isScheduled(morning) || _isScheduled(evening);
-      final morningOk = !_isScheduled(morning) || _isDone(morning);
-      final eveningOk = !_isScheduled(evening) || _isDone(evening);
-      if (anyScheduled && morningOk && eveningOk) {
-        count++;
-      }
+      if (_isScheduled(morning) || _isScheduled(evening)) count++;
       cursor = cursor.add(const Duration(days: 1));
     }
     return count;

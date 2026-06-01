@@ -257,6 +257,10 @@ void main() {
     });
 
     testWidgets('journal CTA navigates to /skin-log/:date', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       final udr = _FakeUDR(
         morningSelections: [_sel('pm1', Slot.morning)],
         morningRecord: _dayRecord(recorded: []),
@@ -297,8 +301,8 @@ void main() {
         await tester.tap(find.text('תמונות'));
         await tester.pumpAndSettle();
 
-        // Step badge visible, product name hidden (showNames off by default)
-        expect(find.text('1'), findsOneWidget);
+        // Grid tile visible via key, product name hidden (showNames off by default)
+        expect(find.byKey(const ValueKey('tile_pm1')), findsOneWidget);
         expect(find.text('קרם בוקר'), findsNothing);
       });
 
@@ -348,7 +352,9 @@ void main() {
         await tester.tap(find.text('תמונות'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('1'));
+        await tester.ensureVisible(find.byKey(const ValueKey('tile_pm1')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('tile_pm1')));
         await tester.pumpAndSettle();
 
         expect(udr.updateCalled, isTrue);

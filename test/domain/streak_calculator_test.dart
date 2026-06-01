@@ -127,22 +127,19 @@ void main() {
     });
   });
 
-  group('missed days do not increment streak', () {
-    // BUG 1: _contributingDaysInRange used _isScheduled, counting missed days
-    // Fix: _completeDaysInRange must use _isDone for every scheduled slot
-
-    test('2 complete days + 1 morning-missed day → streak 2, not 3', () {
+  group('grace-covered missed days count toward streak', () {
+    test('2 complete days + 1 grace-covered partial day → streak 3', () {
       // Week: May 3 (Sun) through May 9 (Sat)
       // May 3: complete (morning + evening done)
       // May 4: complete (morning + evening done)
-      // May 5: partial — morning scheduled+missed, evening done → NOT a complete day
+      // May 5: partial — morning missed, evening done → 1 miss, covered by grace
       // asOf: May 6 10am → yesterday = May 5
       final records = [
         done('2026-05-03', Slot.morning),
         done('2026-05-03', Slot.evening),
         done('2026-05-04', Slot.morning),
         done('2026-05-04', Slot.evening),
-        missed('2026-05-05', Slot.morning), // scheduled but not recorded
+        missed('2026-05-05', Slot.morning),
         done('2026-05-05', Slot.evening),
       ];
       final result = calc.compute(
@@ -150,12 +147,13 @@ void main() {
         asOf: DateTime(2026, 5, 6, 10),
         boundary: boundary,
       );
-      expect(result.currentStreak, 2);
+      expect(result.currentStreak, 3);
     });
 
-    test('1 complete day + 3 missed days (grace absorbs) → streak 1, not 4', () {
+    test('1 complete day + 3 grace-covered missed days → streak 4', () {
       // May 3: complete
       // May 4, 5, 6: each has 1 missed slot (3 misses total — within grace of 3)
+      // Grace covers each miss → all 4 days count toward the streak
       // asOf: May 7 10am → yesterday = May 6
       final records = [
         done('2026-05-03', Slot.morning),
@@ -169,8 +167,7 @@ void main() {
         asOf: DateTime(2026, 5, 7, 10),
         boundary: boundary,
       );
-      // Streak stays alive (≤3 misses), but only 1 day was actually complete
-      expect(result.currentStreak, 1);
+      expect(result.currentStreak, 4);
     });
 
     test('4 missed days in one week → streak resets to 0', () {

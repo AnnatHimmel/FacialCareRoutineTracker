@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
@@ -195,7 +196,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                       child: StreakWidget(
                         currentStreak: streakResult.currentStreak,
                         longestStreak: streakResult.longestStreak,
-                        weekMissesUsed: streakResult.missesThisWeek,
+                        gracesUsed: streakResult.missesThisWeek,
                       ),
                     ),
                   ),
@@ -203,19 +204,20 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                 // ── Page title ─────────────────────────────────────────────
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 4),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
                           _buildDayLabel(
                             ref.read(effectiveDateProvider),
                             ref.watch(_userNameProvider).valueOrNull,
                           ),
-                          textAlign: TextAlign.right,
-                          style: AppTypography.labelMd.copyWith(
+                          textAlign: TextAlign.center,
+                          style: AppTypography.labelSm.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w700,
+                            fontSize: 10,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -223,30 +225,40 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                           'השגרה שלך היום',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.right,
-                          style: AppTypography.headlineMd.copyWith(
+                          textAlign: TextAlign.center,
+                          style: AppTypography.bodyLg.copyWith(
                             color: AppColors.onSurface,
                             fontWeight: FontWeight.w700,
+                            fontSize: 20,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _viewMode == _ViewMode.images
+                                  ? 'הקישי על התמונה לסימון בוצע'
+                                  : 'הקישי על מוצר לסימון בוצע',
+                              style: AppTypography.labelSm.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                                fontSize: 10,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.touch_app_outlined,
+                              size: 10,
+                              color: AppColors.onSurfaceVariant,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
                         _ViewModeControl(
                           viewMode: _viewMode,
                           showNames: _showNames,
                           onViewModeChanged: _setViewMode,
                           onShowNamesChanged: _setShowNames,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _viewMode == _ViewMode.images
-                              ? 'הקישי על התמונה לסימון בוצע'
-                              : 'הקישי על מוצר לסימון בוצע',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.right,
-                          style: AppTypography.bodyMd.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
                         ),
                       ],
                     ),
@@ -360,6 +372,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                         final product = products[index];
                         final isDone = recorded.contains(product.id);
                         return _ProductGridTile(
+                          key: ValueKey('tile_${product.id}'),
                           product: product,
                           stepNumber: index + 1,
                           isDone: isDone,
@@ -418,6 +431,10 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
 
 // ── View mode control row ─────────────────────────────────────────────────────
 
+// Shared label style: Plus Jakarta Sans 15px w700 with tight line-height.
+TextStyle get _controlLabel =>
+    GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, height: 1.0);
+
 class _ViewModeControl extends StatelessWidget {
   final _ViewMode viewMode;
   final bool showNames;
@@ -434,19 +451,25 @@ class _ViewModeControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Leading (right in RTL): segmented pill
-        _ViewModeSegmentedPill(viewMode: viewMode, onChanged: onViewModeChanged),
-        // Trailing (left in RTL): names chip, only in images mode
-        if (viewMode == _ViewMode.images)
-          _NamesToggleChip(showNames: showNames, onChanged: onShowNamesChanged)
-        else
-          const SizedBox.shrink(),
+        Expanded(
+          child: _ViewModeSegmentedPill(
+              viewMode: viewMode, onChanged: onViewModeChanged),
+        ),
+        if (viewMode == _ViewMode.images) ...[
+          const SizedBox(width: 8),
+          _NamesToggleChip(showNames: showNames, onChanged: onShowNamesChanged),
+        ],
       ],
     );
   }
 }
+
+// ── Segmented pill ────────────────────────────────────────────────────────────
+//
+// Spec: 44px track, padding 4px, surfaceHigh@70% bg, 1px outlineVariant border.
+// Active segment: white bg + glow-sm. Inactive: transparent.
+// Icon 20px, label 15px w700, gap 6px. Press scale 0.97.
 
 class _ViewModeSegmentedPill extends StatelessWidget {
   final _ViewMode viewMode;
@@ -460,30 +483,35 @@ class _ViewModeSegmentedPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: viewMode == _ViewMode.list
-          ? 'תצוגת רשימה פעילה'
-          : 'תצוגת תמונות פעילה',
+      label: viewMode == _ViewMode.list ? 'תצוגת רשימה פעילה' : 'תצוגת תמונות פעילה',
       child: Container(
-        height: 40,
-        padding: const EdgeInsets.all(3),
+        height: 66,
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainer,
+          color: AppColors.surfaceHigh.withAlpha(179), // @70%
           borderRadius: BorderRadius.circular(9999),
+          border: Border.all(color: AppColors.outlineVariant),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Segment(
-              label: 'רשימה',
-              icon: Icons.view_agenda_outlined,
-              isActive: viewMode == _ViewMode.list,
-              onTap: () => onChanged(_ViewMode.list),
+            Expanded(
+              child: _Segment(
+                label: 'רשימה',
+                icon: viewMode == _ViewMode.list
+                    ? Icons.view_agenda
+                    : Icons.view_agenda_outlined,
+                isActive: viewMode == _ViewMode.list,
+                onTap: () => onChanged(_ViewMode.list),
+              ),
             ),
-            _Segment(
-              label: 'תמונות',
-              icon: Icons.grid_view_rounded,
-              isActive: viewMode == _ViewMode.images,
-              onTap: () => onChanged(_ViewMode.images),
+            Expanded(
+              child: _Segment(
+                label: 'תמונות',
+                icon: Icons.grid_view_rounded,
+                isActive: viewMode == _ViewMode.images,
+                onTap: () => onChanged(_ViewMode.images),
+              ),
             ),
           ],
         ),
@@ -492,7 +520,7 @@ class _ViewModeSegmentedPill extends StatelessWidget {
   }
 }
 
-class _Segment extends StatelessWidget {
+class _Segment extends StatefulWidget {
   final String label;
   final IconData icon;
   final bool isActive;
@@ -506,41 +534,68 @@ class _Segment extends StatelessWidget {
   });
 
   @override
+  State<_Segment> createState() => _SegmentState();
+}
+
+class _SegmentState extends State<_Segment> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.surfaceContainerLowest : Colors.transparent,
-          borderRadius: BorderRadius.circular(9999),
-          boxShadow: isActive ? AppColors.glowSm : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isActive ? AppColors.primary : AppColors.onSurfaceVariant,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: AppTypography.labelMd.copyWith(
-                color: isActive ? AppColors.primary : AppColors.onSurfaceVariant,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: double.infinity,
+          decoration: BoxDecoration(
+            color: widget.isActive
+                ? AppColors.surfaceContainerLowest
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(9999),
+            boxShadow: widget.isActive ? AppColors.glowSm : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                widget.icon,
+                size: 20,
+                color: widget.isActive
+                    ? AppColors.primary
+                    : AppColors.onSurfaceVariant,
               ),
-            ),
-          ],
+              const SizedBox(width: 6),
+              Text(
+                widget.label,
+                style: _controlLabel.copyWith(
+                  color: widget.isActive
+                      ? AppColors.primary
+                      : AppColors.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _NamesToggleChip extends StatelessWidget {
+// ── Names toggle chip ─────────────────────────────────────────────────────────
+//
+// Spec: 44px height, 16px h-padding, full-pill radius, icon 20px, label 15px w700.
+// ON:  primary bg, white text, no border, glow-sm.
+// OFF: white bg, on-surface-variant text, 1px outlineVariant@40% border.
+// Press scale 0.97.
+
+class _NamesToggleChip extends StatefulWidget {
   final bool showNames;
   final ValueChanged<bool> onChanged;
 
@@ -550,48 +605,62 @@ class _NamesToggleChip extends StatelessWidget {
   });
 
   @override
+  State<_NamesToggleChip> createState() => _NamesToggleChipState();
+}
+
+class _NamesToggleChipState extends State<_NamesToggleChip> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: showNames ? 'הסתר שמות מוצרים' : 'הצג שמות מוצרים',
+      label: widget.showNames ? 'הסתר שמות מוצרים' : 'הצג שמות מוצרים',
       button: true,
       child: GestureDetector(
-        onTap: () => onChanged(!showNames),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: showNames
-                ? AppColors.primaryFixed
-                : AppColors.surfaceContainer,
-            borderRadius: BorderRadius.circular(9999),
-            border: Border.all(
-              color: showNames
-                  ? AppColors.primary.withAlpha(77)
-                  : Colors.transparent,
+        onTap: () => widget.onChanged(!widget.showNames),
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        child: AnimatedScale(
+          scale: _pressed ? 0.97 : 1.0,
+          duration: const Duration(milliseconds: 100),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            height: 66,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: widget.showNames
+                  ? AppColors.primary
+                  : AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(9999),
+              border: widget.showNames
+                  ? null
+                  : Border.all(
+                      color: AppColors.outlineVariant.withAlpha(102)), // @40%
+              boxShadow: widget.showNames ? AppColors.glowSm : null,
             ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                showNames ? Icons.visibility : Icons.visibility_off,
-                size: 16,
-                color: showNames
-                    ? AppColors.primary
-                    : AppColors.onSurfaceVariant,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'שמות',
-                style: AppTypography.labelMd.copyWith(
-                  color: showNames
-                      ? AppColors.primary
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(
+                  widget.showNames ? Icons.visibility : Icons.visibility_off,
+                  size: 20,
+                  color: widget.showNames
+                      ? AppColors.onPrimary
                       : AppColors.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
                 ),
-              ),
-            ],
+                const SizedBox(width: 6),
+                Text(
+                  'שמות',
+                  style: _controlLabel.copyWith(
+                    color: widget.showNames
+                        ? AppColors.onPrimary
+                        : AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -609,6 +678,7 @@ class _ProductGridTile extends ConsumerWidget {
   final VoidCallback? onTap;
 
   const _ProductGridTile({
+    super.key,
     required this.product,
     required this.stepNumber,
     required this.isDone,

@@ -37,7 +37,7 @@ class _FakeUDR implements UserDataRepository {
   @override Future<DayRecord> snapshotAndGetDayRecord(String d, Slot s, List<String> ids, String v) => throw UnimplementedError();
   @override Future<void> updateDayRecord(DayRecord r) => throw UnimplementedError();
   @override Stream<List<DayRecord>> watchAllDayRecords() => throw UnimplementedError();
-  @override Stream<SkinLogEntry?> watchSkinLog(String d) => throw UnimplementedError();
+  @override Stream<SkinLogEntry?> watchSkinLog(String d) => Stream.value(null);
   @override Future<void> upsertSkinLog(SkinLogEntry e) => throw UnimplementedError();
   @override Stream<List<SkinLogEntry>> watchAllSkinLogs() => throw UnimplementedError();
   @override Stream<List<MutedConflict>> watchMutedConflicts() => throw UnimplementedError();
@@ -140,7 +140,7 @@ void main() {
       await tester.tap(find.text('1').first);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('יומן יומיומי'), findsOneWidget);
+      expect(find.textContaining('תיעוד יומי'), findsOneWidget);
     });
 
     testWidgets('legend items are shown', (tester) async {
