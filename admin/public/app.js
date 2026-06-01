@@ -1,4 +1,7 @@
 let masterData = { categories: [], products: [] };
+let rulesData = { rules: [] };
+
+// ─── Load ──────────────────────────────────────────────────────────────────
 
 async function loadMasterProducts() {
   try {
@@ -6,45 +9,32 @@ async function loadMasterProducts() {
     masterData = await res.json();
     if (!masterData.categories) masterData.categories = [];
     if (!masterData.products) masterData.products = [];
-    renderSidebar();
+
+    // Render existing products as editable cards
+    const grid = document.getElementById('cards-grid');
+    for (const p of masterData.products) {
+      grid.appendChild(renderCard(p));
+    }
+
     updateCategoryDropdowns();
+    updateRuleEntitySelectors();
   } catch (e) {
     console.error('Failed to load master products', e);
   }
 }
 
-function renderSidebar() {
-  const list = document.getElementById('sidebar-list');
-  list.innerHTML = '';
-
-  const byCategory = {};
-  for (const p of masterData.products) {
-    const cat = p.categoryId || 'uncategorized';
-    if (!byCategory[cat]) byCategory[cat] = [];
-    byCategory[cat].push(p);
-  }
-
-  for (const cat of masterData.categories) {
-    const header = document.createElement('div');
-    header.className = 'sidebar-category';
-    header.textContent = cat.name || cat.id;
-    list.appendChild(header);
-
-    for (const p of (byCategory[cat.id] || [])) {
-      const row = document.createElement('div');
-      row.className = 'sidebar-product';
-      const chk = document.createElement('input');
-      chk.type = 'checkbox';
-      chk.checked = !!p.isDeprecated;
-      chk.title = 'Deprecated';
-      row.appendChild(chk);
-      const lbl = document.createElement('span');
-      lbl.textContent = p.name;
-      row.appendChild(lbl);
-      list.appendChild(row);
-    }
+async function loadRules() {
+  try {
+    const res = await fetch('/api/incompatibility-rules');
+    rulesData = await res.json();
+    if (!rulesData.rules) rulesData.rules = [];
+    renderRules();
+  } catch (e) {
+    console.error('Failed to load rules', e);
   }
 }
+
+// ─── Category dropdowns ────────────────────────────────────────────────────
 
 function updateCategoryDropdowns() {
   const selects = document.querySelectorAll('.cat-select');
@@ -72,6 +62,8 @@ function esc(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 }
 
+// ─── Product card ──────────────────────────────────────────────────────────
+
 function renderCard(product) {
   const card = document.createElement('div');
   card.className = 'product-card';
@@ -82,7 +74,7 @@ function renderCard(product) {
 
   card.innerHTML = `
     <button class="card-delete" title="Remove card">&times;</button>
-    ${product.sourceUrl ? `<div class="card-source">${esc(product.sourceUrl)}</div>` : ''}
+    ${product.sourceUrl ? `<div class="card-source" dir="ltr">${esc(product.sourceUrl)}</div>` : ''}
     ${product.error ? `<span class="error-badge">Error: ${esc(product.error)}</span>` : ''}
 
     <div class="card-field">
@@ -91,11 +83,11 @@ function renderCard(product) {
     </div>
     <div class="card-field">
       <label>Brand</label>
-      <input class="f-brand" type="text" value="${esc(product.brand || '')}" placeholder="Brand">
+      <input class="f-brand" type="text" dir="ltr" value="${esc(product.brand || '')}" placeholder="Brand">
     </div>
     <div class="card-field">
       <label>Image URL</label>
-      <input class="f-imageurl" type="text" value="${esc(product.imageUrl || product.imageAsset || '')}" placeholder="https://...">
+      <input class="f-imageurl" type="text" dir="ltr" value="${esc(product.imageUrl || product.imageAsset || '')}" placeholder="https://...">
       <img class="card-image-preview" src="" alt="preview">
     </div>
     <div class="card-field">
@@ -147,11 +139,9 @@ function renderCard(product) {
     </div>
   `;
 
-  // Set category select value
   const catSel = card.querySelector('.cat-select');
   if (product.categoryId) catSel.value = product.categoryId;
 
-  // Image preview
   const imgInput = card.querySelector('.f-imageurl');
   const imgPreview = card.querySelector('.card-image-preview');
   function updatePreview() {
@@ -162,7 +152,6 @@ function renderCard(product) {
   updatePreview();
   imgInput.addEventListener('input', updatePreview);
 
-  // Delete button
   card.querySelector('.card-delete').addEventListener('click', () => card.remove());
 
   return card;
@@ -199,9 +188,10 @@ function readCard(card) {
 }
 
 function collectAllProducts() {
-  const cards = document.querySelectorAll('.product-card');
-  return Array.from(cards).map(readCard);
+  return Array.from(document.querySelectorAll('.product-card')).map(readCard);
 }
+
+// ─── Fetch / import ────────────────────────────────────────────────────────
 
 async function fetchCards(urls) {
   const loading = document.getElementById('loading');
@@ -230,9 +220,12 @@ async function fetchCards(urls) {
   }
 }
 
+// ─── Export products ───────────────────────────────────────────────────────
+
 async function exportJson() {
   const products = collectAllProducts();
-  const payload = { ...masterData, products };
+  const sortedCats = [...masterData.categories].sort((a, b) => (a.order || 0) - (b.order || 0));
+  const payload = { ...masterData, categories: sortedCats, products };
 
   try {
     const res = await fetch('/api/export', {
@@ -240,22 +233,299 @@ async function exportJson() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'master_products.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    flashSaved('save-btn', 'Save master_products.json');
   } catch (e) {
-    alert('Export failed: ' + e.message);
+    alert('Save failed: ' + e.message);
   }
 }
 
-// Add category form
+// ─── Export rules ──────────────────────────────────────────────────────────
+
+async function exportRules() {
+  try {
+    const res = await fetch('/api/export-rules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rulesData),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    flashSaved('save-rules-btn', 'Save incompatibility_rules.json');
+  } catch (e) {
+    alert('Save rules failed: ' + e.message);
+  }
+}
+
+function flashSaved(btnId, originalLabel) {
+  const btn = document.getElementById(btnId);
+  btn.textContent = 'Saved ✓';
+  btn.style.background = '#28a745';
+  setTimeout(() => { btn.textContent = originalLabel; btn.style.background = ''; }, 2000);
+}
+
+// ─── Tabs ──────────────────────────────────────────────────────────────────
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === `tab-${tabName}`);
+  });
+
+  document.getElementById('add-blank-btn').style.display = tabName === 'products' ? '' : 'none';
+  document.getElementById('save-rules-btn').style.display = tabName === 'rules' ? '' : 'none';
+
+  if (tabName === 'ordering') renderOrderingTab();
+}
+
+// ─── Ordering tab ──────────────────────────────────────────────────────────
+
+function makeSortable(listEl, onDrop) {
+  let dragEl = null;
+
+  listEl.addEventListener('dragstart', e => {
+    dragEl = e.target.closest('.sort-item');
+    if (!dragEl) return;
+    dragEl.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+  });
+
+  listEl.addEventListener('dragover', e => {
+    e.preventDefault();
+    const target = e.target.closest('.sort-item');
+    if (!target || target === dragEl) return;
+    const rect = target.getBoundingClientRect();
+    if (e.clientY < rect.top + rect.height / 2) {
+      listEl.insertBefore(dragEl, target);
+    } else {
+      listEl.insertBefore(dragEl, target.nextSibling);
+    }
+    e.dataTransfer.dropEffect = 'move';
+  });
+
+  listEl.addEventListener('drop', e => e.preventDefault());
+
+  listEl.addEventListener('dragend', () => {
+    if (dragEl) {
+      dragEl.classList.remove('dragging');
+      dragEl = null;
+      onDrop();
+    }
+  });
+}
+
+function createSortItem(id, label, badge) {
+  const item = document.createElement('div');
+  item.className = 'sort-item';
+  item.dataset.id = id;
+  item.draggable = true;
+  item.innerHTML = `
+    <span class="drag-handle" title="Drag to reorder">&#8942;&#8942;</span>
+    <span class="sort-label">${esc(label)}</span>
+    ${badge ? `<span class="sort-badge">${esc(badge)}</span>` : ''}
+  `;
+  return item;
+}
+
+function renderOrderingTab() {
+  // ── Categories ──
+  const catList = document.getElementById('cat-order-list');
+  catList.innerHTML = '';
+  const sortedCats = [...masterData.categories].sort((a, b) => (a.order || 0) - (b.order || 0));
+  for (const cat of sortedCats) {
+    catList.appendChild(createSortItem(cat.id, cat.name || cat.id));
+  }
+  makeSortable(catList, syncCategoryOrder);
+
+  // ── Morning & Evening grouped by category ──
+  const morningByCat = {};
+  const eveningByCat = {};
+
+  for (const card of document.querySelectorAll('.product-card')) {
+    const id = card.dataset.id;
+    const name = card.querySelector('.f-name').value || id;
+    const catId = card.querySelector('.cat-select').value || 'uncategorized';
+
+    if (card.querySelector('.f-morning-enabled').checked) {
+      const order = parseInt(card.querySelector('.f-morning-order').value, 10) || 0;
+      if (!morningByCat[catId]) morningByCat[catId] = [];
+      morningByCat[catId].push({ id, name, order });
+    }
+    if (card.querySelector('.f-evening-enabled').checked) {
+      const order = parseInt(card.querySelector('.f-evening-order').value, 10) || 0;
+      if (!eveningByCat[catId]) eveningByCat[catId] = [];
+      eveningByCat[catId].push({ id, name, order });
+    }
+  }
+
+  renderGroupedSlot('morning-order-list', morningByCat, sortedCats, 'morning');
+  renderGroupedSlot('evening-order-list', eveningByCat, sortedCats, 'evening');
+}
+
+function renderGroupedSlot(containerId, byCat, sortedCats, slot) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+
+  for (const cat of sortedCats) {
+    const products = byCat[cat.id];
+    if (!products || products.length === 0) continue;
+    products.sort((a, b) => a.order - b.order);
+    appendCatGroup(container, cat.name || cat.id, cat.id, products, slot);
+  }
+
+  const uncatProducts = byCat['uncategorized'];
+  if (uncatProducts && uncatProducts.length > 0) {
+    uncatProducts.sort((a, b) => a.order - b.order);
+    appendCatGroup(container, 'ללא קטגוריה', 'uncategorized', uncatProducts, slot);
+  }
+}
+
+function appendCatGroup(container, catLabel, catId, products, slot) {
+  const group = document.createElement('div');
+  group.className = 'order-cat-group';
+  group.dataset.catId = catId;
+
+  const header = document.createElement('div');
+  header.className = 'order-cat-header';
+  header.textContent = catLabel;
+  group.appendChild(header);
+
+  const subList = document.createElement('div');
+  subList.className = 'sortable-list';
+  for (const p of products) {
+    subList.appendChild(createSortItem(p.id, p.name));
+  }
+  group.appendChild(subList);
+  makeSortable(subList, () => syncSlotOrder(slot));
+  container.appendChild(group);
+}
+
+function syncCategoryOrder() {
+  document.querySelectorAll('#cat-order-list .sort-item').forEach((item, i) => {
+    const cat = masterData.categories.find(c => c.id === item.dataset.id);
+    if (cat) cat.order = i + 1;
+  });
+}
+
+function syncSlotOrder(slot) {
+  const listId = slot === 'morning' ? 'morning-order-list' : 'evening-order-list';
+  document.querySelectorAll(`#${listId} .sort-item`).forEach((item, i) => {
+    const card = document.querySelector(`.product-card[data-id="${item.dataset.id}"]`);
+    if (card) {
+      card.querySelector(`.f-${slot}-order`).value = i;
+    }
+  });
+}
+
+// ─── Rules tab ─────────────────────────────────────────────────────────────
+
+function getEntityName(entity) {
+  if (entity.type === 'product') {
+    const p = masterData.products.find(p => p.id === entity.id);
+    if (p) return p.name;
+    // Also check cards for newly added products
+    const card = document.querySelector(`.product-card[data-id="${entity.id}"]`);
+    if (card) return card.querySelector('.f-name').value || entity.id;
+    return entity.id;
+  } else {
+    const c = masterData.categories.find(c => c.id === entity.id);
+    return c ? (c.name || c.id) : entity.id;
+  }
+}
+
+function renderRules() {
+  const list = document.getElementById('rules-list');
+  const empty = document.getElementById('rules-empty');
+  const countBadge = document.getElementById('rules-count');
+  list.innerHTML = '';
+
+  countBadge.textContent = rulesData.rules.length;
+  empty.style.display = rulesData.rules.length === 0 ? 'block' : 'none';
+
+  for (const rule of rulesData.rules) {
+    const nameA = getEntityName(rule.entityA);
+    const nameB = getEntityName(rule.entityB);
+    const scopeLabel = rule.scope === 'withinSlot' ? 'Same slot' : 'Same day';
+
+    const row = document.createElement('div');
+    row.className = 'rule-row';
+    row.innerHTML = `
+      <span class="rule-entity rule-entity-${rule.entityA.type}" title="${esc(rule.entityA.type)}: ${esc(rule.entityA.id)}">${esc(nameA)}</span>
+      <span class="rule-arrow">&#8596;</span>
+      <span class="rule-entity rule-entity-${rule.entityB.type}" title="${esc(rule.entityB.type)}: ${esc(rule.entityB.id)}">${esc(nameB)}</span>
+      <span class="rule-scope-badge">${esc(scopeLabel)}</span>
+      <span class="rule-id-label">${esc(rule.id)}</span>
+      <button class="rule-delete" data-rule-id="${esc(rule.id)}" title="Delete rule">&times;</button>
+    `;
+    row.querySelector('.rule-delete').addEventListener('click', () => {
+      rulesData.rules = rulesData.rules.filter(r => r.id !== rule.id);
+      renderRules();
+    });
+    list.appendChild(row);
+  }
+}
+
+function updateRuleEntitySelectors() {
+  populateEntitySelector(
+    document.getElementById('rule-a-type').value,
+    document.getElementById('rule-a-id')
+  );
+  populateEntitySelector(
+    document.getElementById('rule-b-type').value,
+    document.getElementById('rule-b-id')
+  );
+}
+
+function populateEntitySelector(type, selectEl) {
+  const current = selectEl.value;
+  selectEl.innerHTML = '';
+  const items = type === 'product'
+    ? masterData.products.map(p => ({ id: p.id, label: p.name }))
+    : masterData.categories.map(c => ({ id: c.id, label: c.name || c.id }));
+  for (const item of items) {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.label;
+    selectEl.appendChild(opt);
+  }
+  if (current && items.find(i => i.id === current)) selectEl.value = current;
+}
+
+function addRule() {
+  const aType = document.getElementById('rule-a-type').value;
+  const aId = document.getElementById('rule-a-id').value;
+  const bType = document.getElementById('rule-b-type').value;
+  const bId = document.getElementById('rule-b-id').value;
+  const scope = document.getElementById('rule-scope').value;
+
+  if (!aId || !bId) { alert('Please select both entities.'); return; }
+  if (aType === bType && aId === bId) { alert('Entities A and B must be different.'); return; }
+
+  const isDuplicate = rulesData.rules.some(r =>
+    (r.entityA.type === aType && r.entityA.id === aId && r.entityB.type === bType && r.entityB.id === bId && r.scope === scope) ||
+    (r.entityA.type === bType && r.entityA.id === bId && r.entityB.type === aType && r.entityB.id === aId && r.scope === scope)
+  );
+  if (isDuplicate) { alert('This rule already exists.'); return; }
+
+  rulesData.rules.push({
+    id: `rule-${String(Date.now()).slice(-6)}`,
+    entityA: { type: aType, id: aId },
+    entityB: { type: bType, id: bId },
+    scope,
+  });
+  renderRules();
+}
+
+// ─── Add category ──────────────────────────────────────────────────────────
+
 document.getElementById('add-category-btn').addEventListener('click', () => {
   const form = document.getElementById('add-category-form');
   form.style.display = form.style.display === 'flex' ? 'none' : 'flex';
+  if (form.style.display === 'flex') document.getElementById('new-cat-id').focus();
 });
 
 document.getElementById('add-category-confirm').addEventListener('click', () => {
@@ -264,13 +534,33 @@ document.getElementById('add-category-confirm').addEventListener('click', () => 
   const id = idInput.value.trim();
   const name = nameInput.value.trim();
   if (!id || !name) { alert('Both ID and name are required'); return; }
-  masterData.categories.push({ id, name });
-  renderSidebar();
+  const maxOrder = masterData.categories.reduce((m, c) => Math.max(m, c.order || 0), 0);
+  masterData.categories.push({ id, name, order: maxOrder + 1 });
   updateCategoryDropdowns();
+  updateRuleEntitySelectors();
   idInput.value = '';
   nameInput.value = '';
   document.getElementById('add-category-form').style.display = 'none';
 });
+
+// ─── Tabs ──────────────────────────────────────────────────────────────────
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// ─── Rule selectors ────────────────────────────────────────────────────────
+
+document.getElementById('rule-a-type').addEventListener('change', e => {
+  populateEntitySelector(e.target.value, document.getElementById('rule-a-id'));
+});
+document.getElementById('rule-b-type').addEventListener('change', e => {
+  populateEntitySelector(e.target.value, document.getElementById('rule-b-id'));
+});
+
+document.getElementById('add-rule-btn').addEventListener('click', addRule);
+
+// ─── Footer ────────────────────────────────────────────────────────────────
 
 document.getElementById('fetch-btn').addEventListener('click', () => {
   const raw = document.getElementById('urls-input').value.trim();
@@ -286,5 +576,8 @@ document.getElementById('add-blank-btn').addEventListener('click', () => {
 });
 
 document.getElementById('save-btn').addEventListener('click', exportJson);
+document.getElementById('save-rules-btn').addEventListener('click', exportRules);
 
-loadMasterProducts();
+// ─── Init ──────────────────────────────────────────────────────────────────
+
+loadMasterProducts().then(() => loadRules());

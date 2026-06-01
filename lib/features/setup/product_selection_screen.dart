@@ -202,10 +202,7 @@ class _ProductSelectionScreenState
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: GlowAppBar(
-        showBack: _view == _SelectionView.summary,
-        onBack: _view == _SelectionView.summary ? _backToGuided : null,
-      ),
+      appBar: const GlowAppBar(),
       body: masterAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('שגיאה: $e')),
@@ -616,7 +613,7 @@ class _ProductSelectionScreenState
           right: 0,
           bottom: 0,
           child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
             decoration: BoxDecoration(
               color: AppColors.surface.withAlpha(242),
               boxShadow: AppColors.navGlow,
@@ -625,31 +622,6 @@ class _ProductSelectionScreenState
             ),
             child: Row(
               children: [
-                // Morning / evening totals
-                Row(
-                  children: [
-                    const Icon(Icons.wb_sunny_rounded,
-                        size: 15, color: AppColors.primaryContainer),
-                    const SizedBox(width: 4),
-                    Text('$amCount',
-                        style: AppTypography.labelMd.copyWith(
-                          color: AppColors.onSurface,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        )),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.dark_mode_rounded,
-                        size: 15, color: AppColors.tertiary),
-                    const SizedBox(width: 4),
-                    Text('$pmCount',
-                        style: AppTypography.labelMd.copyWith(
-                          color: AppColors.onSurface,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        )),
-                  ],
-                ),
-                const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () => showModalBottomSheet<void>(
                     context: context,
@@ -668,7 +640,21 @@ class _ProductSelectionScreenState
                         color: AppColors.primary, size: 22),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: _backToGuided,
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLow,
+                      borderRadius: BorderRadius.circular(9999),
+                    ),
+                    child: const Icon(Icons.arrow_back_rounded,
+                        color: AppColors.onSurface, size: 20),
+                  ),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: PrimaryButton(
                     label: 'המשך לתזמון',

@@ -19,11 +19,15 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Typically an [IconButton] for a settings / camera action.
   final Widget? action;
 
+  /// When set, replaces the default "The Glow Protocol" wordmark + sun icon.
+  final String? title;
+
   const GlowAppBar({
     super.key,
     this.showBack = false,
     this.onBack,
     this.action,
+    this.title,
   });
 
   @override
@@ -50,32 +54,43 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: onBack ?? () => Navigator.of(context).pop(),
             )
           : null,
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'The Glow Protocol',
-            style: AppTypography.headlineMd.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w700,
-              fontSize: 20,
-              height: 1,
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(width: 8),
-          const SizedBox(
-            width: 24,
-            height: 24,
-            child: CustomPaint(
-              painter: _SunLogoPainter(
+      title: title != null
+          ? Text(
+              title!,
+              style: AppTypography.headlineMd.copyWith(
                 color: AppColors.primary,
-                colorLight: AppColors.primaryContainer,
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+                height: 1,
+                letterSpacing: -0.2,
               ),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'The Glow Protocol',
+                  style: AppTypography.headlineMd.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                    height: 1,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CustomPaint(
+                    painter: _SunLogoPainter(
+                      color: AppColors.primary,
+                      colorLight: AppColors.primaryContainer,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       // Balance the leading area so the title stays truly centered.
       actions: [
         if (action != null) action! else if (showBack) const SizedBox(width: 48),

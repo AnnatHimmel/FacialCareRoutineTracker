@@ -83,6 +83,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: GlowAppBar(
+        title: 'יומן',
         action: IconButton(
           icon: const Icon(Icons.photo_library_outlined),
           color: AppColors.onSurfaceVariant,

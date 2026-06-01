@@ -8,30 +8,100 @@
 </head>
 <body>
   <div id="layout">
-    <!-- SIDEBAR -->
-    <aside id="sidebar">
-      <h2>Current Products</h2>
-      <div id="sidebar-list"></div>
-      <button id="add-category-btn">+ Add Category</button>
-      <div id="add-category-form">
-        <input id="new-cat-id" type="text" placeholder="Category ID (e.g. cat-toner)">
-        <input id="new-cat-name" type="text" placeholder="Hebrew name (e.g. טונר)">
-        <button id="add-category-confirm">Add</button>
-      </div>
-    </aside>
-
     <!-- MAIN -->
     <main id="main">
-      <!-- IMPORT PANEL -->
-      <section id="import-panel">
-        <h2>Import Products</h2>
-        <textarea id="urls-input" placeholder="Paste product URLs, one per line (YesStyle, OliveYoung, iHerb)"></textarea>
-        <button id="fetch-btn">Fetch &amp; Create Cards</button>
-        <div id="loading">Loading... please wait</div>
-      </section>
 
-      <!-- CARDS GRID -->
-      <div id="cards-grid"></div>
+      <!-- TAB NAV -->
+      <div id="tab-nav">
+        <button class="tab-btn active" data-tab="products">Products</button>
+        <button class="tab-btn" data-tab="ordering">Ordering</button>
+        <button class="tab-btn" data-tab="rules">Incompatibilities</button>
+      </div>
+
+      <!-- TAB: PRODUCTS -->
+      <div id="tab-products" class="tab-panel active">
+        <section id="import-panel">
+          <h2>Import Products</h2>
+          <textarea id="urls-input" placeholder="Paste product URLs, one per line (YesStyle, OliveYoung, iHerb)"></textarea>
+          <button id="fetch-btn">Fetch &amp; Create Cards</button>
+          <div id="loading">Loading... please wait</div>
+        </section>
+        <section id="category-panel">
+          <button id="add-category-btn">+ Add Category</button>
+          <div id="add-category-form">
+            <input id="new-cat-id" type="text" placeholder="Category ID (e.g. cat-toner)">
+            <input id="new-cat-name" type="text" placeholder="Hebrew name (e.g. טונר)">
+            <button id="add-category-confirm">Add</button>
+          </div>
+        </section>
+        <div id="cards-grid"></div>
+      </div>
+
+      <!-- TAB: ORDERING -->
+      <div id="tab-ordering" class="tab-panel">
+        <section class="order-section">
+          <h3>Category Order</h3>
+          <p class="order-hint">Drag to reorder — affects product selection screen grouping</p>
+          <div id="cat-order-list" class="sortable-list"></div>
+        </section>
+        <div class="order-columns">
+          <section class="order-section">
+            <h3>Morning Routine</h3>
+            <p class="order-hint">Top = applied first. Drag to reorder.</p>
+            <div id="morning-order-list" class="sortable-list"></div>
+          </section>
+          <section class="order-section">
+            <h3>Evening Routine</h3>
+            <p class="order-hint">Top = applied first. Drag to reorder.</p>
+            <div id="evening-order-list" class="sortable-list"></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- TAB: RULES -->
+      <div id="tab-rules" class="tab-panel">
+        <section class="rules-add-section">
+          <h3>Add Incompatibility Rule</h3>
+          <div class="rule-add-form">
+            <div class="rule-entity-picker">
+              <label>Entity A</label>
+              <div class="rule-entity-selects">
+                <select id="rule-a-type">
+                  <option value="product">Product</option>
+                  <option value="category">Category</option>
+                </select>
+                <select id="rule-a-id"></select>
+              </div>
+            </div>
+            <div class="rule-connector">&#8596;</div>
+            <div class="rule-entity-picker">
+              <label>Entity B</label>
+              <div class="rule-entity-selects">
+                <select id="rule-b-type">
+                  <option value="product">Product</option>
+                  <option value="category">Category</option>
+                </select>
+                <select id="rule-b-id"></select>
+              </div>
+            </div>
+            <div class="rule-scope-picker">
+              <label>Scope</label>
+              <select id="rule-scope">
+                <option value="withinSlot">Within same slot</option>
+                <option value="sameDayAcrossBoth">Same day (across both slots)</option>
+              </select>
+            </div>
+            <button id="add-rule-btn">+ Add Rule</button>
+          </div>
+        </section>
+
+        <section class="rules-list-section">
+          <h3>Existing Rules <span id="rules-count" class="count-badge"></span></h3>
+          <div id="rules-list"></div>
+          <div id="rules-empty" class="rules-empty">No rules defined yet.</div>
+        </section>
+      </div>
+
     </main>
   </div>
 
@@ -39,6 +109,7 @@
   <div id="footer-bar">
     <button id="add-blank-btn">+ Add Blank Card</button>
     <button id="save-btn">Save master_products.json</button>
+    <button id="save-rules-btn" style="display:none">Save incompatibility_rules.json</button>
   </div>
 
   <script src="app.js"></script>
