@@ -16,11 +16,34 @@ import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
+import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
 import 'package:skincare_tracker/features/home/daily_home_screen.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
 
 // ── Fakes ─────────────────────────────────────────────────────────────────────
+
+class _FakeSettings implements SettingsRepository {
+  @override Future<String?> getLastExportDate() async => null;
+  @override Future<void> setLastExportDate(String d) async {}
+  @override Future<String?> getLastKnownMasterVersion() async => null;
+  @override Future<void> setLastKnownMasterVersion(String v) async {}
+  @override Future<int> getUserSchemaVersion() async => 1;
+  @override Future<void> setUserSchemaVersion(int v) async {}
+  @override Future<int> getLongestStreak() async => 0;
+  @override Future<void> setLongestStreak(int s) async {}
+  @override Future<bool> getOnboardingCompleted() async => true;
+  @override Future<void> setOnboardingCompleted(bool v) async {}
+  @override Future<String?> getUserName() async => null;
+  @override Future<void> setUserName(String n) async {}
+  @override Future<String?> getUserGender() async => null;
+  @override Future<void> setUserGender(String g) async {}
+  @override Future<void> clearUserProfile() async {}
+  @override Future<String> getRoutineViewMode() async => 'list';
+  @override Future<void> setRoutineViewMode(String m) async {}
+  @override Future<bool> getRoutineShowNames() async => false;
+  @override Future<void> setRoutineShowNames(bool v) async {}
+}
 
 class _FakeMCR implements MasterContentRepository {
   final MasterContent content;
@@ -150,7 +173,11 @@ ProductSelection _sel(String productId, Slot slot) => ProductSelection(
       lastModified: DateTime(2024, 1, 1),
     );
 
-Widget _wrap({required MasterContent master, required _FakeUDR udr}) {
+Widget _wrap({
+  required MasterContent master,
+  required _FakeUDR udr,
+  _FakeSettings? settings,
+}) {
   final router = GoRouter(
     initialLocation: '/today',
     routes: [
@@ -174,6 +201,7 @@ Widget _wrap({required MasterContent master, required _FakeUDR udr}) {
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
       userDataRepositoryProvider.overrideWithValue(udr),
       effectiveDateProvider.overrideWithValue(DateTime(2024, 1, 15)),
+      settingsRepositoryProvider.overrideWithValue(settings ?? _FakeSettings()),
     ],
     child: MaterialApp.router(
       routerConfig: router,
@@ -240,6 +268,110 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('journal-2024-01-15'), findsOneWidget);
+    });
+
+    group('view mode toggle', () {
+      testWidgets('segmented control with רשימה and תמונות appears',
+          (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+        );
+        await tester.pumpWidget(_wrap(master: _master, udr: udr));
+        await tester.pumpAndSettle();
+
+        expect(find.text('רשימה'), findsOneWidget);
+        expect(find.text('תמונות'), findsOneWidget);
+      });
+
+      testWidgets(
+          'switching to images mode shows step badge and hides product name',
+          (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+        );
+        await tester.pumpWidget(_wrap(master: _master, udr: udr));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('תמונות'));
+        await tester.pumpAndSettle();
+
+        // Step badge visible, product name hidden (showNames off by default)
+        expect(find.text('1'), findsOneWidget);
+        expect(find.text('קרם בוקר'), findsNothing);
+      });
+
+      testWidgets('שמות chip hidden in list mode, visible in images mode',
+          (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+        );
+        await tester.pumpWidget(_wrap(master: _master, udr: udr));
+        await tester.pumpAndSettle();
+
+        expect(find.text('שמות'), findsNothing);
+
+        await tester.tap(find.text('תמונות'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('שמות'), findsOneWidget);
+      });
+
+      testWidgets('helper text changes in images mode', (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+        );
+        await tester.pumpWidget(_wrap(master: _master, udr: udr));
+        await tester.pumpAndSettle();
+
+        expect(find.text('הקישי על מוצר לסימון בוצע'), findsOneWidget);
+
+        await tester.tap(find.text('תמונות'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('הקישי על התמונה לסימון בוצע'), findsOneWidget);
+        expect(find.text('הקישי על מוצר לסימון בוצע'), findsNothing);
+      });
+
+      testWidgets('tapping grid tile in images mode calls updateDayRecord',
+          (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+        );
+        await tester.pumpWidget(_wrap(master: _master, udr: udr));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('תמונות'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('1'));
+        await tester.pumpAndSettle();
+
+        expect(udr.updateCalled, isTrue);
+      });
+
+      testWidgets('שמות toggle reveals product name below tile', (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+        );
+        await tester.pumpWidget(_wrap(master: _master, udr: udr));
+        await tester.pumpAndSettle();
+
+        // Switch to images
+        await tester.tap(find.text('תמונות'));
+        await tester.pumpAndSettle();
+
+        // Enable שמות
+        await tester.tap(find.text('שמות'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('קרם בוקר'), findsOneWidget);
+      });
     });
   });
 }

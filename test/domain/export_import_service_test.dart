@@ -62,6 +62,10 @@ class _FakeSettingsRepo implements SettingsRepository {
   @override Future<String?> getUserGender() async => null;
   @override Future<void> setUserGender(String gender) async {}
   @override Future<void> clearUserProfile() async {}
+  @override Future<String> getRoutineViewMode() async => 'list';
+  @override Future<void> setRoutineViewMode(String m) async {}
+  @override Future<bool> getRoutineShowNames() async => false;
+  @override Future<void> setRoutineShowNames(bool v) async {}
 }
 
 class _FakeUserDataRepo implements UserDataRepository {

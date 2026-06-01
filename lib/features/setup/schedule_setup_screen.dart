@@ -416,7 +416,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           GlassNavItem(
             icon: Icons.calendar_today_outlined,
             selectedIcon: Icons.calendar_today_rounded,
-            label: 'לוח שנה',
+            label: 'יומן',
           ),
           GlassNavItem(
             icon: Icons.auto_stories_outlined,

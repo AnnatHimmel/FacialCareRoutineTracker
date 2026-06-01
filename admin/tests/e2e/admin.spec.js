@@ -159,10 +159,10 @@ test.describe('Ordering tab', () => {
     await expect(handle).toBeVisible();
   });
 
-  test('Each sort item shows a category badge', async ({ page }) => {
-    const badge = page.locator('#morning-order-list .sort-item').first().locator('.sort-badge');
-    await expect(badge).toBeVisible();
-    const text = await badge.innerText();
+  test('Morning routine items are grouped under category headers', async ({ page }) => {
+    const header = page.locator('#morning-order-list .order-cat-header').first();
+    await expect(header).toBeVisible();
+    const text = await header.innerText();
     expect(text.length).toBeGreaterThan(0);
   });
 
@@ -194,6 +194,11 @@ test.describe('Incompatibilities tab', () => {
   test.beforeEach(async ({ page }) => {
     await waitForLoad(page);
     await page.click('[data-tab="rules"]');
+    // Wait for loadRules() to finish — #rules-count is set to a number (even "0") once loaded.
+    await page.waitForFunction(() => {
+      const el = document.getElementById('rules-count');
+      return el && el.textContent.trim() !== '';
+    });
   });
 
   test('Shows existing rules with entity names (not raw IDs)', async ({ page }) => {

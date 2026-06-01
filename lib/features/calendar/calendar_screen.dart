@@ -83,7 +83,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: GlowAppBar(
-        title: 'יומן',
         action: IconButton(
           icon: const Icon(Icons.photo_library_outlined),
           color: AppColors.onSurfaceVariant,
@@ -520,7 +519,7 @@ class _DayDetailSection extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'יומן יומיומי: $day ב$monthName',
+              'תיעוד יומי: $day ב$monthName',
               style: AppTypography.bodyLg.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.onSurface,

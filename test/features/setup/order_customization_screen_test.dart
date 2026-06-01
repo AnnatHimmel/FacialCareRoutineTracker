@@ -106,6 +106,10 @@ class _FakeSR implements SettingsRepository {
   @override Future<int> getLongestStreak() => throw UnimplementedError();
   @override Future<void> setLongestStreak(int s) => throw UnimplementedError();
   @override Future<void> clearUserProfile() => throw UnimplementedError();
+  @override Future<String> getRoutineViewMode() async => 'list';
+  @override Future<void> setRoutineViewMode(String m) async {}
+  @override Future<bool> getRoutineShowNames() async => false;
+  @override Future<void> setRoutineShowNames(bool v) async {}
 }
 
 // ── Test data ─────────────────────────────────────────────────────────────────

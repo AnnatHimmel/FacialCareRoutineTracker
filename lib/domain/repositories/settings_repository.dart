@@ -21,4 +21,9 @@ abstract class SettingsRepository {
   Future<void> setUserGender(String gender);
 
   Future<void> clearUserProfile();
+
+  Future<String> getRoutineViewMode();
+  Future<void> setRoutineViewMode(String mode);
+  Future<bool> getRoutineShowNames();
+  Future<void> setRoutineShowNames(bool value);
 }

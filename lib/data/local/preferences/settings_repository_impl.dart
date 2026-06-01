@@ -9,6 +9,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyOnboardingCompleted = 'onboarding_completed';
   static const _keyUserName = 'user_name';
   static const _keyUserGender = 'user_gender';
+  static const _keyRoutineViewMode = 'routine_view_mode';
+  static const _keyRoutineShowNames = 'routine_show_names';
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
@@ -75,4 +77,20 @@ class SettingsRepositoryImpl implements SettingsRepository {
     await prefs.remove(_keyUserName);
     await prefs.remove(_keyUserGender);
   }
+
+  @override
+  Future<String> getRoutineViewMode() async =>
+      (await _prefs).getString(_keyRoutineViewMode) ?? 'list';
+
+  @override
+  Future<void> setRoutineViewMode(String mode) async =>
+      (await _prefs).setString(_keyRoutineViewMode, mode);
+
+  @override
+  Future<bool> getRoutineShowNames() async =>
+      (await _prefs).getBool(_keyRoutineShowNames) ?? false;
+
+  @override
+  Future<void> setRoutineShowNames(bool value) async =>
+      (await _prefs).setBool(_keyRoutineShowNames, value);
 }

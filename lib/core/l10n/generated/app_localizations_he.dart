@@ -15,7 +15,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get navToday => 'היום';
 
   @override
-  String get navCalendar => 'לוח שנה';
+  String get navCalendar => 'יומן';
 
   @override
   String get navJournal => 'יומן עור';

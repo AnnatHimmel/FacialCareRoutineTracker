@@ -82,10 +82,6 @@ function renderCard(product) {
       <input class="f-name" type="text" value="${esc(product.name || '')}" placeholder="Product name">
     </div>
     <div class="card-field">
-      <label>Brand</label>
-      <input class="f-brand" type="text" dir="ltr" value="${esc(product.brand || '')}" placeholder="Brand">
-    </div>
-    <div class="card-field">
       <label>Image URL</label>
       <input class="f-imageurl" type="text" dir="ltr" value="${esc(product.imageUrl || product.imageAsset || '')}" placeholder="https://...">
       <img class="card-image-preview" src="" alt="preview">
@@ -104,15 +100,15 @@ function renderCard(product) {
       <div class="slot-row">
         <input type="checkbox" class="f-morning-enabled" ${morningCfg ? 'checked' : ''}>
         <label>Enabled</label>
-        <label>Order</label>
-        <input type="number" class="f-morning-order" value="${morningCfg ? morningCfg.order : 0}" min="0">
+        <input type="hidden" class="f-morning-order" value="${morningCfg ? morningCfg.order : 0}">
         <label>Frequency</label>
-        <select class="f-morning-freq">
+        <select class="f-morning-freq-type">
           <option value="daily" ${!morningCfg || morningCfg.frequency.type === 'daily' ? 'selected' : ''}>daily</option>
-          <option value="weeklyMax1" ${morningCfg && morningCfg.frequency.type === 'weeklyMax' && morningCfg.frequency.max === 1 ? 'selected' : ''}>weeklyMax 1</option>
-          <option value="weeklyMax2" ${morningCfg && morningCfg.frequency.type === 'weeklyMax' && morningCfg.frequency.max === 2 ? 'selected' : ''}>weeklyMax 2</option>
-          <option value="weeklyMax3" ${morningCfg && morningCfg.frequency.type === 'weeklyMax' && morningCfg.frequency.max === 3 ? 'selected' : ''}>weeklyMax 3</option>
+          <option value="weeklyMax" ${morningCfg && morningCfg.frequency.type === 'weeklyMax' ? 'selected' : ''}>weeklyMax</option>
         </select>
+        <input type="number" class="f-morning-freq-max" min="1" max="6"
+          value="${morningCfg && morningCfg.frequency.type === 'weeklyMax' ? (morningCfg.frequency.maxPerWeek ?? morningCfg.frequency.max ?? 1) : 1}"
+          style="width:50px;${!morningCfg || morningCfg.frequency.type === 'daily' ? 'display:none' : ''}">
       </div>
     </div>
 
@@ -121,15 +117,15 @@ function renderCard(product) {
       <div class="slot-row">
         <input type="checkbox" class="f-evening-enabled" ${eveningCfg ? 'checked' : ''}>
         <label>Enabled</label>
-        <label>Order</label>
-        <input type="number" class="f-evening-order" value="${eveningCfg ? eveningCfg.order : 0}" min="0">
+        <input type="hidden" class="f-evening-order" value="${eveningCfg ? eveningCfg.order : 0}">
         <label>Frequency</label>
-        <select class="f-evening-freq">
+        <select class="f-evening-freq-type">
           <option value="daily" ${!eveningCfg || eveningCfg.frequency.type === 'daily' ? 'selected' : ''}>daily</option>
-          <option value="weeklyMax1" ${eveningCfg && eveningCfg.frequency.type === 'weeklyMax' && eveningCfg.frequency.max === 1 ? 'selected' : ''}>weeklyMax 1</option>
-          <option value="weeklyMax2" ${eveningCfg && eveningCfg.frequency.type === 'weeklyMax' && eveningCfg.frequency.max === 2 ? 'selected' : ''}>weeklyMax 2</option>
-          <option value="weeklyMax3" ${eveningCfg && eveningCfg.frequency.type === 'weeklyMax' && eveningCfg.frequency.max === 3 ? 'selected' : ''}>weeklyMax 3</option>
+          <option value="weeklyMax" ${eveningCfg && eveningCfg.frequency.type === 'weeklyMax' ? 'selected' : ''}>weeklyMax</option>
         </select>
+        <input type="number" class="f-evening-freq-max" min="1" max="6"
+          value="${eveningCfg && eveningCfg.frequency.type === 'weeklyMax' ? (eveningCfg.frequency.maxPerWeek ?? eveningCfg.frequency.max ?? 1) : 1}"
+          style="width:50px;${!eveningCfg || eveningCfg.frequency.type === 'daily' ? 'display:none' : ''}">
       </div>
     </div>
 
@@ -152,25 +148,36 @@ function renderCard(product) {
   updatePreview();
   imgInput.addEventListener('input', updatePreview);
 
+  const mFreqType = card.querySelector('.f-morning-freq-type');
+  const mFreqMax = card.querySelector('.f-morning-freq-max');
+  mFreqType.addEventListener('change', () => {
+    mFreqMax.style.display = mFreqType.value === 'weeklyMax' ? '' : 'none';
+  });
+
+  const eFreqType = card.querySelector('.f-evening-freq-type');
+  const eFreqMax = card.querySelector('.f-evening-freq-max');
+  eFreqType.addEventListener('change', () => {
+    eFreqMax.style.display = eFreqType.value === 'weeklyMax' ? '' : 'none';
+  });
+
   card.querySelector('.card-delete').addEventListener('click', () => card.remove());
 
   return card;
-}
-
-function buildFrequency(val) {
-  if (val === 'daily') return { type: 'daily' };
-  const max = parseInt(val.replace('weeklyMax', ''), 10);
-  return { type: 'weeklyMax', max };
 }
 
 function readCard(card) {
   const morningEnabled = card.querySelector('.f-morning-enabled').checked;
   const eveningEnabled = card.querySelector('.f-evening-enabled').checked;
 
+  function readFreq(slot) {
+    const type = card.querySelector(`.f-${slot}-freq-type`).value;
+    if (type === 'daily') return { type: 'daily' };
+    return { type: 'weeklyMax', maxPerWeek: parseInt(card.querySelector(`.f-${slot}-freq-max`).value, 10) || 1 };
+  }
+
   return {
     id: card.dataset.id,
     name: card.querySelector('.f-name').value.trim(),
-    brand: card.querySelector('.f-brand').value.trim(),
     imageAsset: card.querySelector('.f-imageurl').value.trim() || null,
     categoryId: card.querySelector('.cat-select').value || null,
     comment: card.querySelector('.f-comment').value.trim() || null,
@@ -178,11 +185,11 @@ function readCard(card) {
     addedInVersion: '1.0.0',
     morningConfig: morningEnabled ? {
       order: parseInt(card.querySelector('.f-morning-order').value, 10) || 0,
-      frequency: buildFrequency(card.querySelector('.f-morning-freq').value),
+      frequency: readFreq('morning'),
     } : null,
     eveningConfig: eveningEnabled ? {
       order: parseInt(card.querySelector('.f-evening-order').value, 10) || 0,
-      frequency: buildFrequency(card.querySelector('.f-evening-freq').value),
+      frequency: readFreq('evening'),
     } : null,
   };
 }

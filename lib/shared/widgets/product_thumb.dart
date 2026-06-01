@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../providers/root_providers.dart';
 
-final _userPhotoProvider = FutureProvider.family<Uint8List?, String>(
+final userPhotoProvider = FutureProvider.family<Uint8List?, String>(
   (ref, key) => ref.watch(photoRepositoryProvider).readPhoto(key),
 );
 
@@ -27,7 +27,7 @@ class ProductThumb extends ConsumerWidget {
     Widget child;
     if (asset != null && asset.startsWith('user_photo:')) {
       final key = asset.substring('user_photo:'.length);
-      final photoAsync = ref.watch(_userPhotoProvider(key));
+      final photoAsync = ref.watch(userPhotoProvider(key));
       child = photoAsync.when(
         data: (bytes) => bytes != null
             ? Image.memory(bytes, width: size, height: size, fit: BoxFit.cover)

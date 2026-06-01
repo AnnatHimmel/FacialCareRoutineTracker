@@ -109,7 +109,7 @@ abstract class AppLocalizations {
   /// No description provided for @navCalendar.
   ///
   /// In he, this message translates to:
-  /// **'לוח שנה'**
+  /// **'יומן'**
   String get navCalendar;
 
   /// No description provided for @navJournal.

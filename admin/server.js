@@ -32,9 +32,32 @@ app.get('/api/master-products', (req, res) => {
   }
 });
 
+function formatMasterProducts(data) {
+  const entries = Object.entries(data);
+  const parts = [];
+  entries.forEach(([key, value], i) => {
+    const comma = i < entries.length - 1 ? ',' : '';
+    if (key === 'categories' && Array.isArray(value)) {
+      const lines = ['  ' + JSON.stringify(key) + ': ['];
+      value.forEach((cat, j) => {
+        lines.push('    ' + JSON.stringify(cat) + (j < value.length - 1 ? ',' : ''));
+      });
+      lines.push('  ]' + comma);
+      parts.push(lines.join('\n'));
+    } else {
+      const valueStr = JSON.stringify(value, null, 2)
+        .split('\n')
+        .map((line, idx) => idx === 0 ? line : '  ' + line)
+        .join('\n');
+      parts.push('  ' + JSON.stringify(key) + ': ' + valueStr + comma);
+    }
+  });
+  return '{\n' + parts.join('\n') + '\n}\n';
+}
+
 app.post('/api/export', (req, res) => {
   try {
-    fs.writeFileSync(MASTER_PRODUCTS_PATH, JSON.stringify(req.body, null, 2), 'utf8');
+    fs.writeFileSync(MASTER_PRODUCTS_PATH, formatMasterProducts(req.body), 'utf8');
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
