@@ -1,0 +1,20 @@
+{
+  "@@locale": "he_MA",
+
+  "backupReminderMessage": "גבה את הנתונים שלך",
+
+  "homeTapImageToDone": "הקש על התמונה לסימון בוצע",
+  "homeTapProductToDone": "הקש על מוצר לסימון בוצע",
+  "journalCtaSubtitle": "תעד את התקדמותך",
+
+  "onboardingSkip": "דלג",
+  "onboardingWelcome": "ברוך הבא",
+  "onboardingStart": "בוא נתחיל",
+  "onboardingTellUs": "ספר לנו עלייך",
+  "onboardingPrivacyDesc": "נשתמש בפרטים האלה כדי להתאים לך תוכן ולפנות אליך אישית. הכל נשמר על המכשיר שלך.",
+  "onboardingProductInstruction": "סמן את המוצרים שיש לך בארון. תוכל לערוך, להוסיף ולתזמן אותם בכל זמן.",
+  "onboardingCanAddLater": "תוכל להוסיף מוצרים גם בהמשך",
+
+  "journalEmptyInstruction": "הוסף תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך",
+  "journalStartDocumenting": "התחל לתעד"
+}

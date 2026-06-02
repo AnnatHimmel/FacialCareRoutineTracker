@@ -1,16 +1,21 @@
 {
   "@@locale": "he",
+
   "appName": "מעקב שגרת טיפוח",
+
   "navToday": "היום",
   "navCalendar": "יומן",
   "navJournal": "יומן עור",
   "navProducts": "המוצרים שלי",
   "navSettings": "הגדרות",
+
   "slotMorning": "בוקר",
   "slotEvening": "ערב",
+
   "productSelectionTitle": "בחירת מוצרים",
   "scheduleTitle": "תזמון מוצרים",
   "orderTitle": "סדר מוצרים",
+
   "streakCurrent": "ימי רצף",
   "streakLongest": "הרצף הארוך",
   "streakMissesThisWeek": "החסרות השבוע",
@@ -21,29 +26,38 @@
       "max": {}
     }
   },
+
   "warningDeprecated": "לא מומלץ עוד",
   "warningIncompatible": "לא מומלץ לשימוש יחד",
   "warningMute": "השתק",
   "warningOverCap": "נבחרו יותר ימים מההמלצה",
+
   "exportTitle": "ייצוא / ייבוא",
   "exportAction": "ייצא עכשיו",
   "importAction": "ייבא",
   "importReplace": "החלפה",
   "importMerge": "מיזוג",
+
   "settingsTitle": "הגדרות",
   "aboutTitle": "אודות / מה חדש",
   "updateReviewTitle": "עדכון הושלם",
+
   "backupReminderMessage": "גבי את הנתונים שלך",
   "backupAction": "גיבוי",
+
   "skinLogTitle": "יומן עור",
   "skinLogPlaceholder": "איך העור שלך היום?",
+
   "emptyRoutine": "אין מוצרים מתוכננים להיום",
   "emptyJournal": "עדיין אין תמונות ביומן",
+
   "continueAction": "המשך",
+  "backAction": "חזרה",
   "saveAction": "שמור",
   "resetOrder": "אפס לסדר מומלץ",
   "dataIntactConfirmation": "כל הנתונים שלך שמורים ובשלמותם",
   "before6amNote": "פעילות לפני 6:00 נרשמת ליום אמש",
+
   "conflictChooserTitle": "התנגשות {current} מתוך {total}",
   "@conflictChooserTitle": {
     "placeholders": {
@@ -53,5 +67,132 @@
   },
   "chooseArchive": "מהגיבוי",
   "chooseDevice": "מהמכשיר",
-  "webStorageWarning": "תמונות מאוחסנות בנפח מוגבל. גיבוי מומלץ."
+  "webStorageWarning": "תמונות מאוחסנות בנפח מוגבל. גיבוי מומלץ.",
+
+  "genericError": "שגיאה: {error}",
+  "@genericError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+
+  "homeTitle": "השגרה שלך היום",
+  "homeTapImageToDone": "הקישי על התמונה לסימון בוצע",
+  "homeTapProductToDone": "הקישי על מוצר לסימון בוצע",
+  "homeEmptyToday": "אין מוצרים להיום",
+  "homeAddProducts": "הוסף מוצרים",
+  "homeDayLabel": "יום {day}",
+  "@homeDayLabel": {
+    "placeholders": {
+      "day": {}
+    }
+  },
+  "homeDayLabelGreeting": "יום {day} • שלום {name}",
+  "@homeDayLabelGreeting": {
+    "placeholders": {
+      "day": {},
+      "name": {}
+    }
+  },
+  "homeViewListSemantics": "תצוגת רשימה פעילה",
+  "homeViewImagesSemantics": "תצוגת תמונות פעילה",
+  "homeViewList": "רשימה",
+  "homeViewImages": "תמונות",
+  "homeNamesToggleHide": "הסתר שמות מוצרים",
+  "homeNamesToggleShow": "הצג שמות מוצרים",
+  "homeNames": "שמות",
+  "homeProductStepDone": "{name}, שלב {step}, בוצע",
+  "@homeProductStepDone": {
+    "placeholders": {
+      "name": {},
+      "step": {}
+    }
+  },
+  "homeProductStepNotDone": "{name}, שלב {step}, לא בוצע",
+  "@homeProductStepNotDone": {
+    "placeholders": {
+      "name": {},
+      "step": {}
+    }
+  },
+  "journalCtaTitle": "איך העור מרגיש?",
+  "journalCtaSubtitle": "תעדי את התקדמותך",
+  "journalCtaButton": "תיעוד עכשיו",
+
+  "onboardingSkip": "דלגי",
+  "onboardingWelcome": "ברוכה הבאה",
+  "onboardingAppIntro": "ל־The Glow Protocol",
+  "onboardingTagline": "השגרה שלך, בקצב שלך.\nתיעוד יומי, תזמון חכם של מוצרים, וזוהר עקבי.",
+  "onboardingStart": "בואי נתחיל",
+  "onboardingTakesMinute": "לוקח פחות מדקה",
+  "onboardingFeature1": "מעקב יומי אחר השגרה",
+  "onboardingFeature2": "תזמון שבועי לפי המוצר",
+  "onboardingFeature3": "יומן עור ומצב רוח",
+  "onboardingTellUs": "ספרי לנו עלייך",
+  "onboardingPrivacyDesc": "נשתמש בפרטים האלה כדי להתאים לך תוכן ולפנות אלייך אישית. הכל נשמר על המכשיר שלך.",
+  "onboardingNamePrompt": "איך לקרוא לך?",
+  "onboardingNameHint": "השם שלך",
+  "onboardingGenderLabel": "מגדר",
+  "onboardingGenderFemale": "נקבה",
+  "onboardingGenderMale": "זכר",
+  "onboardingPrivacyLock": "הפרטים נשמרים רק אצלך",
+  "onboardingYourProducts": "המוצרים שלך",
+  "onboardingProductInstruction": "סמני את המוצרים שיש לך בארון. תוכלי לערוך, להוסיף ולתזמן אותם בכל זמן.",
+  "onboardingProductCount": "נבחרו {count} מוצרים",
+  "@onboardingProductCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "onboardingCanAddLater": "תוכלי להוסיף מוצרים גם בהמשך",
+  "onboardingFinish": "סיום והתחלה",
+  "onboardingFrequencyDaily": "יומי",
+  "onboardingFrequencyWeekly": "עד {max}× בשבוע",
+  "@onboardingFrequencyWeekly": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+
+  "calendarDayAbbrevSun": "א׳",
+  "calendarDayAbbrevMon": "ב׳",
+  "calendarDayAbbrevTue": "ג׳",
+  "calendarDayAbbrevWed": "ד׳",
+  "calendarDayAbbrevThu": "ה׳",
+  "calendarDayAbbrevFri": "ו׳",
+  "calendarDayAbbrevSat": "ש׳",
+
+  "calendarStateComplete": "הושלם",
+  "calendarStatePartial": "חלקי",
+  "calendarStateMissed": "הוחמץ",
+  "calendarStateNoData": "ללא נתונים",
+
+  "calendarMonthlyAvg": "ממוצע חודשי",
+  "calendarProgress": "התקדמות",
+  "calendarVsPrevMonth": "לעומת חודש קודם",
+  "calendarNoComparison": "אין נתוני השוואה",
+  "calendarDailyRecord": "תיעוד יומי: {day} ב{month}",
+  "@calendarDailyRecord": {
+    "placeholders": {
+      "day": {},
+      "month": {}
+    }
+  },
+  "calendarEdit": "ערוך",
+  "calendarSkinState": "מצב העור היום",
+  "calendarNoNotes": "לא נרשמו הערות",
+  "calendarTasksDone": "משימות שביצעו היום:",
+  "calendarAddPhoto": "הוסף תמונה",
+
+  "journalNoPhotos": "אין תמונות עדיין",
+  "journalEmptyInstruction": "הוסיפי תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך",
+  "journalStartDocumenting": "התחלי לתעד",
+  "journalDateFormat": "{day} ב{month} {year}",
+  "@journalDateFormat": {
+    "placeholders": {
+      "day": {},
+      "month": {},
+      "year": {}
+    }
+  }
 }

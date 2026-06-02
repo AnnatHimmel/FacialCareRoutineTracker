@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -25,7 +26,8 @@ class DailyHomeScreen extends ConsumerStatefulWidget {
   ConsumerState<DailyHomeScreen> createState() => _DailyHomeScreenState();
 }
 
-class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
+class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
+    with WidgetsBindingObserver {
   final Map<Slot, bool> _sectionExpanded = {
     Slot.morning: true,
     Slot.evening: true,
@@ -34,13 +36,38 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
   _ViewMode _viewMode = _ViewMode.list;
   bool _showNames = false;
 
-  // Tracks whether we've called snapshot for each slot today
   final Set<String> _snapshotted = {};
+  String _lastDateStr = '';
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadViewPrefs();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _checkForDayChange();
+    }
+  }
+
+  void _checkForDayChange() {
+    final boundary = ref.read(dayBoundaryServiceProvider);
+    final currentDate = boundary.formatDate(ref.read(effectiveDateProvider));
+    if (currentDate != _lastDateStr) {
+      setState(() {
+        _snapshotted.clear();
+        _lastDateStr = currentDate;
+      });
+    }
   }
 
   Future<void> _loadViewPrefs() async {
@@ -95,10 +122,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
     );
   }
 
-  Future<void> _toggleProduct(
-    DayRecord record,
-    String productId,
-  ) async {
+  Future<void> _toggleProduct(DayRecord record, String productId) async {
     final repo = ref.read(userDataRepositoryProvider);
     final recorded = List<String>.from(record.recordedProductIds);
     if (recorded.contains(productId)) {
@@ -116,7 +140,13 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final dateStr = _todayStr;
+
+    if (dateStr != _lastDateStr) {
+      _lastDateStr = dateStr;
+      _snapshotted.clear();
+    }
 
     final morningRoutineAsync =
         ref.watch(dailyRoutineProvider((date: dateStr, slot: Slot.morning)));
@@ -138,7 +168,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
     final mutedIds =
         (mutedAsync.valueOrNull ?? []).map((m) => m.ruleId).toSet();
 
-    // Ensure day records exist once products are resolved
     if (morningProducts.isNotEmpty) {
       _ensureRecord(dateStr, Slot.morning, morningProducts, morningRecord);
     }
@@ -146,7 +175,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
       _ensureRecord(dateStr, Slot.evening, eveningProducts, eveningRecord);
     }
 
-    // Compute streak
     final boundary = ref.read(dayBoundaryServiceProvider);
     final calculator = ref.read(streakCalculatorProvider);
     final streakResult = calculator.compute(
@@ -155,7 +183,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
       boundary: boundary,
     );
 
-    // Conflict info
     final List<ConflictInfo> conflicts = masterAsync.valueOrNull != null
         ? ref.read(incompatibilityCheckerProvider).getConflictsForDay(
             morningProducts: morningProducts,
@@ -170,7 +197,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
       for (final c in conflicts) ...<String>[c.productA.id, c.productB.id],
     };
 
-    // Done counts for slot headers
     final morningRecorded = morningRecord?.recordedProductIds.toSet() ?? {};
     final eveningRecorded = eveningRecord?.recordedProductIds.toSet() ?? {};
     final morningDone =
@@ -181,6 +207,14 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
     final isLoading =
         morningRoutineAsync.isLoading && eveningRoutineAsync.isLoading;
 
+    // Build day label from current date + user name
+    final effectiveDate = ref.read(effectiveDateProvider);
+    final userName = ref.watch(_userNameProvider).valueOrNull;
+    final dayName = HebrewDateStrings.weekdays[effectiveDate.weekday - 1];
+    final dayLabel = (userName != null && userName.trim().isNotEmpty)
+        ? l.homeDayLabelGreeting(dayName, userName.trim().split(' ').first)
+        : l.homeDayLabel(dayName);
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: const GlowAppBar(),
@@ -188,7 +222,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
               slivers: [
-                // ── Streak banner ──────────────────────────────────────────
                 if (allRecords.isNotEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
@@ -201,7 +234,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                     ),
                   ),
 
-                // ── Page title ─────────────────────────────────────────────
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
@@ -209,10 +241,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          _buildDayLabel(
-                            ref.read(effectiveDateProvider),
-                            ref.watch(_userNameProvider).valueOrNull,
-                          ),
+                          dayLabel,
                           textAlign: TextAlign.center,
                           style: AppTypography.labelSm.copyWith(
                             color: AppColors.primary,
@@ -222,7 +251,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'השגרה שלך היום',
+                          l.homeTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
@@ -238,8 +267,8 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                           children: [
                             Text(
                               _viewMode == _ViewMode.images
-                                  ? 'הקישי על התמונה לסימון בוצע'
-                                  : 'הקישי על מוצר לסימון בוצע',
+                                  ? l.homeTapImageToDone
+                                  : l.homeTapProductToDone,
                               style: AppTypography.labelSm.copyWith(
                                 color: AppColors.onSurfaceVariant,
                                 fontSize: 10,
@@ -265,7 +294,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                   ),
                 ),
 
-                // ── Morning slot ───────────────────────────────────────────
                 if (morningProducts.isNotEmpty)
                   _buildSlotSection(
                     slot: Slot.morning,
@@ -275,7 +303,9 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                     doneCount: morningDone,
                   ),
 
-                // ── Evening slot ───────────────────────────────────────────
+                if (morningProducts.isNotEmpty && eveningProducts.isNotEmpty)
+                  const SliverToBoxAdapter(child: SizedBox(height: 72)),
+
                 if (eveningProducts.isNotEmpty)
                   _buildSlotSection(
                     slot: Slot.evening,
@@ -285,7 +315,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                     doneCount: eveningDone,
                   ),
 
-                // ── Empty state ────────────────────────────────────────────
                 if (morningProducts.isEmpty && eveningProducts.isEmpty)
                   SliverFillRemaining(
                     child: Center(
@@ -299,7 +328,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'אין מוצרים להיום',
+                            l.homeEmptyToday,
                             style: AppTypography.headlineMd.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
@@ -307,14 +336,13 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
                           const SizedBox(height: 8),
                           TextButton(
                             onPressed: () => context.push('/setup/selection'),
-                            child: const Text('הוסף מוצרים'),
+                            child: Text(l.homeAddProducts),
                           ),
                         ],
                       ),
                     ),
                   ),
 
-                // ── Journal CTA card ───────────────────────────────────────
                 if (morningProducts.isNotEmpty || eveningProducts.isNotEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
@@ -341,7 +369,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
 
     return SliverMainAxisGroup(
       slivers: [
-        // Section header
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -355,7 +382,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
             ),
           ),
         ),
-        // Product content — list or grid depending on view mode
         if (isExpanded)
           _viewMode == _ViewMode.images
               ? SliverPadding(
@@ -419,19 +445,10 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen> {
       ],
     );
   }
-
-  static String _buildDayLabel(DateTime date, String? userName) {
-    final day = HebrewDateStrings.weekdays[date.weekday - 1];
-    final name = userName != null && userName.trim().isNotEmpty
-        ? userName.trim().split(' ').first
-        : null;
-    return name != null ? 'יום $day • שלום $name' : 'יום $day';
-  }
 }
 
 // ── View mode control row ─────────────────────────────────────────────────────
 
-// Shared label style: Plus Jakarta Sans 15px w700 with tight line-height.
 TextStyle get _controlLabel =>
     GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, height: 1.0);
 
@@ -466,10 +483,6 @@ class _ViewModeControl extends StatelessWidget {
 }
 
 // ── Segmented pill ────────────────────────────────────────────────────────────
-//
-// Spec: 44px track, padding 4px, surfaceHigh@70% bg, 1px outlineVariant border.
-// Active segment: white bg + glow-sm. Inactive: transparent.
-// Icon 20px, label 15px w700, gap 6px. Press scale 0.97.
 
 class _ViewModeSegmentedPill extends StatelessWidget {
   final _ViewMode viewMode;
@@ -482,13 +495,16 @@ class _ViewModeSegmentedPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Semantics(
-      label: viewMode == _ViewMode.list ? 'תצוגת רשימה פעילה' : 'תצוגת תמונות פעילה',
+      label: viewMode == _ViewMode.list
+          ? l.homeViewListSemantics
+          : l.homeViewImagesSemantics,
       child: Container(
         height: 66,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: AppColors.surfaceHigh.withAlpha(179), // @70%
+          color: AppColors.surfaceHigh.withAlpha(179),
           borderRadius: BorderRadius.circular(9999),
           border: Border.all(color: AppColors.outlineVariant),
         ),
@@ -497,7 +513,7 @@ class _ViewModeSegmentedPill extends StatelessWidget {
           children: [
             Expanded(
               child: _Segment(
-                label: 'רשימה',
+                label: l.homeViewList,
                 icon: viewMode == _ViewMode.list
                     ? Icons.view_agenda
                     : Icons.view_agenda_outlined,
@@ -507,7 +523,7 @@ class _ViewModeSegmentedPill extends StatelessWidget {
             ),
             Expanded(
               child: _Segment(
-                label: 'תמונות',
+                label: l.homeViewImages,
                 icon: Icons.grid_view_rounded,
                 isActive: viewMode == _ViewMode.images,
                 onTap: () => onChanged(_ViewMode.images),
@@ -589,11 +605,6 @@ class _SegmentState extends State<_Segment> {
 }
 
 // ── Names toggle chip ─────────────────────────────────────────────────────────
-//
-// Spec: 44px height, 16px h-padding, full-pill radius, icon 20px, label 15px w700.
-// ON:  primary bg, white text, no border, glow-sm.
-// OFF: white bg, on-surface-variant text, 1px outlineVariant@40% border.
-// Press scale 0.97.
 
 class _NamesToggleChip extends StatefulWidget {
   final bool showNames;
@@ -613,8 +624,9 @@ class _NamesToggleChipState extends State<_NamesToggleChip> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Semantics(
-      label: widget.showNames ? 'הסתר שמות מוצרים' : 'הצג שמות מוצרים',
+      label: widget.showNames ? l.homeNamesToggleHide : l.homeNamesToggleShow,
       button: true,
       child: GestureDetector(
         onTap: () => widget.onChanged(!widget.showNames),
@@ -636,7 +648,7 @@ class _NamesToggleChipState extends State<_NamesToggleChip> {
               border: widget.showNames
                   ? null
                   : Border.all(
-                      color: AppColors.outlineVariant.withAlpha(102)), // @40%
+                      color: AppColors.outlineVariant.withAlpha(102)),
               boxShadow: widget.showNames ? AppColors.glowSm : null,
             ),
             child: Row(
@@ -652,7 +664,7 @@ class _NamesToggleChipState extends State<_NamesToggleChip> {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'שמות',
+                  l.homeNames,
                   style: _controlLabel.copyWith(
                     color: widget.showNames
                         ? AppColors.onPrimary
@@ -690,9 +702,11 @@ class _ProductGridTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
     return Semantics(
-      label:
-          '${product.name}, שלב $stepNumber, ${isDone ? "בוצע" : "לא בוצע"}',
+      label: isDone
+          ? l.homeProductStepDone(product.name, stepNumber)
+          : l.homeProductStepNotDone(product.name, stepNumber),
       button: true,
       child: GestureDetector(
         onTap: onTap,
@@ -836,6 +850,7 @@ class _JournalCtaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
@@ -845,14 +860,13 @@ class _JournalCtaCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Text (leading in RTL = visual right)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'איך העור מרגיש?',
+                  l.journalCtaTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.right,
@@ -863,7 +877,7 @@ class _JournalCtaCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'תעדי את התקדמותך',
+                  l.journalCtaSubtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.right,
@@ -875,7 +889,6 @@ class _JournalCtaCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          // CTA button (trailing in RTL = visual left)
           SizedBox(
             height: 48,
             child: ElevatedButton(
@@ -888,7 +901,7 @@ class _JournalCtaCard extends StatelessWidget {
                 elevation: 0,
               ),
               child: Text(
-                'תיעוד עכשיו',
+                l.journalCtaButton,
                 style: AppTypography.labelMd.copyWith(
                   color: AppColors.inverseOnSurface,
                   fontWeight: FontWeight.w700,

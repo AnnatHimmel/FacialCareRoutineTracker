@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
@@ -42,6 +43,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       }
       if (_gender != null) {
         await settings.setUserGender(_gender!);
+        ref.read(appLocaleProvider.notifier).state =
+            _gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
       }
       for (final product in _allProducts) {
         if (_selectedProductIds.contains(product.id)) {
@@ -72,29 +75,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     widget.onFinish();
   }
 
-  String _frequencyLabel(MasterProduct p) {
+  String _frequencyLabel(MasterProduct p, AppLocalizations l) {
     final config = p.morningConfig ?? p.eveningConfig;
     if (config == null) return '';
     final rule = config.frequencyRule;
-    if (rule is DailyRule) return 'יומי';
-    if (rule is WeeklyMaxRule) return 'עד ${rule.maxPerWeek}× בשבוע';
+    if (rule is DailyRule) return l.onboardingFrequencyDaily;
+    if (rule is WeeklyMaxRule) return l.onboardingFrequencyWeekly(rule.maxPerWeek);
     return '';
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopBar(),
+            _buildTopBar(l),
             Expanded(
               child: _step == 1
-                  ? _buildStep1()
+                  ? _buildStep1(l)
                   : _step == 2
-                      ? _buildStep2()
-                      : _buildStep3(),
+                      ? _buildStep2(l)
+                      : _buildStep3(l),
             ),
           ],
         ),
@@ -102,7 +106,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(AppLocalizations l) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
@@ -132,14 +136,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(width: 12),
           TextButton(
             onPressed: widget.onFinish,
-            child: const Text('דלגי', style: TextStyle(color: AppColors.primary)),
+            child: Text(l.onboardingSkip,
+                style: const TextStyle(color: AppColors.primary)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStep1() {
+  Widget _buildStep1(AppLocalizations l) {
     return Column(
       children: [
         Expanded(
@@ -149,36 +154,35 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 16),
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primaryFixed,
+                ClipOval(
+                  child: Image.asset(
+                    'assets/images/app_icon.png',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
                   ),
-                  child: const Icon(Icons.wb_sunny_rounded, size: 80, color: AppColors.primary),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'ברוכה הבאה',
-                  style: TextStyle(
+                Text(
+                  l.onboardingWelcome,
+                  style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'ל־The Glow Protocol',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Text(
+                  l.onboardingAppIntro,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'השגרה שלך, בקצב שלך.\nתיעוד יומי, תזמון חכם של מוצרים, וזוהר עקבי.',
+                Text(
+                  l.onboardingTagline,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                _buildFeaturePills(),
+                _buildFeaturePills(l),
               ],
             ),
           ),
@@ -188,13 +192,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: Column(
             children: [
               PrimaryButton(
-                label: 'בואי נתחיל',
+                label: l.onboardingStart,
                 leadingIcon: Icons.arrow_forward,
                 onTap: _next,
               ),
               const SizedBox(height: 8),
-              const Text('לוקח פחות מדקה',
-                  style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+              Text(l.onboardingTakesMinute,
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.onSurfaceVariant)),
             ],
           ),
         ),
@@ -202,11 +207,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildFeaturePills() {
-    const features = [
-      (Icons.checklist_rounded, 'מעקב יומי אחר השגרה'),
-      (Icons.event_rounded, 'תזמון שבועי לפי המוצר'),
-      (Icons.auto_stories_rounded, 'יומן עור ומצב רוח'),
+  Widget _buildFeaturePills(AppLocalizations l) {
+    final features = [
+      (Icons.checklist_rounded, l.onboardingFeature1),
+      (Icons.event_rounded, l.onboardingFeature2),
+      (Icons.auto_stories_rounded, l.onboardingFeature3),
     ];
     return Column(
       children: features.map((f) {
@@ -229,7 +234,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-Widget _buildStep2() {
+  Widget _buildStep2(AppLocalizations l) {
     final canContinue = _name.trim().isNotEmpty && _gender != null;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -237,42 +242,42 @@ Widget _buildStep2() {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 32),
-          const Text(
-            'ספרי לנו עלייך',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Text(
+            l.onboardingTellUs,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'נשתמש בפרטים האלה כדי להתאים לך תוכן ולפנות אלייך אישית. הכל נשמר על המכשיר שלך.',
-          ),
+          Text(l.onboardingPrivacyDesc),
           const SizedBox(height: 24),
-          const Text('איך לקרוא לך?'),
+          Text(l.onboardingNamePrompt),
           const SizedBox(height: 8),
           TextField(
             textDirection: TextDirection.rtl,
             decoration: InputDecoration(
-              hintText: 'השם שלך',
+              hintText: l.onboardingNameHint,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
             ),
             onChanged: (v) => setState(() => _name = v),
           ),
           const SizedBox(height: 20),
-          const Text('מגדר'),
+          Text(l.onboardingGenderLabel),
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: _genderButton('נקבה', 'female')),
+              Expanded(child: _genderButton(l.onboardingGenderFemale, 'female')),
               const SizedBox(width: 12),
-              Expanded(child: _genderButton('זכר', 'male')),
+              Expanded(child: _genderButton(l.onboardingGenderMale, 'male')),
             ],
           ),
           const SizedBox(height: 16),
-          const Row(
+          Row(
             children: [
-              Icon(Icons.lock_outline, size: 14, color: AppColors.onSurfaceVariant),
-              SizedBox(width: 6),
-              Text('הפרטים נשמרים רק אצלך',
-                  style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+              const Icon(Icons.lock_outline,
+                  size: 14, color: AppColors.onSurfaceVariant),
+              const SizedBox(width: 6),
+              Text(l.onboardingPrivacyLock,
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.onSurfaceVariant)),
             ],
           ),
           const SizedBox(height: 32),
@@ -281,7 +286,7 @@ Widget _buildStep2() {
               Expanded(
                 child: OutlinedButton(
                   onPressed: _back,
-                  child: const Text('חזרה'),
+                  child: Text(l.backAction),
                 ),
               ),
               const SizedBox(width: 12),
@@ -290,7 +295,7 @@ Widget _buildStep2() {
                   opacity: canContinue ? 1.0 : 0.5,
                   child: ElevatedButton(
                     onPressed: canContinue ? _next : null,
-                    child: const Text('המשך'),
+                    child: Text(l.continueAction),
                   ),
                 ),
               ),
@@ -325,11 +330,11 @@ Widget _buildStep2() {
     );
   }
 
-  Widget _buildStep3() {
+  Widget _buildStep3(AppLocalizations l) {
     final masterAsync = ref.watch(masterContentProvider);
     return masterAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('שגיאה: $e')),
+      error: (e, _) => Center(child: Text(l.genericError(e))),
       data: (master) {
         _allProducts = master.products.where((p) => !p.isDeprecated).toList();
         return Column(
@@ -341,19 +346,19 @@ Widget _buildStep2() {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 32),
-                    const Text(
-                      'המוצרים שלך',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    Text(
+                      l.onboardingYourProducts,
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'סמני את המוצרים שיש לך בארון. תוכלי לערוך, להוסיף ולתזמן אותם בכל זמן.',
-                    ),
+                    Text(l.onboardingProductInstruction),
                     const SizedBox(height: 20),
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         crossAxisSpacing: 12,
                         mainAxisSpacing: 12,
@@ -362,7 +367,8 @@ Widget _buildStep2() {
                       itemCount: _allProducts.length,
                       itemBuilder: (context, i) {
                         final product = _allProducts[i];
-                        final selected = _selectedProductIds.contains(product.id);
+                        final selected =
+                            _selectedProductIds.contains(product.id);
                         return InkWell(
                           borderRadius: BorderRadius.circular(24),
                           onTap: () => setState(() {
@@ -379,7 +385,9 @@ Widget _buildStep2() {
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
-                                color: selected ? AppColors.primary : Colors.transparent,
+                                color: selected
+                                    ? AppColors.primary
+                                    : Colors.transparent,
                                 width: 2,
                               ),
                             ),
@@ -399,12 +407,14 @@ Widget _buildStep2() {
                                           : AppColors.surfaceHigh,
                                     ),
                                     child: selected
-                                        ? const Icon(Icons.check, size: 16, color: Colors.white)
+                                        ? const Icon(Icons.check,
+                                            size: 16, color: Colors.white)
                                         : null,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                ProductThumb(imageAsset: product.imageAsset, size: 48),
+                                ProductThumb(
+                                    imageAsset: product.imageAsset, size: 48),
                                 const SizedBox(height: 8),
                                 Text(
                                   product.name,
@@ -414,7 +424,7 @@ Widget _buildStep2() {
                                   ),
                                 ),
                                 Text(
-                                  _frequencyLabel(product),
+                                  _frequencyLabel(product, l),
                                   style: const TextStyle(
                                     fontSize: 11,
                                     color: AppColors.onSurfaceVariant,
@@ -429,8 +439,8 @@ Widget _buildStep2() {
                     const SizedBox(height: 8),
                     Text(
                       _selectedProductIds.isEmpty
-                          ? 'תוכלי להוסיף מוצרים גם בהמשך'
-                          : 'נבחרו ${_selectedProductIds.length} מוצרים',
+                          ? l.onboardingCanAddLater
+                          : l.onboardingProductCount(_selectedProductIds.length),
                       style: const TextStyle(
                           fontSize: 12, color: AppColors.onSurfaceVariant),
                     ),
@@ -440,13 +450,14 @@ Widget _buildStep2() {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
                       onPressed: _back,
-                      child: const Text('חזרה'),
+                      child: Text(l.backAction),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -454,7 +465,7 @@ Widget _buildStep2() {
                     child: ElevatedButton.icon(
                       onPressed: _handleFinish,
                       icon: const Icon(Icons.check),
-                      label: const Text('סיום והתחלה'),
+                      label: Text(l.onboardingFinish),
                     ),
                   ),
                 ],

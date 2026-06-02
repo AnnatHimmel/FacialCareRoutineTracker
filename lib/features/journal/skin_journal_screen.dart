@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/generated/app_localizations.dart';
+import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/skin_log_entry.dart';
@@ -14,6 +16,7 @@ class SkinJournalScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
     final allLogsAsync = ref.watch(_allSkinLogsProvider);
 
     return Scaffold(
@@ -21,10 +24,10 @@ class SkinJournalScreen extends ConsumerWidget {
       appBar: const GlowAppBar(),
       body: allLogsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('שגיאה: $e')),
+        error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (logs) {
           final withPhotos = logs
-              .where((l) => l.photoPaths.isNotEmpty)
+              .where((entry) => entry.photoPaths.isNotEmpty)
               .toList()
             ..sort((a, b) => b.date.compareTo(a.date));
 
@@ -37,7 +40,7 @@ class SkinJournalScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             itemCount: withPhotos.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 16),
+            separatorBuilder: (_, _) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final log = withPhotos[index];
               return _JournalEntryCard(
@@ -62,24 +65,10 @@ class _JournalEntryCard extends ConsumerWidget {
 
   const _JournalEntryCard({required this.log, required this.onTap});
 
-  String _formatDate(String date) {
-    // date is "yyyy-MM-dd"
-    final parts = date.split('-');
-    if (parts.length != 3) return date;
-    final day = int.tryParse(parts[2]) ?? 0;
-    final month = int.tryParse(parts[1]) ?? 0;
-    final year = parts[0];
-    const hebrewMonths = [
-      '', 'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-      'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
-    ];
-    final monthName = (month >= 1 && month <= 12) ? hebrewMonths[month] : '';
-    return '$day ב$monthName $year';
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formattedDate = _formatDate(log.date);
+    final l = AppLocalizations.of(context)!;
+    final formattedDate = _formatDate(log.date, l);
     final hasNote = log.notes != null && log.notes!.isNotEmpty;
 
     return GlowCard(
@@ -88,7 +77,6 @@ class _JournalEntryCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Date heading — right-aligned (RTL natural)
           Align(
             alignment: AlignmentDirectional.centerEnd,
             child: Text(
@@ -103,10 +91,8 @@ class _JournalEntryCard extends ConsumerWidget {
 
           const SizedBox(height: 12),
 
-          // Photos grid
           _PhotoGrid(photoPaths: log.photoPaths, date: log.date),
 
-          // Note text (if any)
           if (hasNote) ...[
             const SizedBox(height: 12),
             Text(
@@ -122,6 +108,17 @@ class _JournalEntryCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _formatDate(String date, AppLocalizations l) {
+    final parts = date.split('-');
+    if (parts.length != 3) return date;
+    final day = int.tryParse(parts[2]) ?? 0;
+    final month = int.tryParse(parts[1]) ?? 0;
+    final year = parts[0];
+    final monthName =
+        (month >= 1 && month <= 12) ? HebrewDateStrings.months[month - 1] : '';
+    return l.journalDateFormat(day, monthName, year);
   }
 }
 
@@ -153,10 +150,9 @@ class _PhotoGrid extends StatelessWidget {
           for (var c = 0; c < cols; c++) {
             final idx = i + c;
             if (idx < display.length) {
-              Widget thumb = _PhotoThumb(
+              final Widget thumb = _PhotoThumb(
                 photoPath: display[idx],
                 size: itemSize,
-                // Show "+N" overlay on last visible if more exist
                 overflowCount:
                     (overflow > 0 && idx == display.length - 1) ? overflow : 0,
               );
@@ -268,7 +264,6 @@ class _PhotoThumbState extends ConsumerState<_PhotoThumb> {
       return Stack(
         children: [
           image,
-          // Overlay for "+N more" images
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -303,17 +298,17 @@ class _EmptyJournalState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Peach icon disc
             Container(
               width: 88,
               height: 88,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primaryFixed,
                 shape: BoxShape.circle,
                 boxShadow: AppColors.glow,
@@ -328,7 +323,7 @@ class _EmptyJournalState extends StatelessWidget {
             const SizedBox(height: 24),
 
             Text(
-              'אין תמונות עדיין',
+              l.journalNoPhotos,
               style: AppTypography.headlineMd.copyWith(
                 color: AppColors.onSurface,
               ),
@@ -338,7 +333,7 @@ class _EmptyJournalState extends StatelessWidget {
             const SizedBox(height: 8),
 
             Text(
-              'הוסף תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך',
+              l.journalEmptyInstruction,
               style: AppTypography.bodyMd.copyWith(
                 color: AppColors.onSurfaceVariant,
               ),
@@ -347,12 +342,11 @@ class _EmptyJournalState extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // Pill CTA
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: onAddEntry,
-                child: const Text('התחל לתעד'),
+                child: Text(l.journalStartDocumenting),
               ),
             ),
           ],

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -29,7 +30,7 @@ class CalendarScreen extends ConsumerStatefulWidget {
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   late DateTime _displayMonth;
-  String? _selectedDay; // "YYYY-MM-DD" or null
+  String? _selectedDay;
 
   @override
   void initState() {
@@ -69,6 +70,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final yearMonth =
         '${_displayMonth.year}-${_displayMonth.month.toString().padLeft(2, '0')}';
     final prevMonthDt =
@@ -86,7 +88,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       appBar: const GlowAppBar(),
       body: recordsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('שגיאה: $e')),
+        error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (records) {
           final prevRecords = prevRecordsAsync.valueOrNull ?? [];
           final todayStr = _dateStr(today);
@@ -100,11 +102,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── Stats row ────────────────────────────────────────────
                 _StatsRow(avgPct: avgPct, progressPct: progressPct),
                 const SizedBox(height: 8),
 
-                // ── Month nav ────────────────────────────────────────────
                 GlowCard(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 2),
@@ -136,29 +136,27 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
                 const SizedBox(height: 6),
 
-                // ── Calendar grid + legend ──────────────────────────────
                 GlowCard(
                   padding: const EdgeInsets.all(6),
                   child: Column(
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          _DayHeader('א׳'),
-                          _DayHeader('ב׳'),
-                          _DayHeader('ג׳'),
-                          _DayHeader('ד׳'),
-                          _DayHeader('ה׳'),
-                          _DayHeader('ו׳'),
-                          _DayHeader('ש׳'),
+                          _DayHeader(l.calendarDayAbbrevSun),
+                          _DayHeader(l.calendarDayAbbrevMon),
+                          _DayHeader(l.calendarDayAbbrevTue),
+                          _DayHeader(l.calendarDayAbbrevWed),
+                          _DayHeader(l.calendarDayAbbrevThu),
+                          _DayHeader(l.calendarDayAbbrevFri),
+                          _DayHeader(l.calendarDayAbbrevSat),
                         ],
                       ),
                       _buildGrid(records, today),
-                      _buildLegend(),
+                      _buildLegend(l),
                     ],
                   ),
                 ),
 
-                // ── Day detail ───────────────────────────────────────────
                 if (_selectedDay != null) ...[
                   const SizedBox(height: 4),
                   _DayDetailSection(
@@ -255,12 +253,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return DayCompletionState.missed;
   }
 
-  Widget _buildLegend() {
-    const items = [
-      (DayCompletionState.complete, 'הושלם'),
-      (DayCompletionState.partial, 'חלקי'),
-      (DayCompletionState.missed, 'הוחמץ'),
-      (DayCompletionState.noData, 'ללא נתונים'),
+  Widget _buildLegend(AppLocalizations l) {
+    final items = [
+      (DayCompletionState.complete, l.calendarStateComplete),
+      (DayCompletionState.partial, l.calendarStatePartial),
+      (DayCompletionState.missed, l.calendarStateMissed),
+      (DayCompletionState.noData, l.calendarStateNoData),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
@@ -310,6 +308,7 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final avgInt = (avgPct * 100).round();
     final progInt = progressPct == null
         ? null
@@ -317,14 +316,13 @@ class _StatsRow extends StatelessWidget {
 
     return Row(
       children: [
-        // Monthly average card
         Expanded(
           child: GlowCard(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 Text(
-                  'ממוצע חודשי',
+                  l.calendarMonthlyAvg,
                   style: AppTypography.labelSm
                       .copyWith(color: AppColors.onSurfaceVariant),
                 ),
@@ -353,14 +351,13 @@ class _StatsRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        // Progress / trend card
         Expanded(
           child: GlowCard(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 Text(
-                  'התקדמות',
+                  l.calendarProgress,
                   style: AppTypography.labelSm
                       .copyWith(color: AppColors.onSurfaceVariant),
                 ),
@@ -392,7 +389,7 @@ class _StatsRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'לעומת חודש קודם',
+                    l.calendarVsPrevMonth,
                     style: AppTypography.labelSm
                         .copyWith(color: AppColors.onSurfaceVariant),
                     textAlign: TextAlign.center,
@@ -407,7 +404,7 @@ class _StatsRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'אין נתוני השוואה',
+                    l.calendarNoComparison,
                     style: AppTypography.labelSm
                         .copyWith(color: AppColors.onSurfaceVariant),
                     textAlign: TextAlign.center,
@@ -441,6 +438,7 @@ class _DayDetailSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
     final skinLogAsync = ref.watch(_skinLogProvider(date));
     final masterAsync = ref.watch(masterContentProvider);
     final customProducts = ref.watch(customProductsProvider).valueOrNull ?? [];
@@ -448,24 +446,18 @@ class _DayDetailSection extends ConsumerWidget {
     final parts = date.split('-');
     final day = int.parse(parts[2]);
     final month = int.parse(parts[1]);
-    const monthNames = [
-      'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-      'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
-    ];
-    final monthName = monthNames[month - 1];
+    final monthName = HebrewDateStrings.months[month - 1];
 
     final skinLog = skinLogAsync.valueOrNull;
     final photoPaths = skinLog?.photoPaths ?? const [];
     final notes = skinLog?.notes;
     final skinState = skinLog?.skinState;
 
-    // All unique resolved product IDs (preserving slot order: morning then evening)
     final resolvedIds = dayRecords
         .expand((r) => r.resolvedProductIds)
         .toSet()
         .toList();
 
-    // Which of those were actually recorded (done)
     final recordedSet = dayRecords
         .expand((r) => r.recordedProductIds)
         .toSet();
@@ -484,12 +476,11 @@ class _DayDetailSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Header
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'תיעוד יומי: $day ב$monthName',
+              l.calendarDailyRecord(day, monthName),
               style: AppTypography.bodyLg.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.onSurface,
@@ -504,7 +495,7 @@ class _DayDetailSection extends ConsumerWidget {
                       size: 16, color: AppColors.primary),
                   const SizedBox(width: 4),
                   Text(
-                    'ערוך',
+                    l.calendarEdit,
                     style: AppTypography.labelMd.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
@@ -517,17 +508,14 @@ class _DayDetailSection extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
 
-        // Photos grid (always shows add-photo cell)
         _buildPhotosGrid(photoPaths),
         const SizedBox(height: 12),
 
-        // Mood / notes card
-        _buildNotesCard(skinState, notes),
+        _buildNotesCard(l, skinState, notes),
         const SizedBox(height: 12),
 
-        // All resolved products with done/undone state
         if (resolvedIds.isNotEmpty)
-          _buildProductsCard(resolvedIds, recordedSet, productNames),
+          _buildProductsCard(l, resolvedIds, recordedSet, productNames),
       ],
     );
   }
@@ -547,7 +535,7 @@ class _DayDetailSection extends ConsumerWidget {
     );
   }
 
-  Widget _buildNotesCard(String? skinState, String? notes) {
+  Widget _buildNotesCard(AppLocalizations l, String? skinState, String? notes) {
     final hasContent =
         (notes != null && notes.isNotEmpty) || skinState != null;
 
@@ -570,7 +558,7 @@ class _DayDetailSection extends ConsumerWidget {
                     size: 20, color: AppColors.onSecondaryContainer),
               ),
               Text(
-                'מצב העור היום',
+                l.calendarSkinState,
                 style: AppTypography.bodyMd.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.onSurface,
@@ -600,7 +588,7 @@ class _DayDetailSection extends ConsumerWidget {
           ] else ...[
             const SizedBox(height: 8),
             Text(
-              'לא נרשמו הערות',
+              l.calendarNoNotes,
               style: AppTypography.labelMd
                   .copyWith(color: AppColors.onSurfaceVariant),
               textAlign: TextAlign.right,
@@ -611,7 +599,8 @@ class _DayDetailSection extends ConsumerWidget {
     );
   }
 
-Widget _buildProductsCard(
+  Widget _buildProductsCard(
+    AppLocalizations l,
     List<String> resolvedIds,
     Set<String> recordedSet,
     Map<String, String> productNames,
@@ -628,7 +617,7 @@ Widget _buildProductsCard(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'משימות שביצעו היום:',
+            l.calendarTasksDone,
             style: AppTypography.bodyMd.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
@@ -650,7 +639,6 @@ Widget _buildProductsCard(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Done: filled secondary circle; undone: bordered empty circle
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
                       width: 28,
@@ -703,6 +691,7 @@ class _AddPhotoCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -729,7 +718,7 @@ class _AddPhotoCell extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'הוסף תמונה',
+              l.calendarAddPhoto,
               style: AppTypography.bodyMd.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,

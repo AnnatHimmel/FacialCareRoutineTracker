@@ -92,7 +92,10 @@ abstract class AppLocalizations {
       ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('he')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('he'),
+    Locale('he', 'MA'),
+  ];
 
   /// No description provided for @appName.
   ///
@@ -298,6 +301,12 @@ abstract class AppLocalizations {
   /// **'המשך'**
   String get continueAction;
 
+  /// No description provided for @backAction.
+  ///
+  /// In he, this message translates to:
+  /// **'חזרה'**
+  String get backAction;
+
   /// No description provided for @saveAction.
   ///
   /// In he, this message translates to:
@@ -345,6 +354,420 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'תמונות מאוחסנות בנפח מוגבל. גיבוי מומלץ.'**
   String get webStorageWarning;
+
+  /// No description provided for @genericError.
+  ///
+  /// In he, this message translates to:
+  /// **'שגיאה: {error}'**
+  String genericError(Object error);
+
+  /// No description provided for @homeTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השגרה שלך היום'**
+  String get homeTitle;
+
+  /// No description provided for @homeTapImageToDone.
+  ///
+  /// In he, this message translates to:
+  /// **'הקישי על התמונה לסימון בוצע'**
+  String get homeTapImageToDone;
+
+  /// No description provided for @homeTapProductToDone.
+  ///
+  /// In he, this message translates to:
+  /// **'הקישי על מוצר לסימון בוצע'**
+  String get homeTapProductToDone;
+
+  /// No description provided for @homeEmptyToday.
+  ///
+  /// In he, this message translates to:
+  /// **'אין מוצרים להיום'**
+  String get homeEmptyToday;
+
+  /// No description provided for @homeAddProducts.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסף מוצרים'**
+  String get homeAddProducts;
+
+  /// No description provided for @homeDayLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'יום {day}'**
+  String homeDayLabel(Object day);
+
+  /// No description provided for @homeDayLabelGreeting.
+  ///
+  /// In he, this message translates to:
+  /// **'יום {day} • שלום {name}'**
+  String homeDayLabelGreeting(Object day, Object name);
+
+  /// No description provided for @homeViewListSemantics.
+  ///
+  /// In he, this message translates to:
+  /// **'תצוגת רשימה פעילה'**
+  String get homeViewListSemantics;
+
+  /// No description provided for @homeViewImagesSemantics.
+  ///
+  /// In he, this message translates to:
+  /// **'תצוגת תמונות פעילה'**
+  String get homeViewImagesSemantics;
+
+  /// No description provided for @homeViewList.
+  ///
+  /// In he, this message translates to:
+  /// **'רשימה'**
+  String get homeViewList;
+
+  /// No description provided for @homeViewImages.
+  ///
+  /// In he, this message translates to:
+  /// **'תמונות'**
+  String get homeViewImages;
+
+  /// No description provided for @homeNamesToggleHide.
+  ///
+  /// In he, this message translates to:
+  /// **'הסתר שמות מוצרים'**
+  String get homeNamesToggleHide;
+
+  /// No description provided for @homeNamesToggleShow.
+  ///
+  /// In he, this message translates to:
+  /// **'הצג שמות מוצרים'**
+  String get homeNamesToggleShow;
+
+  /// No description provided for @homeNames.
+  ///
+  /// In he, this message translates to:
+  /// **'שמות'**
+  String get homeNames;
+
+  /// No description provided for @homeProductStepDone.
+  ///
+  /// In he, this message translates to:
+  /// **'{name}, שלב {step}, בוצע'**
+  String homeProductStepDone(Object name, Object step);
+
+  /// No description provided for @homeProductStepNotDone.
+  ///
+  /// In he, this message translates to:
+  /// **'{name}, שלב {step}, לא בוצע'**
+  String homeProductStepNotDone(Object name, Object step);
+
+  /// No description provided for @journalCtaTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'איך העור מרגיש?'**
+  String get journalCtaTitle;
+
+  /// No description provided for @journalCtaSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'תעדי את התקדמותך'**
+  String get journalCtaSubtitle;
+
+  /// No description provided for @journalCtaButton.
+  ///
+  /// In he, this message translates to:
+  /// **'תיעוד עכשיו'**
+  String get journalCtaButton;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In he, this message translates to:
+  /// **'דלגי'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingWelcome.
+  ///
+  /// In he, this message translates to:
+  /// **'ברוכה הבאה'**
+  String get onboardingWelcome;
+
+  /// No description provided for @onboardingAppIntro.
+  ///
+  /// In he, this message translates to:
+  /// **'ל־The Glow Protocol'**
+  String get onboardingAppIntro;
+
+  /// No description provided for @onboardingTagline.
+  ///
+  /// In he, this message translates to:
+  /// **'השגרה שלך, בקצב שלך.\nתיעוד יומי, תזמון חכם של מוצרים, וזוהר עקבי.'**
+  String get onboardingTagline;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In he, this message translates to:
+  /// **'בואי נתחיל'**
+  String get onboardingStart;
+
+  /// No description provided for @onboardingTakesMinute.
+  ///
+  /// In he, this message translates to:
+  /// **'לוקח פחות מדקה'**
+  String get onboardingTakesMinute;
+
+  /// No description provided for @onboardingFeature1.
+  ///
+  /// In he, this message translates to:
+  /// **'מעקב יומי אחר השגרה'**
+  String get onboardingFeature1;
+
+  /// No description provided for @onboardingFeature2.
+  ///
+  /// In he, this message translates to:
+  /// **'תזמון שבועי לפי המוצר'**
+  String get onboardingFeature2;
+
+  /// No description provided for @onboardingFeature3.
+  ///
+  /// In he, this message translates to:
+  /// **'יומן עור ומצב רוח'**
+  String get onboardingFeature3;
+
+  /// No description provided for @onboardingTellUs.
+  ///
+  /// In he, this message translates to:
+  /// **'ספרי לנו עלייך'**
+  String get onboardingTellUs;
+
+  /// No description provided for @onboardingPrivacyDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'נשתמש בפרטים האלה כדי להתאים לך תוכן ולפנות אלייך אישית. הכל נשמר על המכשיר שלך.'**
+  String get onboardingPrivacyDesc;
+
+  /// No description provided for @onboardingNamePrompt.
+  ///
+  /// In he, this message translates to:
+  /// **'איך לקרוא לך?'**
+  String get onboardingNamePrompt;
+
+  /// No description provided for @onboardingNameHint.
+  ///
+  /// In he, this message translates to:
+  /// **'השם שלך'**
+  String get onboardingNameHint;
+
+  /// No description provided for @onboardingGenderLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'מגדר'**
+  String get onboardingGenderLabel;
+
+  /// No description provided for @onboardingGenderFemale.
+  ///
+  /// In he, this message translates to:
+  /// **'נקבה'**
+  String get onboardingGenderFemale;
+
+  /// No description provided for @onboardingGenderMale.
+  ///
+  /// In he, this message translates to:
+  /// **'זכר'**
+  String get onboardingGenderMale;
+
+  /// No description provided for @onboardingPrivacyLock.
+  ///
+  /// In he, this message translates to:
+  /// **'הפרטים נשמרים רק אצלך'**
+  String get onboardingPrivacyLock;
+
+  /// No description provided for @onboardingYourProducts.
+  ///
+  /// In he, this message translates to:
+  /// **'המוצרים שלך'**
+  String get onboardingYourProducts;
+
+  /// No description provided for @onboardingProductInstruction.
+  ///
+  /// In he, this message translates to:
+  /// **'סמני את המוצרים שיש לך בארון. תוכלי לערוך, להוסיף ולתזמן אותם בכל זמן.'**
+  String get onboardingProductInstruction;
+
+  /// No description provided for @onboardingProductCount.
+  ///
+  /// In he, this message translates to:
+  /// **'נבחרו {count} מוצרים'**
+  String onboardingProductCount(Object count);
+
+  /// No description provided for @onboardingCanAddLater.
+  ///
+  /// In he, this message translates to:
+  /// **'תוכלי להוסיף מוצרים גם בהמשך'**
+  String get onboardingCanAddLater;
+
+  /// No description provided for @onboardingFinish.
+  ///
+  /// In he, this message translates to:
+  /// **'סיום והתחלה'**
+  String get onboardingFinish;
+
+  /// No description provided for @onboardingFrequencyDaily.
+  ///
+  /// In he, this message translates to:
+  /// **'יומי'**
+  String get onboardingFrequencyDaily;
+
+  /// No description provided for @onboardingFrequencyWeekly.
+  ///
+  /// In he, this message translates to:
+  /// **'עד {max}× בשבוע'**
+  String onboardingFrequencyWeekly(Object max);
+
+  /// No description provided for @calendarDayAbbrevSun.
+  ///
+  /// In he, this message translates to:
+  /// **'א׳'**
+  String get calendarDayAbbrevSun;
+
+  /// No description provided for @calendarDayAbbrevMon.
+  ///
+  /// In he, this message translates to:
+  /// **'ב׳'**
+  String get calendarDayAbbrevMon;
+
+  /// No description provided for @calendarDayAbbrevTue.
+  ///
+  /// In he, this message translates to:
+  /// **'ג׳'**
+  String get calendarDayAbbrevTue;
+
+  /// No description provided for @calendarDayAbbrevWed.
+  ///
+  /// In he, this message translates to:
+  /// **'ד׳'**
+  String get calendarDayAbbrevWed;
+
+  /// No description provided for @calendarDayAbbrevThu.
+  ///
+  /// In he, this message translates to:
+  /// **'ה׳'**
+  String get calendarDayAbbrevThu;
+
+  /// No description provided for @calendarDayAbbrevFri.
+  ///
+  /// In he, this message translates to:
+  /// **'ו׳'**
+  String get calendarDayAbbrevFri;
+
+  /// No description provided for @calendarDayAbbrevSat.
+  ///
+  /// In he, this message translates to:
+  /// **'ש׳'**
+  String get calendarDayAbbrevSat;
+
+  /// No description provided for @calendarStateComplete.
+  ///
+  /// In he, this message translates to:
+  /// **'הושלם'**
+  String get calendarStateComplete;
+
+  /// No description provided for @calendarStatePartial.
+  ///
+  /// In he, this message translates to:
+  /// **'חלקי'**
+  String get calendarStatePartial;
+
+  /// No description provided for @calendarStateMissed.
+  ///
+  /// In he, this message translates to:
+  /// **'הוחמץ'**
+  String get calendarStateMissed;
+
+  /// No description provided for @calendarStateNoData.
+  ///
+  /// In he, this message translates to:
+  /// **'ללא נתונים'**
+  String get calendarStateNoData;
+
+  /// No description provided for @calendarMonthlyAvg.
+  ///
+  /// In he, this message translates to:
+  /// **'ממוצע חודשי'**
+  String get calendarMonthlyAvg;
+
+  /// No description provided for @calendarProgress.
+  ///
+  /// In he, this message translates to:
+  /// **'התקדמות'**
+  String get calendarProgress;
+
+  /// No description provided for @calendarVsPrevMonth.
+  ///
+  /// In he, this message translates to:
+  /// **'לעומת חודש קודם'**
+  String get calendarVsPrevMonth;
+
+  /// No description provided for @calendarNoComparison.
+  ///
+  /// In he, this message translates to:
+  /// **'אין נתוני השוואה'**
+  String get calendarNoComparison;
+
+  /// No description provided for @calendarDailyRecord.
+  ///
+  /// In he, this message translates to:
+  /// **'תיעוד יומי: {day} ב{month}'**
+  String calendarDailyRecord(Object day, Object month);
+
+  /// No description provided for @calendarEdit.
+  ///
+  /// In he, this message translates to:
+  /// **'ערוך'**
+  String get calendarEdit;
+
+  /// No description provided for @calendarSkinState.
+  ///
+  /// In he, this message translates to:
+  /// **'מצב העור היום'**
+  String get calendarSkinState;
+
+  /// No description provided for @calendarNoNotes.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נרשמו הערות'**
+  String get calendarNoNotes;
+
+  /// No description provided for @calendarTasksDone.
+  ///
+  /// In he, this message translates to:
+  /// **'משימות שביצעו היום:'**
+  String get calendarTasksDone;
+
+  /// No description provided for @calendarAddPhoto.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסף תמונה'**
+  String get calendarAddPhoto;
+
+  /// No description provided for @journalNoPhotos.
+  ///
+  /// In he, this message translates to:
+  /// **'אין תמונות עדיין'**
+  String get journalNoPhotos;
+
+  /// No description provided for @journalEmptyInstruction.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסיפי תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך'**
+  String get journalEmptyInstruction;
+
+  /// No description provided for @journalStartDocumenting.
+  ///
+  /// In he, this message translates to:
+  /// **'התחלי לתעד'**
+  String get journalStartDocumenting;
+
+  /// No description provided for @journalDateFormat.
+  ///
+  /// In he, this message translates to:
+  /// **'{day} ב{month} {year}'**
+  String journalDateFormat(Object day, Object month, Object year);
 }
 
 class _AppLocalizationsDelegate
@@ -365,6 +788,18 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when language+country codes are specified.
+  switch (locale.languageCode) {
+    case 'he':
+      {
+        switch (locale.countryCode) {
+          case 'MA':
+            return AppLocalizationsHeMa();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'he':

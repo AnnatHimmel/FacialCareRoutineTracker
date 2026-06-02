@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart' show Locale;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/bundled/master_content_repository_impl.dart';
 import '../../data/local/database/app_database.dart';
@@ -94,6 +95,18 @@ final exportImportServiceProvider = Provider(
 final onboardingCompletedProvider = FutureProvider<bool>(
   (ref) => ref.watch(settingsRepositoryProvider).getOnboardingCompleted(),
 );
+
+/// Current app locale. Defaults to feminine Hebrew; switches to `he_MA`
+/// for masculine. Update by reading `.notifier` and setting `.state`.
+final appLocaleProvider = StateProvider<Locale>((ref) => const Locale('he'));
+
+/// Reads saved gender from settings and syncs [appLocaleProvider].
+/// Watch this in AppEntryPoint to ensure locale is set before routing.
+final localeSyncProvider = FutureProvider<void>((ref) async {
+  final gender = await ref.read(settingsRepositoryProvider).getUserGender();
+  ref.read(appLocaleProvider.notifier).state =
+      gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
+});
 
 final masterContentProvider = FutureProvider<MasterContent>(
   (ref) => ref.watch(masterContentRepositoryProvider).load(),

@@ -254,7 +254,6 @@ class _ProductSelectionScreenState
       });
 
     final catSel = catProducts.where((p) => selMap.containsKey(p.id)).length;
-    final totalSel = selMap.length;
     final ctaLabel = isLast ? 'לסיכום' : catSel > 0 ? 'המשך' : 'דלג על השלב';
 
     return Stack(
@@ -459,17 +458,6 @@ class _ProductSelectionScreenState
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  catSel == 0
-                      ? 'אין בחירה בקטגוריה זו — אפשר להמשיך'
-                      : '$catSel נבחרו · $totalSel בסך הכל',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                    fontSize: 11.5,
-                  ),
                 ),
               ],
             ),
