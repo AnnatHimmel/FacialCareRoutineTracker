@@ -4,7 +4,7 @@
 //  • same-slot conflict detection (incompatibility rules)
 //  • per-product weekday pickers so the weekly split is easy to see/edit.
 
-const { useState: useSc } = React;
+const { useState: useSc, useRef } = React;
 
 function DayPicker({ schedule, p, slot, onToggle }) {
   const days = effectiveDays(schedule, p, slot);
@@ -30,11 +30,83 @@ function DayPicker({ schedule, p, slot, onToggle }) {
   );
 }
 
+function DailyScheduleCard({ p, slot, schedule, onToggle }) {
+  const count = daysCount(schedule, p, slot);
+  const everyDay = count === 7;
+  const [open, setOpen] = useSc(!everyDay);
+
+  const badgeCls = count === 0
+    ? 'bg-error text-white'
+    : everyDay
+      ? 'bg-primary-fixed/60 text-primary'
+      : 'bg-black/[0.06] text-on-surface-variant';
+  const badgeText = count === 0 ? 'לא נבחר' : everyDay ? 'כל יום' : `${count}/7`;
+
+  return (
+    <div className="bg-white rounded-[22px] p-3.5 shadow-glow-sm" dir="rtl">
+      {/* header — always visible */}
+      <div className="flex items-center gap-3">
+        <ProductThumb src={p.image} size={40} fallbackIcon="spa" />
+        <div className="flex-1 min-w-0">
+          <h4 className="quick font-bold text-[13.5px] text-on-surface truncate" dir="ltr" style={{ textAlign: 'right' }}>{p.name}</h4>
+          <p className="quick text-[10.5px] text-on-surface-variant">מומלץ: <span className="font-bold">כל יום</span></p>
+        </div>
+        <span className={`label-sm text-[11px] px-2.5 py-1 rounded-full flex-shrink-0 ${badgeCls}`}>{badgeText}</span>
+      </div>
+
+      {!open ? (
+        /* collapsed — customize button */
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full h-9 mt-2.5 rounded-full bg-surface-low quick font-bold text-[12px] text-on-surface-variant hover:text-primary active:scale-[0.98] flex items-center justify-center gap-1.5 transition"
+        >
+          <Icon name="tune" size={14} />
+          התאמת ימים
+        </button>
+      ) : (
+        /* expanded — day picker */
+        <div className="mt-2.5">
+          <DayPicker schedule={schedule} p={p} slot={slot} onToggle={onToggle} />
+          {count === 0 && (
+            <div className="mt-2 flex items-center gap-1.5 text-[11px] quick text-error" dir="rtl">
+              <Icon name="warning" size={13} />
+              לא נבחר יום — המוצר לא ישובץ
+            </div>
+          )}
+          <button
+            onClick={() => setOpen(false)}
+            className="mt-2.5 mx-auto flex items-center gap-1 quick font-bold text-[11px] text-on-surface-variant hover:text-primary transition"
+          >
+            <Icon name="expand_less" size={15} />
+            סגירה
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ScheduleView({ sel, schedule, setSchedule, onBack }) {
-  const [slot, setSlot] = useSc('PM');
-  const [openDay, setOpenDay] = useSc(null); // expanded conflict day in the week strip
+  const activeSlots = ['AM', 'PM'].filter(s => PRODUCTS.some(p => usesSlot(sel, p.id, s)));
+  const startSlot = activeSlots[0] || 'AM';
+  const [slot, setSlot] = useSc(startSlot);
+  const [visited, setVisited] = useSc({ [startSlot]: true });
+  const [openDay, setOpenDay] = useSc(null);
+  const scrollRef = useRef(null);
+
   const m = SLOT_META[slot];
-  const switchSlot = (s) => { setSlot(s); setOpenDay(null); };
+
+  const switchSlot = (s) => {
+    setSlot(s); setOpenDay(null);
+    setVisited(v => ({ ...v, [s]: true }));
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  };
+
+  const bothSlots = activeSlots.length > 1;
+  const slotIdx = activeSlots.indexOf(slot);
+  const allVisited = activeSlots.every(s => visited[s]);
+  const nextSlot = (!allVisited && slotIdx < activeSlots.length - 1)
+    ? activeSlots[slotIdx + 1] : null;
 
   const selectedInSlot = PRODUCTS.filter(p => usesSlot(sel, p.id, slot));
   const occasional = selectedInSlot.filter(p => capOf(p, slot) != null);
@@ -53,7 +125,6 @@ function ScheduleView({ sel, schedule, setSchedule, onBack }) {
   const weekConflicts = WEEKDAYS.map(d => ({ day: d, pairs: conflictsInList(productsOnDay(d.id)) })).filter(x => x.pairs.length);
   const conflictDays = new Set(weekConflicts.map(x => x.day.id));
 
-  // conflict days for EITHER slot — so we can flag a slot tab even when not active
   const conflictDaysForSlot = (s) => {
     const inSlot = PRODUCTS.filter(p => usesSlot(sel, p.id, s));
     return WEEKDAYS.filter(d => conflictsInList(inSlot.filter(p => effectiveDays(schedule, p, s)[d.id])).length).length;
@@ -70,15 +141,23 @@ function ScheduleView({ sel, schedule, setSchedule, onBack }) {
             </button>
           )}
           <h2 className="quick font-bold text-[20px] text-on-surface leading-tight flex-1">תזמון שבועי</h2>
+          {bothSlots && (
+            <span className="quick font-bold text-[11px] text-on-surface-variant bg-surface-low rounded-full px-2.5 py-1 flex-shrink-0">
+              שלב {slotIdx + 1} מתוך {activeSlots.length}
+            </span>
+          )}
         </div>
         <p className="quick text-[12px] text-on-surface-variant mb-2.5 px-1 leading-snug">
-          באילו ימים להשתמש בכל מוצר ב{m.routine}. אפשר לחרוג מהמומלץ — רק נזכיר.
+          {bothSlots
+            ? 'תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.'
+            : `באילו ימים להשתמש בכל מוצר ב${m.routine}…`}
         </p>
         <div className="flex p-1 bg-surface-low rounded-full" dir="rtl">
           {['AM', 'PM'].map(s => {
             const active = slot === s;
             const onCls = s === 'AM' ? 'bg-primary-container text-white' : 'bg-tertiary text-white';
             const hasConflict = slotConflictCount[s] > 0;
+            const seen = !!visited[s] && !active && !hasConflict;
             return (
               <button key={s} onClick={() => switchSlot(s)} className={`relative flex-1 h-10 rounded-full quick font-bold text-[14px] flex items-center justify-center gap-1.5 transition ${active ? `${onCls} shadow-glow-sm` : 'text-on-surface-variant'}`}>
                 <Icon name={SLOT_META[s].icon} fill={active} size={16} />
@@ -88,13 +167,18 @@ function ScheduleView({ sel, schedule, setSchedule, onBack }) {
                     <Icon name="priority_high" size={11} />
                   </span>
                 )}
+                {seen && (
+                  <span className="w-4 h-4 rounded-full flex items-center justify-center bg-primary/15 text-primary">
+                    <Icon name="check" size={11} />
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
         {/* week at a glance — tap a flagged day to see its conflict */}
         <div className="bg-white rounded-[22px] p-3 shadow-glow-sm mb-3">
           <div className="flex items-center justify-between mb-2 px-0.5" dir="rtl">
@@ -170,7 +254,7 @@ function ScheduleView({ sel, schedule, setSchedule, onBack }) {
           </button>
         )}
 
-        {/* occasional products */}
+        {/* occasional products — day picker always open (per-week cap makes split meaningful) */}
         {occasional.length > 0 && (
           <>
             <h3 className="quick font-bold text-[13px] text-on-surface-variant text-right mt-1 mb-2 px-1">
@@ -207,51 +291,47 @@ function ScheduleView({ sel, schedule, setSchedule, onBack }) {
           </>
         )}
 
-        {/* daily products */}
+        {/* daily products — collapsed by default when every-day, auto-expanded when narrowed */}
         {daily.length > 0 && (
           <>
             <h3 className="quick font-bold text-[13px] text-on-surface-variant text-right mb-2 px-1">
               יומיים <span className="font-medium opacity-70">({daily.length})</span> · כברירת מחדל כל יום
             </h3>
             <div className="space-y-2.5">
-              {daily.map(p => {
-                const count = daysCount(schedule, p, slot);
-                const everyDay = count === 7;
-                return (
-                  <div key={p.id} className="bg-white rounded-[22px] p-3.5 shadow-glow-sm" dir="rtl">
-                    <div className="flex items-center gap-3 mb-2.5">
-                      <ProductThumb src={p.image} size={40} fallbackIcon="spa" />
-                      <div className="flex-1 min-w-0">
-                        <h4 className="quick font-bold text-[13.5px] text-on-surface truncate text-right" dir="ltr" style={{ textAlign: 'right' }}>{p.name}</h4>
-                        <p className="quick text-[10.5px] text-on-surface-variant text-right">מומלץ: <span className="font-bold">כל יום</span></p>
-                      </div>
-                      <span className={`label-sm text-[11px] px-2.5 py-1 rounded-full flex-shrink-0 ${
-                        count === 0 ? 'bg-error text-white' : 'bg-black/[0.06] text-on-surface-variant'
-                      }`}>{everyDay ? 'כל יום' : `${count}/7`}</span>
-                    </div>
-                    <DayPicker schedule={schedule} p={p} slot={slot} onToggle={toggleDay} />
-                    {count === 0 && (
-                      <div className="mt-2 flex items-center gap-1.5 text-[11px] quick text-error" dir="rtl">
-                        <Icon name="warning" size={13} />
-                        לא נבחר יום — המוצר לא ישובץ
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {daily.map(p => (
+                <DailyScheduleCard key={p.id} p={p} slot={slot} schedule={schedule} onToggle={toggleDay} />
+              ))}
             </div>
           </>
         )}
       </div>
 
       <div className="flex-shrink-0 px-4 pt-3 pb-5 bg-surface/95 backdrop-blur-xl border-t border-primary-fixed/30">
-        <button className="w-full rounded-full bg-gradient-to-l from-primary to-primary-container text-white quick font-bold text-[15.5px] flex items-center justify-center gap-2 shadow-glow-lg active:scale-[0.98] transition" style={{ height: 52 }}>
-          <Icon name="check" size={19} />
-          סיום ושמירת השגרה
+        <button
+          onClick={nextSlot ? () => switchSlot(nextSlot) : undefined}
+          className="w-full rounded-full bg-gradient-to-l from-primary to-primary-container text-white quick font-bold text-[15.5px] flex items-center justify-center gap-2 shadow-glow-lg active:scale-[0.98] transition"
+          style={{ height: 52 }}
+        >
+          {nextSlot ? (
+            <>
+              <Icon name={SLOT_META[nextSlot].icon} fill size={18} />
+              המשך ל{SLOT_META[nextSlot].routine}
+              <Icon name="arrow_back" size={19} />
+            </>
+          ) : (
+            <>
+              <Icon name="check" size={19} />
+              סיום ושמירת השגרה
+            </>
+          )}
         </button>
-        {weekConflicts.length > 0 && (
+        {nextSlot ? (
+          <p className="text-center quick text-[11px] text-on-surface-variant mt-2">
+            נשאר עוד שלב — {SLOT_META[nextSlot].routine} מחכה לתזמון
+          </p>
+        ) : weekConflicts.length > 0 ? (
           <p className="text-center quick text-[11px] text-error mt-2">עדיין יש {weekConflicts.length} ימי התנגשות ב{m.label}</p>
-        )}
+        ) : null}
       </div>
     </Phone>
   );

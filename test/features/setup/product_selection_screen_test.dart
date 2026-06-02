@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/shared/widgets/glass_bottom_nav.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
@@ -45,6 +46,66 @@ class _FakeUDR implements UserDataRepository {
     upsertCalled = true;
     lastUpserted = s;
   }
+
+  @override Future<void> muteConflict(MutedConflict m) async {}
+  @override Future<void> unmuteConflict(String ruleId) async {}
+
+  @override Stream<List<UserCustomProduct>> watchCustomProducts() =>
+      Stream.value([]);
+  @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
+  @override Future<void> deleteCustomProduct(String id) async {}
+
+  @override Stream<WeekdaySchedule?> watchSchedule(String p, Slot s) =>
+      throw UnimplementedError();
+  @override Stream<List<WeekdaySchedule>> watchAllSchedules() =>
+      throw UnimplementedError();
+  @override Future<void> upsertSchedule(WeekdaySchedule s) =>
+      throw UnimplementedError();
+  @override Stream<OrderOverride?> watchOrderOverride(Slot s) =>
+      throw UnimplementedError();
+  @override Future<void> upsertOrderOverride(OrderOverride o) =>
+      throw UnimplementedError();
+  @override Future<void> deleteOrderOverride(Slot s) =>
+      throw UnimplementedError();
+  @override Stream<DayRecord?> watchDayRecord(String d, Slot s) =>
+      throw UnimplementedError();
+  @override Future<DayRecord> snapshotAndGetDayRecord(
+          String d, Slot s, List<String> ids, String v) =>
+      throw UnimplementedError();
+  @override Future<void> updateDayRecord(DayRecord r) =>
+      throw UnimplementedError();
+  @override Stream<List<DayRecord>> watchDayRecordsForMonth(String ym) =>
+      throw UnimplementedError();
+  @override Stream<List<DayRecord>> watchAllDayRecords() =>
+      throw UnimplementedError();
+  @override Stream<SkinLogEntry?> watchSkinLog(String d) =>
+      throw UnimplementedError();
+  @override Future<void> upsertSkinLog(SkinLogEntry e) =>
+      throw UnimplementedError();
+  @override Stream<List<SkinLogEntry>> watchAllSkinLogs() =>
+      throw UnimplementedError();
+  @override Future<UserDataExport> exportAllData() =>
+      throw UnimplementedError();
+  @override Future<void> replaceAllData(UserDataExport e) =>
+      throw UnimplementedError();
+}
+
+// Fake that pre-loads specific selections and captures all upsert calls.
+class _CapturingUDR implements UserDataRepository {
+  final Map<Slot, List<ProductSelection>> _initial;
+  final List<ProductSelection> captured = [];
+
+  _CapturingUDR(this._initial);
+
+  @override
+  Stream<List<ProductSelection>> watchSelections(Slot slot) =>
+      Stream.value(_initial[slot] ?? []);
+
+  @override
+  Stream<List<MutedConflict>> watchMutedConflicts() => Stream.value([]);
+
+  @override
+  Future<void> upsertSelection(ProductSelection s) async => captured.add(s);
 
   @override Future<void> muteConflict(MutedConflict m) async {}
   @override Future<void> unmuteConflict(String ruleId) async {}
@@ -140,7 +201,7 @@ MasterContent _masterWith(
 
 Widget _wrap({
   required MasterContent master,
-  _FakeUDR? udr,
+  UserDataRepository? udr,
   bool fromSetup = false,
   bool isTabDestination = false,
 }) {
@@ -173,7 +234,12 @@ Widget _wrap({
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
       userDataRepositoryProvider.overrideWithValue(udr ?? _FakeUDR()),
     ],
-    child: MaterialApp.router(routerConfig: router),
+    child: MaterialApp.router(
+      routerConfig: router,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he'),
+    ),
   );
 }
 
@@ -206,8 +272,8 @@ void main() {
       await tester.pumpWidget(_wrap(master: master));
       await tester.pumpAndSettle();
 
-      expect(find.text('דלג לסיכום'), findsOneWidget);
-      await tester.tap(find.text('דלג לסיכום'));
+      expect(find.text('דלגי לסיכום'), findsOneWidget);
+      await tester.tap(find.text('דלגי לסיכום'));
       await tester.pumpAndSettle();
 
       // Summary shows "סיכום · הארון שלך"
@@ -228,7 +294,7 @@ void main() {
       expect(find.text('קרם הגנה'), findsNothing);
 
       // "דלג על השלב" because no selection yet
-      await tester.tap(find.text('דלג על השלב'));
+      await tester.tap(find.text('דלגי על השלב'));
       await tester.pumpAndSettle();
 
       // Now cat-spf step
@@ -293,10 +359,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Navigate to summary
-      await tester.tap(find.text('דלג לסיכום'));
+      await tester.tap(find.text('דלגי לסיכום'));
       await tester.pumpAndSettle();
 
-      expect(find.text('המשך לתזמון'), findsOneWidget);
+      expect(find.text('המשיכי לתזמון'), findsOneWidget);
     });
 
     testWidgets(
@@ -308,10 +374,10 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, fromSetup: true));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('דלג לסיכום'));
+      await tester.tap(find.text('דלגי לסיכום'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשך לתזמון'));
+      await tester.tap(find.text('המשיכי לתזמון'));
       await tester.pumpAndSettle();
 
       expect(find.text('schedule-from=setup'), findsOneWidget);
@@ -325,7 +391,40 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, fromSetup: false));
       await tester.pumpAndSettle();
 
-      expect(find.text('המשך לתזמון'), findsNothing);
+      expect(find.text('המשיכי לתזמון'), findsNothing);
+    });
+  });
+
+  group('ProductSelectionScreen — duplicate-record deselection', () {
+    // Regression: if the DB somehow holds two isSelected:true rows for the
+    // same product+slot, tapping to deselect must update BOTH rows, not just
+    // the first one (which would leave the product appearing selected).
+    testWidgets('deselecting updates every duplicate record', (tester) async {
+      final t = DateTime(2025);
+      final dup1 = ProductSelection(
+          id: 'uuid-1', productId: 'p1', slot: Slot.evening,
+          isSelected: true, lastModified: t);
+      final dup2 = ProductSelection(
+          id: 'uuid-2', productId: 'p1', slot: Slot.evening,
+          isSelected: true, lastModified: t);
+
+      final udr = _CapturingUDR({Slot.evening: [dup1, dup2], Slot.morning: []});
+      final product = _pmProduct('p1', 'שמן לילה', 'cat-serum');
+      final master = _masterWith([product], [cat1]);
+
+      await tester.pumpWidget(_wrap(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      // Tap the product row in the guided view — it should be shown selected
+      // (both duplicates contribute isSelected:true to selMap)
+      await tester.tap(find.text('שמן לילה'));
+      await tester.pumpAndSettle();
+
+      // Both duplicate records must have been deselected
+      final deselected = udr.captured.where((s) => !s.isSelected).toList();
+      expect(deselected.length, 2,
+          reason: 'both duplicate rows must be set to isSelected:false');
+      expect(deselected.map((s) => s.id).toSet(), {'uuid-1', 'uuid-2'});
     });
   });
 

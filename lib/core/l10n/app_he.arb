@@ -271,7 +271,7 @@
   "settingsWelcome": "ברוכה הבאה ל־The Glow Protocol",
   "settingsSectionRoutine": "שגרת הטיפוח שלי",
   "settingsOrderProducts": "סדר מוצרים",
-  "settingsOrderSubtitle": "גרורי לסידור אישי",
+  "settingsOrderSubtitle": "גררי לסידור אישי",
   "settingsSectionData": "נתונים",
   "settingsExportSubtitle": "גיבוי מקומי של הנתונים",
   "settingsSectionInfo": "מידע",
@@ -398,7 +398,7 @@
     }
   },
   "streakNoGraces": "אין עוד \" אופס, פיספסתי...\"",
-  "streakGracesLeft": "נשארו עוד {count} \"אופס, פיספסתי...\"",
+  "streakGracesLeft": "נשארו {count} \"אופס, פיספסתי...\"",
   "@streakGracesLeft": {
     "placeholders": {
       "count": {}
@@ -411,7 +411,7 @@
     }
   },
   "streakNoGracesRemaining": "אין עוד \" אופס, פיספסתי...\"",
-  "streakGracesRemaining": "נשארו עוד {count} \"אופס, פיספסתי...\"",
+  "streakGracesRemaining": "נשארו {count} \"אופס, פיספסתי...\"",
   "@streakGracesRemaining": {
     "placeholders": {
       "count": {}
@@ -447,5 +447,50 @@
     "placeholders": {
       "slot": {}
     }
-  }
+  },
+  "slotMorningRoutine": "שגרת בוקר",
+  "slotEveningRoutine": "שגרת ערב",
+  "scheduleStepBadge": "שלב {n} מתוך {total}",
+  "@scheduleStepBadge": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleGuidedBothSlots": "תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.",
+  "scheduleGuidedSingleSlot": "באילו ימים להשתמש בכל מוצר ב{routine}…",
+  "@scheduleGuidedSingleSlot": {
+    "placeholders": {
+      "routine": {}
+    }
+  },
+  "scheduleContinueTo": "המשך ל{routine}",
+  "@scheduleContinueTo": {
+    "placeholders": {
+      "routine": {}
+    }
+  },
+  "scheduleNextStepPending": "נשאר עוד שלב — {routine} מחכה לתזמון",
+  "@scheduleNextStepPending": {
+    "placeholders": {
+      "routine": {}
+    }
+  },
+  "scheduleConflictWarningCount": "עדיין יש {count} ימי התנגשות ב{label}",
+  "@scheduleConflictWarningCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {}
+    }
+  },
+  "scheduleCustomizeDays": "התאמת ימים",
+  "scheduleDailyDefaultSuffix": "· כברירת מחדל כל יום",
+  "scheduleDailyCollapse": "סגירה",
+  "scheduleBadgeNoneSelected": "לא נבחר"
 }

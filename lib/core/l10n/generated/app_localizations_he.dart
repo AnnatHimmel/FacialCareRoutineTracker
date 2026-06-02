@@ -62,7 +62,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get warningIncompatible => 'לא מומלץ לשימוש יחד';
 
   @override
-  String get warningMute => 'השתק';
+  String get warningMute => 'השתיקי';
 
   @override
   String get warningOverCap => 'נבחרו יותר ימים מההמלצה';
@@ -122,7 +122,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get cancelAction => 'ביטול';
 
   @override
-  String get resetOrder => 'אפס לסדר מומלץ';
+  String get resetOrder => 'אפסי לסדר מומלץ';
 
   @override
   String get dataIntactConfirmation => 'כל הנתונים שלך שמורים ובשלמותם';
@@ -162,7 +162,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get homeEmptyToday => 'אין מוצרים להיום';
 
   @override
-  String get homeAddProducts => 'הוסף מוצרים';
+  String get homeAddProducts => 'הוסיפי מוצרים';
 
   @override
   String homeDayLabel(Object day) {
@@ -171,7 +171,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String homeDayLabelGreeting(Object day, Object name) {
-    return 'יום $day • שלום $name';
+    return 'שלום $name • יום $day';
   }
 
   @override
@@ -187,10 +187,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get homeViewImages => 'תמונות';
 
   @override
-  String get homeNamesToggleHide => 'הסתר שמות מוצרים';
+  String get homeNamesToggleHide => 'הסתירי שמות מוצרים';
 
   @override
-  String get homeNamesToggleShow => 'הצג שמות מוצרים';
+  String get homeNamesToggleShow => 'הציגי שמות מוצרים';
 
   @override
   String get homeNames => 'שמות';
@@ -212,7 +212,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get journalCtaSubtitle => 'תעדי את התקדמותך';
 
   @override
-  String get journalCtaButton => 'תיעוד עכשיו';
+  String get journalCtaButton => 'תעדי עכשיו';
 
   @override
   String get onboardingSkip => 'דלגי';
@@ -290,7 +290,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String onboardingFrequencyWeekly(Object max) {
-    return 'עד $max× בשבוע';
+    return 'עד $max פעמים בשבוע';
   }
 
   @override
@@ -340,11 +340,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String calendarDailyRecord(Object day, Object month) {
-    return 'תיעוד יומי: $day ב$month';
+    return 'תיעוד יומי: $day ב $month';
   }
 
   @override
-  String get calendarEdit => 'ערוך';
+  String get calendarEdit => 'ערכי';
 
   @override
   String get calendarSkinState => 'מצב העור היום';
@@ -353,10 +353,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get calendarNoNotes => 'לא נרשמו הערות';
 
   @override
-  String get calendarTasksDone => 'משימות שביצעו היום:';
+  String get calendarTasksDone => 'משימות שביצעת היום:';
 
   @override
-  String get calendarAddPhoto => 'הוסף תמונה';
+  String get calendarAddPhoto => 'הוסיפי תמונה';
 
   @override
   String get journalNoPhotos => 'אין תמונות עדיין';
@@ -366,7 +366,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'הוסיפי תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך';
 
   @override
-  String get journalStartDocumenting => 'התחלי לתעד';
+  String get journalStartDocumenting => 'התחילי לתעד';
 
   @override
   String journalDateFormat(Object day, Object month, Object year) {
@@ -379,7 +379,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get productSelSkipToSummary => 'דלג לסיכום';
+  String get productSelSkipToSummary => 'דלגי לסיכום';
 
   @override
   String get productSelToSummary => 'לסיכום';
@@ -401,7 +401,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'בחרי מוצר פעם אחת. סנני בוקר/ערב כדי לראות כל שגרה בנפרד.';
 
   @override
-  String get productSelContinueToSchedule => 'המשך לתזמון';
+  String get productSelContinueToSchedule => 'המשיכי לתזמון';
 
   @override
   String get productSelFilterAll => 'הכל';
@@ -575,7 +575,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get settingsOrderProducts => 'סדר מוצרים';
 
   @override
-  String get settingsOrderSubtitle => 'גרורי לסידור אישי';
+  String get settingsOrderSubtitle => 'גררי לסידור אישי';
 
   @override
   String get settingsSectionData => 'נתונים';
@@ -706,7 +706,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get updateNewProductsDesc =>
-      'מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים';
+      'מוצרים אלה לא נבחרו עדיין — הוסיפי אותם בבחירת המוצרים';
 
   @override
   String updateDeprecated(Object count) {
@@ -749,7 +749,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get mergeKeepLocalDesc => 'המשך עם הנתונים הנוכחיים במכשיר';
 
   @override
-  String get mergeUseArchive => 'השתמש בגרסת הגיבוי';
+  String get mergeUseArchive => 'השתמשי בגרסת הגיבוי';
 
   @override
   String get mergeUseArchiveDesc => 'החלף עם הנתונים מקובץ הגיבוי';
@@ -789,13 +789,13 @@ class AppLocalizationsHe extends AppLocalizations {
   String get skinLogPhotosTitle => 'תמונות';
 
   @override
-  String get skinLogAddPhotoLabel => 'הוסף תמונה';
+  String get skinLogAddPhotoLabel => 'הוסיפי תמונה';
 
   @override
-  String get skinLogTakePhoto => 'צלם תמונה';
+  String get skinLogTakePhoto => 'צלמי תמונה';
 
   @override
-  String get skinLogGallery => 'בחר מהגלריה';
+  String get skinLogGallery => 'בחרי מהגלריה';
 
   @override
   String get skinLogWebStorageWarning =>
@@ -822,11 +822,11 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get streakNoGraces => 'אין עוד \" אפוס, פיספסתי...\"';
+  String get streakNoGraces => 'אין עוד \" אופס, פיספסתי...\"';
 
   @override
   String streakGracesLeft(Object count) {
-    return '\"אופס פיספסתי\" $count נשארו עוד';
+    return 'נשארו $count \"אופס, פיספסתי...\"';
   }
 
   @override
@@ -835,11 +835,11 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get streakNoGracesRemaining => 'אין חסדים נותרו השבוע';
+  String get streakNoGracesRemaining => 'אין עוד \" אופס, פיספסתי...\"';
 
   @override
   String streakGracesRemaining(Object count) {
-    return '$count חסדים נותרו השבוע';
+    return 'נשארו $count \"אופס, פיספסתי...\"';
   }
 
   @override
@@ -879,7 +879,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get skinStateMoist => 'לח';
 
   @override
-  String get skinStateOily => 'שמני';
+  String get skinStateOily => 'שומני';
 
   @override
   String get weekdayOverCapWarning => 'מעבר למומלץ — שקלי להפחית';
@@ -909,10 +909,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get customProductFrequencyLabel => 'תדירות';
 
   @override
-  String get customProductFrequencyWeekly => 'כמה פעמות בשבוע';
+  String get customProductFrequencyWeekly => 'כמה פעמים בשבוע';
 
   @override
-  String get customProductTimesPerWeekLabel => 'פעמות בשבוע:';
+  String get customProductTimesPerWeekLabel => 'פעמים בשבוע:';
 
   @override
   String get customProductSave => 'הוספה לשגרה שלי';
@@ -921,6 +921,53 @@ class AppLocalizationsHe extends AppLocalizations {
   String scheduleConflictWarning(Object slot) {
     return 'עדיין יש ימי התנגשות ב$slot';
   }
+
+  @override
+  String get slotMorningRoutine => 'שגרת בוקר';
+
+  @override
+  String get slotEveningRoutine => 'שגרת ערב';
+
+  @override
+  String scheduleStepBadge(int n, int total) {
+    return 'שלב $n מתוך $total';
+  }
+
+  @override
+  String get scheduleGuidedBothSlots =>
+      'תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.';
+
+  @override
+  String scheduleGuidedSingleSlot(Object routine) {
+    return 'באילו ימים להשתמש בכל מוצר ב$routine…';
+  }
+
+  @override
+  String scheduleContinueTo(Object routine) {
+    return 'המשך ל$routine';
+  }
+
+  @override
+  String scheduleNextStepPending(Object routine) {
+    return 'נשאר עוד שלב — $routine מחכה לתזמון';
+  }
+
+  @override
+  String scheduleConflictWarningCount(int count, Object label) {
+    return 'עדיין יש $count ימי התנגשות ב$label';
+  }
+
+  @override
+  String get scheduleCustomizeDays => 'התאמת ימים';
+
+  @override
+  String get scheduleDailyDefaultSuffix => '· כברירת מחדל כל יום';
+
+  @override
+  String get scheduleDailyCollapse => 'סגירה';
+
+  @override
+  String get scheduleBadgeNoneSelected => 'לא נבחר';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -928,7 +975,13 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   AppLocalizationsHeMa() : super('he_MA');
 
   @override
+  String get warningMute => 'השתק';
+
+  @override
   String get backupReminderMessage => 'גבה את הנתונים שלך';
+
+  @override
+  String get resetOrder => 'אפס לסדר מומלץ';
 
   @override
   String get homeTapImageToDone => 'הקש על התמונה לסימון בוצע';
@@ -937,7 +990,19 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get homeTapProductToDone => 'הקש על מוצר לסימון בוצע';
 
   @override
+  String get homeAddProducts => 'הוסף מוצרים';
+
+  @override
+  String get homeNamesToggleHide => 'הסתר שמות מוצרים';
+
+  @override
+  String get homeNamesToggleShow => 'הצג שמות מוצרים';
+
+  @override
   String get journalCtaSubtitle => 'תעד את התקדמותך';
+
+  @override
+  String get journalCtaButton => 'תעד עכשיו';
 
   @override
   String get onboardingSkip => 'דלג';
@@ -963,6 +1028,12 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get onboardingCanAddLater => 'תוכל להוסיף מוצרים גם בהמשך';
 
   @override
+  String get calendarEdit => 'ערוך';
+
+  @override
+  String get calendarAddPhoto => 'הוסף תמונה';
+
+  @override
   String get journalEmptyInstruction =>
       'הוסף תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך';
 
@@ -970,11 +1041,17 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get journalStartDocumenting => 'התחל לתעד';
 
   @override
+  String get productSelSkipToSummary => 'דלג לסיכום';
+
+  @override
   String get productSelSkipStep => 'דלג על השלב';
 
   @override
   String get productSelSummarySubtitle =>
       'בחר מוצר פעם אחת. סנן בוקר/ערב כדי לראות כל שגרה בנפרד.';
+
+  @override
+  String get productSelContinueToSchedule => 'המשך לתזמון';
 
   @override
   String get catHintSerum => 'החומרים הפעילים שלך. אפשר לבחור כמה שתרצה.';
@@ -1037,17 +1114,33 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get settingsLogoutConfirmBtn => 'התנתק';
 
   @override
+  String get updateNewProductsDesc =>
+      'מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים';
+
+  @override
   String get mergeChooseVersion => 'בחר איזו גרסה לשמור:';
 
   @override
+  String get mergeUseArchive => 'השתמש בגרסת הגיבוי';
+
+  @override
   String get mergeClickFinish => 'לחץ על \"סיים\" להחלת המיזוג';
+
+  @override
+  String get skinLogAddPhotoLabel => 'הוסף תמונה';
+
+  @override
+  String get skinLogTakePhoto => 'צלם תמונה';
+
+  @override
+  String get skinLogGallery => 'בחר מהגלריה';
 
   @override
   String get skinLogWebStorageWarning =>
       'תמונות בדפדפן עשויות להימחק על ידי Safari. גבה את הנתונים שלך.';
 
   @override
-  String get streakOnTrack => 'אתה בדרך הנכון לזוהר מושלם!';
+  String get streakOnTrack => 'אתה בדרך הנכונה לזוהר מושלם!';
 
   @override
   String get backupNowAction => 'גבה עכשיו';

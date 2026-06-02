@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
-import '../../domain/entities/master_product.dart';
-import '../../domain/entities/product_selection.dart';
-import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/primary_button.dart';
-import '../../shared/widgets/product_thumb.dart';
+import '../setup/product_selection_screen.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   final VoidCallback onFinish;
@@ -23,21 +20,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _step = 1;
   String _name = '';
   String? _gender;
-  final Set<String> _selectedProductIds = {};
-  List<MasterProduct> _allProducts = [];
 
-  void _next() {
-    setState(() => _step++);
-  }
-
-  void _back() {
-    setState(() => _step--);
-  }
+  void _next() => setState(() => _step++);
+  void _back() => setState(() => _step--);
 
   Future<void> _handleFinish() async {
     try {
       final settings = ref.read(settingsRepositoryProvider);
-      final userRepo = ref.read(userDataRepositoryProvider);
       if (_name.trim().isNotEmpty) {
         await settings.setUserName(_name.trim());
       }
@@ -46,42 +35,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ref.read(appLocaleProvider.notifier).state =
             _gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
       }
-      for (final product in _allProducts) {
-        if (_selectedProductIds.contains(product.id)) {
-          if (product.morningConfig != null) {
-            await userRepo.upsertSelection(ProductSelection(
-              id: const Uuid().v4(),
-              productId: product.id,
-              slot: Slot.morning,
-              isSelected: true,
-              lastModified: DateTime.now(),
-            ));
-          }
-          if (product.eveningConfig != null) {
-            await userRepo.upsertSelection(ProductSelection(
-              id: const Uuid().v4(),
-              productId: product.id,
-              slot: Slot.evening,
-              isSelected: true,
-              lastModified: DateTime.now(),
-            ));
-          }
-        }
-      }
       await settings.setOnboardingCompleted(true);
     } catch (_) {
       // Repository may not be available in tests; always proceed.
     }
     widget.onFinish();
-  }
-
-  String _frequencyLabel(MasterProduct p, AppLocalizations l) {
-    final config = p.morningConfig ?? p.eveningConfig;
-    if (config == null) return '';
-    final rule = config.frequencyRule;
-    if (rule is DailyRule) return l.onboardingFrequencyDaily;
-    if (rule is WeeklyMaxRule) return l.onboardingFrequencyWeekly(rule.maxPerWeek);
-    return '';
   }
 
   @override
@@ -98,7 +56,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ? _buildStep1(l)
                   : _step == 2
                       ? _buildStep2(l)
-                      : _buildStep3(l),
+                      : _buildStep3(),
             ),
           ],
         ),
@@ -330,150 +288,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildStep3(AppLocalizations l) {
-    final masterAsync = ref.watch(masterContentProvider);
-    return masterAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text(l.genericError(e))),
-      data: (master) {
-        _allProducts = master.products.where((p) => !p.isDeprecated).toList();
-        return Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 32),
-                    Text(
-                      l.onboardingYourProducts,
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(l.onboardingProductInstruction),
-                    const SizedBox(height: 20),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.85,
-                      ),
-                      itemCount: _allProducts.length,
-                      itemBuilder: (context, i) {
-                        final product = _allProducts[i];
-                        final selected =
-                            _selectedProductIds.contains(product.id);
-                        return InkWell(
-                          borderRadius: BorderRadius.circular(24),
-                          onTap: () => setState(() {
-                            if (selected) {
-                              _selectedProductIds.remove(product.id);
-                            } else {
-                              _selectedProductIds.add(product.id);
-                            }
-                          }),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? AppColors.primaryFixed.withAlpha(102)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: selected
-                                    ? AppColors.primary
-                                    : Colors.transparent,
-                                width: 2,
-                              ),
-                            ),
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Align(
-                                  alignment: AlignmentDirectional.topEnd,
-                                  child: Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: selected
-                                          ? AppColors.primary
-                                          : AppColors.surfaceHigh,
-                                    ),
-                                    child: selected
-                                        ? const Icon(Icons.check,
-                                            size: 16, color: Colors.white)
-                                        : null,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                ProductThumb(
-                                    imageAsset: product.imageAsset, size: 48),
-                                const SizedBox(height: 8),
-                                Text(
-                                  product.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                Text(
-                                  _frequencyLabel(product, l),
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _selectedProductIds.isEmpty
-                          ? l.onboardingCanAddLater
-                          : l.onboardingProductCount(_selectedProductIds.length),
-                      style: const TextStyle(
-                          fontSize: 12, color: AppColors.onSurfaceVariant),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _back,
-                      child: Text(l.backAction),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _handleFinish,
-                      icon: const Icon(Icons.check),
-                      label: Text(l.onboardingFinish),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  Widget _buildStep3() {
+    return ProductSelectionScreen(onDone: () => _continueToSchedule());
+  }
+
+  Future<void> _continueToSchedule() async {
+    await context.push<void>('/products/schedule');
+    if (!mounted) return;
+    await _handleFinish();
   }
 }

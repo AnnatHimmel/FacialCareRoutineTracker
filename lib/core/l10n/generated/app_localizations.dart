@@ -202,7 +202,7 @@ abstract class AppLocalizations {
   /// No description provided for @warningMute.
   ///
   /// In he, this message translates to:
-  /// **'השתק'**
+  /// **'השתיקי'**
   String get warningMute;
 
   /// No description provided for @warningOverCap.
@@ -322,7 +322,7 @@ abstract class AppLocalizations {
   /// No description provided for @resetOrder.
   ///
   /// In he, this message translates to:
-  /// **'אפס לסדר מומלץ'**
+  /// **'אפסי לסדר מומלץ'**
   String get resetOrder;
 
   /// No description provided for @dataIntactConfirmation.
@@ -394,7 +394,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeAddProducts.
   ///
   /// In he, this message translates to:
-  /// **'הוסף מוצרים'**
+  /// **'הוסיפי מוצרים'**
   String get homeAddProducts;
 
   /// No description provided for @homeDayLabel.
@@ -406,7 +406,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeDayLabelGreeting.
   ///
   /// In he, this message translates to:
-  /// **'יום {day} • שלום {name}'**
+  /// **'שלום {name} • יום {day}'**
   String homeDayLabelGreeting(Object day, Object name);
 
   /// No description provided for @homeViewListSemantics.
@@ -436,13 +436,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeNamesToggleHide.
   ///
   /// In he, this message translates to:
-  /// **'הסתר שמות מוצרים'**
+  /// **'הסתירי שמות מוצרים'**
   String get homeNamesToggleHide;
 
   /// No description provided for @homeNamesToggleShow.
   ///
   /// In he, this message translates to:
-  /// **'הצג שמות מוצרים'**
+  /// **'הציגי שמות מוצרים'**
   String get homeNamesToggleShow;
 
   /// No description provided for @homeNames.
@@ -478,7 +478,7 @@ abstract class AppLocalizations {
   /// No description provided for @journalCtaButton.
   ///
   /// In he, this message translates to:
-  /// **'תיעוד עכשיו'**
+  /// **'תעדי עכשיו'**
   String get journalCtaButton;
 
   /// No description provided for @onboardingSkip.
@@ -622,7 +622,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingFrequencyWeekly.
   ///
   /// In he, this message translates to:
-  /// **'עד {max}× בשבוע'**
+  /// **'עד {max} פעמים בשבוע'**
   String onboardingFrequencyWeekly(Object max);
 
   /// No description provided for @calendarDayAbbrevSun.
@@ -718,13 +718,13 @@ abstract class AppLocalizations {
   /// No description provided for @calendarDailyRecord.
   ///
   /// In he, this message translates to:
-  /// **'תיעוד יומי: {day} ב{month}'**
+  /// **'תיעוד יומי: {day} ב {month}'**
   String calendarDailyRecord(Object day, Object month);
 
   /// No description provided for @calendarEdit.
   ///
   /// In he, this message translates to:
-  /// **'ערוך'**
+  /// **'ערכי'**
   String get calendarEdit;
 
   /// No description provided for @calendarSkinState.
@@ -742,13 +742,13 @@ abstract class AppLocalizations {
   /// No description provided for @calendarTasksDone.
   ///
   /// In he, this message translates to:
-  /// **'משימות שביצעו היום:'**
+  /// **'משימות שביצעת היום:'**
   String get calendarTasksDone;
 
   /// No description provided for @calendarAddPhoto.
   ///
   /// In he, this message translates to:
-  /// **'הוסף תמונה'**
+  /// **'הוסיפי תמונה'**
   String get calendarAddPhoto;
 
   /// No description provided for @journalNoPhotos.
@@ -766,7 +766,7 @@ abstract class AppLocalizations {
   /// No description provided for @journalStartDocumenting.
   ///
   /// In he, this message translates to:
-  /// **'התחלי לתעד'**
+  /// **'התחילי לתעד'**
   String get journalStartDocumenting;
 
   /// No description provided for @journalDateFormat.
@@ -784,7 +784,7 @@ abstract class AppLocalizations {
   /// No description provided for @productSelSkipToSummary.
   ///
   /// In he, this message translates to:
-  /// **'דלג לסיכום'**
+  /// **'דלגי לסיכום'**
   String get productSelSkipToSummary;
 
   /// No description provided for @productSelToSummary.
@@ -826,7 +826,7 @@ abstract class AppLocalizations {
   /// No description provided for @productSelContinueToSchedule.
   ///
   /// In he, this message translates to:
-  /// **'המשך לתזמון'**
+  /// **'המשיכי לתזמון'**
   String get productSelContinueToSchedule;
 
   /// No description provided for @productSelFilterAll.
@@ -1132,7 +1132,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsOrderSubtitle.
   ///
   /// In he, this message translates to:
-  /// **'גרורי לסידור אישי'**
+  /// **'גררי לסידור אישי'**
   String get settingsOrderSubtitle;
 
   /// No description provided for @settingsSectionData.
@@ -1366,7 +1366,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateNewProductsDesc.
   ///
   /// In he, this message translates to:
-  /// **'מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים'**
+  /// **'מוצרים אלה לא נבחרו עדיין — הוסיפי אותם בבחירת המוצרים'**
   String get updateNewProductsDesc;
 
   /// No description provided for @updateDeprecated.
@@ -1438,7 +1438,7 @@ abstract class AppLocalizations {
   /// No description provided for @mergeUseArchive.
   ///
   /// In he, this message translates to:
-  /// **'השתמש בגרסת הגיבוי'**
+  /// **'השתמשי בגרסת הגיבוי'**
   String get mergeUseArchive;
 
   /// No description provided for @mergeUseArchiveDesc.
@@ -1516,19 +1516,19 @@ abstract class AppLocalizations {
   /// No description provided for @skinLogAddPhotoLabel.
   ///
   /// In he, this message translates to:
-  /// **'הוסף תמונה'**
+  /// **'הוסיפי תמונה'**
   String get skinLogAddPhotoLabel;
 
   /// No description provided for @skinLogTakePhoto.
   ///
   /// In he, this message translates to:
-  /// **'צלם תמונה'**
+  /// **'צלמי תמונה'**
   String get skinLogTakePhoto;
 
   /// No description provided for @skinLogGallery.
   ///
   /// In he, this message translates to:
-  /// **'בחר מהגלריה'**
+  /// **'בחרי מהגלריה'**
   String get skinLogGallery;
 
   /// No description provided for @skinLogWebStorageWarning.
@@ -1576,13 +1576,13 @@ abstract class AppLocalizations {
   /// No description provided for @streakNoGraces.
   ///
   /// In he, this message translates to:
-  /// **'אין עוד \" אפוס, פיספסתי...\"'**
+  /// **'אין עוד \" אופס, פיספסתי...\"'**
   String get streakNoGraces;
 
   /// No description provided for @streakGracesLeft.
   ///
   /// In he, this message translates to:
-  /// **'\"אופס פיספסתי\" {count} נשארו עוד'**
+  /// **'נשארו {count} \"אופס, פיספסתי...\"'**
   String streakGracesLeft(Object count);
 
   /// No description provided for @streakSemanticDays.
@@ -1594,13 +1594,13 @@ abstract class AppLocalizations {
   /// No description provided for @streakNoGracesRemaining.
   ///
   /// In he, this message translates to:
-  /// **'אין חסדים נותרו השבוע'**
+  /// **'אין עוד \" אופס, פיספסתי...\"'**
   String get streakNoGracesRemaining;
 
   /// No description provided for @streakGracesRemaining.
   ///
   /// In he, this message translates to:
-  /// **'{count} חסדים נותרו השבוע'**
+  /// **'נשארו {count} \"אופס, פיספסתי...\"'**
   String streakGracesRemaining(Object count);
 
   /// No description provided for @routineItemDone.
@@ -1678,7 +1678,7 @@ abstract class AppLocalizations {
   /// No description provided for @skinStateOily.
   ///
   /// In he, this message translates to:
-  /// **'שמני'**
+  /// **'שומני'**
   String get skinStateOily;
 
   /// No description provided for @weekdayOverCapWarning.
@@ -1738,13 +1738,13 @@ abstract class AppLocalizations {
   /// No description provided for @customProductFrequencyWeekly.
   ///
   /// In he, this message translates to:
-  /// **'כמה פעמות בשבוע'**
+  /// **'כמה פעמים בשבוע'**
   String get customProductFrequencyWeekly;
 
   /// No description provided for @customProductTimesPerWeekLabel.
   ///
   /// In he, this message translates to:
-  /// **'פעמות בשבוע:'**
+  /// **'פעמים בשבוע:'**
   String get customProductTimesPerWeekLabel;
 
   /// No description provided for @customProductSave.
@@ -1758,6 +1758,78 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'עדיין יש ימי התנגשות ב{slot}'**
   String scheduleConflictWarning(Object slot);
+
+  /// No description provided for @slotMorningRoutine.
+  ///
+  /// In he, this message translates to:
+  /// **'שגרת בוקר'**
+  String get slotMorningRoutine;
+
+  /// No description provided for @slotEveningRoutine.
+  ///
+  /// In he, this message translates to:
+  /// **'שגרת ערב'**
+  String get slotEveningRoutine;
+
+  /// No description provided for @scheduleStepBadge.
+  ///
+  /// In he, this message translates to:
+  /// **'שלב {n} מתוך {total}'**
+  String scheduleStepBadge(int n, int total);
+
+  /// No description provided for @scheduleGuidedBothSlots.
+  ///
+  /// In he, this message translates to:
+  /// **'תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.'**
+  String get scheduleGuidedBothSlots;
+
+  /// No description provided for @scheduleGuidedSingleSlot.
+  ///
+  /// In he, this message translates to:
+  /// **'באילו ימים להשתמש בכל מוצר ב{routine}…'**
+  String scheduleGuidedSingleSlot(Object routine);
+
+  /// No description provided for @scheduleContinueTo.
+  ///
+  /// In he, this message translates to:
+  /// **'המשך ל{routine}'**
+  String scheduleContinueTo(Object routine);
+
+  /// No description provided for @scheduleNextStepPending.
+  ///
+  /// In he, this message translates to:
+  /// **'נשאר עוד שלב — {routine} מחכה לתזמון'**
+  String scheduleNextStepPending(Object routine);
+
+  /// No description provided for @scheduleConflictWarningCount.
+  ///
+  /// In he, this message translates to:
+  /// **'עדיין יש {count} ימי התנגשות ב{label}'**
+  String scheduleConflictWarningCount(int count, Object label);
+
+  /// No description provided for @scheduleCustomizeDays.
+  ///
+  /// In he, this message translates to:
+  /// **'התאמת ימים'**
+  String get scheduleCustomizeDays;
+
+  /// No description provided for @scheduleDailyDefaultSuffix.
+  ///
+  /// In he, this message translates to:
+  /// **'· כברירת מחדל כל יום'**
+  String get scheduleDailyDefaultSuffix;
+
+  /// No description provided for @scheduleDailyCollapse.
+  ///
+  /// In he, this message translates to:
+  /// **'סגירה'**
+  String get scheduleDailyCollapse;
+
+  /// No description provided for @scheduleBadgeNoneSelected.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נבחר'**
+  String get scheduleBadgeNoneSelected;
 }
 
 class _AppLocalizationsDelegate

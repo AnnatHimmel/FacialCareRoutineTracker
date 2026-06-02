@@ -12,6 +12,17 @@
   ],
   "products": [
     {
+      "id": "prod-039",
+      "name": "Generic Cleansing Gel",
+      "categoryId": "cat-cleanser-step2",
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "imageAsset": "assets/images/products/generic_cleansing_gel.jpg",
+      "comment": "ג'ל ניקוי פנים עדין על בסיס מים לניקוי יסודי של העור, הסרת שאריות לכלוך ורענון מבלי לייבש",
+      "morningConfig": null,
+      "eveningConfig": {"order": 0, "frequency": {"type": "daily"}}
+    },
+    {
       "id": "prod-007",
       "name": "Beauty of Joseon Relief Sun: Rice + Probiotics",
       "imageAsset": "assets/images/products/prod-007.jpg",

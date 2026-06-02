@@ -70,11 +70,15 @@ enum _SelectionView { guided, summary }
 class ProductSelectionScreen extends ConsumerStatefulWidget {
   final bool fromSetup;
   final bool isTabDestination;
+  /// When provided the screen renders without its own Scaffold/AppBar and
+  /// the summary CTA calls this instead of navigating to the schedule screen.
+  final VoidCallback? onDone;
 
   const ProductSelectionScreen({
     super.key,
     this.fromSetup = false,
     this.isTabDestination = false,
+    this.onDone,
   });
 
   @override
@@ -87,7 +91,7 @@ class _ProductSelectionScreenState
   _SelectionView _view = _SelectionView.guided;
   int _catStep = 0;
 
-  String _slotFilter = 'all';
+  Set<String> _slotFilter = {'AM', 'PM'};
   String? _openCategoryId;
 
   void _goToSummary() => setState(() {
@@ -163,13 +167,15 @@ class _ProductSelectionScreenState
     List<ProductSelection> existing,
   ) async {
     final repo = ref.read(userDataRepositoryProvider);
-    final match = existing
+    final matches = existing
         .where((s) => s.productId == product.id && s.slot == slot)
-        .firstOrNull;
-    if (match != null) {
-      await repo.upsertSelection(
-        match.copyWith(isSelected: isSelected, lastModified: DateTime.now()),
-      );
+        .toList();
+    if (matches.isNotEmpty) {
+      for (final match in matches) {
+        await repo.upsertSelection(
+          match.copyWith(isSelected: isSelected, lastModified: DateTime.now()),
+        );
+      }
     } else if (isSelected) {
       await repo.upsertSelection(
         ProductSelection(
@@ -190,24 +196,28 @@ class _ProductSelectionScreenState
     final morningAsync = ref.watch(selectionsProvider(Slot.morning));
     final eveningAsync = ref.watch(selectionsProvider(Slot.evening));
 
+    final body = masterAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text(l.genericError(e))),
+      data: (master) {
+        final morning = morningAsync.valueOrNull ?? [];
+        final evening = eveningAsync.valueOrNull ?? [];
+        final selMap = _buildSelMap(morning, evening);
+        final categories = [...master.categories]
+          ..sort((a, b) => a.order.compareTo(b.order));
+
+        return _view == _SelectionView.guided
+            ? _buildGuided(context, master, categories, selMap, morning, evening, l)
+            : _buildSummary(context, master, categories, selMap, morning, evening, l);
+      },
+    );
+
+    if (widget.onDone != null) return body;
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: const GlowAppBar(),
-      body: masterAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(l.genericError(e))),
-        data: (master) {
-          final morning = morningAsync.valueOrNull ?? [];
-          final evening = eveningAsync.valueOrNull ?? [];
-          final selMap = _buildSelMap(morning, evening);
-          final categories = [...master.categories]
-            ..sort((a, b) => a.order.compareTo(b.order));
-
-          return _view == _SelectionView.guided
-              ? _buildGuided(context, master, categories, selMap, morning, evening, l)
-              : _buildSummary(context, master, categories, selMap, morning, evening, l);
-        },
-      ),
+      body: body,
     );
   }
 
@@ -393,60 +403,55 @@ class _ProductSelectionScreenState
               border: const Border(
                   top: BorderSide(color: AppColors.primaryFixed, width: 0.5)),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const AddCustomProductSheet(),
+                if (step > 0) ...[
+                  GestureDetector(
+                    onTap: () => setState(() => _catStep--),
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLow,
+                        borderRadius: BorderRadius.circular(9999),
                       ),
-                      child: Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryFixed.withAlpha(153),
-                          borderRadius: BorderRadius.circular(9999),
-                        ),
-                        child: const Icon(Icons.add_rounded,
-                            color: AppColors.primary, size: 22),
-                      ),
+                      child: const Icon(Icons.arrow_back_rounded,
+                          color: AppColors.onSurface, size: 20),
                     ),
-                    const SizedBox(width: 10),
-                    if (step > 0) ...[
-                      GestureDetector(
-                        onTap: () => setState(() => _catStep--),
-                        child: Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceLow,
-                            borderRadius: BorderRadius.circular(9999),
-                          ),
-                          child: const Icon(Icons.arrow_back_rounded,
-                              color: AppColors.onSurface, size: 20),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                    Expanded(
-                      child: PrimaryButton(
-                        label: ctaLabel,
-                        leadingIcon: Icons.arrow_forward_rounded,
-                        onTap: () {
-                          if (isLast) {
-                            _goToSummary();
-                          } else {
-                            setState(() => _catStep++);
-                          }
-                        },
-                      ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                GestureDetector(
+                  onTap: () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => const AddCustomProductSheet(),
+                  ),
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryFixed.withAlpha(153),
+                      borderRadius: BorderRadius.circular(9999),
                     ),
-                  ],
+                    child: const Icon(Icons.add_rounded,
+                        color: AppColors.primary, size: 22),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: PrimaryButton(
+                    label: ctaLabel,
+                    leadingIcon: Icons.arrow_forward_rounded,
+                    onTap: () {
+                      if (isLast) {
+                        _goToSummary();
+                      } else {
+                        setState(() => _catStep++);
+                      }
+                    },
+                  ),
                 ),
               ],
             ),
@@ -469,19 +474,20 @@ class _ProductSelectionScreenState
         selMap.values.where((s) => s.contains(Slot.morning)).length;
     final pmCount =
         selMap.values.where((s) => s.contains(Slot.evening)).length;
-    final totalCount = selMap.length;
 
-    final filterSlot = _slotFilter == 'AM'
+    final onlyAM = _slotFilter.contains('AM') && !_slotFilter.contains('PM');
+    final onlyPM = !_slotFilter.contains('AM') && _slotFilter.contains('PM');
+    final filterSlot = onlyAM
         ? Slot.morning
-        : _slotFilter == 'PM'
+        : onlyPM
             ? Slot.evening
             : null;
 
     final visibleCats = categories.where((cat) {
       return master.products.any((p) {
         if (p.isDeprecated || p.categoryId != cat.id) return false;
-        if (_slotFilter == 'AM') return p.morningConfig != null;
-        if (_slotFilter == 'PM') return p.eveningConfig != null;
+        if (onlyAM) return p.morningConfig != null;
+        if (onlyPM) return p.eveningConfig != null;
         return true;
       });
     }).toList();
@@ -516,13 +522,8 @@ class _ProductSelectionScreenState
                     const SizedBox(height: 12),
                     _SlotFilter(
                       value: _slotFilter,
-                      onChanged: (v) =>
-                          setState(() => _slotFilter = v),
-                      counts: {
-                        'all': totalCount,
-                        'AM': amCount,
-                        'PM': pmCount
-                      },
+                      onChanged: (v) => setState(() => _slotFilter = v),
+                      counts: {'AM': amCount, 'PM': pmCount},
                       l: l,
                     ),
                     const SizedBox(height: 12),
@@ -539,8 +540,8 @@ class _ProductSelectionScreenState
                     final cat = visibleCats[idx];
                     final catProducts = master.products.where((p) {
                       if (p.isDeprecated || p.categoryId != cat.id) return false;
-                      if (_slotFilter == 'AM') return p.morningConfig != null;
-                      if (_slotFilter == 'PM') return p.eveningConfig != null;
+                      if (onlyAM) return p.morningConfig != null;
+                      if (onlyPM) return p.eveningConfig != null;
                       return true;
                     }).toList();
                     final catSel = catProducts.where((p) {
@@ -599,6 +600,20 @@ class _ProductSelectionScreenState
             child: Row(
               children: [
                 GestureDetector(
+                  onTap: _backToGuided,
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLow,
+                      borderRadius: BorderRadius.circular(9999),
+                    ),
+                    child: const Icon(Icons.arrow_back_rounded,
+                        color: AppColors.onSurface, size: 20),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                GestureDetector(
                   onTap: () => showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,
@@ -617,25 +632,11 @@ class _ProductSelectionScreenState
                   ),
                 ),
                 const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: _backToGuided,
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceLow,
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                    child: const Icon(Icons.arrow_back_rounded,
-                        color: AppColors.onSurface, size: 20),
-                  ),
-                ),
-                const SizedBox(width: 10),
                 Expanded(
                   child: PrimaryButton(
                     label: l.productSelContinueToSchedule,
                     leadingIcon: Icons.event_rounded,
-                    onTap: () => _goToSchedule(context),
+                    onTap: widget.onDone ?? () => _goToSchedule(context),
                   ),
                 ),
               ],
@@ -1082,8 +1083,8 @@ class _TimingPill extends StatelessWidget {
 // ── Slot filter ────────────────────────────────────────────────────────────────
 
 class _SlotFilter extends StatelessWidget {
-  final String value;
-  final ValueChanged<String> onChanged;
+  final Set<String> value;
+  final ValueChanged<Set<String>> onChanged;
   final Map<String, int>? counts;
   final AppLocalizations l;
 
@@ -1097,7 +1098,6 @@ class _SlotFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final opts = [
-      (key: 'all', label: l.productSelFilterAll, icon: Icons.apps_rounded, active: AppColors.primary),
       (key: 'AM', label: l.slotMorning, icon: Icons.wb_sunny_rounded, active: AppColors.primaryContainer),
       (key: 'PM', label: l.slotEvening, icon: Icons.dark_mode_rounded, active: AppColors.tertiary),
     ];
@@ -1110,10 +1110,16 @@ class _SlotFilter extends StatelessWidget {
       ),
       child: Row(
         children: opts.map((opt) {
-          final isActive = value == opt.key;
+          final isActive = value.contains(opt.key);
           return Expanded(
             child: GestureDetector(
-              onTap: () => onChanged(opt.key),
+              onTap: () {
+                if (isActive && value.length > 1) {
+                  onChanged(Set.from(value)..remove(opt.key));
+                } else if (!isActive) {
+                  onChanged(Set.from(value)..add(opt.key));
+                }
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 height: 40,
@@ -1127,15 +1133,12 @@ class _SlotFilter extends StatelessWidget {
                   children: [
                     Icon(opt.icon,
                         size: 16,
-                        color:
-                            isActive ? Colors.white : AppColors.onSurfaceVariant),
+                        color: isActive ? Colors.white : AppColors.onSurfaceVariant),
                     const SizedBox(width: 4),
                     Text(
                       opt.label,
                       style: AppTypography.labelMd.copyWith(
-                        color: isActive
-                            ? Colors.white
-                            : AppColors.onSurfaceVariant,
+                        color: isActive ? Colors.white : AppColors.onSurfaceVariant,
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                       ),
@@ -1143,8 +1146,7 @@ class _SlotFilter extends StatelessWidget {
                     if (counts?[opt.key] != null) ...[
                       const SizedBox(width: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 1),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
                           color: isActive
                               ? Colors.white.withAlpha(64)
@@ -1178,7 +1180,7 @@ class _CategorySection extends StatelessWidget {
   final Category category;
   final List<MasterProduct> products;
   final Map<String, Set<Slot>> selMap;
-  final String slotFilter;
+  final Set<String> slotFilter;
   final bool isOpen;
   final int catSelCount;
   final String categoryUsage;
@@ -1241,15 +1243,6 @@ class _CategorySection extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                             color: AppColors.onSurface,
-                          ),
-                        ),
-                        Text(
-                          catSelCount == 0
-                              ? l.productSelCategoryOptions(products.length)
-                              : l.productSelCategorySelected(catSelCount),
-                          style: AppTypography.labelSm.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                            fontSize: 11.5,
                           ),
                         ),
                       ],

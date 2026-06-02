@@ -195,7 +195,7 @@ class _GraceMeter extends StatelessWidget {
             children: [
               for (int i = 0; i < total; i++) ...[
                 if (i > 0) const SizedBox(width: 4),
-                _GraceToken(available: i < left),
+                _GraceToken(available: i >= total - left),
               ],
             ],
           ),
@@ -212,8 +212,8 @@ class _GraceToken extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 28,
-      height: 28,
+      width: 22,
+      height: 22,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: available ? Colors.white : Colors.white.withAlpha(26),
@@ -226,7 +226,7 @@ class _GraceToken extends StatelessWidget {
       ),
       child: Icon(
         available ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-        size: 14,
+        size: 11,
         color: available ? AppColors.primary : Colors.white.withAlpha(153),
       ),
     );
