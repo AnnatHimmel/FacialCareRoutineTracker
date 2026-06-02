@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/master_list_manifest.dart';
@@ -12,6 +13,7 @@ class AboutScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
 
     return Scaffold(
@@ -19,13 +21,12 @@ class AboutScreen extends ConsumerWidget {
       appBar: const GlowAppBar(showBack: true),
       body: masterAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('שגיאה: $e')),
+        error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (master) {
           final manifest = master.manifest;
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
-              // App identity card
               GlowCard(
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -46,7 +47,7 @@ class AboutScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'מעקב שגרת טיפוח',
+                      l.appName,
                       style: AppTypography.headlineLg.copyWith(
                         color: AppColors.onSurface,
                       ),
@@ -64,7 +65,7 @@ class AboutScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'גרסה ${manifest.appVersion}',
+                        l.aboutVersionLabel(manifest.appVersion),
                         style: AppTypography.labelMd.copyWith(
                           color: AppColors.secondary,
                         ),
@@ -74,7 +75,7 @@ class AboutScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'תוכן ${manifest.contentVersion}',
+                      l.aboutContentLabel(manifest.contentVersion),
                       style: AppTypography.labelSm.copyWith(
                         color: AppColors.onSurfaceVariant,
                       ),
@@ -87,11 +88,10 @@ class AboutScreen extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              // Changelog header
               Padding(
                 padding: const EdgeInsets.only(bottom: 12, right: 4),
                 child: Text(
-                  'מה חדש',
+                  l.aboutChangelog,
                   style: AppTypography.headlineMd.copyWith(
                     color: AppColors.primary,
                   ),

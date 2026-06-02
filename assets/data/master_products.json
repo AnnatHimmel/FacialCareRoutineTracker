@@ -1,14 +1,14 @@
 {
   "contentVersion": "1.0.0",
   "categories": [
-    {"id":"cat-cleanser-step1","name":"ניקוי שלב 1","order":1},
-    {"id":"cat-cleanser-step2","name":"ניקוי שלב 2","order":2},
-    {"id":"cat-retinoid","name":"רטינואידים","order":3},
-    {"id":"cat-toner","name":"טונר / אסנס","order":4},
-    {"id":"cat-serum","name":"סרום / אקטיב","order":5},
-    {"id":"cat-moisturizer","name":"לחות","order":6},
-    {"id":"cat-oil","name":"שמנים","order":7},
-    {"id":"cat-spf","name":"הגנה","order":8}
+    {"id":"cat-cleanser-step1","name":"ניקוי שלב 1","order":1,"icon":"soap"},
+    {"id":"cat-cleanser-step2","name":"ניקוי שלב 2","order":2,"icon":"bubble_chart"},
+    {"id":"cat-retinoid","name":"רטינואידים","order":3,"icon":"science"},
+    {"id":"cat-toner","name":"טונר / אסנס","order":4,"icon":"water_drop"},
+    {"id":"cat-serum","name":"סרום / אקטיב","order":5,"icon":"auto_awesome"},
+    {"id":"cat-moisturizer","name":"לחות","order":6,"icon":"opacity"},
+    {"id":"cat-oil","name":"שמנים","order":7,"icon":"spa"},
+    {"id":"cat-spf","name":"הגנה","order":8,"icon":"wb_sunny"}
   ],
   "products": [
     {
@@ -540,6 +540,17 @@
           "type": "daily"
         }
       }
+    },
+    {
+      "id": "prod-038",
+      "name": "Beauty of Joseon Revive Eye Serum Ginseng + Retinal",
+      "categoryId": "cat-retinoid",
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "imageAsset": "assets/images/products/beauty_of_joseon_revive_eye_serum.jpg",
+      "comment": "סרום עיניים טיפולי המשלב רטינאל וג'ינסנג לחידוש עדין של עור העיניים, הפחתת מראה קמטוטים ושיפור האלסטיות",
+      "morningConfig": null,
+      "eveningConfig": {"order": 0, "frequency": {"type": "daily"}}
     },
     {
       "id": "prod-035",

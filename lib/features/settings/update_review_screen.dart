@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../shared/providers/root_providers.dart';
@@ -32,6 +33,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final reconcileAsync = ref.watch(_reconcileProvider);
 
     return Scaffold(
@@ -40,7 +42,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
       body: reconcileAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('שגיאה: $e')),
+        error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (result) {
           if (!result.isUpdateDetected) {
             return Center(
@@ -56,13 +58,13 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'הכל מעודכן',
+                      l.updateAllUpToDate,
                       style: AppTypography.headlineMd,
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => context.go('/today'),
-                      child: const Text('חזור'),
+                      child: Text(l.updateGoBack),
                     ),
                   ],
                 ),
@@ -73,7 +75,6 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
-              // Data-intact confirmation
               GlowCard(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 14),
@@ -89,7 +90,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'הנתונים שלך שמורים ועדיין קיימים',
+                        l.updateDataIntact,
                         style: AppTypography.bodyMd.copyWith(
                           color: AppColors.onSurface,
                         ),
@@ -102,7 +103,6 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Export offer
               GlowCard(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 10),
@@ -110,7 +110,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'לפני ההמשך:',
+                      l.updateExportBefore,
                       style: AppTypography.headlineMd,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -118,7 +118,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                     TextButton.icon(
                       onPressed: () => context.push('/export-import'),
                       icon: const Icon(Icons.backup_outlined, size: 18),
-                      label: const Text('גבה נתונים'),
+                      label: Text(l.updateBackupAction),
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.primary,
                         textStyle: AppTypography.labelSm,
@@ -129,7 +129,6 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
               ),
               const SizedBox(height: 16),
 
-              // New products
               if (result.newProducts.isNotEmpty) ...[
                 GlowCard(
                   padding: const EdgeInsets.all(16),
@@ -137,7 +136,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'מוצרים חדשים (${result.newProducts.length})',
+                        l.updateNewProducts(result.newProducts.length),
                         style: AppTypography.headlineMd.copyWith(
                           color: AppColors.primary,
                         ),
@@ -146,7 +145,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים',
+                        l.updateNewProductsDesc,
                         style: AppTypography.bodyMd.copyWith(
                           color: AppColors.onSurfaceVariant,
                         ),
@@ -168,7 +167,6 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                 const SizedBox(height: 24),
               ],
 
-              // Newly deprecated
               if (result.newlyDeprecatedSelected.isNotEmpty) ...[
                 GlowCard(
                   padding: const EdgeInsets.all(16),
@@ -176,7 +174,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'מוצרים שאינם מומלצים עוד (${result.newlyDeprecatedSelected.length})',
+                        l.updateDeprecated(result.newlyDeprecatedSelected.length),
                         style: AppTypography.headlineMd.copyWith(
                           color: AppColors.error,
                         ),
@@ -185,7 +183,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'מוצרים אלה נמצאים ברשימה שלך אך אינם מומלצים עוד',
+                        l.updateDeprecatedDesc,
                         style: AppTypography.bodyMd.copyWith(
                           color: AppColors.onSurfaceVariant,
                         ),
@@ -209,7 +207,6 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                 const SizedBox(height: 24),
               ],
 
-              // Acknowledge button
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -231,7 +228,7 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('הבנתי, המשך'),
+                      : Text(l.updateAcknowledge),
                 ),
               ),
               const SizedBox(height: 32),

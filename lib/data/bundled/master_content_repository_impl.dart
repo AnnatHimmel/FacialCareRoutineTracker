@@ -58,6 +58,7 @@ class MasterContentRepositoryImpl implements MasterContentRepository {
         id: m['id'] as String,
         name: m['name'] as String,
         order: m['order'] as int,
+        icon: m['icon'] as String?,
       );
 
   MasterProduct _parseProduct(Map<String, dynamic> m) => MasterProduct(
@@ -95,6 +96,7 @@ class MasterContentRepositoryImpl implements MasterContentRepository {
         entityA: _parseTarget(m['entityA'] as Map<String, dynamic>),
         entityB: _parseTarget(m['entityB'] as Map<String, dynamic>),
         scope: _parseScope(m['scope'] as String),
+        reason: m['reason'] as String?,
       );
 
   RuleTarget _parseTarget(Map<String, dynamic> m) => RuleTarget(

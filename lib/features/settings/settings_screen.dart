@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../shared/providers/root_providers.dart';
@@ -14,6 +15,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
     final appVersion = masterAsync.valueOrNull?.manifest.appVersion ?? '—';
 
@@ -23,21 +25,20 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         children: [
-          // ── Welcoming header card ──────────────────────────────────────────
           GlowCard(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'שלום',
+                  l.settingsGreeting,
                   style: AppTypography.headlineMd.copyWith(
                     color: AppColors.onSurface,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'ברוכה הבאה ל־The Glow Protocol',
+                  l.settingsWelcome,
                   style: AppTypography.labelMd.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),
@@ -47,77 +48,66 @@ class SettingsScreen extends ConsumerWidget {
           ),
 
           const SizedBox(height: 16),
-
-          // ── Backup reminder banner ─────────────────────────────────────────
           const BackupReminderBanner(),
-
           const SizedBox(height: 8),
 
-          // ── Section: שגרת הטיפוח שלי ──────────────────────────────────────
-          const _SectionLabel(label: 'שגרת הטיפוח שלי'),
+          _SectionLabel(label: l.settingsSectionRoutine),
           const SizedBox(height: 8),
 
           _SettingsRow(
             icon: Icons.reorder,
-            label: 'סדר מוצרים',
-            subtitle: 'גרורי לסידור אישי',
+            label: l.settingsOrderProducts,
+            subtitle: l.settingsOrderSubtitle,
             onTap: () => context.push('/setup/order'),
           ),
 
           const SizedBox(height: 24),
-
-          // ── Section: נתונים ───────────────────────────────────────────────
-          const _SectionLabel(label: 'נתונים'),
+          _SectionLabel(label: l.settingsSectionData),
           const SizedBox(height: 8),
 
           _SettingsRow(
             icon: Icons.cloud_download_outlined,
-            label: 'ייצוא / ייבוא',
-            subtitle: 'גיבוי מקומי של הנתונים',
+            label: l.exportTitle,
+            subtitle: l.settingsExportSubtitle,
             onTap: () => context.push('/export-import'),
           ),
 
           const SizedBox(height: 24),
-
-          // ── Section: מידע ─────────────────────────────────────────────────
-          const _SectionLabel(label: 'מידע'),
+          _SectionLabel(label: l.settingsSectionInfo),
           const SizedBox(height: 8),
 
           _SettingsRow(
             icon: Icons.info_outlined,
-            label: 'אודות ומה חדש',
-            subtitle: 'גרסה $appVersion • יומן שינויים',
+            label: l.settingsAbout,
+            subtitle: l.settingsAboutSubtitle(appVersion),
             onTap: () => context.push('/about'),
           ),
           const SizedBox(height: 12),
           _SettingsRow(
             icon: Icons.system_update_outlined,
-            label: 'בדוק עדכונים',
-            subtitle: 'בדיקת גרסה עדכנית',
+            label: l.settingsCheckUpdates,
+            subtitle: l.settingsCheckUpdatesSubtitle,
             onTap: () => context.push('/update-review'),
           ),
 
-          // ── Web-only: Premium / License (S15) ─────────────────────────────
           if (kIsWeb) ...[
             const SizedBox(height: 12),
             _SettingsRow(
               icon: Icons.workspace_premium_outlined,
-              label: 'הפעלת רישיון',
-              subtitle: 'גיבוי ושחזור בענן',
+              label: l.settingsPremium,
+              subtitle: l.settingsPremiumSubtitle,
               onTap: () => context.push('/premium'),
             ),
           ],
 
           const SizedBox(height: 24),
-
-          // ── Section: חשבון ────────────────────────────────────────────────
-          const _SectionLabel(label: 'חשבון'),
+          _SectionLabel(label: l.settingsSectionAccount),
           const SizedBox(height: 8),
 
           GlowCard(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             shadow: AppColors.glowSm,
-            onTap: () => _confirmLogout(context, ref),
+            onTap: () => _confirmLogout(context, ref, l),
             child: Row(
               children: [
                 Container(
@@ -139,7 +129,7 @@ class SettingsScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'התנתקות',
+                        l.settingsLogout,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.right,
@@ -150,7 +140,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        'איפוס פרופיל וחזרה להתחלה',
+                        l.settingsLogoutSubtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.right,
@@ -178,25 +168,25 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-// ── Logout confirmation dialog ────────────────────────────────────────────────
-
-Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+Future<void> _confirmLogout(
+    BuildContext context, WidgetRef ref, AppLocalizations l) async {
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('התנתקות', textAlign: TextAlign.right),
-      content: const Text(
-        'פעולה זו תאפס את הפרופיל שלך ותחזיר אותך למסך ההתחלה. הנתונים שלך יישמרו.',
+      title: Text(l.settingsLogout, textAlign: TextAlign.right),
+      content: Text(
+        l.settingsLogoutConfirmContent,
         textAlign: TextAlign.right,
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(false),
-          child: const Text('ביטול'),
+          child: Text(l.cancelAction),
         ),
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(true),
-          child: const Text('התנתקי', style: TextStyle(color: AppColors.error)),
+          child: Text(l.settingsLogoutConfirmBtn,
+              style: const TextStyle(color: AppColors.error)),
         ),
       ],
     ),
@@ -207,8 +197,6 @@ Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
     if (context.mounted) context.go('/');
   }
 }
-
-// ── Section label ────────────────────────────────────────────────────────────
 
 class _SectionLabel extends StatelessWidget {
   final String label;
@@ -228,8 +216,6 @@ class _SectionLabel extends StatelessWidget {
     );
   }
 }
-
-// ── Individual settings row (GlowCard pill with icon disc + chevron) ─────────
 
 class _SettingsRow extends StatelessWidget {
   final IconData icon;
@@ -252,7 +238,6 @@ class _SettingsRow extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          // Circular peach icon disc (RTL first → visual right)
           Container(
             width: 44,
             height: 44,
@@ -269,7 +254,6 @@ class _SettingsRow extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // Title + subtitle (flex)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,8 +283,6 @@ class _SettingsRow extends StatelessWidget {
           ),
 
           const SizedBox(width: 8),
-
-          // Trailing chevron (RTL last → visual left, navigation indicator)
           const Icon(
             Icons.chevron_right,
             color: AppColors.onSurfaceVariant,

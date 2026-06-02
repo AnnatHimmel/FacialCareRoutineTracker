@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/master_product.dart';
@@ -35,7 +36,6 @@ class _OrderCustomizationScreenState
     Slot.evening: true,
   };
 
-  // Local reorder state per slot so drags feel instant
   final Map<Slot, List<String>?> _localOrder = {};
 
   Future<void> _reorder(
@@ -81,6 +81,7 @@ class _OrderCustomizationScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
     final morningSelectionsAsync =
         ref.watch(selectionsProvider(Slot.morning));
@@ -94,11 +95,11 @@ class _OrderCustomizationScreenState
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: GlowAppBar(showBack: !widget.fromSetup),
-      bottomNavigationBar: _buildSetupNav(context),
+      bottomNavigationBar: _buildSetupNav(context, l),
       body: masterAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('שגיאה: $e')),
+        error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (master) {
           final morningSelections =
               morningSelectionsAsync.valueOrNull ?? [];
@@ -133,36 +134,34 @@ class _OrderCustomizationScreenState
 
           return Stack(
             children: [
-              // Scrollable content
               ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
                 children: [
-                  // Subtitle / instruction
                   Text(
-                    'גררו את המוצרים כדי לסדר את השגרה שלכם',
+                    l.orderInstruction,
                     textAlign: TextAlign.right,
                     style: AppTypography.bodyMd
                         .copyWith(color: AppColors.onSurfaceVariant),
                   ),
                   const SizedBox(height: 20),
 
-                  // Morning section
                   if (morningProducts.isNotEmpty)
                     _buildSlotSection(
                       slot: Slot.morning,
                       products: morningProducts,
                       override: morningOverride,
+                      l: l,
                     ),
 
                   if (morningProducts.isNotEmpty && eveningProducts.isNotEmpty)
                     const SizedBox(height: 16),
 
-                  // Evening section
                   if (eveningProducts.isNotEmpty)
                     _buildSlotSection(
                       slot: Slot.evening,
                       products: eveningProducts,
                       override: eveningOverride,
+                      l: l,
                     ),
 
                   if (morningProducts.isEmpty && eveningProducts.isEmpty)
@@ -170,7 +169,7 @@ class _OrderCustomizationScreenState
                       padding: const EdgeInsets.only(top: 48),
                       child: Center(
                         child: Text(
-                          'לא נבחרו מוצרים',
+                          l.orderNoProducts,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.bodyLg.copyWith(
@@ -182,19 +181,18 @@ class _OrderCustomizationScreenState
                 ],
               ),
 
-              // Sticky bottom CTA
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.surface,
                     boxShadow: AppColors.navGlow,
                   ),
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
                   child: PrimaryButton(
-                    label: widget.fromSetup ? 'סיום והתחלה' : 'שמירת הסדר החדש',
+                    label: widget.fromSetup ? l.orderSaveFinish : l.orderSaveNew,
                     onTap: () => _save(context),
                     height: 56,
                   ),
@@ -250,9 +248,9 @@ class _OrderCustomizationScreenState
     required Slot slot,
     required List<MasterProduct> products,
     required OrderOverride? override,
+    required AppLocalizations l,
   }) {
     if (products.isEmpty) return const SizedBox.shrink();
-
     final isExpanded = _sectionExpanded[slot] ?? true;
     final localIds = _localOrder[slot];
     final hasCustomOrder = localIds != null || override != null;
@@ -260,7 +258,6 @@ class _OrderCustomizationScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Slot header (expand/collapse toggle preserved)
         SlotSectionHeader(
           slot: slot,
           productCount: products.length,
@@ -270,7 +267,6 @@ class _OrderCustomizationScreenState
         ),
 
         if (isExpanded) ...[
-          // Reset pill — shown only when a custom order exists
           if (hasCustomOrder)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -279,7 +275,8 @@ class _OrderCustomizationScreenState
                 child: OutlinedButton.icon(
                   onPressed: () => _resetOrder(slot),
                   icon: const Icon(Icons.restart_alt_rounded, size: 16),
-                  label: const Text('איפוס לסדר המומלץ', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  label: Text(l.orderResetToRecommended,
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
                     side: const BorderSide(
@@ -301,7 +298,6 @@ class _OrderCustomizationScreenState
               ),
             ),
 
-          // Draggable list inside a white pebble card
           GlowCard(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
             child: ReorderableListView.builder(
@@ -330,32 +326,33 @@ class _OrderCustomizationScreenState
     );
   }
 
-  Widget _buildSetupNav(BuildContext context) => GlassBottomNav(
+  Widget _buildSetupNav(BuildContext context, AppLocalizations l) =>
+      GlassBottomNav(
         currentIndex: -1,
         onDestinationSelected: (i) {
           const routes = ['/today', '/calendar', '/journal', '/settings'];
           if (i < routes.length) context.go(routes[i]);
         },
-        items: const [
+        items: [
           GlassNavItem(
             icon: Icons.wb_sunny_outlined,
             selectedIcon: Icons.wb_sunny_rounded,
-            label: 'היום',
+            label: l.navToday,
           ),
           GlassNavItem(
             icon: Icons.calendar_today_outlined,
             selectedIcon: Icons.calendar_today_rounded,
-            label: 'יומן',
+            label: l.navCalendar,
           ),
           GlassNavItem(
             icon: Icons.auto_stories_outlined,
             selectedIcon: Icons.auto_stories_rounded,
-            label: 'יומן',
+            label: l.navJournal,
           ),
           GlassNavItem(
             icon: Icons.settings_outlined,
             selectedIcon: Icons.settings_rounded,
-            label: 'הגדרות',
+            label: l.navSettings,
           ),
         ],
       );

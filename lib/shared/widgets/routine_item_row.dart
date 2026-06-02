@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/master_product.dart';
@@ -6,14 +7,6 @@ import 'fixed_slot_chip.dart';
 import 'product_thumb.dart';
 
 /// Routine row — used on S1 (select), S4/S7 (done), and S3 (drag-to-reorder).
-///
-/// Variants derived from flags:
-///   • [isDraggable]          → drag handle, no toggle
-///   • [isOwnershipContext]   → "select" (+/✓) action button on trailing side;
-///                              tapping the row has no effect
-///   • otherwise ("done")    → tapping the ROW toggles done; a chevron on the
-///                              trailing side expands/collapses details; the
-///                              thumbnail shows a small ✓ badge when done
 class RoutineItemRow extends StatefulWidget {
   final MasterProduct product;
   final bool isToggled;
@@ -22,8 +15,6 @@ class RoutineItemRow extends StatefulWidget {
   final bool isDraggable;
   final bool hasConflict;
   final VoidCallback? onConflictTap;
-
-  /// Optional secondary line. Defaults to the product comment.
   final String? subtitle;
 
   const RoutineItemRow({
@@ -59,16 +50,18 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
   bool get _showSlotChip =>
       widget.subtitle == null && !_isFlexible;
 
-  String? get _subtitle {
+  String? _subtitle(AppLocalizations l) {
     if (widget.subtitle != null) return widget.subtitle;
-    if (_isFlexible) return 'בוקר • ערב';
-    return null; // fixed products: chip shown instead
+    if (_isFlexible) return l.routineItemFlexibleSlots;
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final product = widget.product;
     final checkedDone = _isDoneChecked;
+    final subtitle = _subtitle(l);
 
     final name = Text(
       product.name,
@@ -84,8 +77,6 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
       ),
     );
 
-    final subtitle = _subtitle;
-
     final rowContent = Padding(
       padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
       child: Column(
@@ -99,14 +90,12 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                       color: AppColors.outline, size: 22),
                 ),
 
-              // Thumbnail with optional done-badge overlay
               _ThumbnailWithBadge(
                 imageAsset: product.imageAsset,
                 isDone: checkedDone,
               ),
               const SizedBox(width: 12),
 
-              // Name + subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -117,7 +106,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                         Expanded(child: name),
                         if (product.isDeprecated) ...[
                           const SizedBox(width: 6),
-                          _deprecatedPill(),
+                          _deprecatedPill(l),
                         ],
                       ],
                     ),
@@ -146,24 +135,22 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
               ),
               const SizedBox(width: 4),
 
-              // Trailing: conflict icon, then action/chevron
               if (widget.hasConflict && !widget.isDraggable)
                 _conflictButton(),
 
-              // Done variant: chevron to expand/collapse (tap stops propagation)
               if (_isDoneVariant && !widget.isDraggable)
                 _chevronButton()
               else if (widget.isOwnershipContext)
                 _selectActionButton(),
             ],
           ),
-          _buildExpandedSection(product),
+          _buildExpandedSection(product, l),
         ],
       ),
     );
 
     return Semantics(
-      label: '${product.name}, ${widget.isToggled ? "בוצע" : "לא בוצע"}',
+      label: '${product.name}, ${widget.isToggled ? l.routineItemDone : l.routineItemNotDone}',
       button: true,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -182,8 +169,6 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
         ),
         child: Material(
           type: MaterialType.transparency,
-          // Done variant: tapping the row toggles done.
-          // Select/drag variant: no row-level tap.
           child: _isDoneVariant
               ? InkWell(
                   onTap: widget.onToggle,
@@ -197,7 +182,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
     );
   }
 
-  Widget _buildExpandedSection(MasterProduct product) {
+  Widget _buildExpandedSection(MasterProduct product, AppLocalizations l) {
     final hasComment = product.comment != null && product.comment!.isNotEmpty;
     return AnimatedCrossFade(
       duration: const Duration(milliseconds: 200),
@@ -227,7 +212,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  'מוצר זה אינו מומלץ עוד',
+                  l.routineItemDeprecatedWarning,
                   style: AppTypography.labelMd
                       .copyWith(color: AppColors.error),
                 ),
@@ -239,13 +224,13 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
     );
   }
 
-  Widget _deprecatedPill() => Container(
+  Widget _deprecatedPill(AppLocalizations l) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           color: AppColors.errorContainer,
           borderRadius: BorderRadius.circular(9999),
         ),
-        child: Text('לא מומלץ',
+        child: Text(l.routineItemDeprecatedPill,
             style:
                 AppTypography.labelSm.copyWith(color: AppColors.error)),
       );
@@ -259,8 +244,6 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
         ),
       );
 
-  // Chevron that expands/collapses details; stops propagation so it doesn't
-  // also fire the row's onToggle.
   Widget _chevronButton() => GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => setState(() => _expanded = !_expanded),
@@ -305,8 +288,6 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
     );
   }
 }
-
-// ── Thumbnail with optional done checkmark badge ──────────────────────────────
 
 class _ThumbnailWithBadge extends StatelessWidget {
   final String? imageAsset;

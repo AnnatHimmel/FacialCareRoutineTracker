@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -18,25 +19,21 @@ class SkinStateChip extends StatelessWidget {
   });
 
   static ({
-    String label,
     Color background,
     Color foreground,
     Color selectedBackground,
-  })? _info(String state) => switch (state) {
+  })? _colorInfo(String state) => switch (state) {
         'calm' => (
-            label: 'רגוע',
             background: AppColors.tertiaryFixed,
             foreground: AppColors.onTertiaryContainer,
             selectedBackground: AppColors.tertiaryContainer,
           ),
         'moist' => (
-            label: 'לח',
             background: AppColors.secondaryFixed,
             foreground: AppColors.onSecondaryContainer,
             selectedBackground: AppColors.secondaryContainer,
           ),
         'oily' => (
-            label: 'שמני',
             background: AppColors.primaryFixed,
             foreground: AppColors.primary,
             selectedBackground: AppColors.primaryFixedDim,
@@ -46,8 +43,15 @@ class SkinStateChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final info = _info(state);
-    if (info == null) return const SizedBox.shrink();
+    final l = AppLocalizations.of(context)!;
+    final label = switch (state) {
+      'calm' => l.skinStateCalm,
+      'moist' => l.skinStateMoist,
+      'oily' => l.skinStateOily,
+      _ => null,
+    };
+    final info = _colorInfo(state);
+    if (info == null || label == null) return const SizedBox.shrink();
 
     final chip = AnimatedContainer(
       duration: const Duration(milliseconds: 180),
@@ -63,7 +67,7 @@ class SkinStateChip extends StatelessWidget {
             : null,
       ),
       child: Text(
-        info.label,
+        label,
         style: AppTypography.labelSm.copyWith(
           color: info.foreground,
           fontWeight: FontWeight.w700,

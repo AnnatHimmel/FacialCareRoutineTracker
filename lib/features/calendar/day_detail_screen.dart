@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -45,6 +46,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
     final morningRecordAsync =
         ref.watch(_dayRecordDetailProvider((date: widget.date, slot: Slot.morning)));
@@ -62,12 +64,12 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
           icon: const Icon(Icons.camera_alt_outlined),
           color: AppColors.onSurfaceVariant,
           onPressed: () => context.push('/skin-log/${widget.date}'),
-          tooltip: 'יומן עור',
+          tooltip: l.dayDetailJournalTooltip,
         ),
       ),
       body: masterAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('שגיאה: $e')),
+        error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (master) {
           final productMap = {for (final p in master.products) p.id: p};
 
@@ -109,7 +111,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'אין נתונים ליום זה',
+                          l.dayDetailNoData,
                           style: AppTypography.bodyMd.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),

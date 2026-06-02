@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/enums/slot.dart';
 import 'radiant_chips.dart';
 
-/// Morning / Evening slot header. RTL: filled sun/moon icon + bold label on the
-/// right, optional lemon count chip on the left.
-///
-/// Reference: `components.jsx` `SlotHeader` — morning is primary (peach) with a
-/// filled sun; evening is secondary with a filled moon.
 class SlotSectionHeader extends StatelessWidget {
   final Slot slot;
   final int productCount;
-
-  /// Optional "done/total" progress shown as a lemon chip (e.g. "1/3").
   final int? doneCount;
   final bool isExpanded;
   final VoidCallback? onToggle;
@@ -29,12 +23,13 @@ class SlotSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final isMorning = slot == Slot.morning;
     final color = isMorning ? AppColors.primary : AppColors.secondary;
     final iconColor =
         isMorning ? AppColors.primaryContainer : AppColors.secondaryFixedDim;
     final icon = isMorning ? Icons.wb_sunny_rounded : Icons.dark_mode_rounded;
-    final label = isMorning ? 'בוקר' : 'ערב';
+    final label = isMorning ? l.slotMorning : l.slotEvening;
 
     final chipText = doneCount != null ? '$doneCount/$productCount' : null;
 

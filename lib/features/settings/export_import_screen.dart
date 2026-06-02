@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../shared/providers/root_providers.dart';
@@ -28,7 +29,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
   String? _statusMessage;
   bool _isError = false;
 
-  Future<void> _export() async {
+  Future<void> _export(AppLocalizations l) async {
     setState(() {
       _exporting = true;
       _statusMessage = null;
@@ -53,12 +54,12 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
         );
       }
       if (mounted) {
-        setState(() => _statusMessage = 'הייצוא הושלם בהצלחה');
+        setState(() => _statusMessage = l.exportSuccess);
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _statusMessage = 'שגיאה בייצוא: $e';
+          _statusMessage = l.exportError(e);
           _isError = true;
         });
       }
@@ -67,7 +68,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
     }
   }
 
-  Future<void> _pickAndImport() async {
+  Future<void> _pickAndImport(AppLocalizations l) async {
     setState(() {
       _importing = true;
       _statusMessage = null;
@@ -89,17 +90,17 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
       if (bytes == null) {
         setState(() {
           _importing = false;
-          _statusMessage = 'לא ניתן לקרוא את הקובץ';
+          _statusMessage = l.importFileReadError;
           _isError = true;
         });
         return;
       }
 
-      await _showImportDialog(Uint8List.fromList(bytes));
+      await _showImportDialog(Uint8List.fromList(bytes), l);
     } catch (e) {
       if (mounted) {
         setState(() {
-          _statusMessage = 'שגיאה בייבוא: $e';
+          _statusMessage = l.importError(e);
           _isError = true;
         });
       }
@@ -108,14 +109,14 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
     }
   }
 
-  Future<void> _showImportDialog(Uint8List bytes) async {
+  Future<void> _showImportDialog(Uint8List bytes, AppLocalizations l) async {
     final service = ref.read(exportImportServiceProvider);
     final validation = service.validateArchive(bytes);
 
     if (!validation.isValid) {
       if (mounted) {
         setState(() {
-          _statusMessage = validation.errorMessage ?? 'קובץ לא תקין';
+          _statusMessage = validation.errorMessage ?? l.importInvalidFile;
           _isError = true;
         });
       }
@@ -127,26 +128,26 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
     final choice = await showDialog<_ImportChoice>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('ייבוא נתונים', style: AppTypography.headlineMd),
+        title: Text(l.importDialogTitle, style: AppTypography.headlineMd),
         content: Text(
-          'כיצד לטפל בנתונים הקיימים?',
+          l.importDialogQuestion,
           style: AppTypography.bodyMd,
         ),
         actions: [
           TextButton(
             onPressed: () =>
                 Navigator.of(ctx).pop(_ImportChoice.cancel),
-            child: const Text('ביטול'),
+            child: Text(l.cancelAction),
           ),
           TextButton(
             onPressed: () =>
                 Navigator.of(ctx).pop(_ImportChoice.replace),
-            child: const Text('החלפה'),
+            child: Text(l.importReplace),
           ),
           FilledButton(
             onPressed: () =>
                 Navigator.of(ctx).pop(_ImportChoice.merge),
-            child: const Text('מיזוג'),
+            child: Text(l.importMerge),
           ),
         ],
       ),
@@ -159,7 +160,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
     if (choice == _ImportChoice.replace) {
       await service.replaceAll(validation);
       if (mounted) {
-        setState(() => _statusMessage = 'הנתונים הוחלפו בהצלחה');
+        setState(() => _statusMessage = l.importReplaceSuccess);
       }
     } else {
       final session = await service.startMerge(validation);
@@ -167,7 +168,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
       if (session.conflicts.isEmpty) {
         await session.complete();
         if (mounted) {
-          setState(() => _statusMessage = 'המיזוג הושלם — לא נמצאו התנגשויות');
+          setState(() => _statusMessage = l.importMergeNoConflicts);
         }
       } else {
         ref.read(pendingMergeSessionProvider.notifier).state = session;
@@ -178,6 +179,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: const GlowAppBar(showBack: true),
@@ -186,21 +188,21 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
         children: [
           _SectionCard(
             icon: Icons.upload_outlined,
-            title: 'ייצוא נתונים',
-            description: 'שמור גיבוי של כל הנתונים שלך כארכיון ZIP',
-            actionLabel: 'ייצוא',
+            title: l.exportDataTitle,
+            description: l.exportDataDesc,
+            actionLabel: l.exportDataAction,
             isLoading: _exporting,
-            onTap: _exporting ? null : _export,
+            onTap: _exporting ? null : () => _export(l),
           ),
           const SizedBox(height: 16),
 
           _SectionCard(
             icon: Icons.download_outlined,
-            title: 'ייבוא נתונים',
-            description: 'שחזר נתונים מגיבוי קיים (החלפה מלאה או מיזוג)',
-            actionLabel: 'ייבוא',
+            title: l.importDataTitle,
+            description: l.importDataDesc,
+            actionLabel: l.importDataAction,
             isLoading: _importing,
-            onTap: _importing ? null : _pickAndImport,
+            onTap: _importing ? null : () => _pickAndImport(l),
           ),
 
           if (_statusMessage != null) ...[

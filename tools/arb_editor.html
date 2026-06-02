@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARB Translation Editor</title>
+  <style>
+    :root {
+      --bg: #fff8f6;
+      --surface: #ffffff;
+      --primary: #9e412c;
+      --primary-light: #ff8b71;
+      --border: #e8d5cf;
+      --text: #2a1a15;
+      --muted: #7a5a50;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --green-border: #86efac;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --amber: #b45309;
+      --amber-bg: #fef3c7;
+      --blue-bg: #eff6ff;
+      --mono: 'Courier New', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+    /* ── Header ── */
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+    header h1 { font-size: 17px; font-weight: 700; }
+    header small { font-size: 12px; opacity: .75; }
+    .header-actions { display: flex; gap: 8px; }
+    .btn {
+      padding: 7px 16px; border-radius: 20px; border: none;
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn:disabled { opacity: .35; cursor: not-allowed; }
+    .btn-white { background: #fff; color: var(--primary); }
+    .btn-ghost { background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.4); }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      padding: 10px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .file-slot { display: flex; align-items: center; gap: 8px; }
+    .locale-tag {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--muted); width: 52px;
+    }
+    .pick-btn {
+      padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg); font-size: 12px; cursor: pointer; color: var(--text);
+    }
+    .pick-btn:hover { background: var(--border); }
+    .file-ok { font-size: 12px; color: var(--green); font-weight: 600; }
+    .file-none { font-size: 12px; color: var(--muted); }
+    .toolbar-sep { width: 1px; height: 28px; background: var(--border); }
+    .search-wrap { flex: 1; min-width: 180px; }
+    .search-wrap input {
+      width: 100%; padding: 5px 11px; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 13px; background: var(--bg);
+    }
+    .filter-tabs { display: flex; gap: 4px; }
+    .ftab {
+      padding: 4px 10px; border-radius: 12px; border: 1px solid var(--border);
+      background: none; font-size: 12px; cursor: pointer; color: var(--muted);
+    }
+    .ftab.on { background: var(--primary); color: #fff; border-color: var(--primary); }
+    input[type="file"] { display: none; }
+
+    /* ── Stat / warning bars ── */
+    .stats-bar {
+      padding: 6px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: none;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .stats-bar.visible { display: flex; }
+    .stat { display: flex; align-items: center; gap: 5px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-base { background: #9ca3af; }
+    .dot-ov { background: var(--green); }
+    .dot-orphan { background: var(--red); }
+
+    .warn-bar {
+      display: none;
+      margin: 10px 20px 0;
+      padding: 10px 14px;
+      background: var(--amber-bg);
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--amber);
+    }
+    .warn-bar.visible { display: block; }
+
+    /* ── Info box (shown before files load) ── */
+    .info-box {
+      margin: 20px;
+      padding: 16px 20px;
+      background: var(--blue-bg);
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .info-box h3 { font-size: 14px; margin-bottom: 8px; color: #1d4ed8; }
+    .info-box code { background: #dbeafe; border-radius: 3px; padding: 1px 5px; font-size: 12px; }
+    .info-box ul { padding-left: 18px; }
+    .info-box li { margin-bottom: 4px; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
+    .empty-state h2 { font-size: 20px; margin-bottom: 8px; color: var(--text); }
+
+    /* ── Table ── */
+    .tbl-wrap { padding: 12px 20px 40px; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    col.col-key  { width: 200px; }
+    col.col-he   { width: calc(45% - 100px); }
+    col.col-hema { width: calc(45% - 100px); }
+    col.col-st   { width: 88px; }
+    thead th {
+      padding: 7px 10px; text-align: left; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+      border-bottom: 2px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:hover { background: rgba(0,0,0,.018); }
+    tbody tr.row-ov { background: #f9fffe; }
+    tbody tr.row-orphan { background: var(--red-bg); }
+    tbody tr.row-hide { display: none; }
+    td { padding: 7px 10px; vertical-align: top; }
+
+    /* Key cell */
+    .key-cell {
+      font-family: var(--mono); font-size: 11px; color: var(--muted);
+      word-break: break-all; padding-top: 9px; user-select: all;
+    }
+
+    /* Editable textarea */
+    .vta {
+      width: 100%; min-height: 34px; padding: 5px 8px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-size: 14px; font-family: inherit;
+      background: var(--surface); resize: vertical;
+      unicode-bidi: plaintext;
+    }
+    .vta[dir] { }
+    .vta:focus { outline: 2px solid var(--primary-light); border-color: var(--primary); }
+    .vta.ov { background: var(--green-bg); border-color: var(--green-border); }
+
+    /* Fallback hint + action buttons */
+    .fallback {
+      padding: 5px 8px; font-size: 13px; color: var(--muted);
+      font-style: italic; background: #f9fafb;
+      border: 1px dashed var(--border); border-radius: 6px;
+      unicode-bidi: plaintext; cursor: default;
+    }
+    .mini-btn {
+      margin-top: 4px; padding: 2px 9px; border-radius: 4px; font-size: 11px;
+      cursor: pointer; background: none;
+    }
+    .mini-btn-add { border: 1px dashed var(--border); color: var(--muted); }
+    .mini-btn-add:hover { color: var(--primary); border-color: var(--primary); }
+    .mini-btn-rm { border: 1px solid #fca5a5; color: var(--red); }
+    .mini-btn-rm:hover { background: var(--red-bg); }
+
+    /* Status badge */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge-base   { background: #f3f4f6; color: #6b7280; }
+    .badge-ov     { background: #dcfce7; color: var(--green); }
+    .badge-orphan { background: var(--red-bg); color: var(--red); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>ARB Translation Editor</h1>
+    <small>FacialCareRoutineTracker · Hebrew locale files</small>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" id="btnGen"  onclick="runGenerate()"      disabled>⚡ Generate</button>
+    <button class="btn btn-ghost" id="btnHe"   onclick="saveFile('he')"     disabled>Save app_he.arb</button>
+    <button class="btn btn-ghost" id="btnHeMA" onclick="saveFile('heMA')"   disabled>Save app_he_MA.arb</button>
+    <button class="btn btn-white" id="btnBoth" onclick="saveBoth()"         disabled>Save Both</button>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="file-slot">
+    <span class="locale-tag">he</span>
+    <span id="stHe" class="file-none">loading…</span>
+    <button class="pick-btn" onclick="document.getElementById('fHe').click()" title="Load a different file">↺ replace</button>
+    <input type="file" id="fHe" accept=".arb,.json" onchange="loadFile('he',this)">
+  </div>
+  <div class="toolbar-sep"></div>
+  <div class="file-slot">
+    <span class="locale-tag">he_MA</span>
+    <span id="stHeMA" class="file-none">loading…</span>
+    <button class="pick-btn" onclick="document.getElementById('fHeMA').click()" title="Load a different file">↺ replace</button>
+    <input type="file" id="fHeMA" accept=".arb,.json" onchange="loadFile('heMA',this)">
+  </div>
+  <div class="toolbar-sep"></div>
+  <div class="search-wrap">
+    <input type="search" placeholder="Search keys or text…" oninput="onSearch(this.value)">
+  </div>
+  <div class="filter-tabs">
+    <button class="ftab on" data-f="all"    onclick="setFilter('all',this)">All</button>
+    <button class="ftab"    data-f="ov"     onclick="setFilter('ov',this)">Overrides</button>
+    <button class="ftab"    data-f="base"   onclick="setFilter('base',this)">Base only</button>
+    <button class="ftab"    data-f="orphan" onclick="setFilter('orphan',this)">⚠ Orphans</button>
+  </div>
+</div>
+
+<div class="stats-bar" id="statsBar">
+  <span class="stat"><span class="dot dot-base"></span><span id="sBase">—</span></span>
+  <span class="stat"><span class="dot dot-ov"></span><span id="sOv">—</span></span>
+  <span class="stat"><span class="dot dot-orphan"></span><span id="sOrphan">—</span></span>
+</div>
+<div class="warn-bar" id="warnBar"></div>
+
+<div id="root">
+  <div class="info-box" id="infoBox">
+    <h3>How these files work</h3>
+    <ul>
+      <li><code>app_he.arb</code> is the <strong>base locale</strong> — every key must be defined here.</li>
+      <li><code>app_he_MA.arb</code> only contains keys where the Moroccan Hebrew text <em>differs</em> from the base. Flutter falls back to <code>app_he.arb</code> for everything else.</li>
+      <li>A key present in <code>app_he_MA.arb</code> but <strong>missing</strong> from <code>app_he.arb</code> is an <strong>orphan</strong> — Flutter ignores it.</li>
+    </ul>
+    <br>
+    <span id="infoHint">Start the server with <code>python tools/serve_arb.py</code> to auto-load files and enable direct save.</span>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+
+let heRaw   = null;
+let heMaRaw = null;
+
+const heVals   = {};
+const heMaVals = {};
+const heMeta   = {};
+const heMaMeta = {};
+
+let activeFilter = 'all';
+let activeSearch = '';
+
+const IS_HTTP = location.protocol !== 'file:';
+
+// ── Auto-load on startup ───────────────────────────────────────────────────
+
+window.addEventListener('DOMContentLoaded', async () => {
+  if (!IS_HTTP) {
+    document.getElementById('stHe').textContent   = 'not loaded';
+    document.getElementById('stHeMA').textContent = 'not loaded';
+    document.getElementById('stHe').className     = 'file-none';
+    document.getElementById('stHeMA').className   = 'file-none';
+    document.getElementById('infoHint').innerHTML =
+      'Open via <code>python tools/serve_arb.py</code> to enable auto-load and direct save.';
+    return;
+  }
+  document.getElementById('infoHint').textContent = 'Loading files…';
+  let loaded = 0;
+  await Promise.allSettled([
+    fetchArb('he',   '../lib/core/l10n/app_he.arb').then(()   => loaded++),
+    fetchArb('heMA', '../lib/core/l10n/app_he_MA.arb').then(() => loaded++),
+  ]);
+  if (loaded > 0) {
+    render();
+    document.getElementById('infoBox').style.display = 'none';
+  } else {
+    document.getElementById('infoHint').textContent = 'Could not load files — check the server is running from the project root.';
+  }
+});
+
+async function fetchArb(locale, path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
+  const parsed = await res.json();
+  applyParsed(locale, parsed);
+}
+
+// ── File loading (manual fallback via file picker) ─────────────────────────
+
+function loadFile(locale, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      applyParsed(locale, JSON.parse(e.target.result));
+      render();
+    } catch (err) {
+      alert('JSON parse error in ' + file.name + ':\n' + err.message);
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function applyParsed(locale, parsed) {
+  if (locale === 'he') {
+    heRaw = parsed;
+    fillMaps(parsed, heVals, heMeta);
+    const n = Object.keys(heVals).length;
+    document.getElementById('stHe').textContent = `✓ ${n} keys`;
+    document.getElementById('stHe').className   = 'file-ok';
+  } else {
+    heMaRaw = parsed;
+    fillMaps(parsed, heMaVals, heMaMeta);
+    const n = Object.keys(heMaVals).length;
+    document.getElementById('stHeMA').textContent = `✓ ${n} keys`;
+    document.getElementById('stHeMA').className   = 'file-ok';
+  }
+}
+
+function fillMaps(raw, vals, meta) {
+  for (const k in vals) delete vals[k];
+  for (const k in meta) delete meta[k];
+  for (const [k, v] of Object.entries(raw)) {
+    if (k === '@@locale') continue;
+    if (k.startsWith('@')) meta[k] = v;
+    else vals[k] = v;
+  }
+}
+
+// ── Rendering ──────────────────────────────────────────────────────────────
+
+function render() {
+  const hasHe   = heRaw   !== null;
+  const hasHeMA = heMaRaw !== null;
+  if (!hasHe && !hasHeMA) return;
+
+  // Collect all content keys, preserving he order first then he_MA extras
+  const seen = new Set();
+  const keys = [];
+  if (hasHe)   for (const k of Object.keys(heVals))   { if (!seen.has(k)) { seen.add(k); keys.push(k); } }
+  if (hasHeMA) for (const k of Object.keys(heMaVals)) { if (!seen.has(k)) { seen.add(k); keys.push(k); } }
+
+  // Count categories
+  let nBase = 0, nOv = 0, nOrphan = 0;
+  for (const k of keys) {
+    const inHe = heVals[k]   !== undefined;
+    const inMA = heMaVals[k] !== undefined;
+    if (inHe && inMA)  nOv++;
+    else if (inHe)     nBase++;
+    else               nOrphan++;
+  }
+
+  // Stats bar
+  const sb = document.getElementById('statsBar');
+  sb.className = 'stats-bar visible';
+  document.getElementById('sBase').textContent   = `${nBase} base only (he_MA falls back)`;
+  document.getElementById('sOv').textContent     = `${nOv} overrides in he_MA`;
+  document.getElementById('sOrphan').textContent = `${nOrphan} orphans${nOrphan ? ' ⚠' : ''}`;
+
+  // Warning
+  const wb = document.getElementById('warnBar');
+  if (nOrphan > 0) {
+    wb.className = 'warn-bar visible';
+    wb.innerHTML = `<strong>⚠ ${nOrphan} orphan key(s)</strong> exist in <code>app_he_MA.arb</code> but not in <code>app_he.arb</code>. Flutter ignores these. Add them to the base file or remove them from the override file.`;
+  } else {
+    wb.className = 'warn-bar';
+  }
+
+  // Action buttons
+  document.getElementById('btnGen').disabled  = !(hasHe || hasHeMA);
+  document.getElementById('btnHe').disabled   = !hasHe;
+  document.getElementById('btnHeMA').disabled = !hasHeMA;
+  document.getElementById('btnBoth').disabled = !(hasHe && hasHeMA);
+
+  // Build table
+  const frag = document.createDocumentFragment();
+  const table = document.createElement('table');
+  table.innerHTML = `<colgroup>
+    <col class="col-key"><col class="col-he"><col class="col-hema"><col class="col-st">
+  </colgroup>
+  <thead><tr>
+    <th>Key</th>
+    <th>app_he.arb <span style="font-weight:400;opacity:.7">(base)</span></th>
+    <th>app_he_MA.arb <span style="font-weight:400;opacity:.7">(overrides only)</span></th>
+    <th>Status</th>
+  </tr></thead>`;
+
+  const tbody = document.createElement('tbody');
+  for (const key of keys) {
+    tbody.appendChild(makeRow(key));
+  }
+  table.appendChild(tbody);
+  frag.appendChild(table);
+
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'tbl-wrap';
+  wrap.appendChild(frag);
+  root.appendChild(wrap);
+
+  applyView();
+}
+
+function rowType(key) {
+  const inHe = heVals[key]   !== undefined;
+  const inMA = heMaVals[key] !== undefined;
+  if (inHe && inMA)  return 'ov';
+  if (inHe)          return 'base';
+  return 'orphan';
+}
+
+function makeRow(key) {
+  const tr = document.createElement('tr');
+  tr.dataset.key  = key;
+  tr.dataset.type = rowType(key);
+  applyRowClass(tr);
+
+  // Key cell
+  const tdKey = document.createElement('td');
+  tdKey.className = 'key-cell';
+  tdKey.textContent = key;
+
+  // he value cell
+  const tdHe = document.createElement('td');
+  if (heVals[key] !== undefined) {
+    tdHe.appendChild(makeTa(key, 'he', heVals[key], false));
+  } else {
+    tdHe.style.color = '#bbb';
+    tdHe.style.paddingTop = '9px';
+    tdHe.textContent = '—';
+  }
+
+  // he_MA cell
+  const tdMA = document.createElement('td');
+  rebuildMACell(tdMA, key);
+
+  // Badge cell
+  const tdSt = document.createElement('td');
+  tdSt.style.paddingTop = '9px';
+  tdSt.appendChild(makeBadge(tr.dataset.type));
+
+  tr.append(tdKey, tdHe, tdMA, tdSt);
+  return tr;
+}
+
+function rebuildMACell(td, key) {
+  td.innerHTML = '';
+  const hVal = heVals[key];
+  const mVal = heMaVals[key];
+
+  if (mVal !== undefined) {
+    // Has override
+    td.appendChild(makeTa(key, 'heMA', mVal, true));
+    const rm = document.createElement('button');
+    rm.className = 'mini-btn mini-btn-rm';
+    rm.textContent = '✕ remove override';
+    rm.onclick = () => {
+      delete heMaVals[key];
+      const tr = td.closest('tr');
+      tr.dataset.type = rowType(key);
+      applyRowClass(tr);
+      td.previousElementSibling.nextElementSibling.nextElementSibling.firstChild.replaceWith(makeBadge(tr.dataset.type));
+      rebuildMACell(td, key);
+    };
+    td.appendChild(rm);
+  } else if (hVal !== undefined) {
+    // Fallback
+    const hint = document.createElement('div');
+    hint.className = 'fallback';
+    hint.dir = 'auto';
+    hint.textContent = hVal;
+    hint.title = 'Falls back to app_he.arb — click "+ add override" to customise';
+    td.appendChild(hint);
+
+    const add = document.createElement('button');
+    add.className = 'mini-btn mini-btn-add';
+    add.textContent = '+ add he_MA override';
+    add.onclick = () => {
+      heMaVals[key] = hVal;
+      const tr = td.closest('tr');
+      tr.dataset.type = rowType(key);
+      applyRowClass(tr);
+      td.previousElementSibling.nextElementSibling.nextElementSibling.firstChild.replaceWith(makeBadge(tr.dataset.type));
+      rebuildMACell(td, key);
+      // Focus the new textarea
+      setTimeout(() => td.querySelector('.vta')?.focus(), 0);
+    };
+    td.appendChild(add);
+  } else {
+    // Orphan — only in he_MA
+    td.appendChild(makeTa(key, 'heMA', heMaVals[key] ?? '', true));
+  }
+}
+
+function makeTa(key, locale, value, isOverride) {
+  const ta = document.createElement('textarea');
+  ta.className = 'vta' + (isOverride ? ' ov' : '');
+  ta.value = value;
+  ta.dir   = 'auto';            // BiDi auto-detection per line
+  ta.setAttribute('autocomplete', 'off');
+  ta.setAttribute('autocorrect',  'off');
+  ta.setAttribute('spellcheck',   'false');
+  ta.oninput = () => {
+    if (locale === 'he')   heVals[key]   = ta.value;
+    else                   heMaVals[key] = ta.value;
+    autoH(ta);
+  };
+  setTimeout(() => autoH(ta), 0);
+  return ta;
+}
+
+function makeBadge(type) {
+  const b = document.createElement('span');
+  b.className = `badge badge-${type === 'ov' ? 'ov' : type === 'orphan' ? 'orphan' : 'base'}`;
+  b.textContent = type === 'ov' ? 'override' : type === 'orphan' ? 'orphan ⚠' : 'base';
+  return b;
+}
+
+function applyRowClass(tr) {
+  tr.className = '';
+  if (tr.dataset.type === 'ov')     tr.classList.add('row-ov');
+  if (tr.dataset.type === 'orphan') tr.classList.add('row-orphan');
+}
+
+function autoH(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 2 + 'px';
+}
+
+// ── Filter & Search ────────────────────────────────────────────────────────
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.ftab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  applyView();
+}
+
+function onSearch(q) {
+  activeSearch = q.toLowerCase().trim();
+  applyView();
+}
+
+function applyView() {
+  document.querySelectorAll('tbody tr').forEach(tr => {
+    const key  = (tr.dataset.key  || '').toLowerCase();
+    const type =  tr.dataset.type || '';
+
+    const filterOk = activeFilter === 'all'
+      || (activeFilter === 'ov'     && type === 'ov')
+      || (activeFilter === 'base'   && type === 'base')
+      || (activeFilter === 'orphan' && type === 'orphan');
+
+    let searchOk = true;
+    if (activeSearch) {
+      const heV  = (heVals[tr.dataset.key]   || '').toLowerCase();
+      const maV  = (heMaVals[tr.dataset.key] || '').toLowerCase();
+      searchOk = key.includes(activeSearch) || heV.includes(activeSearch) || maV.includes(activeSearch);
+    }
+
+    tr.classList.toggle('row-hide', !(filterOk && searchOk));
+  });
+}
+
+// ── Build JSON ─────────────────────────────────────────────────────────────
+
+function buildHeJson() {
+  const out = { '@@locale': 'he' };
+  for (const [k, v] of Object.entries(heRaw)) {
+    if (k === '@@locale') continue;
+    out[k] = k.startsWith('@') ? v : (heVals[k] ?? v);
+  }
+  return JSON.stringify(out, null, 2) + '\n';
+}
+
+function buildHeMaJson() {
+  const out  = { '@@locale': 'he_MA' };
+  const seen = new Set();
+  if (heMaRaw) {
+    for (const [k, v] of Object.entries(heMaRaw)) {
+      if (k === '@@locale') continue;
+      if (k.startsWith('@')) {
+        if (heMaVals[k.slice(1)] !== undefined) out[k] = v;
+        continue;
+      }
+      if (heMaVals[k] !== undefined) { out[k] = heMaVals[k]; seen.add(k); }
+    }
+  }
+  for (const [k, v] of Object.entries(heMaVals)) {
+    if (!seen.has(k)) {
+      out[k] = v;
+      if (heMaMeta['@' + k]) out['@' + k] = heMaMeta['@' + k];
+    }
+  }
+  return JSON.stringify(out, null, 2) + '\n';
+}
+
+// ── Save ───────────────────────────────────────────────────────────────────
+
+async function saveFile(locale) {
+  if (locale === 'he'   && !heRaw)   { toast('app_he.arb not loaded', true);   return; }
+  if (locale === 'heMA' && !heMaRaw) { toast('app_he_MA.arb not loaded', true); return; }
+
+  const content  = locale === 'he' ? buildHeJson() : buildHeMaJson();
+  const filename = locale === 'he' ? 'app_he.arb'  : 'app_he_MA.arb';
+
+  if (!IS_HTTP) { downloadFallback(filename, content); return; }
+
+  const endpoint = locale === 'he' ? '/save/he' : '/save/heMA';
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: content,
+    });
+    const data = await res.json();
+    if (data.ok) toast(`${filename} saved`);
+    else         toast('Save failed: ' + data.error, true);
+  } catch (e) {
+    toast('Save failed: ' + e.message, true);
+  }
+}
+
+async function saveBoth() {
+  await saveFile('he');
+  await saveFile('heMA');
+}
+
+function downloadFallback(name, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json;charset=utf-8' }));
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Generate ───────────────────────────────────────────────────────────────
+
+async function runGenerate() {
+  if (!IS_HTTP) { toast('Requires the local server', true); return; }
+  const btn = document.getElementById('btnGen');
+  btn.textContent = '⚡ Generating…';
+  btn.disabled = true;
+  try {
+    const res  = await fetch('/generate', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) toast('flutter gen-l10n done');
+    else         toast('gen-l10n failed: ' + data.error, true);
+  } catch (e) {
+    toast('Request failed: ' + e.message, true);
+  } finally {
+    btn.textContent = '⚡ Generate';
+    btn.disabled = false;
+  }
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+
+function toast(msg, isError = false) {
+  const el = document.createElement('div');
+  el.textContent = msg;
+  Object.assign(el.style, {
+    position: 'fixed', bottom: '20px', right: '20px', zIndex: '9999',
+    padding: '10px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
+    background: isError ? '#fee2e2' : '#dcfce7',
+    color:      isError ? '#dc2626' : '#16a34a',
+    border:     `1px solid ${isError ? '#fca5a5' : '#86efac'}`,
+    boxShadow:  '0 2px 8px rgba(0,0,0,.15)',
+  });
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+</script>
+</body>
+</html>

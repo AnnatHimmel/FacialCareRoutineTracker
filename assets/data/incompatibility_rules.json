@@ -4,13 +4,15 @@
       "id": "rule-001",
       "entityA": {"type": "product", "id": "prod-037"},
       "entityB": {"type": "product", "id": "prod-016"},
-      "scope": "withinSlot"
+      "scope": "withinSlot",
+      "reason": "שני המוצרים מכילים חומצות פעילות חזקות — שימוש יחד עלול לגרות את העור."
     },
     {
       "id": "rule-002",
       "entityA": {"type": "category", "id": "cat-retinoid"},
       "entityB": {"type": "product", "id": "prod-016"},
-      "scope": "withinSlot"
+      "scope": "withinSlot",
+      "reason": "רטינואידים ו-AHA/BHA עלולים לגרום לגירוי יתר ולפגיעה במחסום העור בשימוש יחד."
     }
   ]
 }

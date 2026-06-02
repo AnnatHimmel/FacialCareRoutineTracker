@@ -313,6 +313,12 @@ abstract class AppLocalizations {
   /// **'שמור'**
   String get saveAction;
 
+  /// No description provided for @cancelAction.
+  ///
+  /// In he, this message translates to:
+  /// **'ביטול'**
+  String get cancelAction;
+
   /// No description provided for @resetOrder.
   ///
   /// In he, this message translates to:
@@ -768,6 +774,990 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'{day} ב{month} {year}'**
   String journalDateFormat(Object day, Object month, Object year);
+
+  /// No description provided for @productSelStepCounter.
+  ///
+  /// In he, this message translates to:
+  /// **'שלב {step} מתוך {total}'**
+  String productSelStepCounter(Object step, Object total);
+
+  /// No description provided for @productSelSkipToSummary.
+  ///
+  /// In he, this message translates to:
+  /// **'דלג לסיכום'**
+  String get productSelSkipToSummary;
+
+  /// No description provided for @productSelToSummary.
+  ///
+  /// In he, this message translates to:
+  /// **'לסיכום'**
+  String get productSelToSummary;
+
+  /// No description provided for @productSelSkipStep.
+  ///
+  /// In he, this message translates to:
+  /// **'דלגי על השלב'**
+  String get productSelSkipStep;
+
+  /// No description provided for @productSelNoCategories.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נמצאו קטגוריות'**
+  String get productSelNoCategories;
+
+  /// No description provided for @productSelNoProducts.
+  ///
+  /// In he, this message translates to:
+  /// **'אין מוצרים בקטגוריה זו'**
+  String get productSelNoProducts;
+
+  /// No description provided for @productSelSummaryTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'סיכום · הארון שלך'**
+  String get productSelSummaryTitle;
+
+  /// No description provided for @productSelSummarySubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'בחרי מוצר פעם אחת. סנני בוקר/ערב כדי לראות כל שגרה בנפרד.'**
+  String get productSelSummarySubtitle;
+
+  /// No description provided for @productSelContinueToSchedule.
+  ///
+  /// In he, this message translates to:
+  /// **'המשך לתזמון'**
+  String get productSelContinueToSchedule;
+
+  /// No description provided for @productSelFilterAll.
+  ///
+  /// In he, this message translates to:
+  /// **'הכל'**
+  String get productSelFilterAll;
+
+  /// No description provided for @productSelCategoryOptions.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} אפשרויות'**
+  String productSelCategoryOptions(Object count);
+
+  /// No description provided for @productSelCategorySelected.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} נבחרו'**
+  String productSelCategorySelected(Object count);
+
+  /// No description provided for @productSelFrequencyLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'תדירות מומלצת: '**
+  String get productSelFrequencyLabel;
+
+  /// No description provided for @productSelTimingLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'מתי?'**
+  String get productSelTimingLabel;
+
+  /// No description provided for @catHintCleanser1.
+  ///
+  /// In he, this message translates to:
+  /// **'הסרת איפור ומסנני הגנה — לרוב בערב.'**
+  String get catHintCleanser1;
+
+  /// No description provided for @catHintCleanser2.
+  ///
+  /// In he, this message translates to:
+  /// **'ניקוי פנים יומיומי ועדין.'**
+  String get catHintCleanser2;
+
+  /// No description provided for @catHintRetinoid.
+  ///
+  /// In he, this message translates to:
+  /// **'חידוש העור — ערב בלבד, בהדרגה.'**
+  String get catHintRetinoid;
+
+  /// No description provided for @catHintToner.
+  ///
+  /// In he, this message translates to:
+  /// **'איזון העור והכנה לספיגת השלבים הבאים.'**
+  String get catHintToner;
+
+  /// No description provided for @catHintSerum.
+  ///
+  /// In he, this message translates to:
+  /// **'החומרים הפעילים שלך. אפשר לבחור כמה שתרצי.'**
+  String get catHintSerum;
+
+  /// No description provided for @catHintMoisturizer.
+  ///
+  /// In he, this message translates to:
+  /// **'נעילת הלחות והרגעת העור.'**
+  String get catHintMoisturizer;
+
+  /// No description provided for @catHintOil.
+  ///
+  /// In he, this message translates to:
+  /// **'שכבת הזנה אחרונה, לרוב בערב.'**
+  String get catHintOil;
+
+  /// No description provided for @catHintSpf.
+  ///
+  /// In he, this message translates to:
+  /// **'הגנה מהשמש — שלב הבוקר האחרון, חובה.'**
+  String get catHintSpf;
+
+  /// No description provided for @catUsageCleanser1.
+  ///
+  /// In he, this message translates to:
+  /// **'עסי על עור יבש להמסת איפור ומסנני הגנה, ושטפי במים פושרים.'**
+  String get catUsageCleanser1;
+
+  /// No description provided for @catUsageCleanser2.
+  ///
+  /// In he, this message translates to:
+  /// **'הקציפי עם מעט מים, עסי בעדינות בתנועות מעגליות ושטפי.'**
+  String get catUsageCleanser2;
+
+  /// No description provided for @catUsageRetinoid.
+  ///
+  /// In he, this message translates to:
+  /// **'כמות בגודל אפונה על עור יבש, הימנעי מאזור העיניים. ערב בלבד, בהדרגה.'**
+  String get catUsageRetinoid;
+
+  /// No description provided for @catUsageToner.
+  ///
+  /// In he, this message translates to:
+  /// **'טפחי כמה טיפות בכפות הידיים על עור נקי, לפני הסרומים.'**
+  String get catUsageToner;
+
+  /// No description provided for @catUsageSerum.
+  ///
+  /// In he, this message translates to:
+  /// **'כמה טיפות על עור נקי. המתיני לספיגה לפני השלב הבא.'**
+  String get catUsageSerum;
+
+  /// No description provided for @catUsageMoisturizer.
+  ///
+  /// In he, this message translates to:
+  /// **'מרחי שכבה אחידה לנעילת הלחות והרגעת העור.'**
+  String get catUsageMoisturizer;
+
+  /// No description provided for @catUsageOil.
+  ///
+  /// In he, this message translates to:
+  /// **'חממי כמה טיפות בין כפות הידיים ולחצי על העור כשלב אחרון.'**
+  String get catUsageOil;
+
+  /// No description provided for @catUsageSpf.
+  ///
+  /// In he, this message translates to:
+  /// **'כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר — גם ביום מעונן.'**
+  String get catUsageSpf;
+
+  /// No description provided for @scheduleNoProducts.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נבחרו מוצרים עדיין'**
+  String get scheduleNoProducts;
+
+  /// No description provided for @scheduleConflictInMorning.
+  ///
+  /// In he, this message translates to:
+  /// **'יש התנגשות בשגרת בוקר — הקישי לתיקון'**
+  String get scheduleConflictInMorning;
+
+  /// No description provided for @scheduleConflictInEvening.
+  ///
+  /// In he, this message translates to:
+  /// **'יש התנגשות בשגרת ערב — הקישי לתיקון'**
+  String get scheduleConflictInEvening;
+
+  /// No description provided for @scheduleOccasional.
+  ///
+  /// In he, this message translates to:
+  /// **'לא לשימוש יומי'**
+  String get scheduleOccasional;
+
+  /// No description provided for @scheduleDaily.
+  ///
+  /// In he, this message translates to:
+  /// **'יומיים'**
+  String get scheduleDaily;
+
+  /// No description provided for @scheduleWeeklyView.
+  ///
+  /// In he, this message translates to:
+  /// **'מבט שבועי'**
+  String get scheduleWeeklyView;
+
+  /// No description provided for @scheduleTapConflictDay.
+  ///
+  /// In he, this message translates to:
+  /// **'הקישי על יום מסומן'**
+  String get scheduleTapConflictDay;
+
+  /// No description provided for @scheduleProductsPerDay.
+  ///
+  /// In he, this message translates to:
+  /// **'מספר מוצרים ביום'**
+  String get scheduleProductsPerDay;
+
+  /// No description provided for @scheduleProductWillRemain.
+  ///
+  /// In he, this message translates to:
+  /// **'המוצר יישאר בכל שאר הימים — לא נחסום אם תשאירי כך.'**
+  String get scheduleProductWillRemain;
+
+  /// No description provided for @scheduleConflictHeader.
+  ///
+  /// In he, this message translates to:
+  /// **'שילוב לא מומלץ ביום {day}'**
+  String scheduleConflictHeader(Object day);
+
+  /// No description provided for @scheduleConflictInstruction.
+  ///
+  /// In he, this message translates to:
+  /// **'הקישי «הסר» על אחד מהם כדי לפתור'**
+  String get scheduleConflictInstruction;
+
+  /// No description provided for @scheduleClose.
+  ///
+  /// In he, this message translates to:
+  /// **'סגור'**
+  String get scheduleClose;
+
+  /// No description provided for @scheduleRemoveFrom.
+  ///
+  /// In he, this message translates to:
+  /// **'הסר מ{day}'**
+  String scheduleRemoveFrom(Object day);
+
+  /// No description provided for @scheduleNoMix.
+  ///
+  /// In he, this message translates to:
+  /// **'לא לשלב יחד'**
+  String get scheduleNoMix;
+
+  /// No description provided for @scheduleRecommendedDaily.
+  ///
+  /// In he, this message translates to:
+  /// **'מומלץ: כל יום'**
+  String get scheduleRecommendedDaily;
+
+  /// No description provided for @scheduleRecommendedWeekly.
+  ///
+  /// In he, this message translates to:
+  /// **'מומלץ: עד {max}× בשבוע'**
+  String scheduleRecommendedWeekly(Object max);
+
+  /// No description provided for @scheduleCountEveryDay.
+  ///
+  /// In he, this message translates to:
+  /// **'כל יום'**
+  String get scheduleCountEveryDay;
+
+  /// No description provided for @scheduleOverCap.
+  ///
+  /// In he, this message translates to:
+  /// **'מעבר למומלץ — שקלי להפחית ל־{max} ימים'**
+  String scheduleOverCap(Object max);
+
+  /// No description provided for @scheduleNoDaySelected.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נבחר יום — המוצר לא ישובץ'**
+  String get scheduleNoDaySelected;
+
+  /// No description provided for @scheduleSaveFinish.
+  ///
+  /// In he, this message translates to:
+  /// **'סיום ושמירת השגרה'**
+  String get scheduleSaveFinish;
+
+  /// No description provided for @orderInstruction.
+  ///
+  /// In he, this message translates to:
+  /// **'גררו את המוצרים כדי לסדר את השגרה שלכם'**
+  String get orderInstruction;
+
+  /// No description provided for @orderNoProducts.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נבחרו מוצרים'**
+  String get orderNoProducts;
+
+  /// No description provided for @orderResetToRecommended.
+  ///
+  /// In he, this message translates to:
+  /// **'איפוס לסדר המומלץ'**
+  String get orderResetToRecommended;
+
+  /// No description provided for @orderSaveFinish.
+  ///
+  /// In he, this message translates to:
+  /// **'סיום והתחלה'**
+  String get orderSaveFinish;
+
+  /// No description provided for @orderSaveNew.
+  ///
+  /// In he, this message translates to:
+  /// **'שמירת הסדר החדש'**
+  String get orderSaveNew;
+
+  /// No description provided for @settingsGreeting.
+  ///
+  /// In he, this message translates to:
+  /// **'שלום'**
+  String get settingsGreeting;
+
+  /// No description provided for @settingsWelcome.
+  ///
+  /// In he, this message translates to:
+  /// **'ברוכה הבאה ל־The Glow Protocol'**
+  String get settingsWelcome;
+
+  /// No description provided for @settingsSectionRoutine.
+  ///
+  /// In he, this message translates to:
+  /// **'שגרת הטיפוח שלי'**
+  String get settingsSectionRoutine;
+
+  /// No description provided for @settingsOrderProducts.
+  ///
+  /// In he, this message translates to:
+  /// **'סדר מוצרים'**
+  String get settingsOrderProducts;
+
+  /// No description provided for @settingsOrderSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'גרורי לסידור אישי'**
+  String get settingsOrderSubtitle;
+
+  /// No description provided for @settingsSectionData.
+  ///
+  /// In he, this message translates to:
+  /// **'נתונים'**
+  String get settingsSectionData;
+
+  /// No description provided for @settingsExportSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'גיבוי מקומי של הנתונים'**
+  String get settingsExportSubtitle;
+
+  /// No description provided for @settingsSectionInfo.
+  ///
+  /// In he, this message translates to:
+  /// **'מידע'**
+  String get settingsSectionInfo;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In he, this message translates to:
+  /// **'אודות ומה חדש'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsAboutSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'גרסה {version} • יומן שינויים'**
+  String settingsAboutSubtitle(Object version);
+
+  /// No description provided for @settingsCheckUpdates.
+  ///
+  /// In he, this message translates to:
+  /// **'בדוק עדכונים'**
+  String get settingsCheckUpdates;
+
+  /// No description provided for @settingsCheckUpdatesSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקת גרסה עדכנית'**
+  String get settingsCheckUpdatesSubtitle;
+
+  /// No description provided for @settingsPremium.
+  ///
+  /// In he, this message translates to:
+  /// **'הפעלת רישיון'**
+  String get settingsPremium;
+
+  /// No description provided for @settingsPremiumSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'גיבוי ושחזור בענן'**
+  String get settingsPremiumSubtitle;
+
+  /// No description provided for @settingsSectionAccount.
+  ///
+  /// In he, this message translates to:
+  /// **'חשבון'**
+  String get settingsSectionAccount;
+
+  /// No description provided for @settingsLogout.
+  ///
+  /// In he, this message translates to:
+  /// **'התנתקות'**
+  String get settingsLogout;
+
+  /// No description provided for @settingsLogoutSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'איפוס פרופיל וחזרה להתחלה'**
+  String get settingsLogoutSubtitle;
+
+  /// No description provided for @settingsLogoutConfirmContent.
+  ///
+  /// In he, this message translates to:
+  /// **'פעולה זו תאפס את הפרופיל שלך ותחזיר אותך למסך ההתחלה. הנתונים שלך יישמרו.'**
+  String get settingsLogoutConfirmContent;
+
+  /// No description provided for @settingsLogoutConfirmBtn.
+  ///
+  /// In he, this message translates to:
+  /// **'התנתקי'**
+  String get settingsLogoutConfirmBtn;
+
+  /// No description provided for @aboutVersionLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'גרסה {version}'**
+  String aboutVersionLabel(Object version);
+
+  /// No description provided for @aboutContentLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'תוכן {version}'**
+  String aboutContentLabel(Object version);
+
+  /// No description provided for @aboutChangelog.
+  ///
+  /// In he, this message translates to:
+  /// **'מה חדש'**
+  String get aboutChangelog;
+
+  /// No description provided for @exportDataTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'ייצוא נתונים'**
+  String get exportDataTitle;
+
+  /// No description provided for @exportDataDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'שמור גיבוי של כל הנתונים שלך כארכיון ZIP'**
+  String get exportDataDesc;
+
+  /// No description provided for @exportDataAction.
+  ///
+  /// In he, this message translates to:
+  /// **'ייצוא'**
+  String get exportDataAction;
+
+  /// No description provided for @importDataTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'ייבוא נתונים'**
+  String get importDataTitle;
+
+  /// No description provided for @importDataDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'שחזר נתונים מגיבוי קיים (החלפה מלאה או מיזוג)'**
+  String get importDataDesc;
+
+  /// No description provided for @importDataAction.
+  ///
+  /// In he, this message translates to:
+  /// **'ייבוא'**
+  String get importDataAction;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In he, this message translates to:
+  /// **'הייצוא הושלם בהצלחה'**
+  String get exportSuccess;
+
+  /// No description provided for @exportError.
+  ///
+  /// In he, this message translates to:
+  /// **'שגיאה בייצוא: {error}'**
+  String exportError(Object error);
+
+  /// No description provided for @importError.
+  ///
+  /// In he, this message translates to:
+  /// **'שגיאה בייבוא: {error}'**
+  String importError(Object error);
+
+  /// No description provided for @importFileReadError.
+  ///
+  /// In he, this message translates to:
+  /// **'לא ניתן לקרוא את הקובץ'**
+  String get importFileReadError;
+
+  /// No description provided for @importInvalidFile.
+  ///
+  /// In he, this message translates to:
+  /// **'קובץ לא תקין'**
+  String get importInvalidFile;
+
+  /// No description provided for @importDialogTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'ייבוא נתונים'**
+  String get importDialogTitle;
+
+  /// No description provided for @importDialogQuestion.
+  ///
+  /// In he, this message translates to:
+  /// **'כיצד לטפל בנתונים הקיימים?'**
+  String get importDialogQuestion;
+
+  /// No description provided for @importReplaceSuccess.
+  ///
+  /// In he, this message translates to:
+  /// **'הנתונים הוחלפו בהצלחה'**
+  String get importReplaceSuccess;
+
+  /// No description provided for @importMergeNoConflicts.
+  ///
+  /// In he, this message translates to:
+  /// **'המיזוג הושלם — לא נמצאו התנגשויות'**
+  String get importMergeNoConflicts;
+
+  /// No description provided for @updateAllUpToDate.
+  ///
+  /// In he, this message translates to:
+  /// **'הכל מעודכן'**
+  String get updateAllUpToDate;
+
+  /// No description provided for @updateGoBack.
+  ///
+  /// In he, this message translates to:
+  /// **'חזור'**
+  String get updateGoBack;
+
+  /// No description provided for @updateDataIntact.
+  ///
+  /// In he, this message translates to:
+  /// **'הנתונים שלך שמורים ועדיין קיימים'**
+  String get updateDataIntact;
+
+  /// No description provided for @updateExportBefore.
+  ///
+  /// In he, this message translates to:
+  /// **'לפני ההמשך:'**
+  String get updateExportBefore;
+
+  /// No description provided for @updateBackupAction.
+  ///
+  /// In he, this message translates to:
+  /// **'גבה נתונים'**
+  String get updateBackupAction;
+
+  /// No description provided for @updateNewProducts.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצרים חדשים ({count})'**
+  String updateNewProducts(Object count);
+
+  /// No description provided for @updateNewProductsDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים'**
+  String get updateNewProductsDesc;
+
+  /// No description provided for @updateDeprecated.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצרים שאינם מומלצים עוד ({count})'**
+  String updateDeprecated(Object count);
+
+  /// No description provided for @updateDeprecatedDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצרים אלה נמצאים ברשימה שלך אך אינם מומלצים עוד'**
+  String get updateDeprecatedDesc;
+
+  /// No description provided for @updateAcknowledge.
+  ///
+  /// In he, this message translates to:
+  /// **'הבנתי, המשך'**
+  String get updateAcknowledge;
+
+  /// No description provided for @mergeNoData.
+  ///
+  /// In he, this message translates to:
+  /// **'אין נתונים למיזוג'**
+  String get mergeNoData;
+
+  /// No description provided for @mergeCompleting.
+  ///
+  /// In he, this message translates to:
+  /// **'ממזג...'**
+  String get mergeCompleting;
+
+  /// No description provided for @mergeFinish.
+  ///
+  /// In he, this message translates to:
+  /// **'סיים'**
+  String get mergeFinish;
+
+  /// No description provided for @mergeProgressCounter.
+  ///
+  /// In he, this message translates to:
+  /// **'התנגשות {current} מתוך {total}'**
+  String mergeProgressCounter(Object current, Object total);
+
+  /// No description provided for @mergeRecordInfo.
+  ///
+  /// In he, this message translates to:
+  /// **'סוג: {recordType}  ·  מזהה: {recordId}'**
+  String mergeRecordInfo(Object recordType, Object recordId);
+
+  /// No description provided for @mergeChooseVersion.
+  ///
+  /// In he, this message translates to:
+  /// **'בחרי איזו גרסה לשמור:'**
+  String get mergeChooseVersion;
+
+  /// No description provided for @mergeKeepLocal.
+  ///
+  /// In he, this message translates to:
+  /// **'שמור גרסה מקומית'**
+  String get mergeKeepLocal;
+
+  /// No description provided for @mergeKeepLocalDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'המשך עם הנתונים הנוכחיים במכשיר'**
+  String get mergeKeepLocalDesc;
+
+  /// No description provided for @mergeUseArchive.
+  ///
+  /// In he, this message translates to:
+  /// **'השתמש בגרסת הגיבוי'**
+  String get mergeUseArchive;
+
+  /// No description provided for @mergeUseArchiveDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'החלף עם הנתונים מקובץ הגיבוי'**
+  String get mergeUseArchiveDesc;
+
+  /// No description provided for @mergeAllResolved.
+  ///
+  /// In he, this message translates to:
+  /// **'כל ההתנגשויות נפתרו'**
+  String get mergeAllResolved;
+
+  /// No description provided for @mergeClickFinish.
+  ///
+  /// In he, this message translates to:
+  /// **'לחצי על \"סיים\" להחלת המיזוג'**
+  String get mergeClickFinish;
+
+  /// No description provided for @mergeSuccess.
+  ///
+  /// In he, this message translates to:
+  /// **'המיזוג הושלם בהצלחה'**
+  String get mergeSuccess;
+
+  /// No description provided for @premiumTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'גיבוי לענן — בקרוב'**
+  String get premiumTitle;
+
+  /// No description provided for @premiumDescWeb.
+  ///
+  /// In he, this message translates to:
+  /// **'הזן מפתח הפעלה כדי לאפשר גיבוי ושחזור אוטומטי בין מכשירים'**
+  String get premiumDescWeb;
+
+  /// No description provided for @premiumDescAndroid.
+  ///
+  /// In he, this message translates to:
+  /// **'תכונה זו זמינה בגרסת הווב בלבד'**
+  String get premiumDescAndroid;
+
+  /// No description provided for @premiumKeyLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'מפתח הפעלה'**
+  String get premiumKeyLabel;
+
+  /// No description provided for @premiumActivate.
+  ///
+  /// In he, this message translates to:
+  /// **'הפעל'**
+  String get premiumActivate;
+
+  /// No description provided for @skinLogSkinStateToday.
+  ///
+  /// In he, this message translates to:
+  /// **'מצב העור היום'**
+  String get skinLogSkinStateToday;
+
+  /// No description provided for @skinLogNotesHint.
+  ///
+  /// In he, this message translates to:
+  /// **'הערות על העור היום...'**
+  String get skinLogNotesHint;
+
+  /// No description provided for @skinLogPhotosTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'תמונות'**
+  String get skinLogPhotosTitle;
+
+  /// No description provided for @skinLogAddPhotoLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסף תמונה'**
+  String get skinLogAddPhotoLabel;
+
+  /// No description provided for @skinLogTakePhoto.
+  ///
+  /// In he, this message translates to:
+  /// **'צלם תמונה'**
+  String get skinLogTakePhoto;
+
+  /// No description provided for @skinLogGallery.
+  ///
+  /// In he, this message translates to:
+  /// **'בחר מהגלריה'**
+  String get skinLogGallery;
+
+  /// No description provided for @skinLogWebStorageWarning.
+  ///
+  /// In he, this message translates to:
+  /// **'תמונות בדפדפן עשויות להימחק על ידי Safari. גבי את הנתונים שלך.'**
+  String get skinLogWebStorageWarning;
+
+  /// No description provided for @dayDetailNoData.
+  ///
+  /// In he, this message translates to:
+  /// **'אין נתונים ליום זה'**
+  String get dayDetailNoData;
+
+  /// No description provided for @dayDetailJournalTooltip.
+  ///
+  /// In he, this message translates to:
+  /// **'יומן עור'**
+  String get dayDetailJournalTooltip;
+
+  /// No description provided for @streakDaysInRow.
+  ///
+  /// In he, this message translates to:
+  /// **'ימים ברצף'**
+  String get streakDaysInRow;
+
+  /// No description provided for @streakOnTrack.
+  ///
+  /// In he, this message translates to:
+  /// **'את בדרך הנכונה לזוהר מושלם!'**
+  String get streakOnTrack;
+
+  /// No description provided for @streakStartToday.
+  ///
+  /// In he, this message translates to:
+  /// **'כל יום נחשב — נתחיל היום ✨'**
+  String get streakStartToday;
+
+  /// No description provided for @streakPersonalBest.
+  ///
+  /// In he, this message translates to:
+  /// **'שיא אישי · {days} ימים'**
+  String streakPersonalBest(Object days);
+
+  /// No description provided for @streakNoGraces.
+  ///
+  /// In he, this message translates to:
+  /// **'אין עוד \" אפוס, פיספסתי...\"'**
+  String get streakNoGraces;
+
+  /// No description provided for @streakGracesLeft.
+  ///
+  /// In he, this message translates to:
+  /// **'\"אופס פיספסתי\" {count} נשארו עוד'**
+  String streakGracesLeft(Object count);
+
+  /// No description provided for @streakSemanticDays.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} ימים ברצף'**
+  String streakSemanticDays(Object count);
+
+  /// No description provided for @streakNoGracesRemaining.
+  ///
+  /// In he, this message translates to:
+  /// **'אין חסדים נותרו השבוע'**
+  String get streakNoGracesRemaining;
+
+  /// No description provided for @streakGracesRemaining.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} חסדים נותרו השבוע'**
+  String streakGracesRemaining(Object count);
+
+  /// No description provided for @routineItemDone.
+  ///
+  /// In he, this message translates to:
+  /// **'בוצע'**
+  String get routineItemDone;
+
+  /// No description provided for @routineItemNotDone.
+  ///
+  /// In he, this message translates to:
+  /// **'לא בוצע'**
+  String get routineItemNotDone;
+
+  /// No description provided for @routineItemFlexibleSlots.
+  ///
+  /// In he, this message translates to:
+  /// **'בוקר • ערב'**
+  String get routineItemFlexibleSlots;
+
+  /// No description provided for @routineItemDeprecatedPill.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מומלץ'**
+  String get routineItemDeprecatedPill;
+
+  /// No description provided for @routineItemDeprecatedWarning.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצר זה אינו מומלץ עוד'**
+  String get routineItemDeprecatedWarning;
+
+  /// No description provided for @backupReminderText.
+  ///
+  /// In he, this message translates to:
+  /// **'מומלץ לגבות את הנתונים שלך'**
+  String get backupReminderText;
+
+  /// No description provided for @backupNowAction.
+  ///
+  /// In he, this message translates to:
+  /// **'גבי עכשיו'**
+  String get backupNowAction;
+
+  /// No description provided for @categoryItemsSuffix.
+  ///
+  /// In he, this message translates to:
+  /// **'פריטים'**
+  String get categoryItemsSuffix;
+
+  /// No description provided for @fixedSlotMorningOnly.
+  ///
+  /// In he, this message translates to:
+  /// **'בוקר בלבד'**
+  String get fixedSlotMorningOnly;
+
+  /// No description provided for @fixedSlotEveningOnly.
+  ///
+  /// In he, this message translates to:
+  /// **'ערב בלבד'**
+  String get fixedSlotEveningOnly;
+
+  /// No description provided for @skinStateCalm.
+  ///
+  /// In he, this message translates to:
+  /// **'רגוע'**
+  String get skinStateCalm;
+
+  /// No description provided for @skinStateMoist.
+  ///
+  /// In he, this message translates to:
+  /// **'לח'**
+  String get skinStateMoist;
+
+  /// No description provided for @skinStateOily.
+  ///
+  /// In he, this message translates to:
+  /// **'שמני'**
+  String get skinStateOily;
+
+  /// No description provided for @weekdayOverCapWarning.
+  ///
+  /// In he, this message translates to:
+  /// **'מעבר למומלץ — שקלי להפחית'**
+  String get weekdayOverCapWarning;
+
+  /// No description provided for @customProductTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספת מוצר משלי'**
+  String get customProductTitle;
+
+  /// No description provided for @customProductPhotoLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספת תמונה (לא חובה)'**
+  String get customProductPhotoLabel;
+
+  /// No description provided for @customProductNameLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'שם המוצר'**
+  String get customProductNameLabel;
+
+  /// No description provided for @customProductNameHint.
+  ///
+  /// In he, this message translates to:
+  /// **'לדוגמה: סרם לחות אישי'**
+  String get customProductNameHint;
+
+  /// No description provided for @customProductCategoryLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'קטגוריה'**
+  String get customProductCategoryLabel;
+
+  /// No description provided for @customProductSlotLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'זמן שגרה'**
+  String get customProductSlotLabel;
+
+  /// No description provided for @customProductSlotBoth.
+  ///
+  /// In he, this message translates to:
+  /// **'בוקר + ערב'**
+  String get customProductSlotBoth;
+
+  /// No description provided for @customProductFrequencyLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'תדירות'**
+  String get customProductFrequencyLabel;
+
+  /// No description provided for @customProductFrequencyWeekly.
+  ///
+  /// In he, this message translates to:
+  /// **'כמה פעמות בשבוע'**
+  String get customProductFrequencyWeekly;
+
+  /// No description provided for @customProductTimesPerWeekLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'פעמות בשבוע:'**
+  String get customProductTimesPerWeekLabel;
+
+  /// No description provided for @customProductSave.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספה לשגרה שלי'**
+  String get customProductSave;
+
+  /// No description provided for @scheduleConflictWarning.
+  ///
+  /// In he, this message translates to:
+  /// **'עדיין יש ימי התנגשות ב{slot}'**
+  String scheduleConflictWarning(Object slot);
 }
 
 class _AppLocalizationsDelegate

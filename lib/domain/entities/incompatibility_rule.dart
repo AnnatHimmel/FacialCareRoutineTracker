@@ -27,12 +27,14 @@ class IncompatibilityRule {
   final RuleTarget entityA;
   final RuleTarget entityB;
   final RuleScope scope;
+  final String? reason;
 
   const IncompatibilityRule({
     required this.id,
     required this.entityA,
     required this.entityB,
     required this.scope,
+    this.reason,
   });
 
   @override
@@ -51,11 +53,13 @@ class IncompatibilityRule {
     RuleTarget? entityA,
     RuleTarget? entityB,
     RuleScope? scope,
+    String? reason,
   }) =>
       IncompatibilityRule(
         id: id ?? this.id,
         entityA: entityA ?? this.entityA,
         entityB: entityB ?? this.entityB,
         scope: scope ?? this.scope,
+        reason: reason ?? this.reason,
       );
 }

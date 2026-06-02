@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/master_product.dart';
@@ -11,8 +12,9 @@ class FixedSlotChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final isAm = product.morningConfig != null;
-    final label = isAm ? 'בוקר בלבד' : 'ערב בלבד';
+    final label = isAm ? l.fixedSlotMorningOnly : l.fixedSlotEveningOnly;
     final bg = isAm
         ? AppColors.primaryFixed.withAlpha(153)
         : AppColors.tertiaryFixed.withAlpha(128);

@@ -10,6 +10,7 @@ class ConflictInfo {
   final MasterProduct productB;
   final RuleScope scope;
   final bool isMuted;
+  final String? reason;
 
   const ConflictInfo({
     required this.ruleId,
@@ -17,6 +18,7 @@ class ConflictInfo {
     required this.productB,
     required this.scope,
     required this.isMuted,
+    this.reason,
   });
 }
 
@@ -106,6 +108,7 @@ class IncompatibilityChecker {
             productB: b,
             scope: rule.scope,
             isMuted: muted.contains(rule.id),
+            reason: rule.reason,
           ));
           return;
         }
@@ -133,6 +136,7 @@ class IncompatibilityChecker {
             productB: b,
             scope: rule.scope,
             isMuted: muted.contains(rule.id),
+            reason: rule.reason,
           ));
           return;
         }

@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
-/// 7 round/pill day-toggle chips, Sunday-first, RTL order.
-///
-/// Selected = peach fill (`primaryContainer` bg, `onPrimaryContainer` text).
-/// Unselected = `surfaceContainer` fill, `onSurfaceVariant` text.
-/// Optional over-cap warning inline below the row.
-///
-/// Public API is unchanged: [selectedDays], [onChanged], [showOverCapWarning].
 class WeekdayPicker extends StatelessWidget {
   final Set<int> selectedDays;
   final ValueChanged<Set<int>> onChanged;
@@ -25,6 +19,7 @@ class WeekdayPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -54,7 +49,7 @@ class WeekdayPicker extends StatelessWidget {
               const Icon(Icons.warning_rounded, size: 14, color: AppColors.error),
               const SizedBox(width: 6),
               Text(
-                'מעבר למומלץ — שקלי להפחית',
+                l.weekdayOverCapWarning,
                 style: AppTypography.labelSm.copyWith(color: AppColors.error),
               ),
             ],

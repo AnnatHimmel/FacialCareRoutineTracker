@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
@@ -17,8 +18,6 @@ import '../../shared/widgets/product_thumb.dart';
 import 'add_custom_product_sheet.dart';
 
 const _uuid = Uuid();
-
-// ── Category display metadata (design-time constants) ─────────────────────────
 
 const _catIcon = <String, IconData>{
   'cat-cleanser-step1': Icons.wash,
@@ -42,29 +41,29 @@ const _catEn = <String, String>{
   'cat-spf': 'Protect',
 };
 
-const _catHint = <String, String>{
-  'cat-cleanser-step1': 'הסרת איפור ומסנני הגנה — לרוב בערב.',
-  'cat-cleanser-step2': 'ניקוי פנים יומיומי ועדין.',
-  'cat-retinoid': 'חידוש העור — ערב בלבד, בהדרגה.',
-  'cat-toner': 'איזון העור והכנה לספיגת השלבים הבאים.',
-  'cat-serum': 'החומרים הפעילים שלך. אפשר לבחור כמה שתרצי.',
-  'cat-moisturizer': 'נעילת הלחות והרגעת העור.',
-  'cat-oil': 'שכבת הזנה אחרונה, לרוב בערב.',
-  'cat-spf': 'הגנה מהשמש — שלב הבוקר האחרון, חובה.',
+String? _getCatHint(String catId, AppLocalizations l) => switch (catId) {
+  'cat-cleanser-step1' => l.catHintCleanser1,
+  'cat-cleanser-step2' => l.catHintCleanser2,
+  'cat-retinoid' => l.catHintRetinoid,
+  'cat-toner' => l.catHintToner,
+  'cat-serum' => l.catHintSerum,
+  'cat-moisturizer' => l.catHintMoisturizer,
+  'cat-oil' => l.catHintOil,
+  'cat-spf' => l.catHintSpf,
+  _ => null,
 };
 
-const _catUsage = <String, String>{
-  'cat-cleanser-step1': 'עסי על עור יבש להמסת איפור ומסנני הגנה, ושטפי במים פושרים.',
-  'cat-cleanser-step2': 'הקציפי עם מעט מים, עסי בעדינות בתנועות מעגליות ושטפי.',
-  'cat-retinoid': 'כמות בגודל אפונה על עור יבש, הימנעי מאזור העיניים. ערב בלבד, בהדרגה.',
-  'cat-toner': 'טפחי כמה טיפות בכפות הידיים על עור נקי, לפני הסרומים.',
-  'cat-serum': 'כמה טיפות על עור נקי. המתיני לספיגה לפני השלב הבא.',
-  'cat-moisturizer': 'מרחי שכבה אחידה לנעילת הלחות והרגעת העור.',
-  'cat-oil': 'חממי כמה טיפות בין כפות הידיים ולחצי על העור כשלב אחרון.',
-  'cat-spf': 'כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר — גם ביום מעונן.',
+String _getCatUsage(String catId, AppLocalizations l) => switch (catId) {
+  'cat-cleanser-step1' => l.catUsageCleanser1,
+  'cat-cleanser-step2' => l.catUsageCleanser2,
+  'cat-retinoid' => l.catUsageRetinoid,
+  'cat-toner' => l.catUsageToner,
+  'cat-serum' => l.catUsageSerum,
+  'cat-moisturizer' => l.catUsageMoisturizer,
+  'cat-oil' => l.catUsageOil,
+  'cat-spf' => l.catUsageSpf,
+  _ => '',
 };
-
-// ── Screen ────────────────────────────────────────────────────────────────────
 
 enum _SelectionView { guided, summary }
 
@@ -88,11 +87,8 @@ class _ProductSelectionScreenState
   _SelectionView _view = _SelectionView.guided;
   int _catStep = 0;
 
-  // Summary state
-  String _slotFilter = 'all'; // 'all' | 'AM' | 'PM'
+  String _slotFilter = 'all';
   String? _openCategoryId;
-
-  // ── Navigation ─────────────────────────────────────────────────────────────
 
   void _goToSummary() => setState(() {
         _view = _SelectionView.summary;
@@ -109,9 +105,6 @@ class _ProductSelectionScreenState
     }
   }
 
-  // ── Selection state helpers ────────────────────────────────────────────────
-
-  /// Maps productId → Set of slots the product is selected for.
   Map<String, Set<Slot>> _buildSelMap(
     List<ProductSelection> morning,
     List<ProductSelection> evening,
@@ -126,8 +119,6 @@ class _ProductSelectionScreenState
     return map;
   }
 
-  /// Toggle a product on/off. When adding in the summary's filtered view,
-  /// [filterSlot] restricts the default to only that slot.
   Future<void> _toggleProduct(
     MasterProduct product,
     Map<String, Set<Slot>> selMap,
@@ -192,10 +183,9 @@ class _ProductSelectionScreenState
     }
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
     final morningAsync = ref.watch(selectionsProvider(Slot.morning));
     final eveningAsync = ref.watch(selectionsProvider(Slot.evening));
@@ -205,7 +195,7 @@ class _ProductSelectionScreenState
       appBar: const GlowAppBar(),
       body: masterAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('שגיאה: $e')),
+        error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (master) {
           final morning = morningAsync.valueOrNull ?? [];
           final evening = eveningAsync.valueOrNull ?? [];
@@ -214,14 +204,12 @@ class _ProductSelectionScreenState
             ..sort((a, b) => a.order.compareTo(b.order));
 
           return _view == _SelectionView.guided
-              ? _buildGuided(context, master, categories, selMap, morning, evening)
-              : _buildSummary(context, master, categories, selMap, morning, evening);
+              ? _buildGuided(context, master, categories, selMap, morning, evening, l)
+              : _buildSummary(context, master, categories, selMap, morning, evening, l);
         },
       ),
     );
   }
-
-  // ── Guided step ────────────────────────────────────────────────────────────
 
   Widget _buildGuided(
     BuildContext context,
@@ -230,10 +218,11 @@ class _ProductSelectionScreenState
     Map<String, Set<Slot>> selMap,
     List<ProductSelection> morning,
     List<ProductSelection> evening,
+    AppLocalizations l,
   ) {
     if (categories.isEmpty) {
       return Center(
-        child: Text('לא נמצאו קטגוריות',
+        child: Text(l.productSelNoCategories,
             style: AppTypography.bodyMd
                 .copyWith(color: AppColors.onSurfaceVariant)),
       );
@@ -254,7 +243,12 @@ class _ProductSelectionScreenState
       });
 
     final catSel = catProducts.where((p) => selMap.containsKey(p.id)).length;
-    final ctaLabel = isLast ? 'לסיכום' : catSel > 0 ? 'המשך' : 'דלג על השלב';
+    final ctaLabel = isLast
+        ? l.productSelToSummary
+        : catSel > 0
+            ? l.continueAction
+            : l.productSelSkipStep;
+    final hint = _getCatHint(cat.id, l);
 
     return Stack(
       children: [
@@ -266,7 +260,6 @@ class _ProductSelectionScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Step counter row + skip button
                     Row(
                       children: [
                         TextButton(
@@ -282,11 +275,11 @@ class _ProductSelectionScreenState
                               fontSize: 12.5,
                             ),
                           ),
-                          child: const Text('דלג לסיכום'),
+                          child: Text(l.productSelSkipToSummary),
                         ),
                         const Spacer(),
                         Text(
-                          'שלב ${step + 1} מתוך $total',
+                          l.productSelStepCounter(step + 1, total),
                           style: AppTypography.labelSm.copyWith(
                             color: AppColors.onSurfaceVariant,
                             fontSize: 11,
@@ -296,11 +289,9 @@ class _ProductSelectionScreenState
                     ),
                     const SizedBox(height: 10),
 
-                    // Progress bar
                     _ProgressBar(step: step, total: total),
                     const SizedBox(height: 16),
 
-                    // Category header
                     Row(
                       children: [
                         _CategoryGlyph(
@@ -333,11 +324,10 @@ class _ProductSelectionScreenState
                       ],
                     ),
 
-                    // Category hint
-                    if (_catHint.containsKey(cat.id)) ...[
+                    if (hint != null) ...[
                       const SizedBox(height: 8),
                       Text(
-                        _catHint[cat.id]!,
+                        hint,
                         style: AppTypography.bodyMd.copyWith(
                           color: AppColors.onSurfaceVariant,
                           fontSize: 13,
@@ -351,13 +341,12 @@ class _ProductSelectionScreenState
               ),
             ),
 
-            // Product list
             if (catProducts.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(
                   child: Text(
-                    'אין מוצרים בקטגוריה זו',
+                    l.productSelNoProducts,
                     style: AppTypography.bodyMd
                         .copyWith(color: AppColors.onSurfaceVariant),
                   ),
@@ -375,11 +364,12 @@ class _ProductSelectionScreenState
                         key: Key('select_row_${catProducts[i].id}'),
                         product: catProducts[i],
                         selectedSlots: selMap[catProducts[i].id] ?? {},
-                        categoryUsage: _catUsage[cat.id] ?? '',
+                        categoryUsage: _getCatUsage(cat.id, l),
                         onToggle: () => _toggleProduct(
                             catProducts[i], selMap, morning, evening),
                         onTimingChange: (slot, enabled) => _setTiming(
                             catProducts[i], slot, enabled, morning, evening),
+                        l: l,
                       ),
                     ),
                     childCount: catProducts.length,
@@ -391,7 +381,6 @@ class _ProductSelectionScreenState
           ],
         ),
 
-        // Sticky footer
         Positioned(
           left: 0,
           right: 0,
@@ -467,8 +456,6 @@ class _ProductSelectionScreenState
     );
   }
 
-  // ── Summary view ───────────────────────────────────────────────────────────
-
   Widget _buildSummary(
     BuildContext context,
     MasterContent master,
@@ -476,6 +463,7 @@ class _ProductSelectionScreenState
     Map<String, Set<Slot>> selMap,
     List<ProductSelection> morning,
     List<ProductSelection> evening,
+    AppLocalizations l,
   ) {
     final amCount =
         selMap.values.where((s) => s.contains(Slot.morning)).length;
@@ -509,7 +497,7 @@ class _ProductSelectionScreenState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'סיכום · הארון שלך',
+                      l.productSelSummaryTitle,
                       style: AppTypography.headlineMd.copyWith(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -518,7 +506,7 @@ class _ProductSelectionScreenState
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'בחרי מוצר פעם אחת. סנני בוקר/ערב כדי לראות כל שגרה בנפרד.',
+                      l.productSelSummarySubtitle,
                       style: AppTypography.labelSm.copyWith(
                         color: AppColors.onSurfaceVariant,
                         fontSize: 12,
@@ -535,6 +523,7 @@ class _ProductSelectionScreenState
                         'AM': amCount,
                         'PM': pmCount
                       },
+                      l: l,
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -542,7 +531,6 @@ class _ProductSelectionScreenState
               ),
             ),
 
-            // Category sections
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList(
@@ -572,7 +560,7 @@ class _ProductSelectionScreenState
                         slotFilter: _slotFilter,
                         isOpen: _openCategoryId == cat.id,
                         catSelCount: catSel,
-                        categoryUsage: _catUsage[cat.id] ?? '',
+                        categoryUsage: _getCatUsage(cat.id, l),
                         onToggleOpen: () => setState(() {
                           _openCategoryId =
                               _openCategoryId == cat.id ? null : cat.id;
@@ -583,6 +571,7 @@ class _ProductSelectionScreenState
                         ),
                         onTimingChange: (p, slot, enabled) =>
                             _setTiming(p, slot, enabled, morning, evening),
+                        l: l,
                       ),
                     );
                   },
@@ -595,7 +584,6 @@ class _ProductSelectionScreenState
           ],
         ),
 
-        // Sticky footer
         Positioned(
           left: 0,
           right: 0,
@@ -645,7 +633,7 @@ class _ProductSelectionScreenState
                 const SizedBox(width: 10),
                 Expanded(
                   child: PrimaryButton(
-                    label: 'המשך לתזמון',
+                    label: l.productSelContinueToSchedule,
                     leadingIcon: Icons.event_rounded,
                     onTap: () => _goToSchedule(context),
                   ),
@@ -662,7 +650,7 @@ class _ProductSelectionScreenState
 // ── Progress bar ───────────────────────────────────────────────────────────────
 
 class _ProgressBar extends StatelessWidget {
-  final int step; // 0-indexed current step
+  final int step;
   final int total;
 
   const _ProgressBar({required this.step, required this.total});
@@ -691,7 +679,7 @@ class _ProgressBar extends StatelessWidget {
   }
 }
 
-// ── Category glyph (rounded-square icon) ──────────────────────────────────────
+// ── Category glyph ─────────────────────────────────────────────────────────────
 
 class _CategoryGlyph extends StatelessWidget {
   final String categoryId;
@@ -721,11 +709,7 @@ class _CategoryGlyph extends StatelessWidget {
   }
 }
 
-// ── SelectRow — the atom of selection ─────────────────────────────────────────
-//
-// Resting: thumbnail + name. Fixed products show a locked slot chip.
-// ⓘ button reveals comment + usage hint + frequency (detail on demand).
-// Tapping the row body toggles selection. Flexible + selected → TimingControl.
+// ── SelectRow ──────────────────────────────────────────────────────────────────
 
 class _SelectRow extends StatefulWidget {
   final MasterProduct product;
@@ -733,6 +717,7 @@ class _SelectRow extends StatefulWidget {
   final String categoryUsage;
   final VoidCallback onToggle;
   final void Function(Slot slot, bool enabled) onTimingChange;
+  final AppLocalizations l;
 
   const _SelectRow({
     super.key,
@@ -741,6 +726,7 @@ class _SelectRow extends StatefulWidget {
     required this.categoryUsage,
     required this.onToggle,
     required this.onTimingChange,
+    required this.l,
   });
 
   @override
@@ -761,13 +747,16 @@ class _SelectRowState extends State<_SelectRow> {
   String _frequencyLabel() {
     final config =
         widget.product.morningConfig ?? widget.product.eveningConfig;
-    if (config == null) return 'יומי';
+    if (config == null) return widget.l.onboardingFrequencyDaily;
     final f = config.frequencyRule;
-    return f is WeeklyMaxRule ? 'עד ${f.maxPerWeek}× בשבוע' : 'יומי';
+    return f is WeeklyMaxRule
+        ? widget.l.onboardingFrequencyWeekly(f.maxPerWeek)
+        : widget.l.onboardingFrequencyDaily;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = widget.l;
     final p = widget.product;
     final isOn = _isOn;
     final isExpanded = _isExpanded;
@@ -790,11 +779,9 @@ class _SelectRowState extends State<_SelectRow> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Main row ──────────────────────────────────────────────────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Tap area: thumb + name (+ chip for fixed)
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -803,7 +790,6 @@ class _SelectRowState extends State<_SelectRow> {
                     padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
                     child: Row(
                       children: [
-                        // Thumbnail with check badge
                         Stack(
                           clipBehavior: Clip.none,
                           children: [
@@ -829,7 +815,6 @@ class _SelectRowState extends State<_SelectRow> {
                         ),
                         const SizedBox(width: 12),
 
-                        // Name + optional fixed-slot chip
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -846,7 +831,6 @@ class _SelectRowState extends State<_SelectRow> {
                                   color: AppColors.onSurface,
                                 ),
                               ),
-                              // Chip only for fixed (non-flexible) products
                               if (!_isFlexible) ...[
                                 const SizedBox(height: 4),
                                 FixedSlotChip(product: p),
@@ -882,7 +866,6 @@ class _SelectRowState extends State<_SelectRow> {
             ],
           ),
 
-          // ── Info reveal ───────────────────────────────────────────────────
           if (_infoOpen)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -931,7 +914,7 @@ class _SelectRowState extends State<_SelectRow> {
                           size: 14, color: AppColors.onSurfaceVariant),
                       const SizedBox(width: 6),
                       Text(
-                        'תדירות מומלצת: ',
+                        l.productSelFrequencyLabel,
                         style: AppTypography.labelSm.copyWith(
                           color: AppColors.onSurfaceVariant,
                           fontSize: 12,
@@ -952,7 +935,6 @@ class _SelectRowState extends State<_SelectRow> {
               ),
             ),
 
-          // ── Timing control (flexible + selected) ──────────────────────────
           if (_showTiming)
             _TimingControl(
               amSelected: widget.selectedSlots.contains(Slot.morning),
@@ -963,13 +945,13 @@ class _SelectRowState extends State<_SelectRow> {
               onTogglePm: () => widget.onTimingChange(
                   Slot.evening,
                   !widget.selectedSlots.contains(Slot.evening)),
+              l: l,
             ),
         ],
       ),
     );
   }
 }
-
 
 // ── Timing control ─────────────────────────────────────────────────────────────
 
@@ -978,12 +960,14 @@ class _TimingControl extends StatelessWidget {
   final bool pmSelected;
   final VoidCallback onToggleAm;
   final VoidCallback onTogglePm;
+  final AppLocalizations l;
 
   const _TimingControl({
     required this.amSelected,
     required this.pmSelected,
     required this.onToggleAm,
     required this.onTogglePm,
+    required this.l,
   });
 
   @override
@@ -999,7 +983,7 @@ class _TimingControl extends StatelessWidget {
                   size: 13, color: AppColors.onSurfaceVariant),
               const SizedBox(width: 4),
               Text(
-                'מתי?',
+                l.productSelTimingLabel,
                 style: AppTypography.labelSm.copyWith(
                   color: AppColors.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
@@ -1014,7 +998,7 @@ class _TimingControl extends StatelessWidget {
               children: [
                 Expanded(
                   child: _TimingPill(
-                    label: 'בוקר',
+                    label: l.slotMorning,
                     icon: Icons.wb_sunny_rounded,
                     isSelected: amSelected,
                     activeColor: AppColors.primaryContainer,
@@ -1024,7 +1008,7 @@ class _TimingControl extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: _TimingPill(
-                    label: 'ערב',
+                    label: l.slotEvening,
                     icon: Icons.dark_mode_rounded,
                     isSelected: pmSelected,
                     activeColor: AppColors.tertiary,
@@ -1098,22 +1082,24 @@ class _TimingPill extends StatelessWidget {
 // ── Slot filter ────────────────────────────────────────────────────────────────
 
 class _SlotFilter extends StatelessWidget {
-  final String value; // 'all' | 'AM' | 'PM'
+  final String value;
   final ValueChanged<String> onChanged;
   final Map<String, int>? counts;
+  final AppLocalizations l;
 
   const _SlotFilter({
     required this.value,
     required this.onChanged,
     this.counts,
+    required this.l,
   });
 
   @override
   Widget build(BuildContext context) {
-    const opts = [
-      (key: 'all', label: 'הכל', icon: Icons.apps_rounded, active: AppColors.primary),
-      (key: 'AM', label: 'בוקר', icon: Icons.wb_sunny_rounded, active: AppColors.primaryContainer),
-      (key: 'PM', label: 'ערב', icon: Icons.dark_mode_rounded, active: AppColors.tertiary),
+    final opts = [
+      (key: 'all', label: l.productSelFilterAll, icon: Icons.apps_rounded, active: AppColors.primary),
+      (key: 'AM', label: l.slotMorning, icon: Icons.wb_sunny_rounded, active: AppColors.primaryContainer),
+      (key: 'PM', label: l.slotEvening, icon: Icons.dark_mode_rounded, active: AppColors.tertiary),
     ];
 
     return Container(
@@ -1186,7 +1172,7 @@ class _SlotFilter extends StatelessWidget {
   }
 }
 
-// ── Category section (used in summary view) ───────────────────────────────────
+// ── Category section (summary view) ───────────────────────────────────────────
 
 class _CategorySection extends StatelessWidget {
   final Category category;
@@ -1199,6 +1185,7 @@ class _CategorySection extends StatelessWidget {
   final VoidCallback onToggleOpen;
   final Future<void> Function(MasterProduct) onToggleProduct;
   final Future<void> Function(MasterProduct, Slot, bool) onTimingChange;
+  final AppLocalizations l;
 
   const _CategorySection({
     required this.category,
@@ -1211,6 +1198,7 @@ class _CategorySection extends StatelessWidget {
     required this.onToggleOpen,
     required this.onToggleProduct,
     required this.onTimingChange,
+    required this.l,
   });
 
   Set<Slot> _rowSlots(MasterProduct p) => selMap[p.id] ?? {};
@@ -1233,7 +1221,6 @@ class _CategorySection extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header row
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: onToggleOpen,
@@ -1258,8 +1245,8 @@ class _CategorySection extends StatelessWidget {
                         ),
                         Text(
                           catSelCount == 0
-                              ? '${products.length} אפשרויות'
-                              : '$catSelCount נבחרו',
+                              ? l.productSelCategoryOptions(products.length)
+                              : l.productSelCategorySelected(catSelCount),
                           style: AppTypography.labelSm.copyWith(
                             color: AppColors.onSurfaceVariant,
                             fontSize: 11.5,
@@ -1301,7 +1288,6 @@ class _CategorySection extends StatelessWidget {
             ),
           ),
 
-          // Expanded product list
           if (isOpen)
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
@@ -1316,6 +1302,7 @@ class _CategorySection extends StatelessWidget {
                       onToggle: () => onToggleProduct(products[i]),
                       onTimingChange: (slot, enabled) =>
                           onTimingChange(products[i], slot, enabled),
+                      l: l,
                     ),
                   ],
                 ],
@@ -1326,4 +1313,3 @@ class _CategorySection extends StatelessWidget {
     );
   }
 }
-

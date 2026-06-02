@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/skin_log_entry.dart';
@@ -29,10 +30,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
   late final TextEditingController _notesController;
   bool _dirty = false;
   bool _saving = false;
-  // Loaded photo bytes keyed by photoPath
   final Map<String, Uint8List?> _photoCache = {};
-
-  // Skin-state chip selection — backed by in-memory state only (no new persisted field)
   String? _selectedSkinState;
 
   @override
@@ -62,6 +60,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
   }
 
   void _showPhotoSourceSheet(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (kIsWeb) {
       _pickPhoto(fromCamera: false);
       return;
@@ -79,7 +78,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt_outlined),
-                title: const Text('צלם תמונה'),
+                title: Text(l.skinLogTakePhoto),
                 onTap: () {
                   Navigator.pop(context);
                   _pickPhoto(fromCamera: true);
@@ -87,7 +86,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: const Text('בחר מהגלריה'),
+                title: Text(l.skinLogGallery),
                 onTap: () {
                   Navigator.pop(context);
                   _pickPhoto(fromCamera: false);
@@ -181,6 +180,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final skinLogAsync = ref.watch(_skinLogProvider(widget.date));
 
     return Scaffold(
@@ -189,11 +189,10 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
       body: skinLogAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('שגיאה: $e')),
+        error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (entry) {
           if (entry != null) _initFromEntry(entry);
 
-          // Trigger loading for all photo paths
           if (entry != null) {
             for (final path in entry.photoPaths) {
               _loadPhoto(path);
@@ -205,7 +204,6 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
               ListView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
                 children: [
-                  // ── Notes card ─────────────────────────────────────────
                   GlowCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -229,7 +227,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'מצב העור היום',
+                              l.skinLogSkinStateToday,
                               style: AppTypography.bodyMd.copyWith(
                                 color: AppColors.onSurface,
                                 fontWeight: FontWeight.w700,
@@ -249,7 +247,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                             color: AppColors.onSurface,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'הערות על העור היום...',
+                            hintText: l.skinLogNotesHint,
                             hintStyle: AppTypography.bodyMd.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
@@ -277,7 +275,6 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                               _saveNotes(skinLogAsync.valueOrNull),
                         ),
                         const SizedBox(height: 12),
-                        // Skin-state chips (in-memory selection only)
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -318,21 +315,19 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
 
                   const SizedBox(height: 16),
 
-                  // ── Photos card ────────────────────────────────────────
                   GlowCard(
                     padding: const EdgeInsets.all(16),
                     border: Border.all(
-                      color: AppColors.primaryContainer.withOpacity(0.4),
+                      color: AppColors.primaryContainer.withValues(alpha: 0.4),
                       width: 1.5,
                       strokeAlign: BorderSide.strokeAlignInside,
                     ),
-                    color: AppColors.primaryFixed.withOpacity(0.2),
+                    color: AppColors.primaryFixed.withValues(alpha: 0.2),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Section title
                         Text(
-                          'תמונות',
+                          l.skinLogPhotosTitle,
                           style: AppTypography.bodyMd.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w700,
@@ -342,10 +337,8 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Photo grid + add button
                         _buildPhotoGrid(entry),
 
-                        // Web storage warning
                         if (kIsWeb) ...[
                           const SizedBox(height: 12),
                           Container(
@@ -366,7 +359,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
-                                    'תמונות בדפדפן עשויות להימחק על ידי Safari. גבה את הנתונים שלך.',
+                                    l.skinLogWebStorageWarning,
                                     style: AppTypography.labelSm.copyWith(
                                       color: AppColors.primary,
                                     ),
@@ -385,13 +378,12 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                 ],
               ),
 
-              // ── Sticky bottom CTA ──────────────────────────────────────
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.surface,
                     boxShadow: AppColors.navGlow,
                   ),
@@ -426,7 +418,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                               shape: const StadiumBorder(),
                             ),
                             child: Text(
-                              'שמור',
+                              l.saveAction,
                               style: AppTypography.labelMd.copyWith(
                                 color: AppColors.onPrimary,
                               ),
@@ -444,18 +436,17 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
 
   Widget _buildPhotoGrid(SkinLogEntry? entry) {
     final photos = entry?.photoPaths ?? [];
+    final l = AppLocalizations.of(context)!;
 
-    // Build grid children: existing photos + add button
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       alignment: WrapAlignment.end,
       children: [
-        // Add photo button (dashed, circular peach icon)
         _AddPhotoButton(
+          label: l.skinLogAddPhotoLabel,
           onTap: () => _showPhotoSourceSheet(context),
         ),
-        // Existing photos
         for (final path in photos)
           _PhotoTile(
             bytes: _photoCache[path],
@@ -468,12 +459,11 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
   }
 }
 
-// ── Add-photo dashed card ───────────────────────────────────────────────────
-
 class _AddPhotoButton extends StatelessWidget {
+  final String label;
   final VoidCallback onTap;
 
-  const _AddPhotoButton({required this.onTap});
+  const _AddPhotoButton({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -483,10 +473,10 @@ class _AddPhotoButton extends StatelessWidget {
         width: 110,
         height: 110,
         decoration: BoxDecoration(
-          color: AppColors.primaryFixed.withOpacity(0.25),
+          color: AppColors.primaryFixed.withValues(alpha: 0.25),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: AppColors.primaryContainer.withOpacity(0.6),
+            color: AppColors.primaryContainer.withValues(alpha: 0.6),
             width: 2,
             style: BorderStyle.solid,
           ),
@@ -498,7 +488,7 @@ class _AddPhotoButton extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.primaryFixed.withOpacity(0.6),
+                color: AppColors.primaryFixed.withValues(alpha: 0.6),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -509,7 +499,7 @@ class _AddPhotoButton extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'הוסף תמונה',
+              label,
               style: AppTypography.labelSm.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w700,
@@ -521,8 +511,6 @@ class _AddPhotoButton extends StatelessWidget {
     );
   }
 }
-
-// ── Photo tile ──────────────────────────────────────────────────────────────
 
 class _PhotoTile extends StatelessWidget {
   final Uint8List? bytes;

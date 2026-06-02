@@ -1,32 +1,30 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'radiant_chips.dart';
 
-/// Category section header: peach headline on the right, optional lemon count
-/// chip on the left (RTL). Reference: curator_1 — `text-primary` headline +
-/// `bg-secondary-container` count pill, `justify-between`.
-///
-/// Latin category names (e.g. "Serums") render LTR so they read correctly
-/// inside the RTL layout.
 class CategoryHeader extends StatelessWidget {
   final String categoryName;
-
-  /// Optional item count rendered as a lemon pill (e.g. "4 פריטים").
   final int? count;
-  final String countSuffix;
+
+  /// Override the suffix; if null uses the l10n default ("פריטים").
+  final String? countSuffix;
 
   const CategoryHeader({
     super.key,
     required this.categoryName,
     this.count,
-    this.countSuffix = 'פריטים',
+    this.countSuffix,
   });
 
   static bool _isLikelyLatin(String s) => s.codeUnits.every((c) => c < 128);
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final suffix = countSuffix ?? l.categoryItemsSuffix;
+
     final title = Text(
       categoryName,
       textDirection: _isLikelyLatin(categoryName)
@@ -41,7 +39,7 @@ class CategoryHeader extends StatelessWidget {
         children: [
           Flexible(child: title),
           const Spacer(),
-          if (count != null) CountChip('$count $countSuffix'),
+          if (count != null) CountChip('$count $suffix'),
         ],
       ),
     );

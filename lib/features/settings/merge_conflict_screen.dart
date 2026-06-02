@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/services/export_import_service.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
 
-// This provider is set by ExportImportScreen before pushing to this route
 final pendingMergeSessionProvider =
     StateProvider<MergeSession?>((ref) => null);
 
@@ -26,6 +26,7 @@ class _MergeConflictScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final session = ref.watch(pendingMergeSessionProvider);
 
     if (session == null) {
@@ -46,11 +47,11 @@ class _MergeConflictScreenState
                     color: AppColors.onSurfaceVariant,
                   ),
                   const SizedBox(height: 16),
-                  Text('אין נתונים למיזוג', style: AppTypography.bodyMd),
+                  Text(l.mergeNoData, style: AppTypography.bodyMd),
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () => context.pop(),
-                    child: const Text('חזור'),
+                    child: Text(l.backAction),
                   ),
                 ],
               ),
@@ -71,26 +72,26 @@ class _MergeConflictScreenState
             ? Padding(
                 padding: const EdgeInsets.only(left: 8),
                 child: FilledButton(
-                  onPressed: _completing ? null : () => _complete(session),
-                  child: Text(_completing ? 'ממזג...' : 'סיים'),
+                  onPressed: _completing ? null : () => _complete(session, l),
+                  child: Text(_completing ? l.mergeCompleting : l.mergeFinish),
                 ),
               )
             : null,
       ),
       body: isDone
-          ? _buildDoneState(session)
-          : _buildConflictCard(conflicts[_currentIndex], session),
+          ? _buildDoneState(l)
+          : _buildConflictCard(conflicts[_currentIndex], session, l),
     );
   }
 
-  Widget _buildConflictCard(MergeConflict conflict, MergeSession session) {
+  Widget _buildConflictCard(
+      MergeConflict conflict, MergeSession session, AppLocalizations l) {
     final total = session.conflicts.length;
     final current = _currentIndex + 1;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       children: [
-        // Progress card
         GlowCard(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -108,7 +109,7 @@ class _MergeConflictScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                'התנגשות $current מתוך $total',
+                l.mergeProgressCounter(current, total),
                 style: AppTypography.labelMd.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
@@ -116,7 +117,7 @@ class _MergeConflictScreenState
               ),
               const SizedBox(height: 4),
               Text(
-                'סוג: ${conflict.recordType}  ·  מזהה: ${conflict.recordId}',
+                l.mergeRecordInfo(conflict.recordType, conflict.recordId),
                 style: AppTypography.labelSm.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
@@ -128,14 +129,13 @@ class _MergeConflictScreenState
 
         const SizedBox(height: 20),
 
-        // Title + options grouped in one GlowCard
         GlowCard(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'בחר איזו גרסה לשמור:',
+                l.mergeChooseVersion,
                 style: AppTypography.headlineMd.copyWith(
                   color: AppColors.primary,
                 ),
@@ -143,10 +143,9 @@ class _MergeConflictScreenState
               ),
               const SizedBox(height: 16),
 
-              // Keep local option
               _ConflictOption(
-                label: 'שמור גרסה מקומית',
-                description: 'המשך עם הנתונים הנוכחיים במכשיר',
+                label: l.mergeKeepLocal,
+                description: l.mergeKeepLocalDesc,
                 icon: Icons.phone_android,
                 color: AppColors.secondary,
                 onTap: () {
@@ -159,10 +158,9 @@ class _MergeConflictScreenState
               ),
               const SizedBox(height: 12),
 
-              // Use archive option
               _ConflictOption(
-                label: 'השתמש בגרסת הגיבוי',
-                description: 'החלף עם הנתונים מקובץ הגיבוי',
+                label: l.mergeUseArchive,
+                description: l.mergeUseArchiveDesc,
                 icon: Icons.backup,
                 color: AppColors.primary,
                 onTap: () {
@@ -180,7 +178,7 @@ class _MergeConflictScreenState
     );
   }
 
-  Widget _buildDoneState(MergeSession session) {
+  Widget _buildDoneState(AppLocalizations l) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -196,13 +194,13 @@ class _MergeConflictScreenState
               ),
               const SizedBox(height: 16),
               Text(
-                'כל ההתנגשויות נפתרו',
+                l.mergeAllResolved,
                 style: AppTypography.headlineMd,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
-                'לחץ על "סיים" להחלת המיזוג',
+                l.mergeClickFinish,
                 style: AppTypography.bodyMd.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
@@ -215,14 +213,14 @@ class _MergeConflictScreenState
     );
   }
 
-  Future<void> _complete(MergeSession session) async {
+  Future<void> _complete(MergeSession session, AppLocalizations l) async {
     setState(() => _completing = true);
     try {
       await session.complete();
       ref.read(pendingMergeSessionProvider.notifier).state = null;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('המיזוג הושלם בהצלחה')),
+        SnackBar(content: Text(l.mergeSuccess)),
       );
       context.go('/settings');
     } finally {

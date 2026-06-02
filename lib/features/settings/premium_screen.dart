@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../shared/widgets/glow_app_bar.dart';
@@ -11,6 +12,7 @@ class PremiumScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: const GlowAppBar(showBack: true),
@@ -38,7 +40,7 @@ class PremiumScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'גיבוי לענן — בקרוב',
+                  l.premiumTitle,
                   style: AppTypography.headlineLg.copyWith(
                     color: AppColors.primary,
                   ),
@@ -46,9 +48,7 @@ class PremiumScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  kIsWeb
-                      ? 'הזן מפתח הפעלה כדי לאפשר גיבוי ושחזור אוטומטי בין מכשירים'
-                      : 'תכונה זו זמינה בגרסת הווב בלבד',
+                  kIsWeb ? l.premiumDescWeb : l.premiumDescAndroid,
                   style: AppTypography.bodyMd.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),
@@ -62,7 +62,7 @@ class PremiumScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'מפתח הפעלה',
+                          l.premiumKeyLabel,
                           style: AppTypography.labelMd.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
@@ -87,7 +87,7 @@ class PremiumScreen extends StatelessWidget {
                               shape: const StadiumBorder(),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
-                            child: const Text('הפעל'),
+                            child: Text(l.premiumActivate),
                           ),
                         ),
                       ],

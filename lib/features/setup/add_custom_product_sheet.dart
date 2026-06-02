@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
@@ -28,14 +29,9 @@ class _AddCustomProductSheetState
 
   Uint8List? _photoBytes;
   String? _categoryId;
-
-  // slot: 'morning', 'evening', 'both'
   String _slot = 'morning';
-
-  // frequency
   bool _isDaily = true;
   int _timesPerWeek = 3;
-
   bool _saving = false;
 
   @override
@@ -47,7 +43,7 @@ class _AddCustomProductSheetState
   bool get _canSave =>
       _nameController.text.trim().isNotEmpty && _categoryId != null;
 
-  Future<void> _pickPhoto() async {
+  Future<void> _pickPhoto(AppLocalizations l) async {
     if (kIsWeb) {
       final picker = ImagePicker();
       final file = await picker.pickImage(
@@ -68,12 +64,12 @@ class _AddCustomProductSheetState
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt_outlined),
-                title: const Text('צלם תמונה'),
+                title: Text(l.skinLogTakePhoto),
                 onTap: () => Navigator.pop(ctx, ImageSource.camera),
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: const Text('בחר מהגלריה'),
+                title: Text(l.skinLogGallery),
                 onTap: () => Navigator.pop(ctx, ImageSource.gallery),
               ),
             ],
@@ -126,7 +122,6 @@ class _AddCustomProductSheetState
       final repo = ref.read(userDataRepositoryProvider);
       await repo.upsertCustomProduct(product);
 
-      // Auto-select in the chosen slot(s)
       if (inMorning) {
         await repo.upsertSelection(ProductSelection(
           id: _uuid.v4(),
@@ -154,6 +149,7 @@ class _AddCustomProductSheetState
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
     final categories = masterAsync.valueOrNull?.categories ?? [];
 
@@ -171,7 +167,6 @@ class _AddCustomProductSheetState
           ),
           child: Column(
             children: [
-              // Handle
               Container(
                 margin: const EdgeInsets.only(top: 12),
                 width: 40,
@@ -182,14 +177,13 @@ class _AddCustomProductSheetState
                 ),
               ),
 
-              // Header
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 16, 0),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
-                        'הוספת מוצר משלי',
+                        l.customProductTitle,
                         style: AppTypography.headlineMd.copyWith(
                           color: AppColors.onSurface,
                           fontWeight: FontWeight.w700,
@@ -207,15 +201,13 @@ class _AddCustomProductSheetState
 
               const Divider(height: 16),
 
-              // Scrollable content
               Expanded(
                 child: ListView(
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
-                    // ── Photo picker ────────────────────────────────────────
                     GestureDetector(
-                      onTap: _pickPhoto,
+                      onTap: () => _pickPhoto(l),
                       child: Container(
                         height: 120,
                         decoration: BoxDecoration(
@@ -245,7 +237,7 @@ class _AddCustomProductSheetState
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'הוספת תמונה (לא חובה)',
+                                    l.customProductPhotoLabel,
                                     style: AppTypography.labelMd.copyWith(
                                       color: AppColors.onSurfaceVariant,
                                     ),
@@ -256,9 +248,8 @@ class _AddCustomProductSheetState
                     ),
                     const SizedBox(height: 20),
 
-                    // ── Name field ──────────────────────────────────────────
                     Text(
-                      'שם המוצר',
+                      l.customProductNameLabel,
                       style: AppTypography.labelMd.copyWith(
                         color: AppColors.onSurface,
                         fontWeight: FontWeight.w700,
@@ -267,14 +258,13 @@ class _AddCustomProductSheetState
                     const SizedBox(height: 8),
                     _buildTextField(
                       controller: _nameController,
-                      hint: 'לדוגמה: סרם לחות אישי',
+                      hint: l.customProductNameHint,
                       onChanged: (_) => setState(() {}),
                     ),
                     const SizedBox(height: 20),
 
-                    // ── Category chips ──────────────────────────────────────
                     Text(
-                      'קטגוריה',
+                      l.customProductCategoryLabel,
                       style: AppTypography.labelMd.copyWith(
                         color: AppColors.onSurface,
                         fontWeight: FontWeight.w700,
@@ -288,9 +278,8 @@ class _AddCustomProductSheetState
                     ),
                     const SizedBox(height: 20),
 
-                    // ── Slot pills ──────────────────────────────────────────
                     Text(
-                      'זמן שגרה',
+                      l.customProductSlotLabel,
                       style: AppTypography.labelMd.copyWith(
                         color: AppColors.onSurface,
                         fontWeight: FontWeight.w700,
@@ -298,19 +287,18 @@ class _AddCustomProductSheetState
                     ),
                     const SizedBox(height: 8),
                     _PillRow(
-                      options: const [
-                        ('morning', 'בוקר'),
-                        ('evening', 'ערב'),
-                        ('both', 'בוקר + ערב'),
+                      options: [
+                        ('morning', l.slotMorning),
+                        ('evening', l.slotEvening),
+                        ('both', l.customProductSlotBoth),
                       ],
                       selected: _slot,
                       onSelect: (v) => setState(() => _slot = v),
                     ),
                     const SizedBox(height: 20),
 
-                    // ── Frequency ───────────────────────────────────────────
                     Text(
-                      'תדירות',
+                      l.customProductFrequencyLabel,
                       style: AppTypography.labelMd.copyWith(
                         color: AppColors.onSurface,
                         fontWeight: FontWeight.w700,
@@ -318,9 +306,9 @@ class _AddCustomProductSheetState
                     ),
                     const SizedBox(height: 8),
                     _PillRow(
-                      options: const [
-                        ('daily', 'יומי'),
-                        ('weekly', 'כמה פעמים בשבוע'),
+                      options: [
+                        ('daily', l.onboardingFrequencyDaily),
+                        ('weekly', l.customProductFrequencyWeekly),
                       ],
                       selected: _isDaily ? 'daily' : 'weekly',
                       onSelect: (v) => setState(() => _isDaily = v == 'daily'),
@@ -328,6 +316,7 @@ class _AddCustomProductSheetState
                     if (!_isDaily) ...[
                       const SizedBox(height: 12),
                       _TimesPerWeekPicker(
+                        label: l.customProductTimesPerWeekLabel,
                         value: _timesPerWeek,
                         onChanged: (v) => setState(() => _timesPerWeek = v),
                       ),
@@ -335,8 +324,8 @@ class _AddCustomProductSheetState
 
                     const SizedBox(height: 32),
 
-                    // ── CTA ─────────────────────────────────────────────────
                     _SaveButton(
+                      label: l.customProductSave,
                       enabled: _canSave,
                       saving: _saving,
                       onTap: _save,
@@ -381,8 +370,6 @@ class _AddCustomProductSheetState
     );
   }
 }
-
-// ── Category chips ────────────────────────────────────────────────────────────
 
 class _CategoryChips extends StatelessWidget {
   final List<Category> categories;
@@ -430,8 +417,6 @@ class _CategoryChips extends StatelessWidget {
     );
   }
 }
-
-// ── Pill row (slot / frequency selector) ─────────────────────────────────────
 
 class _PillRow extends StatelessWidget {
   final List<(String, String)> options;
@@ -483,13 +468,16 @@ class _PillRow extends StatelessWidget {
   }
 }
 
-// ── Times per week picker ─────────────────────────────────────────────────────
-
 class _TimesPerWeekPicker extends StatelessWidget {
+  final String label;
   final int value;
   final ValueChanged<int> onChanged;
 
-  const _TimesPerWeekPicker({required this.value, required this.onChanged});
+  const _TimesPerWeekPicker({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -497,7 +485,7 @@ class _TimesPerWeekPicker extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'פעמים בשבוע:',
+          label,
           style: AppTypography.labelMd.copyWith(
             color: AppColors.onSurfaceVariant,
           ),
@@ -535,14 +523,14 @@ class _TimesPerWeekPicker extends StatelessWidget {
   }
 }
 
-// ── Save button ───────────────────────────────────────────────────────────────
-
 class _SaveButton extends StatelessWidget {
+  final String label;
   final bool enabled;
   final bool saving;
   final VoidCallback onTap;
 
   const _SaveButton({
+    required this.label,
     required this.enabled,
     required this.saving,
     required this.onTap,
@@ -583,7 +571,7 @@ class _SaveButton extends StatelessWidget {
                             color: AppColors.onPrimary, size: 22),
                         const SizedBox(width: 8),
                         Text(
-                          'הוספה לשגרה שלי',
+                          label,
                           style: AppTypography.labelMd.copyWith(
                             color: AppColors.onPrimary,
                             fontWeight: FontWeight.w700,

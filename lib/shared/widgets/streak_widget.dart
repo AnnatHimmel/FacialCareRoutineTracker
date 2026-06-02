@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
 class StreakWidget extends StatelessWidget {
   final int currentStreak;
   final int longestStreak;
-
-  /// Slot-misses used this week (matches StreakResult.missesThisWeek).
   final int gracesUsed;
   final int gracesTotal;
 
@@ -19,14 +18,15 @@ class StreakWidget extends StatelessWidget {
   });
 
   static const Color _white = Color(0xFFFFFFFF);
-  static const Color _whiteDim = Color(0xCCFFFFFF); // 80 %
+  static const Color _whiteDim = Color(0xCCFFFFFF);
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final gracesLeft = (gracesTotal - gracesUsed).clamp(0, gracesTotal);
     final subtitle = currentStreak > 0
-        ? 'את בדרך הנכונה לזוהר מושלם!'
-        : 'כל יום נחשב — נתחיל היום ✨';
+        ? l.streakOnTrack
+        : l.streakStartToday;
 
     return Container(
       decoration: BoxDecoration(
@@ -38,20 +38,18 @@ class StreakWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Upper content ─────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
             child: IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Hero: flame + big number + label  (leading / right in RTL)
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Semantics(
-                        label: '$currentStreak ימים ברצף',
+                        label: l.streakSemanticDays(currentStreak),
                         excludeSemantics: true,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -80,7 +78,7 @@ class StreakWidget extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'ימים ברצף',
+                        l.streakDaysInRow,
                         style: AppTypography.labelSm.copyWith(
                           color: _whiteDim,
                           fontSize: 10,
@@ -89,7 +87,6 @@ class StreakWidget extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(width: 16),
-                  // Copy: encouragement + best-streak chip  (trailing / left in RTL)
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -111,10 +108,8 @@ class StreakWidget extends StatelessWidget {
             ),
           ),
 
-          // ── Hairline separator ────────────────────────────────────────────
-          Container(height: 1, color: Colors.white.withAlpha(51)), // 20 %
+          Container(height: 1, color: Colors.white.withAlpha(51)),
 
-          // ── Grace meter ───────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
             child: _GraceMeter(total: gracesTotal, left: gracesLeft),
@@ -125,8 +120,6 @@ class StreakWidget extends StatelessWidget {
   }
 }
 
-// ── Best-streak chip ──────────────────────────────────────────────────────────
-
 class _BestStreakChip extends StatelessWidget {
   final int bestStreak;
   const _BestStreakChip({required this.bestStreak});
@@ -135,10 +128,11 @@ class _BestStreakChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(38), // 15 %
+        color: Colors.white.withAlpha(38),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -147,7 +141,7 @@ class _BestStreakChip extends StatelessWidget {
           const Icon(Icons.emoji_events_rounded, color: _white, size: 14),
           const SizedBox(width: 5),
           Text(
-            'שיא אישי · $bestStreak ימים',
+            l.streakPersonalBest(bestStreak),
             style: AppTypography.labelSm.copyWith(
               color: _white,
               fontWeight: FontWeight.w700,
@@ -159,8 +153,6 @@ class _BestStreakChip extends StatelessWidget {
   }
 }
 
-// ── Grace meter ───────────────────────────────────────────────────────────────
-
 class _GraceMeter extends StatelessWidget {
   final int total;
   final int left;
@@ -170,10 +162,12 @@ class _GraceMeter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final isExhausted = left == 0;
-    final label = isExhausted ? 'אין חסדים' : '$left חסדים השבוע';
-    final semanticLabel =
-        isExhausted ? 'אין חסדים נותרו השבוע' : '$left חסדים נותרו השבוע';
+    final label = isExhausted ? l.streakNoGraces : l.streakGracesLeft(left);
+    final semanticLabel = isExhausted
+        ? l.streakNoGracesRemaining
+        : l.streakGracesRemaining(left);
 
     return Semantics(
       label: semanticLabel,
@@ -181,7 +175,6 @@ class _GraceMeter extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Leading (right in RTL): shield icon + label
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -197,7 +190,6 @@ class _GraceMeter extends StatelessWidget {
               ),
             ],
           ),
-          // Trailing (left in RTL): heart tokens
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -213,8 +205,6 @@ class _GraceMeter extends StatelessWidget {
   }
 }
 
-// ── Grace token (heart circle) ────────────────────────────────────────────────
-
 class _GraceToken extends StatelessWidget {
   final bool available;
   const _GraceToken({required this.available});
@@ -226,11 +216,11 @@ class _GraceToken extends StatelessWidget {
       height: 28,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: available ? Colors.white : Colors.white.withAlpha(26), // 10 %
+        color: available ? Colors.white : Colors.white.withAlpha(26),
         border: available
             ? null
             : Border.all(
-                color: Colors.white.withAlpha(64), // 25 %
+                color: Colors.white.withAlpha(64),
                 width: 1.5,
               ),
       ),

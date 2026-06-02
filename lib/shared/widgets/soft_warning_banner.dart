@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
 class SoftWarningBanner extends StatelessWidget {
   final String message;
+
+  /// Override the mute button label; if null uses the l10n default ("השתק").
   final String? muteLabel;
   final VoidCallback? onMute;
   final VoidCallback? onDismiss;
@@ -12,7 +15,7 @@ class SoftWarningBanner extends StatelessWidget {
   const SoftWarningBanner({
     super.key,
     required this.message,
-    this.muteLabel = 'השתק',
+    this.muteLabel,
     this.onMute,
     this.onDismiss,
     this.customAction,
@@ -20,6 +23,7 @@ class SoftWarningBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -52,7 +56,7 @@ class SoftWarningBanner extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 textStyle: AppTypography.labelSm,
               ),
-              child: Text(muteLabel ?? 'השתק'),
+              child: Text(muteLabel ?? l.warningMute),
             ),
           if (onDismiss != null)
             IconButton(

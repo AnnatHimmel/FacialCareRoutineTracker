@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../providers/root_providers.dart';
@@ -24,6 +25,7 @@ class _BackupReminderBannerState
   Widget build(BuildContext context) {
     if (_dismissed) return const SizedBox.shrink();
 
+    final l = AppLocalizations.of(context)!;
     final shouldShowAsync = ref.watch(_shouldShowBackupReminderProvider);
     return shouldShowAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -48,7 +50,7 @@ class _BackupReminderBannerState
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'מומלץ לגבות את הנתונים שלך',
+                  l.backupReminderText,
                   style: AppTypography.labelMd
                       .copyWith(color: AppColors.onSurface),
                 ),
@@ -60,7 +62,7 @@ class _BackupReminderBannerState
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   textStyle: AppTypography.labelSm,
                 ),
-                child: const Text('גבה עכשיו'),
+                child: Text(l.backupNowAction),
               ),
               IconButton(
                 onPressed: () => setState(() => _dismissed = true),
@@ -77,7 +79,6 @@ class _BackupReminderBannerState
   }
 }
 
-/// Shows the banner if last export was never done or was > 30 days ago.
 final _shouldShowBackupReminderProvider = FutureProvider<bool>((ref) async {
   final settings = ref.watch(settingsRepositoryProvider);
   final lastExportDate = await settings.getLastExportDate();
