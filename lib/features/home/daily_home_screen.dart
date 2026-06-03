@@ -61,7 +61,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
 
   void _checkForDayChange() {
     final boundary = ref.read(dayBoundaryServiceProvider);
-    final currentDate = boundary.formatDate(ref.read(effectiveDateProvider));
+    final currentDate = boundary.formatDate(boundary.todayEffectiveDate);
     if (currentDate != _lastDateStr) {
       setState(() {
         _snapshotted.clear();
@@ -96,7 +96,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
 
   String get _todayStr {
     final boundary = ref.read(dayBoundaryServiceProvider);
-    return boundary.formatDate(ref.read(effectiveDateProvider));
+    return boundary.formatDate(boundary.todayEffectiveDate);
   }
 
   Future<void> _ensureRecord(
@@ -208,7 +208,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
         morningRoutineAsync.isLoading && eveningRoutineAsync.isLoading;
 
     // Build day label from current date + user name
-    final effectiveDate = ref.read(effectiveDateProvider);
+    final effectiveDate = boundary.todayEffectiveDate;
     final userName = ref.watch(_userNameProvider).valueOrNull;
     final dayName = HebrewDateStrings.weekdays[effectiveDate.weekday - 1];
     final dayLabel = (userName != null && userName.trim().isNotEmpty)

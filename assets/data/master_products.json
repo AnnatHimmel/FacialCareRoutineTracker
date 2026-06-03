@@ -3,8 +3,8 @@
   "categories": [
     {"id":"cat-cleanser-step1","name":"ניקוי שלב 1","order":1,"icon":"soap"},
     {"id":"cat-cleanser-step2","name":"ניקוי שלב 2","order":2,"icon":"bubble_chart"},
-    {"id":"cat-retinoid","name":"רטינואידים","order":3,"icon":"science"},
-    {"id":"cat-toner","name":"טונר / אסנס","order":4,"icon":"water_drop"},
+    {"id":"cat-toner","name":"טונר / אסנס","order":3,"icon":"water_drop"},
+    {"id":"cat-retinoid","name":"רטינואידים","order":4,"icon":"science"},
     {"id":"cat-serum","name":"סרום / אקטיב","order":5,"icon":"auto_awesome"},
     {"id":"cat-moisturizer","name":"לחות","order":6,"icon":"opacity"},
     {"id":"cat-oil","name":"שמנים","order":7,"icon":"spa"},

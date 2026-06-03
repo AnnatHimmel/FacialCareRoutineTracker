@@ -1048,7 +1048,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleRecommendedWeekly.
   ///
   /// In he, this message translates to:
-  /// **'מומלץ: עד {max}× בשבוע'**
+  /// **'מומלץ: עד {max} פעמים בשבוע'**
   String scheduleRecommendedWeekly(Object max);
 
   /// No description provided for @scheduleCountEveryDay.
@@ -1810,7 +1810,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleCustomizeDays.
   ///
   /// In he, this message translates to:
-  /// **'התאמת ימים'**
+  /// **'בחירת ימים'**
   String get scheduleCustomizeDays;
 
   /// No description provided for @scheduleDailyDefaultSuffix.

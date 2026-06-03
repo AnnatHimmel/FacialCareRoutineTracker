@@ -194,9 +194,6 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           final nextSlot = (!allVisited && slotIdx < activeSlots.length - 1)
               ? activeSlots[slotIdx + 1]
               : null;
-          final activeRoutine = _activeSlot == Slot.morning
-              ? l.slotMorningRoutine
-              : l.slotEveningRoutine;
           final nextSlotRoutine = nextSlot == null
               ? null
               : nextSlot == Slot.morning
@@ -277,20 +274,6 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                       ],
                     ),
                   ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20, bothSlots ? 6 : 12, 20, 0),
-                  child: Text(
-                    bothSlots
-                        ? l.scheduleGuidedBothSlots
-                        : l.scheduleGuidedSingleSlot(activeRoutine),
-                    style: AppTypography.labelSm.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                      fontSize: 12,
-                      height: 1.4,
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
-                ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
                   child: _SlotTabSwitcher(
@@ -1406,7 +1389,6 @@ class _ProductScheduleCard extends ConsumerWidget {
           WeekdayPicker(
             selectedDays: selectedDays,
             onChanged: (days) => onChanged(days, existing),
-            showOverCapWarning: overCap,
           ),
 
           if (overCap) ...[

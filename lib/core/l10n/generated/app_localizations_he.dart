@@ -530,7 +530,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String scheduleRecommendedWeekly(Object max) {
-    return 'מומלץ: עד $max× בשבוע';
+    return 'מומלץ: עד $max פעמים בשבוע';
   }
 
   @override
@@ -958,7 +958,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get scheduleCustomizeDays => 'התאמת ימים';
+  String get scheduleCustomizeDays => 'בחירת ימים';
 
   @override
   String get scheduleDailyDefaultSuffix => '· כברירת מחדל כל יום';

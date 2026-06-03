@@ -9,7 +9,6 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/enums/slot.dart';
-import '../../domain/repositories/master_content_repository.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/fixed_slot_chip.dart';
 import '../../shared/widgets/glow_app_bar.dart';
@@ -99,7 +98,10 @@ class _ProductSelectionScreenState
         _openCategoryId = null;
       });
 
-  void _backToGuided() => setState(() => _view = _SelectionView.guided);
+  void _backToGuided(int totalCategories) => setState(() {
+    _view = _SelectionView.guided;
+    _catStep = totalCategories - 1;
+  });
 
   void _goToSchedule(BuildContext context) {
     if (widget.fromSetup) {
@@ -196,6 +198,8 @@ class _ProductSelectionScreenState
     final morningAsync = ref.watch(selectionsProvider(Slot.morning));
     final eveningAsync = ref.watch(selectionsProvider(Slot.evening));
 
+    final customAsync = ref.watch(customProductsProvider);
+
     final body = masterAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text(l.genericError(e))),
@@ -205,10 +209,15 @@ class _ProductSelectionScreenState
         final selMap = _buildSelMap(morning, evening);
         final categories = [...master.categories]
           ..sort((a, b) => a.order.compareTo(b.order));
+        final customProds = customAsync.valueOrNull ?? [];
+        final allProducts = [
+          ...master.products,
+          ...customProds.map((p) => p.toMasterProduct()),
+        ];
 
         return _view == _SelectionView.guided
-            ? _buildGuided(context, master, categories, selMap, morning, evening, l)
-            : _buildSummary(context, master, categories, selMap, morning, evening, l);
+            ? _buildGuided(context, allProducts, categories, selMap, morning, evening, l)
+            : _buildSummary(context, allProducts, categories, selMap, morning, evening, l);
       },
     );
 
@@ -223,7 +232,7 @@ class _ProductSelectionScreenState
 
   Widget _buildGuided(
     BuildContext context,
-    MasterContent master,
+    List<MasterProduct> allProducts,
     List<Category> categories,
     Map<String, Set<Slot>> selMap,
     List<ProductSelection> morning,
@@ -243,7 +252,7 @@ class _ProductSelectionScreenState
     final total = categories.length;
     final isLast = step == total - 1;
 
-    final catProducts = master.products
+    final catProducts = allProducts
         .where((p) => !p.isDeprecated && p.categoryId == cat.id)
         .toList()
       ..sort((a, b) {
@@ -443,7 +452,7 @@ class _ProductSelectionScreenState
                 Expanded(
                   child: PrimaryButton(
                     label: ctaLabel,
-                    leadingIcon: Icons.arrow_forward_rounded,
+                    trailingIcon: Icons.arrow_forward_rounded,
                     onTap: () {
                       if (isLast) {
                         _goToSummary();
@@ -463,7 +472,7 @@ class _ProductSelectionScreenState
 
   Widget _buildSummary(
     BuildContext context,
-    MasterContent master,
+    List<MasterProduct> allProducts,
     List<Category> categories,
     Map<String, Set<Slot>> selMap,
     List<ProductSelection> morning,
@@ -484,7 +493,7 @@ class _ProductSelectionScreenState
             : null;
 
     final visibleCats = categories.where((cat) {
-      return master.products.any((p) {
+      return allProducts.any((p) {
         if (p.isDeprecated || p.categoryId != cat.id) return false;
         if (onlyAM) return p.morningConfig != null;
         if (onlyPM) return p.eveningConfig != null;
@@ -492,13 +501,18 @@ class _ProductSelectionScreenState
       });
     }).toList();
 
-    return Stack(
-      children: [
-        CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _backToGuided(categories.length);
+      },
+      child: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -538,7 +552,7 @@ class _ProductSelectionScreenState
                 delegate: SliverChildBuilderDelegate(
                   (context, idx) {
                     final cat = visibleCats[idx];
-                    final catProducts = master.products.where((p) {
+                    final catProducts = allProducts.where((p) {
                       if (p.isDeprecated || p.categoryId != cat.id) return false;
                       if (onlyAM) return p.morningConfig != null;
                       if (onlyPM) return p.eveningConfig != null;
@@ -600,7 +614,7 @@ class _ProductSelectionScreenState
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: _backToGuided,
+                  onTap: () => _backToGuided(categories.length),
                   child: Container(
                     width: 52,
                     height: 52,
@@ -644,6 +658,7 @@ class _ProductSelectionScreenState
           ),
         ),
       ],
+      ),
     );
   }
 }

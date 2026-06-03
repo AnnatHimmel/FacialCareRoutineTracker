@@ -91,12 +91,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               }),
             ),
           ),
-          const SizedBox(width: 12),
-          TextButton(
-            onPressed: widget.onFinish,
-            child: Text(l.onboardingSkip,
-                style: const TextStyle(color: AppColors.primary)),
-          ),
         ],
       ),
     );

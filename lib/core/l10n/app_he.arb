@@ -247,7 +247,7 @@
   },
   "scheduleNoMix": "לא לשלב יחד",
   "scheduleRecommendedDaily": "מומלץ: כל יום",
-  "scheduleRecommendedWeekly": "מומלץ: עד {max}× בשבוע",
+  "scheduleRecommendedWeekly": "מומלץ: עד {max} פעמים בשבוע",
   "@scheduleRecommendedWeekly": {
     "placeholders": {
       "max": {}
@@ -489,7 +489,7 @@
       "label": {}
     }
   },
-  "scheduleCustomizeDays": "התאמת ימים",
+  "scheduleCustomizeDays": "בחירת ימים",
   "scheduleDailyDefaultSuffix": "· כברירת מחדל כל יום",
   "scheduleDailyCollapse": "סגירה",
   "scheduleBadgeNoneSelected": "לא נבחר"
