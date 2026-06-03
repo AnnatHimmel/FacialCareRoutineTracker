@@ -262,25 +262,15 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _viewMode == _ViewMode.images
-                                  ? l.homeTapImageToDone
-                                  : l.homeTapProductToDone,
-                              style: AppTypography.labelSm.copyWith(
-                                color: AppColors.onSurfaceVariant,
-                                fontSize: 10,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.touch_app_outlined,
-                              size: 10,
-                              color: AppColors.onSurfaceVariant,
-                            ),
-                          ],
+                        Text(
+                          _viewMode == _ViewMode.images
+                              ? l.homeTapImageToDone
+                              : l.homeTapProductToDone,
+                          textAlign: TextAlign.center,
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                            fontSize: 10,
+                          ),
                         ),
                         const SizedBox(height: 18),
                         _ViewModeControl(

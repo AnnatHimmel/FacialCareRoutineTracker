@@ -1225,11 +1225,6 @@ abstract class AppLocalizations {
   /// **'גרסה {version}'**
   String aboutVersionLabel(Object version);
 
-  /// No description provided for @aboutContentLabel.
-  ///
-  /// In he, this message translates to:
-  /// **'תוכן {version}'**
-  String aboutContentLabel(Object version);
 
   /// No description provided for @aboutChangelog.
   ///

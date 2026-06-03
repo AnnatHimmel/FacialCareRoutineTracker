@@ -5,7 +5,7 @@
     {"id":"cat-cleanser-step2","name":"ניקוי שלב 2","order":2,"icon":"bubble_chart"},
     {"id":"cat-toner","name":"טונר / אסנס","order":3,"icon":"water_drop"},
     {"id":"cat-retinoid","name":"רטינואידים","order":4,"icon":"science"},
-    {"id":"cat-serum","name":"סרום / אקטיב","order":5,"icon":"auto_awesome"},
+    {"id":"cat-serum","name":"סרום / חומצות","order":5,"icon":"auto_awesome"},
     {"id":"cat-moisturizer","name":"לחות","order":6,"icon":"opacity"},
     {"id":"cat-oil","name":"שמנים","order":7,"icon":"spa"},
     {"id":"cat-spf","name":"הגנה","order":8,"icon":"wb_sunny"}

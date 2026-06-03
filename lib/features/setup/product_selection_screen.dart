@@ -656,7 +656,7 @@ class _ProductSelectionScreenState
                 Expanded(
                   child: PrimaryButton(
                     label: l.productSelContinueToSchedule,
-                    leadingIcon: Icons.event_rounded,
+                    trailingIcon: Icons.arrow_back_rounded,
                     onTap: widget.onDone ?? () => _goToSchedule(context),
                   ),
                 ),

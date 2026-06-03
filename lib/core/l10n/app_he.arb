@@ -297,13 +297,7 @@
       "version": {}
     }
   },
-  "aboutContentLabel": "תוכן {version}",
-  "@aboutContentLabel": {
-    "placeholders": {
-      "version": {}
-    }
-  },
-  "aboutChangelog": "מה חדש",
+"aboutChangelog": "מה חדש",
   "exportDataTitle": "ייצוא נתונים",
   "exportDataDesc": "שמור גיבוי של כל הנתונים שלך כארכיון ZIP",
   "exportDataAction": "ייצוא",

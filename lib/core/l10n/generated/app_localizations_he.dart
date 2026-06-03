@@ -627,10 +627,6 @@ class AppLocalizationsHe extends AppLocalizations {
     return 'גרסה $version';
   }
 
-  @override
-  String aboutContentLabel(Object version) {
-    return 'תוכן $version';
-  }
 
   @override
   String get aboutChangelog => 'מה חדש';
