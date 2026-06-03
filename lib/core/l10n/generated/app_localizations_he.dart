@@ -918,6 +918,19 @@ class AppLocalizationsHe extends AppLocalizations {
   String get customProductSave => 'הוספה לשגרה שלי';
 
   @override
+  String get customProductDeleteButton => 'הסרת מוצר';
+
+  @override
+  String get customProductDeleteConfirmTitle => 'הסרת מוצר';
+
+  @override
+  String get customProductDeleteConfirmBody =>
+      'המוצר יוסר לצמיתות מהרשימה שלך. פעולה זו אינה הפיכה.';
+
+  @override
+  String get customProductDeleteConfirmAction => 'הסרה';
+
+  @override
   String scheduleConflictWarning(Object slot) {
     return 'עדיין יש ימי התנגשות ב$slot';
   }
@@ -968,6 +981,13 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get scheduleBadgeNoneSelected => 'לא נבחר';
+
+  @override
+  String get aboutDisclaimer =>
+      'האפליקציה מיועדת למעקב אישי בלבד ואינה מהווה ייעוץ רפואי או קוסמטי.';
+
+  @override
+  String get aboutPrivacyPolicyLink => 'מדיניות פרטיות';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).

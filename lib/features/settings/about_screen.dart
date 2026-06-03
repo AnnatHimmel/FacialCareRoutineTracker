@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -105,6 +106,40 @@ class AboutScreen extends ConsumerWidget {
               ],
 
               const SizedBox(height: 16),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  children: [
+                    Text(
+                      l.aboutDisclaimer,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () => launchUrl(
+                        Uri.parse(
+                          'https://annathimmel.github.io/FacialCareRoutineTracker/privacy.html',
+                        ),
+                        mode: LaunchMode.externalApplication,
+                      ),
+                      child: Text(
+                        l.aboutPrivacyPolicyLink,
+                        style: AppTypography.labelSm.copyWith(
+                          color: AppColors.primary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
           );
         },

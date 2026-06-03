@@ -1753,6 +1753,30 @@ abstract class AppLocalizations {
   /// **'הוספה לשגרה שלי'**
   String get customProductSave;
 
+  /// No description provided for @customProductDeleteButton.
+  ///
+  /// In he, this message translates to:
+  /// **'הסרת מוצר'**
+  String get customProductDeleteButton;
+
+  /// No description provided for @customProductDeleteConfirmTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הסרת מוצר'**
+  String get customProductDeleteConfirmTitle;
+
+  /// No description provided for @customProductDeleteConfirmBody.
+  ///
+  /// In he, this message translates to:
+  /// **'המוצר יוסר לצמיתות מהרשימה שלך. פעולה זו אינה הפיכה.'**
+  String get customProductDeleteConfirmBody;
+
+  /// No description provided for @customProductDeleteConfirmAction.
+  ///
+  /// In he, this message translates to:
+  /// **'הסרה'**
+  String get customProductDeleteConfirmAction;
+
   /// No description provided for @scheduleConflictWarning.
   ///
   /// In he, this message translates to:
@@ -1830,6 +1854,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לא נבחר'**
   String get scheduleBadgeNoneSelected;
+
+  /// No description provided for @aboutDisclaimer.
+  ///
+  /// In he, this message translates to:
+  /// **'האפליקציה מיועדת למעקב אישי בלבד ואינה מהווה ייעוץ רפואי או קוסמטי.'**
+  String get aboutDisclaimer;
+
+  /// No description provided for @aboutPrivacyPolicyLink.
+  ///
+  /// In he, this message translates to:
+  /// **'מדיניות פרטיות'**
+  String get aboutPrivacyPolicyLink;
 }
 
 class _AppLocalizationsDelegate

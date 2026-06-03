@@ -442,6 +442,10 @@
   "customProductFrequencyWeekly": "כמה פעמים בשבוע",
   "customProductTimesPerWeekLabel": "פעמים בשבוע:",
   "customProductSave": "הוספה לשגרה שלי",
+  "customProductDeleteButton": "הסרת מוצר",
+  "customProductDeleteConfirmTitle": "הסרת מוצר",
+  "customProductDeleteConfirmBody": "המוצר יוסר לצמיתות מהרשימה שלך. פעולה זו אינה הפיכה.",
+  "customProductDeleteConfirmAction": "הסרה",
   "scheduleConflictWarning": "עדיין יש ימי התנגשות ב{slot}",
   "@scheduleConflictWarning": {
     "placeholders": {
@@ -492,5 +496,7 @@
   "scheduleCustomizeDays": "בחירת ימים",
   "scheduleDailyDefaultSuffix": "· כברירת מחדל כל יום",
   "scheduleDailyCollapse": "סגירה",
-  "scheduleBadgeNoneSelected": "לא נבחר"
+  "scheduleBadgeNoneSelected": "לא נבחר",
+  "aboutDisclaimer": "האפליקציה מיועדת למעקב אישי בלבד ואינה מהווה ייעוץ רפואי או קוסמטי.",
+  "aboutPrivacyPolicyLink": "מדיניות פרטיות"
 }
