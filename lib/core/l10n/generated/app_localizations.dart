@@ -1225,7 +1225,6 @@ abstract class AppLocalizations {
   /// **'גרסה {version}'**
   String aboutVersionLabel(Object version);
 
-
   /// No description provided for @aboutChangelog.
   ///
   /// In he, this message translates to:

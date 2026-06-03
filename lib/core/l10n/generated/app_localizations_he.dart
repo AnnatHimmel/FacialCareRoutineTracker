@@ -627,7 +627,6 @@ class AppLocalizationsHe extends AppLocalizations {
     return 'גרסה $version';
   }
 
-
   @override
   String get aboutChangelog => 'מה חדש';
 
