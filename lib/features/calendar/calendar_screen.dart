@@ -718,7 +718,7 @@ class _AddPhotoCell extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              l.calendarAddPhoto,
+              l.skinLogAddPhotoLabel,
               style: AppTypography.bodyMd.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,

@@ -10,7 +10,6 @@
   "slotEvening": "ערב",
   "productSelectionTitle": "בחירת מוצרים",
   "scheduleTitle": "תזמון מוצרים",
-  "orderTitle": "סדר מוצרים",
   "streakCurrent": "ימי רצף",
   "streakLongest": "הרצף הארוך",
   "streakMissesThisWeek": "החסרות השבוע",
@@ -30,12 +29,10 @@
   "importAction": "ייבא",
   "importReplace": "החלפה",
   "importMerge": "מיזוג",
-  "settingsTitle": "הגדרות",
   "aboutTitle": "אודות / מה חדש",
   "updateReviewTitle": "עדכון הושלם",
   "backupReminderMessage": "גבי את הנתונים שלך",
   "backupAction": "גיבוי",
-  "skinLogTitle": "יומן עור",
   "skinLogPlaceholder": "איך העור שלך היום?",
   "emptyRoutine": "אין מוצרים מתוכננים להיום",
   "emptyJournal": "עדיין אין תמונות ביומן",
@@ -46,13 +43,6 @@
   "resetOrder": "אפסי לסדר מומלץ",
   "dataIntactConfirmation": "כל הנתונים שלך שמורים ובשלמותם",
   "before6amNote": "פעילות לפני 6:00 נרשמת ליום אמש",
-  "conflictChooserTitle": "התנגשות {current} מתוך {total}",
-  "@conflictChooserTitle": {
-    "placeholders": {
-      "current": {},
-      "total": {}
-    }
-  },
   "chooseArchive": "מהגיבוי",
   "chooseDevice": "מהמכשיר",
   "webStorageWarning": "תמונות מאוחסנות בנפח מוגבל. גיבוי מומלץ.",
@@ -164,7 +154,6 @@
   "calendarSkinState": "מצב העור היום",
   "calendarNoNotes": "לא נרשמו הערות",
   "calendarTasksDone": "משימות שביצעת היום:",
-  "calendarAddPhoto": "הוסיפי תמונה",
   "journalNoPhotos": "אין תמונות עדיין",
   "journalEmptyInstruction": "הוסיפי תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך",
   "journalStartDocumenting": "התחילי לתעד",
@@ -319,7 +308,6 @@
   },
   "importFileReadError": "לא ניתן לקרוא את הקובץ",
   "importInvalidFile": "קובץ לא תקין",
-  "importDialogTitle": "ייבוא נתונים",
   "importDialogQuestion": "כיצד לטפל בנתונים הקיימים?",
   "importReplaceSuccess": "הנתונים הוחלפו בהצלחה",
   "importMergeNoConflicts": "המיזוג הושלם — לא נמצאו התנגשויות",
@@ -373,9 +361,7 @@
   "premiumDescAndroid": "תכונה זו זמינה בגרסת הווב בלבד",
   "premiumKeyLabel": "מפתח הפעלה",
   "premiumActivate": "הפעל",
-  "skinLogSkinStateToday": "מצב העור היום",
   "skinLogNotesHint": "הערות על העור היום...",
-  "skinLogPhotosTitle": "תמונות",
   "skinLogAddPhotoLabel": "הוסיפי תמונה",
   "skinLogTakePhoto": "צלמי תמונה",
   "skinLogGallery": "בחרי מהגלריה",
@@ -400,13 +386,6 @@
   },
   "streakSemanticDays": "{count} ימים ברצף",
   "@streakSemanticDays": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "streakNoGracesRemaining": "אין עוד \" אופס, פיספסתי...\"",
-  "streakGracesRemaining": "נשארו {count} \"אופס, פיספסתי...\"",
-  "@streakGracesRemaining": {
     "placeholders": {
       "count": {}
     }
@@ -436,6 +415,9 @@
   "customProductFrequencyWeekly": "כמה פעמים בשבוע",
   "customProductTimesPerWeekLabel": "פעמים בשבוע:",
   "customProductSave": "הוספה לשגרה שלי",
+  "customProductEditButton": "עריכת מוצר",
+  "customProductEditTitle": "עריכת מוצר",
+  "customProductEditSave": "שמירת שינויים",
   "customProductDeleteButton": "הסרת מוצר",
   "customProductDeleteConfirmTitle": "הסרת מוצר",
   "customProductDeleteConfirmBody": "המוצר יוסר לצמיתות מהרשימה שלך. פעולה זו אינה הפיכה.",

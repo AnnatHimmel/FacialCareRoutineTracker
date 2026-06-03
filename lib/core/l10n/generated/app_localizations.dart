@@ -157,12 +157,6 @@ abstract class AppLocalizations {
   /// **'תזמון מוצרים'**
   String get scheduleTitle;
 
-  /// No description provided for @orderTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'סדר מוצרים'**
-  String get orderTitle;
-
   /// No description provided for @streakCurrent.
   ///
   /// In he, this message translates to:
@@ -241,12 +235,6 @@ abstract class AppLocalizations {
   /// **'מיזוג'**
   String get importMerge;
 
-  /// No description provided for @settingsTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'הגדרות'**
-  String get settingsTitle;
-
   /// No description provided for @aboutTitle.
   ///
   /// In he, this message translates to:
@@ -270,12 +258,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'גיבוי'**
   String get backupAction;
-
-  /// No description provided for @skinLogTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'יומן עור'**
-  String get skinLogTitle;
 
   /// No description provided for @skinLogPlaceholder.
   ///
@@ -336,12 +318,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'פעילות לפני 6:00 נרשמת ליום אמש'**
   String get before6amNote;
-
-  /// No description provided for @conflictChooserTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'התנגשות {current} מתוך {total}'**
-  String conflictChooserTitle(Object current, Object total);
 
   /// No description provided for @chooseArchive.
   ///
@@ -744,12 +720,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'משימות שביצעת היום:'**
   String get calendarTasksDone;
-
-  /// No description provided for @calendarAddPhoto.
-  ///
-  /// In he, this message translates to:
-  /// **'הוסיפי תמונה'**
-  String get calendarAddPhoto;
 
   /// No description provided for @journalNoPhotos.
   ///
@@ -1297,12 +1267,6 @@ abstract class AppLocalizations {
   /// **'קובץ לא תקין'**
   String get importInvalidFile;
 
-  /// No description provided for @importDialogTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'ייבוא נתונים'**
-  String get importDialogTitle;
-
   /// No description provided for @importDialogQuestion.
   ///
   /// In he, this message translates to:
@@ -1489,23 +1453,11 @@ abstract class AppLocalizations {
   /// **'הפעל'**
   String get premiumActivate;
 
-  /// No description provided for @skinLogSkinStateToday.
-  ///
-  /// In he, this message translates to:
-  /// **'מצב העור היום'**
-  String get skinLogSkinStateToday;
-
   /// No description provided for @skinLogNotesHint.
   ///
   /// In he, this message translates to:
   /// **'הערות על העור היום...'**
   String get skinLogNotesHint;
-
-  /// No description provided for @skinLogPhotosTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'תמונות'**
-  String get skinLogPhotosTitle;
 
   /// No description provided for @skinLogAddPhotoLabel.
   ///
@@ -1584,18 +1536,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'{count} ימים ברצף'**
   String streakSemanticDays(Object count);
-
-  /// No description provided for @streakNoGracesRemaining.
-  ///
-  /// In he, this message translates to:
-  /// **'אין עוד \" אופס, פיספסתי...\"'**
-  String get streakNoGracesRemaining;
-
-  /// No description provided for @streakGracesRemaining.
-  ///
-  /// In he, this message translates to:
-  /// **'נשארו {count} \"אופס, פיספסתי...\"'**
-  String streakGracesRemaining(Object count);
 
   /// No description provided for @routineItemDone.
   ///
@@ -1746,6 +1686,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הוספה לשגרה שלי'**
   String get customProductSave;
+
+  /// No description provided for @customProductEditButton.
+  ///
+  /// In he, this message translates to:
+  /// **'עריכת מוצר'**
+  String get customProductEditButton;
+
+  /// No description provided for @customProductEditTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'עריכת מוצר'**
+  String get customProductEditTitle;
+
+  /// No description provided for @customProductEditSave.
+  ///
+  /// In he, this message translates to:
+  /// **'שמירת שינויים'**
+  String get customProductEditSave;
 
   /// No description provided for @customProductDeleteButton.
   ///

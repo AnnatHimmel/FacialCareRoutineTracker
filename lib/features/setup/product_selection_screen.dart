@@ -8,6 +8,7 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
+import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/fixed_slot_chip.dart';
@@ -191,9 +192,18 @@ class _ProductSelectionScreenState
     }
   }
 
-  Future<void> _deleteCustomProduct(MasterProduct product) async {
-    final repo = ref.read(userDataRepositoryProvider);
-    await repo.deleteCustomProduct(product.id);
+  void _editCustomProduct(BuildContext context, MasterProduct product) {
+    final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
+    final UserCustomProduct? customProd = customProds
+        .cast<UserCustomProduct?>()
+        .firstWhere((p) => p?.id == product.id, orElse: () => null);
+    if (customProd == null) return;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AddCustomProductSheet(initialProduct: customProd),
+    );
   }
 
   @override
@@ -393,7 +403,7 @@ class _ProductSelectionScreenState
                             catProducts[i], selMap, morning, evening),
                         onTimingChange: (slot, enabled) => _setTiming(
                             catProducts[i], slot, enabled, morning, evening),
-                        onDelete: () => _deleteCustomProduct(catProducts[i]),
+                        onEdit: () => _editCustomProduct(context, catProducts[i]),
                         l: l,
                       ),
                     ),
@@ -592,7 +602,7 @@ class _ProductSelectionScreenState
                         ),
                         onTimingChange: (p, slot, enabled) =>
                             _setTiming(p, slot, enabled, morning, evening),
-                        onDeleteProduct: (p) => _deleteCustomProduct(p),
+                        onEditProduct: (p) => _editCustomProduct(context, p),
                         l: l,
                       ),
                     );
@@ -740,7 +750,7 @@ class _SelectRow extends StatefulWidget {
   final String categoryUsage;
   final VoidCallback onToggle;
   final void Function(Slot slot, bool enabled) onTimingChange;
-  final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
   final AppLocalizations l;
 
   const _SelectRow({
@@ -750,7 +760,7 @@ class _SelectRow extends StatefulWidget {
     required this.categoryUsage,
     required this.onToggle,
     required this.onTimingChange,
-    this.onDelete,
+    this.onEdit,
     required this.l,
   });
 
@@ -958,45 +968,22 @@ class _SelectRowState extends State<_SelectRow> {
                       ),
                     ],
                   ),
-                  if (_isCustom && widget.onDelete != null) ...[
+                  if (_isCustom && widget.onEdit != null) ...[
                     const SizedBox(height: 10),
                     const Divider(height: 1, color: AppColors.outlineVariant),
                     const SizedBox(height: 6),
                     GestureDetector(
-                      onTap: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: Text(l.customProductDeleteConfirmTitle),
-                            content: Text(l.customProductDeleteConfirmBody),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: Text(l.cancelAction),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: Text(
-                                  l.customProductDeleteConfirmAction,
-                                  style: const TextStyle(
-                                      color: AppColors.error),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (confirmed == true) widget.onDelete!();
-                      },
+                      onTap: widget.onEdit,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          const Icon(Icons.delete_outline_rounded,
-                              size: 14, color: AppColors.error),
+                          const Icon(Icons.edit_outlined,
+                              size: 14, color: AppColors.primary),
                           const SizedBox(width: 4),
                           Text(
-                            l.customProductDeleteButton,
+                            l.customProductEditButton,
                             style: AppTypography.labelSm.copyWith(
-                              color: AppColors.error,
+                              color: AppColors.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
@@ -1260,7 +1247,7 @@ class _CategorySection extends StatelessWidget {
   final VoidCallback onToggleOpen;
   final Future<void> Function(MasterProduct) onToggleProduct;
   final Future<void> Function(MasterProduct, Slot, bool) onTimingChange;
-  final Future<void> Function(MasterProduct)? onDeleteProduct;
+  final void Function(MasterProduct)? onEditProduct;
   final AppLocalizations l;
 
   const _CategorySection({
@@ -1274,7 +1261,7 @@ class _CategorySection extends StatelessWidget {
     required this.onToggleOpen,
     required this.onToggleProduct,
     required this.onTimingChange,
-    this.onDeleteProduct,
+    this.onEditProduct,
     required this.l,
   });
 
@@ -1370,8 +1357,8 @@ class _CategorySection extends StatelessWidget {
                       onToggle: () => onToggleProduct(products[i]),
                       onTimingChange: (slot, enabled) =>
                           onTimingChange(products[i], slot, enabled),
-                      onDelete: onDeleteProduct != null
-                          ? () => onDeleteProduct!(products[i])
+                      onEdit: onEditProduct != null
+                          ? () => onEditProduct!(products[i])
                           : null,
                       l: l,
                     ),

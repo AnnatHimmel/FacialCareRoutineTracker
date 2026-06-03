@@ -166,8 +166,8 @@ class _GraceMeter extends StatelessWidget {
     final isExhausted = left == 0;
     final label = isExhausted ? l.streakNoGraces : l.streakGracesLeft(left);
     final semanticLabel = isExhausted
-        ? l.streakNoGracesRemaining
-        : l.streakGracesRemaining(left);
+        ? l.streakNoGraces
+        : l.streakGracesLeft(left);
 
     return Semantics(
       label: semanticLabel,

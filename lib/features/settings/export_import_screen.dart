@@ -128,7 +128,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
     final choice = await showDialog<_ImportChoice>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l.importDialogTitle, style: AppTypography.headlineMd),
+        title: Text(l.importDataTitle, style: AppTypography.headlineMd),
         content: Text(
           l.importDialogQuestion,
           style: AppTypography.bodyMd,

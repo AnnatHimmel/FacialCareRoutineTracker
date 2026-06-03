@@ -11,12 +11,15 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/slot.dart';
+import '../../domain/repositories/user_data_repository.dart';
 import '../../shared/providers/root_providers.dart';
 
 const _uuid = Uuid();
 
 class AddCustomProductSheet extends ConsumerStatefulWidget {
-  const AddCustomProductSheet({super.key});
+  final UserCustomProduct? initialProduct;
+
+  const AddCustomProductSheet({super.key, this.initialProduct});
 
   @override
   ConsumerState<AddCustomProductSheet> createState() =>
@@ -28,11 +31,39 @@ class _AddCustomProductSheetState
   final _nameController = TextEditingController();
 
   Uint8List? _photoBytes;
+  bool _photoChanged = false;
   String? _categoryId;
   String _slot = 'morning';
   bool _isDaily = true;
   int _timesPerWeek = 3;
   bool _saving = false;
+
+  bool get _isEditing => widget.initialProduct != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.initialProduct;
+    if (p != null) {
+      _nameController.text = p.name;
+      _categoryId = p.categoryId;
+      if (p.inMorning && p.inEvening) {
+        _slot = 'both';
+      } else if (p.inEvening) {
+        _slot = 'evening';
+      } else {
+        _slot = 'morning';
+      }
+      _isDaily = p.isDaily;
+      _timesPerWeek = p.timesPerWeek ?? 3;
+      if (p.photoKey != null) _loadInitialPhoto(p.photoKey!);
+    }
+  }
+
+  Future<void> _loadInitialPhoto(String photoKey) async {
+    final bytes = await ref.read(photoRepositoryProvider).readPhoto(photoKey);
+    if (mounted && bytes != null) setState(() => _photoBytes = bytes);
+  }
 
   @override
   void dispose() {
@@ -54,7 +85,7 @@ class _AddCustomProductSheetState
       );
       if (file == null || !mounted) return;
       final bytes = await file.readAsBytes();
-      setState(() => _photoBytes = bytes);
+      setState(() { _photoBytes = bytes; _photoChanged = true; });
     } else {
       final choice = await showModalBottomSheet<ImageSource>(
         context: context,
@@ -86,7 +117,7 @@ class _AddCustomProductSheetState
       );
       if (file == null || !mounted) return;
       final bytes = await file.readAsBytes();
-      setState(() => _photoBytes = bytes);
+      setState(() { _photoBytes = bytes; _photoChanged = true; });
     }
   }
 
@@ -96,10 +127,10 @@ class _AddCustomProductSheetState
 
     try {
       final name = _nameController.text.trim();
-      final id = _uuid.v4();
+      final id = _isEditing ? widget.initialProduct!.id : _uuid.v4();
 
-      String? photoKey;
-      if (_photoBytes != null) {
+      String? photoKey = _isEditing ? widget.initialProduct!.photoKey : null;
+      if (_photoBytes != null && (_photoChanged || !_isEditing)) {
         photoKey = 'custom_product_$id';
         await ref.read(photoRepositoryProvider).savePhoto(photoKey, _photoBytes!);
       }
@@ -122,28 +153,92 @@ class _AddCustomProductSheetState
       final repo = ref.read(userDataRepositoryProvider);
       await repo.upsertCustomProduct(product);
 
-      if (inMorning) {
-        await repo.upsertSelection(ProductSelection(
-          id: _uuid.v4(),
-          productId: id,
-          slot: Slot.morning,
-          isSelected: true,
-          lastModified: DateTime.now(),
-        ));
-      }
-      if (inEvening) {
-        await repo.upsertSelection(ProductSelection(
-          id: _uuid.v4(),
-          productId: id,
-          slot: Slot.evening,
-          isSelected: true,
-          lastModified: DateTime.now(),
-        ));
+      if (_isEditing) {
+        final morningSelections =
+            ref.read(selectionsProvider(Slot.morning)).valueOrNull ?? [];
+        final eveningSelections =
+            ref.read(selectionsProvider(Slot.evening)).valueOrNull ?? [];
+        await _updateSlot(repo, id, Slot.morning, inMorning, morningSelections);
+        await _updateSlot(repo, id, Slot.evening, inEvening, eveningSelections);
+      } else {
+        if (inMorning) {
+          await repo.upsertSelection(ProductSelection(
+            id: _uuid.v4(),
+            productId: id,
+            slot: Slot.morning,
+            isSelected: true,
+            lastModified: DateTime.now(),
+          ));
+        }
+        if (inEvening) {
+          await repo.upsertSelection(ProductSelection(
+            id: _uuid.v4(),
+            productId: id,
+            slot: Slot.evening,
+            isSelected: true,
+            lastModified: DateTime.now(),
+          ));
+        }
       }
 
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _updateSlot(
+    UserDataRepository repo,
+    String productId,
+    Slot slot,
+    bool shouldBeSelected,
+    List<ProductSelection> existing,
+  ) async {
+    final matches =
+        existing.where((s) => s.productId == productId && s.slot == slot).toList();
+    if (matches.isNotEmpty) {
+      for (final match in matches) {
+        await repo.upsertSelection(
+          match.copyWith(isSelected: shouldBeSelected, lastModified: DateTime.now()),
+        );
+      }
+    } else if (shouldBeSelected) {
+      await repo.upsertSelection(ProductSelection(
+        id: _uuid.v4(),
+        productId: productId,
+        slot: slot,
+        isSelected: true,
+        lastModified: DateTime.now(),
+      ));
+    }
+  }
+
+  Future<void> _deleteProduct(AppLocalizations l) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.customProductDeleteConfirmTitle),
+        content: Text(l.customProductDeleteConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.cancelAction),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              l.customProductDeleteConfirmAction,
+              style: const TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ref
+          .read(userDataRepositoryProvider)
+          .deleteCustomProduct(widget.initialProduct!.id);
+      if (mounted) Navigator.of(context).pop();
     }
   }
 
@@ -183,7 +278,7 @@ class _AddCustomProductSheetState
                   children: [
                     Expanded(
                       child: Text(
-                        l.customProductTitle,
+                        _isEditing ? l.customProductEditTitle : l.customProductTitle,
                         style: AppTypography.headlineMd.copyWith(
                           color: AppColors.onSurface,
                           fontWeight: FontWeight.w700,
@@ -324,11 +419,40 @@ class _AddCustomProductSheetState
 
                     const SizedBox(height: 32),
 
-                    _SaveButton(
-                      label: l.customProductSave,
-                      enabled: _canSave,
-                      saving: _saving,
-                      onTap: _save,
+                    Row(
+                      children: [
+                        if (_isEditing) ...[
+                          GestureDetector(
+                            onTap: () => _deleteProduct(l),
+                            child: Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: AppColors.error.withAlpha(20),
+                                borderRadius: BorderRadius.circular(9999),
+                                border: Border.all(
+                                  color: AppColors.error.withAlpha(80),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.delete_outline_rounded,
+                                color: AppColors.error,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: _SaveButton(
+                            label: _isEditing ? l.customProductEditSave : l.customProductSave,
+                            icon: _isEditing ? Icons.check_rounded : Icons.add_rounded,
+                            enabled: _canSave,
+                            saving: _saving,
+                            onTap: _save,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -525,12 +649,14 @@ class _TimesPerWeekPicker extends StatelessWidget {
 
 class _SaveButton extends StatelessWidget {
   final String label;
+  final IconData icon;
   final bool enabled;
   final bool saving;
   final VoidCallback onTap;
 
   const _SaveButton({
     required this.label,
+    this.icon = Icons.add_rounded,
     required this.enabled,
     required this.saving,
     required this.onTap,
@@ -567,8 +693,7 @@ class _SaveButton extends StatelessWidget {
                   : Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.add_rounded,
-                            color: AppColors.onPrimary, size: 22),
+                        Icon(icon, color: AppColors.onPrimary, size: 22),
                         const SizedBox(width: 8),
                         Text(
                           label,

@@ -227,7 +227,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              l.skinLogSkinStateToday,
+                              l.calendarSkinState,
                               style: AppTypography.bodyMd.copyWith(
                                 color: AppColors.onSurface,
                                 fontWeight: FontWeight.w700,
@@ -327,7 +327,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l.skinLogPhotosTitle,
+                          l.homeViewImages,
                           style: AppTypography.bodyMd.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w700,

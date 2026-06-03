@@ -39,9 +39,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get scheduleTitle => 'תזמון מוצרים';
 
   @override
-  String get orderTitle => 'סדר מוצרים';
-
-  @override
   String get streakCurrent => 'ימי רצף';
 
   @override
@@ -83,9 +80,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get importMerge => 'מיזוג';
 
   @override
-  String get settingsTitle => 'הגדרות';
-
-  @override
   String get aboutTitle => 'אודות / מה חדש';
 
   @override
@@ -96,9 +90,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get backupAction => 'גיבוי';
-
-  @override
-  String get skinLogTitle => 'יומן עור';
 
   @override
   String get skinLogPlaceholder => 'איך העור שלך היום?';
@@ -129,11 +120,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get before6amNote => 'פעילות לפני 6:00 נרשמת ליום אמש';
-
-  @override
-  String conflictChooserTitle(Object current, Object total) {
-    return 'התנגשות $current מתוך $total';
-  }
 
   @override
   String get chooseArchive => 'מהגיבוי';
@@ -354,9 +340,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get calendarTasksDone => 'משימות שביצעת היום:';
-
-  @override
-  String get calendarAddPhoto => 'הוסיפי תמונה';
 
   @override
   String get journalNoPhotos => 'אין תמונות עדיין';
@@ -668,9 +651,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get importInvalidFile => 'קובץ לא תקין';
 
   @override
-  String get importDialogTitle => 'ייבוא נתונים';
-
-  @override
   String get importDialogQuestion => 'כיצד לטפל בנתונים הקיימים?';
 
   @override
@@ -775,13 +755,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get premiumActivate => 'הפעל';
 
   @override
-  String get skinLogSkinStateToday => 'מצב העור היום';
-
-  @override
   String get skinLogNotesHint => 'הערות על העור היום...';
-
-  @override
-  String get skinLogPhotosTitle => 'תמונות';
 
   @override
   String get skinLogAddPhotoLabel => 'הוסיפי תמונה';
@@ -827,14 +801,6 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String streakSemanticDays(Object count) {
     return '$count ימים ברצף';
-  }
-
-  @override
-  String get streakNoGracesRemaining => 'אין עוד \" אופס, פיספסתי...\"';
-
-  @override
-  String streakGracesRemaining(Object count) {
-    return 'נשארו $count \"אופס, פיספסתי...\"';
   }
 
   @override
@@ -911,6 +877,15 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get customProductSave => 'הוספה לשגרה שלי';
+
+  @override
+  String get customProductEditButton => 'עריכת מוצר';
+
+  @override
+  String get customProductEditTitle => 'עריכת מוצר';
+
+  @override
+  String get customProductEditSave => 'שמירת שינויים';
 
   @override
   String get customProductDeleteButton => 'הסרת מוצר';
@@ -1044,9 +1019,6 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get calendarEdit => 'ערוך';
-
-  @override
-  String get calendarAddPhoto => 'הוסף תמונה';
 
   @override
   String get journalEmptyInstruction =>
