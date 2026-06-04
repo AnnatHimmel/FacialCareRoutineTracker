@@ -17,7 +17,11 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  int _step = 1;
+  // Step 0 = language selection (before any locale-dependent text)
+  // Step 1 = welcome
+  // Step 2 = personal info
+  // Step 3 = product selection
+  int _step = 0;
   String _name = '';
   String? _gender;
 
@@ -32,8 +36,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       }
       if (_gender != null) {
         await settings.setUserGender(_gender!);
-        ref.read(appLocaleProvider.notifier).state =
-            _gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
+        if (ref.read(appLocaleProvider).languageCode != 'en') {
+          ref.read(appLocaleProvider.notifier).state =
+              _gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
+        }
       }
       await settings.setOnboardingCompleted(true);
     } catch (_) {
@@ -44,56 +50,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Step 0: language picker — rendered before any l10n text
+    if (_step == 0) return _LanguageSelectionStep(onSelect: _onLanguageSelected);
+
     final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(l),
-            Expanded(
-              child: _step == 1
-                  ? _buildStep1(l)
-                  : _step == 2
-                      ? _buildStep2(l)
-                      : _buildStep3(),
-            ),
-          ],
-        ),
+        child: _step == 1
+            ? _buildStep1(l)
+            : _step == 2
+                ? _buildStep2(l)
+                : _buildStep3(),
       ),
     );
   }
 
-  Widget _buildTopBar(AppLocalizations l) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: [
-          Text(
-            '$_step/3',
-            style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Row(
-              children: List.generate(3, (i) {
-                final filled = i < _step;
-                return Expanded(
-                  child: Container(
-                    height: 6,
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    decoration: BoxDecoration(
-                      color: filled ? AppColors.primary : AppColors.primaryFixed,
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ),
-        ],
-      ),
-    );
+  Future<void> _onLanguageSelected(String languageCode) async {
+    try {
+      final settings = ref.read(settingsRepositoryProvider);
+      await settings.setAppLanguage(languageCode);
+      if (languageCode == 'en') {
+        ref.read(appLocaleProvider.notifier).state = const Locale('en');
+      } else {
+        ref.read(appLocaleProvider.notifier).state = const Locale('he');
+      }
+    } catch (_) {}
+    _next();
   }
 
   Widget _buildStep1(AppLocalizations l) {
@@ -105,28 +88,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 16),
-                ClipOval(
-                  child: Image.asset(
-                    'assets/images/app_icon.png',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
+                const SizedBox(height: 168),
+                Image.asset(
+                  'assets/images/app_icon_no_bg.png',
+                  width: 100,
+                  height: 100,
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  l.onboardingWelcome,
-                  style: const TextStyle(
+                const Text(
+                  'The Glow Protocol',
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l.onboardingAppIntro,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -140,13 +115,38 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Column(
             children: [
-              PrimaryButton(
-                label: l.onboardingStart,
-                leadingIcon: Icons.arrow_forward,
-                onTap: _next,
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.outline),
+                      borderRadius: BorderRadius.circular(9999),
+                    ),
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: InkWell(
+                        onTap: _back,
+                        borderRadius: BorderRadius.circular(9999),
+                        child: const Icon(Icons.arrow_back,
+                            color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: PrimaryButton(
+                      label: l.onboardingStartNeutral,
+                      trailingIcon: Icons.arrow_forward,
+                      onTap: _next,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Text(l.onboardingTakesMinute,
@@ -169,7 +169,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       children: features.map((f) {
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -195,8 +196,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           const SizedBox(height: 32),
           Text(
-            l.onboardingTellUs,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            l.onboardingTellUsNeutral,
+            style:
+                const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Text(l.onboardingPrivacyDesc),
@@ -207,7 +209,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             textDirection: TextDirection.rtl,
             decoration: InputDecoration(
               hintText: l.onboardingNameHint,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16)),
             ),
             onChanged: (v) => setState(() => _name = v),
           ),
@@ -216,9 +219,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: _genderButton(l.onboardingGenderFemale, 'female')),
+              Expanded(
+                  child: _genderButton(l.onboardingGenderFemale, 'female')),
               const SizedBox(width: 12),
-              Expanded(child: _genderButton(l.onboardingGenderMale, 'male')),
+              Expanded(
+                  child: _genderButton(l.onboardingGenderMale, 'male')),
             ],
           ),
           const SizedBox(height: 16),
@@ -247,7 +252,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   opacity: canContinue ? 1.0 : 0.5,
                   child: ElevatedButton(
                     onPressed: canContinue ? _next : null,
-                    child: Text(l.continueAction),
+                    child: Text(l.continueActionNeutral),
                   ),
                 ),
               ),
@@ -287,13 +292,91 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _continueToSchedule() async {
-    // The schedule screen pops with `true` only when the user finishes it.
-    // A back press pops with no result — in that case we stay on the product
-    // selection step rather than completing onboarding.
     final finished = await context.push<bool>('/products/schedule');
     if (!mounted) return;
     if (finished == true) {
       await _handleFinish();
     }
+  }
+}
+
+// ── Language Selection Step (step 0) ──────────────────────────────────────────
+// Shown before any localized text is rendered, so language names are hardcoded.
+
+class _LanguageSelectionStep extends StatelessWidget {
+  final Future<void> Function(String languageCode) onSelect;
+
+  const _LanguageSelectionStep({required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Image.asset(
+                'assets/images/app_icon_no_bg.png',
+                width: 120,
+                height: 120,
+              ),
+              const SizedBox(height: 40),
+              _LangButton(
+                label: 'עברית',
+                sublabel: 'Hebrew',
+                onTap: () => onSelect('he'),
+              ),
+              const SizedBox(height: 14),
+              _LangButton(
+                label: 'English',
+                sublabel: 'אנגלית',
+                onTap: () => onSelect('en'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LangButton extends StatelessWidget {
+  final String label;
+  final String sublabel;
+  final VoidCallback onTap;
+
+  const _LangButton({
+    required this.label,
+    required this.sublabel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 64,
+        decoration: BoxDecoration(
+          color: AppColors.primaryFixed,
+          borderRadius: BorderRadius.circular(9999),
+          boxShadow: AppColors.glowSm,
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

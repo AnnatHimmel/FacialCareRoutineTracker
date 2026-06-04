@@ -79,7 +79,7 @@ function handleSave(req, res, relPath) {
 function handleGenerate(req, res) {
   req.resume();   // drain body
   const flutter = process.platform === 'win32' ? 'flutter.bat' : 'flutter';
-  const proc = cp.spawn(flutter, ['gen-l10n'], { cwd: ROOT });
+  const proc = cp.spawn(flutter, ['gen-l10n'], { cwd: ROOT, shell: true });
   let out = '';
   proc.stdout.on('data', d => out += d);
   proc.stderr.on('data', d => out += d);

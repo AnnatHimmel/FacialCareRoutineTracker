@@ -12,6 +12,8 @@ class UserCustomProduct {
   final bool isDaily;
   final int? timesPerWeek;
   final DateTime lastModified;
+  /// User-authored notes per locale code, e.g. {"he": "...", "en": "..."}.
+  final Map<String, String>? comment;
 
   const UserCustomProduct({
     required this.id,
@@ -23,7 +25,21 @@ class UserCustomProduct {
     required this.isDaily,
     this.timesPerWeek,
     required this.lastModified,
+    this.comment,
   });
+
+  /// Returns (text, sourceLocale) for the requested locale.
+  /// sourceLocale is null when the text is in the requested locale,
+  /// or the actual locale code when returning a fallback.
+  (String, String?)? commentForLocale(String locale) {
+    if (comment == null || comment!.isEmpty) return null;
+    final direct = comment![locale];
+    if (direct != null && direct.isNotEmpty) return (direct, null);
+    for (final e in comment!.entries) {
+      if (e.value.isNotEmpty) return (e.value, e.key);
+    }
+    return null;
+  }
 
   MasterProduct toMasterProduct() {
     final rule = isDaily
@@ -52,6 +68,7 @@ class UserCustomProduct {
     bool? isDaily,
     int? timesPerWeek,
     DateTime? lastModified,
+    Map<String, String>? comment,
   }) =>
       UserCustomProduct(
         id: id ?? this.id,
@@ -63,5 +80,6 @@ class UserCustomProduct {
         isDaily: isDaily ?? this.isDaily,
         timesPerWeek: timesPerWeek ?? this.timesPerWeek,
         lastModified: lastModified ?? this.lastModified,
+        comment: comment ?? this.comment,
       );
 }

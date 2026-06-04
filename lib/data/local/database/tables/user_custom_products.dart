@@ -11,6 +11,7 @@ class UserCustomProducts extends Table {
   BoolColumn get isDaily => boolean()();
   IntColumn get timesPerWeek => integer().nullable()();
   IntColumn get lastModifiedMs => integer()();
+  TextColumn get commentJson => text().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

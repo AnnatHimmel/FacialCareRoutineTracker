@@ -26,15 +26,20 @@ class _BackupReminderBannerState
     if (_dismissed) return const SizedBox.shrink();
 
     final l = AppLocalizations.of(context)!;
-    final shouldShowAsync = ref.watch(_shouldShowBackupReminderProvider);
+    final shouldShowAsync = ref.watch(_backupReminderProvider);
     return shouldShowAsync.when(
       loading: () => const SizedBox.shrink(),
       error: (_, _) => const SizedBox.shrink(),
-      data: (shouldShow) {
-        if (!shouldShow) return const SizedBox.shrink();
+      data: (info) {
+        if (!info.shouldShow) return const SizedBox.shrink();
+
+        final noteText = info.daysSince == null
+            ? l.backupNeverBacked
+            : l.backupDaysAgo(info.daysSince!);
+
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
           decoration: BoxDecoration(
             color: AppColors.secondaryFixed,
             borderRadius: BorderRadius.circular(20),
@@ -45,31 +50,59 @@ class _BackupReminderBannerState
               const Icon(
                 Icons.backup_outlined,
                 color: AppColors.secondary,
-                size: 20,
+                size: 18,
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  l.backupReminderText,
-                  style: AppTypography.labelMd
-                      .copyWith(color: AppColors.onSurface),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l.backupReminderText,
+                      style: AppTypography.labelMd.copyWith(
+                        color: AppColors.onSurface,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      noteText,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              TextButton(
-                onPressed: () => context.push('/export-import'),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.secondary,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  textStyle: AppTypography.labelSm,
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: () => context.push('/export-import'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary,
+                    borderRadius: BorderRadius.circular(9999),
+                    boxShadow: AppColors.glowSm,
+                  ),
+                  child: Text(
+                    l.backupNowAction,
+                    style: AppTypography.labelSm.copyWith(
+                      color: AppColors.onPrimary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
-                child: Text(l.backupNowAction),
               ),
-              IconButton(
-                onPressed: () => setState(() => _dismissed = true),
-                icon: const Icon(Icons.close, size: 18),
-                color: AppColors.onSurfaceVariant,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: () => setState(() => _dismissed = true),
+                child: const Icon(
+                  Icons.close,
+                  size: 16,
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -79,11 +112,17 @@ class _BackupReminderBannerState
   }
 }
 
-final _shouldShowBackupReminderProvider = FutureProvider<bool>((ref) async {
+({bool shouldShow, int? daysSince}) _calcBackupInfo(String? lastExportDate) {
+  if (lastExportDate == null) return (shouldShow: true, daysSince: null);
+  final lastExport = DateTime.tryParse(lastExportDate);
+  if (lastExport == null) return (shouldShow: true, daysSince: null);
+  final days = DateTime.now().difference(lastExport).inDays;
+  return (shouldShow: days > 30, daysSince: days);
+}
+
+final _backupReminderProvider =
+    FutureProvider<({bool shouldShow, int? daysSince})>((ref) async {
   final settings = ref.watch(settingsRepositoryProvider);
   final lastExportDate = await settings.getLastExportDate();
-  if (lastExportDate == null) return true;
-  final lastExport = DateTime.tryParse(lastExportDate);
-  if (lastExport == null) return true;
-  return DateTime.now().difference(lastExport).inDays > 30;
+  return _calcBackupInfo(lastExportDate);
 });

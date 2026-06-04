@@ -212,9 +212,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your routine, your pace.\nDaily tracking, smart product scheduling, and consistent glow.';
 
   @override
-  String get onboardingStart => 'Let\'s Begin';
-
-  @override
   String get onboardingTakesMinute => 'Takes less than a minute';
 
   @override
@@ -509,6 +506,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get scheduleRemove => 'Remove';
+
+  @override
   String get scheduleNoMix => 'Do not combine';
 
   @override
@@ -785,10 +785,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dayDetailJournalTooltip => 'Skin log';
 
   @override
-  String get streakDaysInRow => 'Days in a row';
+  String get streakDaysInRow => 'streak days';
 
   @override
-  String get streakOnTrack => 'You\'re on track for a perfect glow!';
+  String get streakOnTrack => 'On track for a perfect glow!';
 
   @override
   String get streakStartToday => 'Every day counts — let\'s start today ✨';
@@ -799,16 +799,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get streakNoGraces => 'No more \"oops, I missed...\"';
+  String get streakNoGraces => 'No more \"oops, missed it...\"';
 
   @override
   String streakGracesLeft(Object count) {
-    return '$count \"oops, I missed...\" left';
+    return '$count \"oops, missed it...\" left';
   }
 
   @override
   String streakSemanticDays(Object count) {
-    return '$count days in a row';
+    return '$count streak days';
   }
 
   @override
@@ -831,7 +831,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupReminderText => 'It is recommended to back up your data';
 
   @override
-  String get backupNowAction => 'Back up now';
+  String get backupNowAction => 'Back up';
 
   @override
   String get categoryItemsSuffix => 'items';
@@ -855,7 +855,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekdayOverCapWarning => 'Over recommended — consider reducing';
 
   @override
-  String get customProductTitle => 'Add Custom Product';
+  String get customProductTitle => 'Add Your Own Product';
 
   @override
   String get customProductPhotoLabel => 'Add photo (optional)';
@@ -879,7 +879,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customProductFrequencyLabel => 'Frequency';
 
   @override
-  String get customProductFrequencyWeekly => 'How many times per week';
+  String get customProductFrequencyWeekly => 'Non Daily';
 
   @override
   String get customProductTimesPerWeekLabel => 'Times per week:';
@@ -908,6 +908,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customProductDeleteConfirmAction => 'Remove';
+
+  @override
+  String get customProductCommentLabel => 'Note';
+
+  @override
+  String get customProductCommentHint =>
+      'Personal note about this product (optional)';
+
+  @override
+  String customProductCommentLanguageNote(Object language) {
+    return '(written in $language)';
+  }
 
   @override
   String scheduleConflictWarning(Object slot) {
@@ -1003,4 +1015,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendarDayFullSat => 'Saturday';
+
+  @override
+  String get settingsProfileEdit => 'Edit Profile';
+
+  @override
+  String get settingsProfileGuest => 'Guest';
+
+  @override
+  String get settingsProfileNameLabel => 'Your name';
+
+  @override
+  String get settingsProfileNameHint => 'Enter your name';
+
+  @override
+  String get settingsProfileSave => 'Save';
+
+  @override
+  String get backupNeverBacked => 'You have never backed up your data';
+
+  @override
+  String backupDaysAgo(int days) {
+    return 'Last backup $days days ago';
+  }
+
+  @override
+  String get onboardingSelectLanguage => 'Choose language';
+
+  @override
+  String get onboardingFrequencyWeeklyShort => 'Weekly';
+
+  @override
+  String get onboardingWelcomeNeutral => 'Welcome';
+
+  @override
+  String get onboardingTellUsNeutral => 'Tell us about you';
+
+  @override
+  String get onboardingStartNeutral => 'Let\'s Begin';
+
+  @override
+  String get continueActionNeutral => 'Continue';
 }

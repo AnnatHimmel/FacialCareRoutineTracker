@@ -94,9 +94,12 @@ class StreakWidget extends StatelessWidget {
                       children: [
                         Text(
                           subtitle,
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTypography.labelSm.copyWith(color: _whiteDim),
+                          style: AppTypography.labelSm.copyWith(
+                            color: _whiteDim,
+                            height: 1.3,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         _BestStreakChip(bestStreak: longestStreak),

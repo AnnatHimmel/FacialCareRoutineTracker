@@ -97,12 +97,11 @@
   "onboardingWelcome": "ברוכה הבאה",
   "onboardingAppIntro": "ל־The Glow Protocol",
   "onboardingTagline": "השגרה שלך, בקצב שלך.\nתיעוד יומי, תזמון חכם של מוצרים, וזוהר עקבי.",
-  "onboardingStart": "בואי נתחיל",
   "onboardingTakesMinute": "לוקח פחות מדקה",
   "onboardingFeature1": "מעקב יומי אחר השגרה",
   "onboardingFeature2": "תזמון שבועי לפי המוצר",
   "onboardingFeature3": "יומן עור ומצב רוח",
-  "onboardingTellUs": "ספרי לנו עלייך",
+  "onboardingTellUs": "כמה פרטים כדי להתחיל",
   "onboardingPrivacyDesc": "נשתמש בפרטים האלה כדי להתאים לך תוכן ולפנות אלייך אישית. הכל נשמר על המכשיר שלך.",
   "onboardingNamePrompt": "איך לקרוא לך?",
   "onboardingNameHint": "השם שלך",
@@ -233,6 +232,7 @@
       "day": {}
     }
   },
+  "scheduleRemove": "הסר",
   "scheduleNoMix": "לא לשלב יחד",
   "scheduleRecommendedDaily": "מומלץ: כל יום",
   "scheduleRecommendedWeekly": "מומלץ: עד {max} פעמים בשבוע",
@@ -395,7 +395,7 @@
   "routineItemDeprecatedPill": "לא מומלץ",
   "routineItemDeprecatedWarning": "מוצר זה אינו מומלץ עוד",
   "backupReminderText": "מומלץ לגבות את הנתונים שלך",
-  "backupNowAction": "גבי עכשיו",
+  "backupNowAction": "גבי",
   "categoryItemsSuffix": "פריטים",
   "fixedSlotMorningOnly": "בוקר בלבד",
   "fixedSlotEveningOnly": "ערב בלבד",
@@ -411,7 +411,7 @@
   "customProductSlotLabel": "זמן שגרה",
   "customProductSlotBoth": "בוקר + ערב",
   "customProductFrequencyLabel": "תדירות",
-  "customProductFrequencyWeekly": "כמה פעמים בשבוע",
+  "customProductFrequencyWeekly": "לא יומי",
   "customProductTimesPerWeekLabel": "פעמים בשבוע:",
   "customProductSave": "הוספה לשגרה שלי",
   "customProductEditButton": "עריכת מוצר",
@@ -421,6 +421,14 @@
   "customProductDeleteConfirmTitle": "הסרת מוצר",
   "customProductDeleteConfirmBody": "המוצר יוסר לצמיתות מהרשימה שלך. פעולה זו אינה הפיכה.",
   "customProductDeleteConfirmAction": "הסרה",
+  "customProductCommentLabel": "הערה",
+  "customProductCommentHint": "הערה אישית על המוצר (לא חובה)",
+  "customProductCommentLanguageNote": "(נכתב ב{language})",
+  "@customProductCommentLanguageNote": {
+    "placeholders": {
+      "language": {}
+    }
+  },
   "scheduleConflictWarning": "עדיין יש ימי התנגשות ב{slot}",
   "@scheduleConflictWarning": {
     "placeholders": {
@@ -485,5 +493,25 @@
   "calendarDayFullWed": "רביעי",
   "calendarDayFullThu": "חמישי",
   "calendarDayFullFri": "שישי",
-  "calendarDayFullSat": "שבת"
+  "calendarDayFullSat": "שבת",
+  "settingsProfileEdit": "עריכת פרופיל",
+  "settingsProfileGuest": "אורח",
+  "settingsProfileNameLabel": "השם שלך",
+  "settingsProfileNameHint": "הכניסי שם",
+  "settingsProfileSave": "שמירה",
+  "backupNeverBacked": "לא גיבית את הנתונים שלך מעולם",
+  "backupDaysAgo": "גיבוי אחרון לפני {days} ימים",
+  "@backupDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSelectLanguage": "בחרי שפה",
+  "onboardingFrequencyWeeklyShort": "שבועי",
+  "onboardingWelcomeNeutral": "ברוך הבא",
+  "onboardingTellUsNeutral": "כמה פרטים כדי להתחיל",
+  "onboardingStartNeutral": "בוא נתחיל",
+  "continueActionNeutral": "המשך"
 }

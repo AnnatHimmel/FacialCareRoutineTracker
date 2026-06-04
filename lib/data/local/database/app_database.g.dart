@@ -2373,6 +2373,17 @@ class $UserCustomProductsTable extends UserCustomProducts
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _commentJsonMeta = const VerificationMeta(
+    'commentJson',
+  );
+  @override
+  late final GeneratedColumn<String> commentJson = GeneratedColumn<String>(
+    'comment_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2384,6 +2395,7 @@ class $UserCustomProductsTable extends UserCustomProducts
     isDaily,
     timesPerWeek,
     lastModifiedMs,
+    commentJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2468,6 +2480,15 @@ class $UserCustomProductsTable extends UserCustomProducts
     } else if (isInserting) {
       context.missing(_lastModifiedMsMeta);
     }
+    if (data.containsKey('comment_json')) {
+      context.handle(
+        _commentJsonMeta,
+        commentJson.isAcceptableOrUnknown(
+          data['comment_json']!,
+          _commentJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2513,6 +2534,10 @@ class $UserCustomProductsTable extends UserCustomProducts
         DriftSqlType.int,
         data['${effectivePrefix}last_modified_ms'],
       )!,
+      commentJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}comment_json'],
+      ),
     );
   }
 
@@ -2533,6 +2558,7 @@ class CustomProductRow extends DataClass
   final bool isDaily;
   final int? timesPerWeek;
   final int lastModifiedMs;
+  final String? commentJson;
   const CustomProductRow({
     required this.id,
     required this.name,
@@ -2543,6 +2569,7 @@ class CustomProductRow extends DataClass
     required this.isDaily,
     this.timesPerWeek,
     required this.lastModifiedMs,
+    this.commentJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2560,6 +2587,9 @@ class CustomProductRow extends DataClass
       map['times_per_week'] = Variable<int>(timesPerWeek);
     }
     map['last_modified_ms'] = Variable<int>(lastModifiedMs);
+    if (!nullToAbsent || commentJson != null) {
+      map['comment_json'] = Variable<String>(commentJson);
+    }
     return map;
   }
 
@@ -2578,6 +2608,9 @@ class CustomProductRow extends DataClass
           ? const Value.absent()
           : Value(timesPerWeek),
       lastModifiedMs: Value(lastModifiedMs),
+      commentJson: commentJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(commentJson),
     );
   }
 
@@ -2596,6 +2629,7 @@ class CustomProductRow extends DataClass
       isDaily: serializer.fromJson<bool>(json['isDaily']),
       timesPerWeek: serializer.fromJson<int?>(json['timesPerWeek']),
       lastModifiedMs: serializer.fromJson<int>(json['lastModifiedMs']),
+      commentJson: serializer.fromJson<String?>(json['commentJson']),
     );
   }
   @override
@@ -2611,6 +2645,7 @@ class CustomProductRow extends DataClass
       'isDaily': serializer.toJson<bool>(isDaily),
       'timesPerWeek': serializer.toJson<int?>(timesPerWeek),
       'lastModifiedMs': serializer.toJson<int>(lastModifiedMs),
+      'commentJson': serializer.toJson<String?>(commentJson),
     };
   }
 
@@ -2624,6 +2659,7 @@ class CustomProductRow extends DataClass
     bool? isDaily,
     Value<int?> timesPerWeek = const Value.absent(),
     int? lastModifiedMs,
+    Value<String?> commentJson = const Value.absent(),
   }) => CustomProductRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2634,6 +2670,7 @@ class CustomProductRow extends DataClass
     isDaily: isDaily ?? this.isDaily,
     timesPerWeek: timesPerWeek.present ? timesPerWeek.value : this.timesPerWeek,
     lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
+    commentJson: commentJson.present ? commentJson.value : this.commentJson,
   );
   CustomProductRow copyWithCompanion(UserCustomProductsCompanion data) {
     return CustomProductRow(
@@ -2652,6 +2689,9 @@ class CustomProductRow extends DataClass
       lastModifiedMs: data.lastModifiedMs.present
           ? data.lastModifiedMs.value
           : this.lastModifiedMs,
+      commentJson: data.commentJson.present
+          ? data.commentJson.value
+          : this.commentJson,
     );
   }
 
@@ -2666,7 +2706,8 @@ class CustomProductRow extends DataClass
           ..write('inEvening: $inEvening, ')
           ..write('isDaily: $isDaily, ')
           ..write('timesPerWeek: $timesPerWeek, ')
-          ..write('lastModifiedMs: $lastModifiedMs')
+          ..write('lastModifiedMs: $lastModifiedMs, ')
+          ..write('commentJson: $commentJson')
           ..write(')'))
         .toString();
   }
@@ -2682,6 +2723,7 @@ class CustomProductRow extends DataClass
     isDaily,
     timesPerWeek,
     lastModifiedMs,
+    commentJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -2695,7 +2737,8 @@ class CustomProductRow extends DataClass
           other.inEvening == this.inEvening &&
           other.isDaily == this.isDaily &&
           other.timesPerWeek == this.timesPerWeek &&
-          other.lastModifiedMs == this.lastModifiedMs);
+          other.lastModifiedMs == this.lastModifiedMs &&
+          other.commentJson == this.commentJson);
 }
 
 class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
@@ -2708,6 +2751,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
   final Value<bool> isDaily;
   final Value<int?> timesPerWeek;
   final Value<int> lastModifiedMs;
+  final Value<String?> commentJson;
   final Value<int> rowid;
   const UserCustomProductsCompanion({
     this.id = const Value.absent(),
@@ -2719,6 +2763,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     this.isDaily = const Value.absent(),
     this.timesPerWeek = const Value.absent(),
     this.lastModifiedMs = const Value.absent(),
+    this.commentJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UserCustomProductsCompanion.insert({
@@ -2731,6 +2776,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     required bool isDaily,
     this.timesPerWeek = const Value.absent(),
     required int lastModifiedMs,
+    this.commentJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2749,6 +2795,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     Expression<bool>? isDaily,
     Expression<int>? timesPerWeek,
     Expression<int>? lastModifiedMs,
+    Expression<String>? commentJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2761,6 +2808,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
       if (isDaily != null) 'is_daily': isDaily,
       if (timesPerWeek != null) 'times_per_week': timesPerWeek,
       if (lastModifiedMs != null) 'last_modified_ms': lastModifiedMs,
+      if (commentJson != null) 'comment_json': commentJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2775,6 +2823,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     Value<bool>? isDaily,
     Value<int?>? timesPerWeek,
     Value<int>? lastModifiedMs,
+    Value<String?>? commentJson,
     Value<int>? rowid,
   }) {
     return UserCustomProductsCompanion(
@@ -2787,6 +2836,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
       isDaily: isDaily ?? this.isDaily,
       timesPerWeek: timesPerWeek ?? this.timesPerWeek,
       lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
+      commentJson: commentJson ?? this.commentJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2821,6 +2871,9 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     if (lastModifiedMs.present) {
       map['last_modified_ms'] = Variable<int>(lastModifiedMs.value);
     }
+    if (commentJson.present) {
+      map['comment_json'] = Variable<String>(commentJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2839,6 +2892,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
           ..write('isDaily: $isDaily, ')
           ..write('timesPerWeek: $timesPerWeek, ')
           ..write('lastModifiedMs: $lastModifiedMs, ')
+          ..write('commentJson: $commentJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4146,6 +4200,7 @@ typedef $$UserCustomProductsTableCreateCompanionBuilder =
       required bool isDaily,
       Value<int?> timesPerWeek,
       required int lastModifiedMs,
+      Value<String?> commentJson,
       Value<int> rowid,
     });
 typedef $$UserCustomProductsTableUpdateCompanionBuilder =
@@ -4159,6 +4214,7 @@ typedef $$UserCustomProductsTableUpdateCompanionBuilder =
       Value<bool> isDaily,
       Value<int?> timesPerWeek,
       Value<int> lastModifiedMs,
+      Value<String?> commentJson,
       Value<int> rowid,
     });
 
@@ -4213,6 +4269,11 @@ class $$UserCustomProductsTableFilterComposer
 
   ColumnFilters<int> get lastModifiedMs => $composableBuilder(
     column: $table.lastModifiedMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get commentJson => $composableBuilder(
+    column: $table.commentJson,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4270,6 +4331,11 @@ class $$UserCustomProductsTableOrderingComposer
     column: $table.lastModifiedMs,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get commentJson => $composableBuilder(
+    column: $table.commentJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UserCustomProductsTableAnnotationComposer
@@ -4311,6 +4377,11 @@ class $$UserCustomProductsTableAnnotationComposer
 
   GeneratedColumn<int> get lastModifiedMs => $composableBuilder(
     column: $table.lastModifiedMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get commentJson => $composableBuilder(
+    column: $table.commentJson,
     builder: (column) => column,
   );
 }
@@ -4364,6 +4435,7 @@ class $$UserCustomProductsTableTableManager
                 Value<bool> isDaily = const Value.absent(),
                 Value<int?> timesPerWeek = const Value.absent(),
                 Value<int> lastModifiedMs = const Value.absent(),
+                Value<String?> commentJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UserCustomProductsCompanion(
                 id: id,
@@ -4375,6 +4447,7 @@ class $$UserCustomProductsTableTableManager
                 isDaily: isDaily,
                 timesPerWeek: timesPerWeek,
                 lastModifiedMs: lastModifiedMs,
+                commentJson: commentJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4388,6 +4461,7 @@ class $$UserCustomProductsTableTableManager
                 required bool isDaily,
                 Value<int?> timesPerWeek = const Value.absent(),
                 required int lastModifiedMs,
+                Value<String?> commentJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UserCustomProductsCompanion.insert(
                 id: id,
@@ -4399,6 +4473,7 @@ class $$UserCustomProductsTableTableManager
                 isDaily: isDaily,
                 timesPerWeek: timesPerWeek,
                 lastModifiedMs: lastModifiedMs,
+                commentJson: commentJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

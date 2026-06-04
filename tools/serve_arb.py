@@ -19,6 +19,7 @@ PORT = 8088
 ROOT = Path(__file__).resolve().parent.parent   # project root
 
 SAVE_TARGETS = {
+    '/save/en':   'lib/core/l10n/app_en.arb',
     '/save/he':   'lib/core/l10n/app_he.arb',
     '/save/heMA': 'lib/core/l10n/app_he_MA.arb',
 }

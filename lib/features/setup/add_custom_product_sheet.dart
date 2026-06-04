@@ -29,6 +29,7 @@ class AddCustomProductSheet extends ConsumerStatefulWidget {
 class _AddCustomProductSheetState
     extends ConsumerState<AddCustomProductSheet> {
   final _nameController = TextEditingController();
+  final _commentController = TextEditingController();
 
   Uint8List? _photoBytes;
   bool _photoChanged = false;
@@ -47,6 +48,7 @@ class _AddCustomProductSheetState
     if (p != null) {
       _nameController.text = p.name;
       _categoryId = p.categoryId;
+      // comment is loaded after locale is available — deferred to didChangeDependencies
       if (p.inMorning && p.inEvening) {
         _slot = 'both';
       } else if (p.inEvening) {
@@ -65,9 +67,23 @@ class _AddCustomProductSheetState
     if (mounted && bytes != null) setState(() => _photoBytes = bytes);
   }
 
+  bool _commentLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_commentLoaded) {
+      _commentLoaded = true;
+      final locale = AppLocalizations.of(context)!.localeName;
+      final result = widget.initialProduct?.commentForLocale(locale);
+      if (result != null) _commentController.text = result.$1;
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
+    _commentController.dispose();
     super.dispose();
   }
 
@@ -127,6 +143,15 @@ class _AddCustomProductSheetState
 
     try {
       final name = _nameController.text.trim();
+      final locale = AppLocalizations.of(context)!.localeName;
+      final commentText = _commentController.text.trim();
+      final existingComment =
+          Map<String, String>.from(widget.initialProduct?.comment ?? {});
+      if (commentText.isNotEmpty) {
+        existingComment[locale] = commentText;
+      } else {
+        existingComment.remove(locale);
+      }
       final id = _isEditing ? widget.initialProduct!.id : _uuid.v4();
 
       String? photoKey = _isEditing ? widget.initialProduct!.photoKey : null;
@@ -148,6 +173,7 @@ class _AddCustomProductSheetState
         isDaily: _isDaily,
         timesPerWeek: _isDaily ? null : _timesPerWeek,
         lastModified: DateTime.now(),
+        comment: existingComment.isNotEmpty ? existingComment : null,
       );
 
       final repo = ref.read(userDataRepositoryProvider);
@@ -248,8 +274,9 @@ class _AddCustomProductSheetState
     final masterAsync = ref.watch(masterContentProvider);
     final categories = masterAsync.valueOrNull?.categories ?? [];
 
+    final isRtl = l.localeName == 'he';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.92,
@@ -299,7 +326,7 @@ class _AddCustomProductSheetState
               Expanded(
                 child: ListView(
                   controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  padding: EdgeInsets.fromLTRB(20, 8, 20, 24 + MediaQuery.of(context).viewPadding.bottom),
                   children: [
                     GestureDetector(
                       onTap: () => _pickPhoto(l),
@@ -366,9 +393,10 @@ class _AddCustomProductSheetState
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _CategoryChips(
+                    _CategoryDropdown(
                       categories: categories,
                       selected: _categoryId,
+                      locale: l.localeName,
                       onSelect: (id) => setState(() => _categoryId = id),
                     ),
                     const SizedBox(height: 20),
@@ -416,6 +444,21 @@ class _AddCustomProductSheetState
                         onChanged: (v) => setState(() => _timesPerWeek = v),
                       ),
                     ],
+                    const SizedBox(height: 20),
+
+                    Text(
+                      l.customProductCommentLabel,
+                      style: AppTypography.labelMd.copyWith(
+                        color: AppColors.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildTextField(
+                      controller: _commentController,
+                      hint: l.customProductCommentHint,
+                      maxLines: 3,
+                    ),
 
                     const SizedBox(height: 32),
 
@@ -468,6 +511,7 @@ class _AddCustomProductSheetState
     required TextEditingController controller,
     required String hint,
     ValueChanged<String>? onChanged,
+    int maxLines = 1,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -478,6 +522,7 @@ class _AddCustomProductSheetState
       child: TextField(
         controller: controller,
         textAlign: TextAlign.start,
+        maxLines: maxLines,
         onChanged: onChanged,
         style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
         decoration: InputDecoration(
@@ -494,49 +539,55 @@ class _AddCustomProductSheetState
   }
 }
 
-class _CategoryChips extends StatelessWidget {
+class _CategoryDropdown extends StatelessWidget {
   final List<Category> categories;
   final String? selected;
+  final String locale;
   final ValueChanged<String> onSelect;
 
-  const _CategoryChips({
+  const _CategoryDropdown({
     required this.categories,
     required this.selected,
+    required this.locale,
     required this.onSelect,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final cat in categories)
-          GestureDetector(
-            onTap: () => onSelect(cat.id),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: selected == cat.id
-                    ? AppColors.primary
-                    : AppColors.primaryFixed,
-                borderRadius: BorderRadius.circular(9999),
-                boxShadow: selected == cat.id ? AppColors.glowSm : null,
-              ),
-              child: Text(
-                cat.name,
-                style: AppTypography.labelMd.copyWith(
-                  color: selected == cat.id
-                      ? AppColors.onPrimary
-                      : AppColors.onPrimaryContainer,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.outlineVariant),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selected,
+          isExpanded: true,
+          hint: Text(
+            '—',
+            style: AppTypography.bodyMd.copyWith(
+              color: AppColors.outline.withAlpha(153),
             ),
           ),
-      ],
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: AppColors.onSurfaceVariant),
+          style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+          dropdownColor: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          items: [
+            for (final cat in categories)
+              DropdownMenuItem(
+                value: cat.id,
+                child: Text(cat.localizedName(locale)),
+              ),
+          ],
+          onChanged: (v) {
+            if (v != null) onSelect(v);
+          },
+        ),
+      ),
     );
   }
 }
@@ -563,7 +614,8 @@ class _PillRow extends StatelessWidget {
               onTap: () => onSelect(options[i].$1),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                height: 44,
+                constraints: const BoxConstraints(minHeight: 44),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
                 decoration: BoxDecoration(
                   color: selected == options[i].$1
                       ? AppColors.primary
@@ -574,6 +626,7 @@ class _PillRow extends StatelessWidget {
                 child: Center(
                   child: Text(
                     options[i].$2,
+                    textAlign: TextAlign.center,
                     style: AppTypography.labelMd.copyWith(
                       color: selected == options[i].$1
                           ? AppColors.onPrimary
@@ -604,8 +657,8 @@ class _TimesPerWeekPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           label,
@@ -613,34 +666,39 @@ class _TimesPerWeekPicker extends StatelessWidget {
             color: AppColors.onSurfaceVariant,
           ),
         ),
-        const SizedBox(width: 12),
-        for (int i = 1; i <= 5; i++) ...[
-          if (i > 1) const SizedBox(width: 6),
-          GestureDetector(
-            onTap: () => onChanged(i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: value == i ? AppColors.primary : AppColors.surfaceLow,
-                shape: BoxShape.circle,
-                boxShadow: value == i ? AppColors.glowSm : null,
-              ),
-              child: Center(
-                child: Text(
-                  '$i',
-                  style: AppTypography.labelMd.copyWith(
-                    color: value == i
-                        ? AppColors.onPrimary
-                        : AppColors.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (int i = 1; i <= 6; i++) ...[
+              if (i > 1) const SizedBox(width: 6),
+              GestureDetector(
+                onTap: () => onChanged(i),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: value == i ? AppColors.primary : AppColors.surfaceLow,
+                    shape: BoxShape.circle,
+                    boxShadow: value == i ? AppColors.glowSm : null,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$i',
+                      style: AppTypography.labelMd.copyWith(
+                        color: value == i
+                            ? AppColors.onPrimary
+                            : AppColors.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          ],
+        ),
       ],
     );
   }

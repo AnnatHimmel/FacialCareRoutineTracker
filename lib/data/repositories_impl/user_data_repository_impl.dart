@@ -211,6 +211,11 @@ class UserDataRepositoryImpl implements UserDataRepository {
           isDaily: Value(p.isDaily),
           timesPerWeek: Value(p.timesPerWeek),
           lastModifiedMs: Value(p.lastModified.millisecondsSinceEpoch),
+          commentJson: Value(
+            p.comment != null && p.comment!.isNotEmpty
+                ? encodeComment(p.comment!)
+                : null,
+          ),
         ),
       );
 
@@ -340,6 +345,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
         isDaily: r.isDaily,
         timesPerWeek: r.timesPerWeek,
         lastModified: DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),
+        comment: r.commentJson != null ? decodeComment(r.commentJson!) : null,
       );
 
   DayRecordsCompanion _dayRecordToCompanion(DayRecord r) =>

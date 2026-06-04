@@ -6,8 +6,6 @@
   "journalCtaSubtitle": "תעד את התקדמותך",
   "onboardingSkip": "דלג",
   "onboardingWelcome": "ברוך הבא",
-  "onboardingStart": "בוא נתחיל",
-  "onboardingTellUs": "ספר לנו עלייך",
   "onboardingPrivacyDesc": "נשתמש בפרטים האלה כדי להתאים לך תוכן ולפנות אליך אישית. הכל נשמר על המכשיר שלך.",
   "onboardingProductInstruction": "סמן את המוצרים שיש לך בארון. תוכל לערוך, להוסיף ולתזמן אותם בכל זמן.",
   "onboardingCanAddLater": "תוכל להוסיף מוצרים גם בהמשך",
@@ -36,7 +34,7 @@
   "weekdayOverCapWarning": "מעבר למומלץ — שקול להפחית",
   "mergeChooseVersion": "בחר איזו גרסה לשמור:",
   "mergeClickFinish": "לחץ על \"סיים\" להחלת המיזוג",
-  "backupNowAction": "גבה עכשיו",
+  "backupNowAction": "גבה",
   "skinLogWebStorageWarning": "תמונות בדפדפן עשויות להימחק על ידי Safari. גבה את הנתונים שלך.",
   "warningMute": "השתק",
   "resetOrder": "אפס לסדר מומלץ",
@@ -52,5 +50,257 @@
   "skinLogAddPhotoLabel": "הוסף תמונה",
   "skinLogTakePhoto": "צלם תמונה",
   "skinLogGallery": "בחר מהגלריה",
-  "continueAction": "המשך"
+  "continueAction": "המשך",
+  "onboardingAppIntro": "ל־The Glow Protocol",
+  "onboardingTagline": "השגרה שלך, בקצב שלך.\nתיעוד יומי, תזמון חכם של מוצרים, וזוהר עקבי.",
+  "onboardingTakesMinute": "לוקח פחות מדקה",
+  "onboardingFeature1": "מעקב יומי אחר השגרה",
+  "onboardingFeature2": "תזמון שבועי לפי המוצר",
+  "onboardingFeature3": "יומן עור ומצב רוח",
+  "onboardingNamePrompt": "איך לקרוא לך?",
+  "onboardingNameHint": "השם שלך",
+  "onboardingGenderLabel": "מגדר",
+  "onboardingGenderFemale": "נקבה",
+  "onboardingGenderMale": "זכר",
+  "onboardingPrivacyLock": "הפרטים נשמרים רק אצלך",
+  "onboardingYourProducts": "המוצרים שלך",
+  "onboardingFinish": "סיום והתחלה",
+  "onboardingFrequencyDaily": "יומי",
+  "onboardingFrequencyWeekly": "עד {max} פעמים בשבוע",
+  "@onboardingFrequencyWeekly": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "onboardingFrequencyWeeklyShort": "שבועי",
+  "homeDayLabel": "יום {day}",
+  "@homeDayLabel": {
+    "placeholders": {
+      "day": {}
+    }
+  },
+  "homeDayLabelGreeting": "שלום {name} • יום {day}",
+  "@homeDayLabelGreeting": {
+    "placeholders": {
+      "day": {},
+      "name": {}
+    }
+  },
+  "homeEmptyToday": "אין מוצרים להיום",
+  "homeProductStepDone": "{name}, שלב {step}, בוצע",
+  "@homeProductStepDone": {
+    "placeholders": {
+      "name": {},
+      "step": {}
+    }
+  },
+  "homeProductStepNotDone": "{name}, שלב {step}, לא בוצע",
+  "@homeProductStepNotDone": {
+    "placeholders": {
+      "name": {},
+      "step": {}
+    }
+  },
+  "journalCtaTitle": "איך העור שלך?",
+  "catHintCleanser1": "הסרת איפור ומסנני הגנה — לרוב בערב.",
+  "catHintCleanser2": "ניקוי פנים יומיומי ועדין.",
+  "catHintRetinoid": "חידוש העור — ערב בלבד, בהדרגה.",
+  "catHintToner": "איזון העור והכנה לספיגת השלבים הבאים.",
+  "catHintMoisturizer": "נעילת הלחות והרגעת העור.",
+  "catHintOil": "שכבת הזנה אחרונה, לרוב בערב.",
+  "catHintSpf": "הגנה מהשמש — שלב הבוקר האחרון, חובה.",
+  "scheduleConflictHeader": "שילוב לא מומלץ ביום {day}",
+  "@scheduleConflictHeader": {
+    "placeholders": {
+      "day": {}
+    }
+  },
+  "scheduleRemoveFrom": "הסר מ{day}",
+  "@scheduleRemoveFrom": {
+    "placeholders": {
+      "day": {}
+    }
+  },
+  "scheduleRecommendedWeekly": "מומלץ: עד {max} פעמים בשבוע",
+  "@scheduleRecommendedWeekly": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "@scheduleOverCap": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "scheduleSaveFinish": "סיום ושמירת השגרה",
+  "orderInstruction": "גרור את המוצרים כדי לסדר את השגרה שלך",
+  "orderResetToRecommended": "איפוס לסדר המומלץ",
+  "orderSaveFinish": "סיום והתחלה",
+  "orderSaveNew": "שמירת הסדר החדש",
+  "settingsGreeting": "שלום",
+  "settingsSectionRoutine": "שגרת הטיפוח שלי",
+  "settingsOrderProducts": "סדר מוצרים",
+  "settingsSectionAccount": "חשבון",
+  "settingsLogout": "התנתקות",
+  "settingsLogoutConfirmContent": "פעולה זו תאפס את הפרופיל שלך ותחזיר אותך למסך ההתחלה. הנתונים שלך יישמרו.",
+  "aboutVersionLabel": "גרסה {version}",
+  "@aboutVersionLabel": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "mergeKeepLocal": "שמור גרסה מקומית",
+  "mergeKeepLocalDesc": "המשך עם הנתונים הנוכחיים במכשיר",
+  "mergeUseArchiveDesc": "החלף עם הנתונים מקובץ הגיבוי",
+  "mergeAllResolved": "כל ההתנגשויות נפתרו",
+  "mergeSuccess": "המיזוג הושלם בהצלחה",
+  "premiumTitle": "גיבוי לענן — בקרוב",
+  "premiumDescWeb": "הזן מפתח הפעלה כדי לאפשר גיבוי ושחזור אוטומטי בין מכשירים",
+  "premiumDescAndroid": "תכונה זו זמינה בגרסת הווב בלבד",
+  "premiumKeyLabel": "מפתח הפעלה",
+  "premiumActivate": "הפעל",
+  "skinLogNotesHint": "הערות על העור שלך היום...",
+  "dayDetailNoData": "אין נתונים ליום זה",
+  "dayDetailJournalTooltip": "יומן עור",
+  "streakDaysInRow": "ימים ברצף",
+  "streakPersonalBest": "שיא אישי · {days} ימים",
+  "@streakPersonalBest": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "streakNoGraces": "אין עוד \" אופס, פיספסתי...\"",
+  "streakGracesLeft": "נשארו {count} \"אופס, פיספסתי...\"",
+  "@streakGracesLeft": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "streakSemanticDays": "{count} ימים ברצף",
+  "@streakSemanticDays": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "routineItemDone": "בוצע",
+  "routineItemNotDone": "לא בוצע",
+  "routineItemFlexibleSlots": "בוקר • ערב",
+  "routineItemDeprecatedPill": "לא מומלץ",
+  "routineItemDeprecatedWarning": "מוצר זה אינו מומלץ עוד",
+  "backupReminderText": "מומלץ לגבות את הנתונים שלך",
+  "categoryItemsSuffix": "פריטים",
+  "fixedSlotMorningOnly": "בוקר בלבד",
+  "fixedSlotEveningOnly": "ערב בלבד",
+  "skinStateCalm": "רגוע",
+  "skinStateMoist": "לח",
+  "skinStateOily": "שומני",
+  "customProductTitle": "הוספת מוצר משלי",
+  "customProductPhotoLabel": "הוספת תמונה (לא חובה)",
+  "customProductNameLabel": "שם המוצר",
+  "customProductNameHint": "לדוגמה: סרם לחות אישי",
+  "customProductCategoryLabel": "קטגוריה",
+  "customProductSlotLabel": "זמן שגרה",
+  "customProductSlotBoth": "בוקר + ערב",
+  "customProductFrequencyLabel": "תדירות",
+  "customProductFrequencyWeekly": "כמה פעמים בשבוע",
+  "customProductTimesPerWeekLabel": "פעמים בשבוע:",
+  "customProductSave": "הוספה לשגרה שלי",
+  "customProductEditButton": "עריכת מוצר",
+  "customProductEditTitle": "עריכת מוצר",
+  "customProductEditSave": "שמירת שינויים",
+  "customProductDeleteButton": "הסרת מוצר",
+  "customProductDeleteConfirmTitle": "הסרת מוצר",
+  "customProductDeleteConfirmBody": "המוצר יוסר לצמיתות מהרשימה שלך. פעולה זו אינה הפיכה.",
+  "customProductDeleteConfirmAction": "הסרה",
+  "customProductCommentLabel": "הערה",
+  "customProductCommentHint": "הערה אישית על המוצר (לא חובה)",
+  "customProductCommentLanguageNote": "(נכתב ב{language})",
+  "@customProductCommentLanguageNote": {
+    "placeholders": {
+      "language": {}
+    }
+  },
+  "scheduleConflictWarning": "עדיין יש ימי התנגשות ב{slot}",
+  "@scheduleConflictWarning": {
+    "placeholders": {
+      "slot": {}
+    }
+  },
+  "slotMorningRoutine": "שגרת בוקר",
+  "slotEveningRoutine": "שגרת ערב",
+  "scheduleStepBadge": "שלב {n} מתוך {total}",
+  "@scheduleStepBadge": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleGuidedBothSlots": "תזמן קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.",
+  "scheduleGuidedSingleSlot": "באילו ימים להשתמש בכל מוצר ב{routine}…",
+  "@scheduleGuidedSingleSlot": {
+    "placeholders": {
+      "routine": {}
+    }
+  },
+  "scheduleContinueTo": "המשך ל{routine}",
+  "@scheduleContinueTo": {
+    "placeholders": {
+      "routine": {}
+    }
+  },
+  "scheduleNextStepPending": "נשאר עוד שלב — {routine} מחכה לתזמון",
+  "@scheduleNextStepPending": {
+    "placeholders": {
+      "routine": {}
+    }
+  },
+  "scheduleConflictWarningCount": "עדיין יש {count} ימי התנגשות ב{label}",
+  "@scheduleConflictWarningCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {}
+    }
+  },
+  "scheduleCustomizeDays": "בחירת ימים",
+  "scheduleDailyDefaultSuffix": "· כברירת מחדל כל יום",
+  "scheduleDailyCollapse": "סגירה",
+  "scheduleBadgeNoneSelected": "לא נבחר",
+  "aboutDisclaimer": "האפליקציה מיועדת למעקב אישי בלבד ואינה מהווה ייעוץ רפואי או קוסמטי.",
+  "aboutPrivacyPolicyLink": "מדיניות פרטיות",
+  "settingsSectionLanguage": "שפה",
+  "settingsLanguage": "שפה",
+  "settingsLanguageSubtitle": "עברית / אנגלית",
+  "settingsLanguageHebrew": "עברית",
+  "settingsLanguageEnglish": "English",
+  "calendarDayFullSun": "ראשון",
+  "calendarDayFullMon": "שני",
+  "calendarDayFullTue": "שלישי",
+  "calendarDayFullWed": "רביעי",
+  "calendarDayFullThu": "חמישי",
+  "calendarDayFullFri": "שישי",
+  "calendarDayFullSat": "שבת",
+  "settingsProfileEdit": "עריכת פרופיל",
+  "settingsProfileGuest": "אורח",
+  "settingsProfileNameLabel": "השם שלך",
+  "settingsProfileNameHint": "הכניסי שם",
+  "settingsProfileSave": "שמירה",
+  "backupNeverBacked": "לא גיבית את הנתונים שלך מעולם",
+  "backupDaysAgo": "גיבוי אחרון לפני {days} ימים",
+  "@backupDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSelectLanguage": "בחרי שפה",
+  "onboardingWelcomeNeutral": "ברוך הבא",
+  "onboardingStartNeutral": "בוא נתחיל",
+  "continueActionNeutral": "המשך"
 }

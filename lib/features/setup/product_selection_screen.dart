@@ -301,14 +301,6 @@ class _ProductSelectionScreenState
                           ),
                           child: Text(l.productSelSkipToSummary),
                         ),
-                        const Spacer(),
-                        Text(
-                          l.productSelStepCounter(step + 1, total),
-                          style: AppTypography.labelSm.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                            fontSize: 11,
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 10),

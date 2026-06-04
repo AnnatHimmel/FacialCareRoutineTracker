@@ -719,17 +719,20 @@ class _DayCell extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: AppTypography.labelSm.copyWith(
-              fontSize: 10,
-              color: isConflict
-                  ? AppColors.error
-                  : AppColors.onSurfaceVariant,
-              fontWeight: isConflict ? FontWeight.w700 : FontWeight.w600,
+        SizedBox(
+          height: 14,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTypography.labelSm.copyWith(
+                fontSize: 10,
+                color: isConflict
+                    ? AppColors.error
+                    : AppColors.onSurfaceVariant,
+                fontWeight: isConflict ? FontWeight.w700 : FontWeight.w600,
+              ),
             ),
           ),
         ),
@@ -1044,7 +1047,7 @@ class _ConflictDetailPanel extends StatelessWidget {
             const SizedBox(width: 4),
             Flexible(
               child: Text(
-                l.scheduleRemoveFrom(dayLabel),
+                l.scheduleRemove,
                 style: AppTypography.labelSm.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,

@@ -211,9 +211,6 @@ class AppLocalizationsHe extends AppLocalizations {
       'השגרה שלך, בקצב שלך.\nתיעוד יומי, תזמון חכם של מוצרים, וזוהר עקבי.';
 
   @override
-  String get onboardingStart => 'בואי נתחיל';
-
-  @override
   String get onboardingTakesMinute => 'לוקח פחות מדקה';
 
   @override
@@ -226,7 +223,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get onboardingFeature3 => 'יומן עור ומצב רוח';
 
   @override
-  String get onboardingTellUs => 'ספרי לנו עלייך';
+  String get onboardingTellUs => 'כמה פרטים כדי להתחיל';
 
   @override
   String get onboardingPrivacyDesc =>
@@ -501,6 +498,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String scheduleRemoveFrom(Object day) {
     return 'הסר מ$day';
   }
+
+  @override
+  String get scheduleRemove => 'הסר';
 
   @override
   String get scheduleNoMix => 'לא לשלב יחד';
@@ -819,7 +819,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get backupReminderText => 'מומלץ לגבות את הנתונים שלך';
 
   @override
-  String get backupNowAction => 'גבי עכשיו';
+  String get backupNowAction => 'גבי';
 
   @override
   String get categoryItemsSuffix => 'פריטים';
@@ -867,7 +867,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get customProductFrequencyLabel => 'תדירות';
 
   @override
-  String get customProductFrequencyWeekly => 'כמה פעמים בשבוע';
+  String get customProductFrequencyWeekly => 'לא יומי';
 
   @override
   String get customProductTimesPerWeekLabel => 'פעמים בשבוע:';
@@ -896,6 +896,17 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get customProductDeleteConfirmAction => 'הסרה';
+
+  @override
+  String get customProductCommentLabel => 'הערה';
+
+  @override
+  String get customProductCommentHint => 'הערה אישית על המוצר (לא חובה)';
+
+  @override
+  String customProductCommentLanguageNote(Object language) {
+    return '(נכתב ב$language)';
+  }
 
   @override
   String scheduleConflictWarning(Object slot) {
@@ -991,6 +1002,47 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get calendarDayFullSat => 'שבת';
+
+  @override
+  String get settingsProfileEdit => 'עריכת פרופיל';
+
+  @override
+  String get settingsProfileGuest => 'אורח';
+
+  @override
+  String get settingsProfileNameLabel => 'השם שלך';
+
+  @override
+  String get settingsProfileNameHint => 'הכניסי שם';
+
+  @override
+  String get settingsProfileSave => 'שמירה';
+
+  @override
+  String get backupNeverBacked => 'לא גיבית את הנתונים שלך מעולם';
+
+  @override
+  String backupDaysAgo(int days) {
+    return 'גיבוי אחרון לפני $days ימים';
+  }
+
+  @override
+  String get onboardingSelectLanguage => 'בחרי שפה';
+
+  @override
+  String get onboardingFrequencyWeeklyShort => 'שבועי';
+
+  @override
+  String get onboardingWelcomeNeutral => 'ברוך הבא';
+
+  @override
+  String get onboardingTellUsNeutral => 'כמה פרטים כדי להתחיל';
+
+  @override
+  String get onboardingStartNeutral => 'בוא נתחיל';
+
+  @override
+  String get continueActionNeutral => 'המשך';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -1016,13 +1068,39 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get homeTapProductToDone => 'הקש על מוצר לסימון בוצע';
 
   @override
+  String get homeEmptyToday => 'אין מוצרים להיום';
+
+  @override
   String get homeAddProducts => 'הוסף מוצרים';
+
+  @override
+  String homeDayLabel(Object day) {
+    return 'יום $day';
+  }
+
+  @override
+  String homeDayLabelGreeting(Object day, Object name) {
+    return 'שלום $name • יום $day';
+  }
 
   @override
   String get homeNamesToggleHide => 'הסתר שמות מוצרים';
 
   @override
   String get homeNamesToggleShow => 'הצג שמות מוצרים';
+
+  @override
+  String homeProductStepDone(Object name, Object step) {
+    return '$name, שלב $step, בוצע';
+  }
+
+  @override
+  String homeProductStepNotDone(Object name, Object step) {
+    return '$name, שלב $step, לא בוצע';
+  }
+
+  @override
+  String get journalCtaTitle => 'איך העור שלך?';
 
   @override
   String get journalCtaSubtitle => 'תעד את התקדמותך';
@@ -1037,14 +1115,48 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get onboardingWelcome => 'ברוך הבא';
 
   @override
-  String get onboardingStart => 'בוא נתחיל';
+  String get onboardingAppIntro => 'ל־The Glow Protocol';
 
   @override
-  String get onboardingTellUs => 'ספר לנו עלייך';
+  String get onboardingTagline =>
+      'השגרה שלך, בקצב שלך.\nתיעוד יומי, תזמון חכם של מוצרים, וזוהר עקבי.';
+
+  @override
+  String get onboardingTakesMinute => 'לוקח פחות מדקה';
+
+  @override
+  String get onboardingFeature1 => 'מעקב יומי אחר השגרה';
+
+  @override
+  String get onboardingFeature2 => 'תזמון שבועי לפי המוצר';
+
+  @override
+  String get onboardingFeature3 => 'יומן עור ומצב רוח';
 
   @override
   String get onboardingPrivacyDesc =>
       'נשתמש בפרטים האלה כדי להתאים לך תוכן ולפנות אליך אישית. הכל נשמר על המכשיר שלך.';
+
+  @override
+  String get onboardingNamePrompt => 'איך לקרוא לך?';
+
+  @override
+  String get onboardingNameHint => 'השם שלך';
+
+  @override
+  String get onboardingGenderLabel => 'מגדר';
+
+  @override
+  String get onboardingGenderFemale => 'נקבה';
+
+  @override
+  String get onboardingGenderMale => 'זכר';
+
+  @override
+  String get onboardingPrivacyLock => 'הפרטים נשמרים רק אצלך';
+
+  @override
+  String get onboardingYourProducts => 'המוצרים שלך';
 
   @override
   String get onboardingProductInstruction =>
@@ -1052,6 +1164,17 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get onboardingCanAddLater => 'תוכל להוסיף מוצרים גם בהמשך';
+
+  @override
+  String get onboardingFinish => 'סיום והתחלה';
+
+  @override
+  String get onboardingFrequencyDaily => 'יומי';
+
+  @override
+  String onboardingFrequencyWeekly(Object max) {
+    return 'עד $max פעמים בשבוע';
+  }
 
   @override
   String get calendarEdit => 'ערוך';
@@ -1077,7 +1200,28 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get productSelContinueToSchedule => 'המשך לתזמון';
 
   @override
+  String get catHintCleanser1 => 'הסרת איפור ומסנני הגנה — לרוב בערב.';
+
+  @override
+  String get catHintCleanser2 => 'ניקוי פנים יומיומי ועדין.';
+
+  @override
+  String get catHintRetinoid => 'חידוש העור — ערב בלבד, בהדרגה.';
+
+  @override
+  String get catHintToner => 'איזון העור והכנה לספיגת השלבים הבאים.';
+
+  @override
   String get catHintSerum => 'החומרים הפעילים שלך. אפשר לבחור כמה שתרצה.';
+
+  @override
+  String get catHintMoisturizer => 'נעילת הלחות והרגעת העור.';
+
+  @override
+  String get catHintOil => 'שכבת הזנה אחרונה, לרוב בערב.';
+
+  @override
+  String get catHintSpf => 'הגנה מהשמש — שלב הבוקר האחרון, חובה.';
 
   @override
   String get catUsageCleanser1 =>
@@ -1120,7 +1264,22 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
       'המוצר יישאר בכל שאר הימים — לא נחסום אם תשאיר כך.';
 
   @override
+  String scheduleConflictHeader(Object day) {
+    return 'שילוב לא מומלץ ביום $day';
+  }
+
+  @override
   String get scheduleConflictInstruction => 'הקש «הסר» על אחד מהם כדי לפתור';
+
+  @override
+  String scheduleRemoveFrom(Object day) {
+    return 'הסר מ$day';
+  }
+
+  @override
+  String scheduleRecommendedWeekly(Object max) {
+    return 'מומלץ: עד $max פעמים בשבוע';
+  }
 
   @override
   String scheduleOverCap(Object max) {
@@ -1128,13 +1287,52 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   }
 
   @override
+  String get scheduleSaveFinish => 'סיום ושמירת השגרה';
+
+  @override
+  String get orderInstruction => 'גרור את המוצרים כדי לסדר את השגרה שלך';
+
+  @override
+  String get orderResetToRecommended => 'איפוס לסדר המומלץ';
+
+  @override
+  String get orderSaveFinish => 'סיום והתחלה';
+
+  @override
+  String get orderSaveNew => 'שמירת הסדר החדש';
+
+  @override
+  String get settingsGreeting => 'שלום';
+
+  @override
   String get settingsWelcome => 'ברוך הבא ל־The Glow Protocol';
+
+  @override
+  String get settingsSectionRoutine => 'שגרת הטיפוח שלי';
+
+  @override
+  String get settingsOrderProducts => 'סדר מוצרים';
 
   @override
   String get settingsOrderSubtitle => 'גרור לסידור אישי';
 
   @override
+  String get settingsSectionAccount => 'חשבון';
+
+  @override
+  String get settingsLogout => 'התנתקות';
+
+  @override
+  String get settingsLogoutConfirmContent =>
+      'פעולה זו תאפס את הפרופיל שלך ותחזיר אותך למסך ההתחלה. הנתונים שלך יישמרו.';
+
+  @override
   String get settingsLogoutConfirmBtn => 'התנתק';
+
+  @override
+  String aboutVersionLabel(Object version) {
+    return 'גרסה $version';
+  }
 
   @override
   String get updateNewProductsDesc =>
@@ -1144,10 +1342,44 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get mergeChooseVersion => 'בחר איזו גרסה לשמור:';
 
   @override
+  String get mergeKeepLocal => 'שמור גרסה מקומית';
+
+  @override
+  String get mergeKeepLocalDesc => 'המשך עם הנתונים הנוכחיים במכשיר';
+
+  @override
   String get mergeUseArchive => 'השתמש בגרסת הגיבוי';
 
   @override
+  String get mergeUseArchiveDesc => 'החלף עם הנתונים מקובץ הגיבוי';
+
+  @override
+  String get mergeAllResolved => 'כל ההתנגשויות נפתרו';
+
+  @override
   String get mergeClickFinish => 'לחץ על \"סיים\" להחלת המיזוג';
+
+  @override
+  String get mergeSuccess => 'המיזוג הושלם בהצלחה';
+
+  @override
+  String get premiumTitle => 'גיבוי לענן — בקרוב';
+
+  @override
+  String get premiumDescWeb =>
+      'הזן מפתח הפעלה כדי לאפשר גיבוי ושחזור אוטומטי בין מכשירים';
+
+  @override
+  String get premiumDescAndroid => 'תכונה זו זמינה בגרסת הווב בלבד';
+
+  @override
+  String get premiumKeyLabel => 'מפתח הפעלה';
+
+  @override
+  String get premiumActivate => 'הפעל';
+
+  @override
+  String get skinLogNotesHint => 'הערות על העור שלך היום...';
 
   @override
   String get skinLogAddPhotoLabel => 'הוסף תמונה';
@@ -1163,11 +1395,273 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
       'תמונות בדפדפן עשויות להימחק על ידי Safari. גבה את הנתונים שלך.';
 
   @override
+  String get dayDetailNoData => 'אין נתונים ליום זה';
+
+  @override
+  String get dayDetailJournalTooltip => 'יומן עור';
+
+  @override
+  String get streakDaysInRow => 'ימים ברצף';
+
+  @override
   String get streakOnTrack => 'אתה בדרך הנכונה לזוהר מושלם!';
 
   @override
-  String get backupNowAction => 'גבה עכשיו';
+  String streakPersonalBest(Object days) {
+    return 'שיא אישי · $days ימים';
+  }
+
+  @override
+  String get streakNoGraces => 'אין עוד \" אופס, פיספסתי...\"';
+
+  @override
+  String streakGracesLeft(Object count) {
+    return 'נשארו $count \"אופס, פיספסתי...\"';
+  }
+
+  @override
+  String streakSemanticDays(Object count) {
+    return '$count ימים ברצף';
+  }
+
+  @override
+  String get routineItemDone => 'בוצע';
+
+  @override
+  String get routineItemNotDone => 'לא בוצע';
+
+  @override
+  String get routineItemFlexibleSlots => 'בוקר • ערב';
+
+  @override
+  String get routineItemDeprecatedPill => 'לא מומלץ';
+
+  @override
+  String get routineItemDeprecatedWarning => 'מוצר זה אינו מומלץ עוד';
+
+  @override
+  String get backupReminderText => 'מומלץ לגבות את הנתונים שלך';
+
+  @override
+  String get backupNowAction => 'גבה';
+
+  @override
+  String get categoryItemsSuffix => 'פריטים';
+
+  @override
+  String get fixedSlotMorningOnly => 'בוקר בלבד';
+
+  @override
+  String get fixedSlotEveningOnly => 'ערב בלבד';
+
+  @override
+  String get skinStateCalm => 'רגוע';
+
+  @override
+  String get skinStateMoist => 'לח';
+
+  @override
+  String get skinStateOily => 'שומני';
 
   @override
   String get weekdayOverCapWarning => 'מעבר למומלץ — שקול להפחית';
+
+  @override
+  String get customProductTitle => 'הוספת מוצר משלי';
+
+  @override
+  String get customProductPhotoLabel => 'הוספת תמונה (לא חובה)';
+
+  @override
+  String get customProductNameLabel => 'שם המוצר';
+
+  @override
+  String get customProductNameHint => 'לדוגמה: סרם לחות אישי';
+
+  @override
+  String get customProductCategoryLabel => 'קטגוריה';
+
+  @override
+  String get customProductSlotLabel => 'זמן שגרה';
+
+  @override
+  String get customProductSlotBoth => 'בוקר + ערב';
+
+  @override
+  String get customProductFrequencyLabel => 'תדירות';
+
+  @override
+  String get customProductFrequencyWeekly => 'כמה פעמים בשבוע';
+
+  @override
+  String get customProductTimesPerWeekLabel => 'פעמים בשבוע:';
+
+  @override
+  String get customProductSave => 'הוספה לשגרה שלי';
+
+  @override
+  String get customProductEditButton => 'עריכת מוצר';
+
+  @override
+  String get customProductEditTitle => 'עריכת מוצר';
+
+  @override
+  String get customProductEditSave => 'שמירת שינויים';
+
+  @override
+  String get customProductDeleteButton => 'הסרת מוצר';
+
+  @override
+  String get customProductDeleteConfirmTitle => 'הסרת מוצר';
+
+  @override
+  String get customProductDeleteConfirmBody =>
+      'המוצר יוסר לצמיתות מהרשימה שלך. פעולה זו אינה הפיכה.';
+
+  @override
+  String get customProductDeleteConfirmAction => 'הסרה';
+
+  @override
+  String get customProductCommentLabel => 'הערה';
+
+  @override
+  String get customProductCommentHint => 'הערה אישית על המוצר (לא חובה)';
+
+  @override
+  String customProductCommentLanguageNote(Object language) {
+    return '(נכתב ב$language)';
+  }
+
+  @override
+  String scheduleConflictWarning(Object slot) {
+    return 'עדיין יש ימי התנגשות ב$slot';
+  }
+
+  @override
+  String get slotMorningRoutine => 'שגרת בוקר';
+
+  @override
+  String get slotEveningRoutine => 'שגרת ערב';
+
+  @override
+  String scheduleStepBadge(int n, int total) {
+    return 'שלב $n מתוך $total';
+  }
+
+  @override
+  String get scheduleGuidedBothSlots =>
+      'תזמן קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.';
+
+  @override
+  String scheduleGuidedSingleSlot(Object routine) {
+    return 'באילו ימים להשתמש בכל מוצר ב$routine…';
+  }
+
+  @override
+  String scheduleContinueTo(Object routine) {
+    return 'המשך ל$routine';
+  }
+
+  @override
+  String scheduleNextStepPending(Object routine) {
+    return 'נשאר עוד שלב — $routine מחכה לתזמון';
+  }
+
+  @override
+  String scheduleConflictWarningCount(int count, Object label) {
+    return 'עדיין יש $count ימי התנגשות ב$label';
+  }
+
+  @override
+  String get scheduleCustomizeDays => 'בחירת ימים';
+
+  @override
+  String get scheduleDailyDefaultSuffix => '· כברירת מחדל כל יום';
+
+  @override
+  String get scheduleDailyCollapse => 'סגירה';
+
+  @override
+  String get scheduleBadgeNoneSelected => 'לא נבחר';
+
+  @override
+  String get aboutDisclaimer =>
+      'האפליקציה מיועדת למעקב אישי בלבד ואינה מהווה ייעוץ רפואי או קוסמטי.';
+
+  @override
+  String get aboutPrivacyPolicyLink => 'מדיניות פרטיות';
+
+  @override
+  String get settingsSectionLanguage => 'שפה';
+
+  @override
+  String get settingsLanguage => 'שפה';
+
+  @override
+  String get settingsLanguageSubtitle => 'עברית / אנגלית';
+
+  @override
+  String get settingsLanguageHebrew => 'עברית';
+
+  @override
+  String get settingsLanguageEnglish => 'English';
+
+  @override
+  String get calendarDayFullSun => 'ראשון';
+
+  @override
+  String get calendarDayFullMon => 'שני';
+
+  @override
+  String get calendarDayFullTue => 'שלישי';
+
+  @override
+  String get calendarDayFullWed => 'רביעי';
+
+  @override
+  String get calendarDayFullThu => 'חמישי';
+
+  @override
+  String get calendarDayFullFri => 'שישי';
+
+  @override
+  String get calendarDayFullSat => 'שבת';
+
+  @override
+  String get settingsProfileEdit => 'עריכת פרופיל';
+
+  @override
+  String get settingsProfileGuest => 'אורח';
+
+  @override
+  String get settingsProfileNameLabel => 'השם שלך';
+
+  @override
+  String get settingsProfileNameHint => 'הכניסי שם';
+
+  @override
+  String get settingsProfileSave => 'שמירה';
+
+  @override
+  String get backupNeverBacked => 'לא גיבית את הנתונים שלך מעולם';
+
+  @override
+  String backupDaysAgo(int days) {
+    return 'גיבוי אחרון לפני $days ימים';
+  }
+
+  @override
+  String get onboardingSelectLanguage => 'בחרי שפה';
+
+  @override
+  String get onboardingFrequencyWeeklyShort => 'שבועי';
+
+  @override
+  String get onboardingWelcomeNeutral => 'ברוך הבא';
+
+  @override
+  String get onboardingStartNeutral => 'בוא נתחיל';
+
+  @override
+  String get continueActionNeutral => 'המשך';
 }

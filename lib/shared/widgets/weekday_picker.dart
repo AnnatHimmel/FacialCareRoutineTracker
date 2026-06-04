@@ -25,21 +25,25 @@ class WeekdayPicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(7, (i) {
             final isSelected = selectedDays.contains(i);
-            return _DayChip(
-              label: (l.localeName == 'en' ? _labelsEn : _labelsHe)[i],
-              isSelected: isSelected,
-              onTap: () {
-                final updated = Set<int>.from(selectedDays);
-                if (isSelected) {
-                  updated.remove(i);
-                } else {
-                  updated.add(i);
-                }
-                onChanged(updated);
-              },
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: _DayChip(
+                  label: (l.localeName == 'en' ? _labelsEn : _labelsHe)[i],
+                  isSelected: isSelected,
+                  onTap: () {
+                    final updated = Set<int>.from(selectedDays);
+                    if (isSelected) {
+                      updated.remove(i);
+                    } else {
+                      updated.add(i);
+                    }
+                    onChanged(updated);
+                  },
+                ),
+              ),
             );
           }),
         ),
@@ -76,25 +80,29 @@ class _DayChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryContainer
-              : AppColors.surfaceContainer,
-          shape: BoxShape.circle,
-          boxShadow: isSelected ? AppColors.glowSm : null,
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: AppTypography.labelMd.copyWith(
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.onPrimaryContainer
-                : AppColors.onSurfaceVariant,
+                ? AppColors.primaryContainer
+                : AppColors.surfaceContainer,
+            shape: BoxShape.circle,
+            boxShadow: isSelected ? AppColors.glowSm : null,
+          ),
+          alignment: Alignment.center,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: AppTypography.labelMd.copyWith(
+                color: isSelected
+                    ? AppColors.onPrimaryContainer
+                    : AppColors.onSurfaceVariant,
+              ),
+            ),
           ),
         ),
       ),

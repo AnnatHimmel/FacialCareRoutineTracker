@@ -97,7 +97,6 @@
   "onboardingWelcome": "Welcome",
   "onboardingAppIntro": "to The Glow Protocol",
   "onboardingTagline": "Your routine, your pace.\nDaily tracking, smart product scheduling, and consistent glow.",
-  "onboardingStart": "Let's Begin",
   "onboardingTakesMinute": "Takes less than a minute",
   "onboardingFeature1": "Daily routine tracking",
   "onboardingFeature2": "Per-product weekly scheduling",
@@ -233,6 +232,7 @@
       "day": {}
     }
   },
+  "scheduleRemove": "Remove",
   "scheduleNoMix": "Do not combine",
   "scheduleRecommendedDaily": "Recommended: every day",
   "scheduleRecommendedWeekly": "Recommended: up to {max} times per week",
@@ -367,8 +367,8 @@
   "skinLogWebStorageWarning": "Browser photos may be deleted by Safari. Back up your data.",
   "dayDetailNoData": "No data for this day",
   "dayDetailJournalTooltip": "Skin log",
-  "streakDaysInRow": "Days in a row",
-  "streakOnTrack": "You're on track for a perfect glow!",
+  "streakDaysInRow": "streak days",
+  "streakOnTrack": "On track for a perfect glow!",
   "streakStartToday": "Every day counts — let's start today ✨",
   "streakPersonalBest": "Personal best · {days} days",
   "@streakPersonalBest": {
@@ -376,14 +376,14 @@
       "days": {}
     }
   },
-  "streakNoGraces": "No more \"oops, I missed...\"",
-  "streakGracesLeft": "{count} \"oops, I missed...\" left",
+  "streakNoGraces": "No more \"oops, missed it...\"",
+  "streakGracesLeft": "{count} \"oops, missed it...\" left",
   "@streakGracesLeft": {
     "placeholders": {
       "count": {}
     }
   },
-  "streakSemanticDays": "{count} days in a row",
+  "streakSemanticDays": "{count} streak days",
   "@streakSemanticDays": {
     "placeholders": {
       "count": {}
@@ -395,7 +395,7 @@
   "routineItemDeprecatedPill": "Not recommended",
   "routineItemDeprecatedWarning": "This product is no longer recommended",
   "backupReminderText": "It is recommended to back up your data",
-  "backupNowAction": "Back up now",
+  "backupNowAction": "Back up",
   "categoryItemsSuffix": "items",
   "fixedSlotMorningOnly": "Morning only",
   "fixedSlotEveningOnly": "Evening only",
@@ -403,7 +403,7 @@
   "skinStateMoist": "Moist",
   "skinStateOily": "Oily",
   "weekdayOverCapWarning": "Over recommended — consider reducing",
-  "customProductTitle": "Add Custom Product",
+  "customProductTitle": "Add Your Own Product",
   "customProductPhotoLabel": "Add photo (optional)",
   "customProductNameLabel": "Product name",
   "customProductNameHint": "e.g. Personal moisturising serum",
@@ -411,7 +411,7 @@
   "customProductSlotLabel": "Routine time",
   "customProductSlotBoth": "Morning + Evening",
   "customProductFrequencyLabel": "Frequency",
-  "customProductFrequencyWeekly": "How many times per week",
+  "customProductFrequencyWeekly": "Non Daily",
   "customProductTimesPerWeekLabel": "Times per week:",
   "customProductSave": "Add to my routine",
   "customProductEditButton": "Edit product",
@@ -421,6 +421,14 @@
   "customProductDeleteConfirmTitle": "Remove Product",
   "customProductDeleteConfirmBody": "The product will be permanently removed from your list. This action cannot be undone.",
   "customProductDeleteConfirmAction": "Remove",
+  "customProductCommentLabel": "Note",
+  "customProductCommentHint": "Personal note about this product (optional)",
+  "customProductCommentLanguageNote": "(written in {language})",
+  "@customProductCommentLanguageNote": {
+    "placeholders": {
+      "language": {}
+    }
+  },
   "scheduleConflictWarning": "There are still conflict days in {slot}",
   "@scheduleConflictWarning": {
     "placeholders": {
@@ -485,5 +493,25 @@
   "calendarDayFullWed": "Wednesday",
   "calendarDayFullThu": "Thursday",
   "calendarDayFullFri": "Friday",
-  "calendarDayFullSat": "Saturday"
+  "calendarDayFullSat": "Saturday",
+  "settingsProfileEdit": "Edit Profile",
+  "settingsProfileGuest": "Guest",
+  "settingsProfileNameLabel": "Your name",
+  "settingsProfileNameHint": "Enter your name",
+  "settingsProfileSave": "Save",
+  "backupNeverBacked": "You have never backed up your data",
+  "backupDaysAgo": "Last backup {days} days ago",
+  "@backupDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSelectLanguage": "Choose language",
+  "onboardingFrequencyWeeklyShort": "Weekly",
+  "onboardingWelcomeNeutral": "Welcome",
+  "onboardingTellUsNeutral": "Tell us about you",
+  "onboardingStartNeutral": "Let's Begin",
+  "continueActionNeutral": "Continue"
 }

@@ -141,9 +141,10 @@
     /* ── Table ── */
     .tbl-wrap { padding: 12px 20px 40px; }
     table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    col.col-key  { width: 200px; }
-    col.col-he   { width: calc(45% - 100px); }
-    col.col-hema { width: calc(45% - 100px); }
+    col.col-key  { width: 180px; }
+    col.col-en   { width: calc(30% - 60px); }
+    col.col-he   { width: calc(30% - 60px); }
+    col.col-hema { width: calc(30% - 60px); }
     col.col-st   { width: 88px; }
     thead th {
       padding: 7px 10px; text-align: left; font-size: 11px; font-weight: 700;
@@ -207,17 +208,25 @@
 <header>
   <div>
     <h1>ARB Translation Editor</h1>
-    <small>FacialCareRoutineTracker · Hebrew locale files</small>
+    <small>FacialCareRoutineTracker · All locale files</small>
   </div>
   <div class="header-actions">
-    <button class="btn btn-ghost" id="btnGen"  onclick="runGenerate()"      disabled>⚡ Generate</button>
-    <button class="btn btn-ghost" id="btnHe"   onclick="saveFile('he')"     disabled>Save app_he.arb</button>
-    <button class="btn btn-ghost" id="btnHeMA" onclick="saveFile('heMA')"   disabled>Save app_he_MA.arb</button>
-    <button class="btn btn-white" id="btnBoth" onclick="saveBoth()"         disabled>Save Both</button>
+    <button class="btn btn-ghost" id="btnGen"   onclick="runGenerate()"       disabled>⚡ Generate</button>
+    <button class="btn btn-ghost" id="btnEn"    onclick="saveFile('en')"      disabled>Save app_en.arb</button>
+    <button class="btn btn-ghost" id="btnHe"    onclick="saveFile('he')"      disabled>Save app_he.arb</button>
+    <button class="btn btn-ghost" id="btnHeMA"  onclick="saveFile('heMA')"    disabled>Save app_he_MA.arb</button>
+    <button class="btn btn-white" id="btnAll"   onclick="saveAll()"           disabled>Save All</button>
   </div>
 </header>
 
 <div class="toolbar">
+  <div class="file-slot">
+    <span class="locale-tag">en</span>
+    <span id="stEn" class="file-none">loading…</span>
+    <button class="pick-btn" onclick="document.getElementById('fEn').click()" title="Load a different file">↺ replace</button>
+    <input type="file" id="fEn" accept=".arb,.json" onchange="loadFile('en',this)">
+  </div>
+  <div class="toolbar-sep"></div>
   <div class="file-slot">
     <span class="locale-tag">he</span>
     <span id="stHe" class="file-none">loading…</span>
@@ -254,9 +263,10 @@
   <div class="info-box" id="infoBox">
     <h3>How these files work</h3>
     <ul>
-      <li><code>app_he.arb</code> is the <strong>base locale</strong> — every key must be defined here.</li>
+      <li><code>app_en.arb</code> is the <strong>English locale</strong> — all user-visible keys must be defined here.</li>
+      <li><code>app_he.arb</code> is the <strong>Hebrew base locale</strong> — all keys defined here too.</li>
       <li><code>app_he_MA.arb</code> only contains keys where the Moroccan Hebrew text <em>differs</em> from the base. Flutter falls back to <code>app_he.arb</code> for everything else.</li>
-      <li>A key present in <code>app_he_MA.arb</code> but <strong>missing</strong> from <code>app_he.arb</code> is an <strong>orphan</strong> — Flutter ignores it.</li>
+      <li>A key in <code>app_he_MA.arb</code> but <strong>missing</strong> from <code>app_he.arb</code> is an <strong>orphan</strong> — Flutter ignores it.</li>
     </ul>
     <br>
     <span id="infoHint">Start the server with <code>python tools/serve_arb.py</code> to auto-load files and enable direct save.</span>
@@ -266,11 +276,14 @@
 <script>
 // ── State ──────────────────────────────────────────────────────────────────
 
+let enRaw   = null;
 let heRaw   = null;
 let heMaRaw = null;
 
+const enVals   = {};
 const heVals   = {};
 const heMaVals = {};
+const enMeta   = {};
 const heMeta   = {};
 const heMaMeta = {};
 
@@ -283,8 +296,10 @@ const IS_HTTP = location.protocol !== 'file:';
 
 window.addEventListener('DOMContentLoaded', async () => {
   if (!IS_HTTP) {
+    document.getElementById('stEn').textContent   = 'not loaded';
     document.getElementById('stHe').textContent   = 'not loaded';
     document.getElementById('stHeMA').textContent = 'not loaded';
+    document.getElementById('stEn').className     = 'file-none';
     document.getElementById('stHe').className     = 'file-none';
     document.getElementById('stHeMA').className   = 'file-none';
     document.getElementById('infoHint').innerHTML =
@@ -294,6 +309,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('infoHint').textContent = 'Loading files…';
   let loaded = 0;
   await Promise.allSettled([
+    fetchArb('en',   '../lib/core/l10n/app_en.arb').then(()   => loaded++),
     fetchArb('he',   '../lib/core/l10n/app_he.arb').then(()   => loaded++),
     fetchArb('heMA', '../lib/core/l10n/app_he_MA.arb').then(() => loaded++),
   ]);
@@ -330,7 +346,13 @@ function loadFile(locale, input) {
 }
 
 function applyParsed(locale, parsed) {
-  if (locale === 'he') {
+  if (locale === 'en') {
+    enRaw = parsed;
+    fillMaps(parsed, enVals, enMeta);
+    const n = Object.keys(enVals).length;
+    document.getElementById('stEn').textContent = `✓ ${n} keys`;
+    document.getElementById('stEn').className   = 'file-ok';
+  } else if (locale === 'he') {
     heRaw = parsed;
     fillMaps(parsed, heVals, heMeta);
     const n = Object.keys(heVals).length;
@@ -358,56 +380,60 @@ function fillMaps(raw, vals, meta) {
 // ── Rendering ──────────────────────────────────────────────────────────────
 
 function render() {
+  const hasEn   = enRaw   !== null;
   const hasHe   = heRaw   !== null;
   const hasHeMA = heMaRaw !== null;
-  if (!hasHe && !hasHeMA) return;
+  if (!hasEn && !hasHe && !hasHeMA) return;
 
-  // Collect all content keys, preserving he order first then he_MA extras
+  // Collect all content keys: en first (canonical order), then he extras, then he_MA extras
   const seen = new Set();
   const keys = [];
+  if (hasEn)   for (const k of Object.keys(enVals))   { if (!seen.has(k)) { seen.add(k); keys.push(k); } }
   if (hasHe)   for (const k of Object.keys(heVals))   { if (!seen.has(k)) { seen.add(k); keys.push(k); } }
   if (hasHeMA) for (const k of Object.keys(heMaVals)) { if (!seen.has(k)) { seen.add(k); keys.push(k); } }
 
-  // Count categories
+  // Count he vs he_MA categories
   let nBase = 0, nOv = 0, nOrphan = 0;
   for (const k of keys) {
     const inHe = heVals[k]   !== undefined;
     const inMA = heMaVals[k] !== undefined;
     if (inHe && inMA)  nOv++;
     else if (inHe)     nBase++;
-    else               nOrphan++;
+    else if (inMA)     nOrphan++;
   }
 
   // Stats bar
   const sb = document.getElementById('statsBar');
   sb.className = 'stats-bar visible';
-  document.getElementById('sBase').textContent   = `${nBase} base only (he_MA falls back)`;
-  document.getElementById('sOv').textContent     = `${nOv} overrides in he_MA`;
+  document.getElementById('sBase').textContent   = `${nBase} he base only`;
+  document.getElementById('sOv').textContent     = `${nOv} he_MA overrides`;
   document.getElementById('sOrphan').textContent = `${nOrphan} orphans${nOrphan ? ' ⚠' : ''}`;
 
   // Warning
   const wb = document.getElementById('warnBar');
   if (nOrphan > 0) {
     wb.className = 'warn-bar visible';
-    wb.innerHTML = `<strong>⚠ ${nOrphan} orphan key(s)</strong> exist in <code>app_he_MA.arb</code> but not in <code>app_he.arb</code>. Flutter ignores these. Add them to the base file or remove them from the override file.`;
+    wb.innerHTML = `<strong>⚠ ${nOrphan} orphan key(s)</strong> exist in <code>app_he_MA.arb</code> but not in <code>app_he.arb</code>. Flutter ignores these.`;
   } else {
     wb.className = 'warn-bar';
   }
 
   // Action buttons
-  document.getElementById('btnGen').disabled  = !(hasHe || hasHeMA);
-  document.getElementById('btnHe').disabled   = !hasHe;
-  document.getElementById('btnHeMA').disabled = !hasHeMA;
-  document.getElementById('btnBoth').disabled = !(hasHe && hasHeMA);
+  document.getElementById('btnGen').disabled   = !(hasEn || hasHe || hasHeMA);
+  document.getElementById('btnEn').disabled    = !hasEn;
+  document.getElementById('btnHe').disabled    = !hasHe;
+  document.getElementById('btnHeMA').disabled  = !hasHeMA;
+  document.getElementById('btnAll').disabled   = !(hasEn || hasHe || hasHeMA);
 
   // Build table
   const frag = document.createDocumentFragment();
   const table = document.createElement('table');
   table.innerHTML = `<colgroup>
-    <col class="col-key"><col class="col-he"><col class="col-hema"><col class="col-st">
+    <col class="col-key"><col class="col-en"><col class="col-he"><col class="col-hema"><col class="col-st">
   </colgroup>
   <thead><tr>
     <th>Key</th>
+    <th>app_en.arb</th>
     <th>app_he.arb <span style="font-weight:400;opacity:.7">(base)</span></th>
     <th>app_he_MA.arb <span style="font-weight:400;opacity:.7">(overrides only)</span></th>
     <th>Status</th>
@@ -449,6 +475,16 @@ function makeRow(key) {
   tdKey.className = 'key-cell';
   tdKey.textContent = key;
 
+  // en value cell
+  const tdEn = document.createElement('td');
+  if (enVals[key] !== undefined) {
+    tdEn.appendChild(makeTa(key, 'en', enVals[key], false));
+  } else {
+    tdEn.style.color = '#bbb';
+    tdEn.style.paddingTop = '9px';
+    tdEn.textContent = '—';
+  }
+
   // he value cell
   const tdHe = document.createElement('td');
   if (heVals[key] !== undefined) {
@@ -468,7 +504,7 @@ function makeRow(key) {
   tdSt.style.paddingTop = '9px';
   tdSt.appendChild(makeBadge(tr.dataset.type));
 
-  tr.append(tdKey, tdHe, tdMA, tdSt);
+  tr.append(tdKey, tdEn, tdHe, tdMA, tdSt);
   return tr;
 }
 
@@ -530,8 +566,9 @@ function makeTa(key, locale, value, isOverride) {
   ta.setAttribute('autocorrect',  'off');
   ta.setAttribute('spellcheck',   'false');
   ta.oninput = () => {
-    if (locale === 'he')   heVals[key]   = ta.value;
-    else                   heMaVals[key] = ta.value;
+    if (locale === 'en')        enVals[key]   = ta.value;
+    else if (locale === 'he')   heVals[key]   = ta.value;
+    else                        heMaVals[key] = ta.value;
     autoH(ta);
   };
   setTimeout(() => autoH(ta), 0);
@@ -582,9 +619,10 @@ function applyView() {
 
     let searchOk = true;
     if (activeSearch) {
+      const enV  = (enVals[tr.dataset.key]   || '').toLowerCase();
       const heV  = (heVals[tr.dataset.key]   || '').toLowerCase();
       const maV  = (heMaVals[tr.dataset.key] || '').toLowerCase();
-      searchOk = key.includes(activeSearch) || heV.includes(activeSearch) || maV.includes(activeSearch);
+      searchOk = key.includes(activeSearch) || enV.includes(activeSearch) || heV.includes(activeSearch) || maV.includes(activeSearch);
     }
 
     tr.classList.toggle('row-hide', !(filterOk && searchOk));
@@ -592,6 +630,15 @@ function applyView() {
 }
 
 // ── Build JSON ─────────────────────────────────────────────────────────────
+
+function buildEnJson() {
+  const out = { '@@locale': 'en' };
+  for (const [k, v] of Object.entries(enRaw)) {
+    if (k === '@@locale') continue;
+    out[k] = k.startsWith('@') ? v : (enVals[k] ?? v);
+  }
+  return JSON.stringify(out, null, 2) + '\n';
+}
 
 function buildHeJson() {
   const out = { '@@locale': 'he' };
@@ -627,15 +674,16 @@ function buildHeMaJson() {
 // ── Save ───────────────────────────────────────────────────────────────────
 
 async function saveFile(locale) {
-  if (locale === 'he'   && !heRaw)   { toast('app_he.arb not loaded', true);   return; }
+  if (locale === 'en'   && !enRaw)   { toast('app_en.arb not loaded', true);    return; }
+  if (locale === 'he'   && !heRaw)   { toast('app_he.arb not loaded', true);    return; }
   if (locale === 'heMA' && !heMaRaw) { toast('app_he_MA.arb not loaded', true); return; }
 
-  const content  = locale === 'he' ? buildHeJson() : buildHeMaJson();
-  const filename = locale === 'he' ? 'app_he.arb'  : 'app_he_MA.arb';
+  const content  = locale === 'en' ? buildEnJson() : locale === 'he' ? buildHeJson() : buildHeMaJson();
+  const filename = locale === 'en' ? 'app_en.arb'  : locale === 'he' ? 'app_he.arb'  : 'app_he_MA.arb';
 
   if (!IS_HTTP) { downloadFallback(filename, content); return; }
 
-  const endpoint = locale === 'he' ? '/save/he' : '/save/heMA';
+  const endpoint = `/save/${locale === 'heMA' ? 'heMA' : locale}`;
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -650,9 +698,10 @@ async function saveFile(locale) {
   }
 }
 
-async function saveBoth() {
-  await saveFile('he');
-  await saveFile('heMA');
+async function saveAll() {
+  if (enRaw)   await saveFile('en');
+  if (heRaw)   await saveFile('he');
+  if (heMaRaw) await saveFile('heMA');
 }
 
 function downloadFallback(name, text) {

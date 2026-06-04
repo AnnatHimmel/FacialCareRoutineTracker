@@ -477,12 +477,6 @@ abstract class AppLocalizations {
   /// **'השגרה שלך, בקצב שלך.\nתיעוד יומי, תזמון חכם של מוצרים, וזוהר עקבי.'**
   String get onboardingTagline;
 
-  /// No description provided for @onboardingStart.
-  ///
-  /// In he, this message translates to:
-  /// **'בואי נתחיל'**
-  String get onboardingStart;
-
   /// No description provided for @onboardingTakesMinute.
   ///
   /// In he, this message translates to:
@@ -510,7 +504,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingTellUs.
   ///
   /// In he, this message translates to:
-  /// **'ספרי לנו עלייך'**
+  /// **'כמה פרטים כדי להתחיל'**
   String get onboardingTellUs;
 
   /// No description provided for @onboardingPrivacyDesc.
@@ -998,6 +992,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הסר מ{day}'**
   String scheduleRemoveFrom(Object day);
+
+  /// No description provided for @scheduleRemove.
+  ///
+  /// In he, this message translates to:
+  /// **'הסר'**
+  String get scheduleRemove;
 
   /// No description provided for @scheduleNoMix.
   ///
@@ -1572,7 +1572,7 @@ abstract class AppLocalizations {
   /// No description provided for @backupNowAction.
   ///
   /// In he, this message translates to:
-  /// **'גבי עכשיו'**
+  /// **'גבי'**
   String get backupNowAction;
 
   /// No description provided for @categoryItemsSuffix.
@@ -1668,7 +1668,7 @@ abstract class AppLocalizations {
   /// No description provided for @customProductFrequencyWeekly.
   ///
   /// In he, this message translates to:
-  /// **'כמה פעמים בשבוע'**
+  /// **'לא יומי'**
   String get customProductFrequencyWeekly;
 
   /// No description provided for @customProductTimesPerWeekLabel.
@@ -1724,6 +1724,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הסרה'**
   String get customProductDeleteConfirmAction;
+
+  /// No description provided for @customProductCommentLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'הערה'**
+  String get customProductCommentLabel;
+
+  /// No description provided for @customProductCommentHint.
+  ///
+  /// In he, this message translates to:
+  /// **'הערה אישית על המוצר (לא חובה)'**
+  String get customProductCommentHint;
+
+  /// No description provided for @customProductCommentLanguageNote.
+  ///
+  /// In he, this message translates to:
+  /// **'(נכתב ב{language})'**
+  String customProductCommentLanguageNote(Object language);
 
   /// No description provided for @scheduleConflictWarning.
   ///
@@ -1886,6 +1904,84 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'שבת'**
   String get calendarDayFullSat;
+
+  /// No description provided for @settingsProfileEdit.
+  ///
+  /// In he, this message translates to:
+  /// **'עריכת פרופיל'**
+  String get settingsProfileEdit;
+
+  /// No description provided for @settingsProfileGuest.
+  ///
+  /// In he, this message translates to:
+  /// **'אורח'**
+  String get settingsProfileGuest;
+
+  /// No description provided for @settingsProfileNameLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'השם שלך'**
+  String get settingsProfileNameLabel;
+
+  /// No description provided for @settingsProfileNameHint.
+  ///
+  /// In he, this message translates to:
+  /// **'הכניסי שם'**
+  String get settingsProfileNameHint;
+
+  /// No description provided for @settingsProfileSave.
+  ///
+  /// In he, this message translates to:
+  /// **'שמירה'**
+  String get settingsProfileSave;
+
+  /// No description provided for @backupNeverBacked.
+  ///
+  /// In he, this message translates to:
+  /// **'לא גיבית את הנתונים שלך מעולם'**
+  String get backupNeverBacked;
+
+  /// No description provided for @backupDaysAgo.
+  ///
+  /// In he, this message translates to:
+  /// **'גיבוי אחרון לפני {days} ימים'**
+  String backupDaysAgo(int days);
+
+  /// No description provided for @onboardingSelectLanguage.
+  ///
+  /// In he, this message translates to:
+  /// **'בחרי שפה'**
+  String get onboardingSelectLanguage;
+
+  /// No description provided for @onboardingFrequencyWeeklyShort.
+  ///
+  /// In he, this message translates to:
+  /// **'שבועי'**
+  String get onboardingFrequencyWeeklyShort;
+
+  /// No description provided for @onboardingWelcomeNeutral.
+  ///
+  /// In he, this message translates to:
+  /// **'ברוך הבא'**
+  String get onboardingWelcomeNeutral;
+
+  /// No description provided for @onboardingTellUsNeutral.
+  ///
+  /// In he, this message translates to:
+  /// **'כמה פרטים כדי להתחיל'**
+  String get onboardingTellUsNeutral;
+
+  /// No description provided for @onboardingStartNeutral.
+  ///
+  /// In he, this message translates to:
+  /// **'בוא נתחיל'**
+  String get onboardingStartNeutral;
+
+  /// No description provided for @continueActionNeutral.
+  ///
+  /// In he, this message translates to:
+  /// **'המשך'**
+  String get continueActionNeutral;
 }
 
 class _AppLocalizationsDelegate
