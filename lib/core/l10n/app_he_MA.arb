@@ -51,5 +51,6 @@
   "mergeUseArchive": "השתמש בגרסת הגיבוי",
   "skinLogAddPhotoLabel": "הוסף תמונה",
   "skinLogTakePhoto": "צלם תמונה",
-  "skinLogGallery": "בחר מהגלריה"
+  "skinLogGallery": "בחר מהגלריה",
+  "continueAction": "המשך"
 }

@@ -97,13 +97,23 @@ final onboardingCompletedProvider = FutureProvider<bool>(
 );
 
 /// Current app locale. Defaults to feminine Hebrew; switches to `he_MA`
-/// for masculine. Update by reading `.notifier` and setting `.state`.
+/// for masculine Hebrew, or `en` for English.
+/// Update by reading `.notifier` and setting `.state`.
 final appLocaleProvider = StateProvider<Locale>((ref) => const Locale('he'));
 
-/// Reads saved gender from settings and syncs [appLocaleProvider].
+/// Reads saved language and gender from settings and syncs [appLocaleProvider].
+/// - English → Locale('en') regardless of gender
+/// - Hebrew + male → Locale('he', 'MA')
+/// - Hebrew (default) → Locale('he')
 /// Watch this in AppEntryPoint to ensure locale is set before routing.
 final localeSyncProvider = FutureProvider<void>((ref) async {
-  final gender = await ref.read(settingsRepositoryProvider).getUserGender();
+  final settings = ref.read(settingsRepositoryProvider);
+  final language = await settings.getAppLanguage();
+  if (language == 'en') {
+    ref.read(appLocaleProvider.notifier).state = const Locale('en');
+    return;
+  }
+  final gender = await settings.getUserGender();
   ref.read(appLocaleProvider.notifier).state =
       gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
 });

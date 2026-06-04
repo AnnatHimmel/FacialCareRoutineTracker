@@ -8,7 +8,8 @@ class WeekdayPicker extends StatelessWidget {
   final ValueChanged<Set<int>> onChanged;
   final bool showOverCapWarning;
 
-  static const _labels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+  static const _labelsHe = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+  static const _labelsEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const WeekdayPicker({
     super.key,
@@ -28,7 +29,7 @@ class WeekdayPicker extends StatelessWidget {
           children: List.generate(7, (i) {
             final isSelected = selectedDays.contains(i);
             return _DayChip(
-              label: _labels[i],
+              label: (l.localeName == 'en' ? _labelsEn : _labelsHe)[i],
               isSelected: isSelected,
               onTap: () {
                 final updated = Set<int>.from(selectedDays);

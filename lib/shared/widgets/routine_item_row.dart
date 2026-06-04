@@ -67,7 +67,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
       product.name,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      textAlign: TextAlign.right,
+      textAlign: TextAlign.start,
       textDirection:
           _isLikelyLatin(product.name) ? TextDirection.ltr : TextDirection.rtl,
       style: AppTypography.bodyMd.copyWith(
@@ -122,7 +122,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                         subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
+                        textAlign: TextAlign.start,
                         style: AppTypography.labelSm.copyWith(
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0,
@@ -183,7 +183,8 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
   }
 
   Widget _buildExpandedSection(MasterProduct product, AppLocalizations l) {
-    final hasComment = product.comment != null && product.comment!.isNotEmpty;
+    final commentText = product.localizedComment(l.localeName);
+    final hasComment = commentText.isNotEmpty;
     return AnimatedCrossFade(
       duration: const Duration(milliseconds: 200),
       crossFadeState:
@@ -198,7 +199,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
             const SizedBox(height: 10),
             if (hasComment)
               Text(
-                product.comment!,
+                commentText,
                 style: AppTypography.bodyMd
                     .copyWith(color: AppColors.onSurfaceVariant),
               ),
@@ -250,7 +251,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
         child: Container(
           width: 40,
           height: 40,
-          margin: const EdgeInsets.only(right: 8),
+          margin: const EdgeInsetsDirectional.only(end: 8),
           alignment: Alignment.center,
           child: AnimatedRotation(
             turns: _expanded ? 0.5 : 0,

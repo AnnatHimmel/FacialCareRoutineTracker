@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/features/settings/export_import_screen.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -21,7 +22,12 @@ Widget _wrap() {
     ],
   );
   return ProviderScope(
-    child: MaterialApp.router(routerConfig: router),
+    child: MaterialApp.router(
+      routerConfig: router,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he', 'MA'),
+    ),
   );
 }
 

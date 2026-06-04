@@ -14,15 +14,17 @@ class SkincareApp extends ConsumerWidget {
     ref.watch(localeSyncProvider);
     final locale = ref.watch(appLocaleProvider);
 
+    final isRtl = locale.languageCode != 'en';
+
     return MaterialApp.router(
       routerConfig: appRouter,
       theme: RadiantDewTheme.light(),
       locale: locale,
-      supportedLocales: const [Locale('he'), Locale('he', 'MA')],
+      supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       debugShowCheckedModeBanner: false,
       builder: (context, child) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
         child: child!,
       ),
     );

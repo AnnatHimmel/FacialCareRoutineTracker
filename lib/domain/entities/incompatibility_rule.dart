@@ -28,6 +28,7 @@ class IncompatibilityRule {
   final RuleTarget entityB;
   final RuleScope scope;
   final String? reason;
+  final String? reasonEn;
 
   const IncompatibilityRule({
     required this.id,
@@ -35,7 +36,11 @@ class IncompatibilityRule {
     required this.entityB,
     required this.scope,
     this.reason,
+    this.reasonEn,
   });
+
+  String? localizedReason(String locale) =>
+      locale == 'en' ? (reasonEn ?? reason) : reason;
 
   @override
   bool operator ==(Object other) =>
@@ -54,6 +59,7 @@ class IncompatibilityRule {
     RuleTarget? entityB,
     RuleScope? scope,
     String? reason,
+    String? reasonEn,
   }) =>
       IncompatibilityRule(
         id: id ?? this.id,
@@ -61,5 +67,6 @@ class IncompatibilityRule {
         entityB: entityB ?? this.entityB,
         scope: scope ?? this.scope,
         reason: reason ?? this.reason,
+        reasonEn: reasonEn ?? this.reasonEn,
       );
 }

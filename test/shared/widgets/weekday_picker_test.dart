@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/shared/widgets/weekday_picker.dart';
 
 // Stateful wrapper so we can track the live selection
@@ -27,7 +28,12 @@ class _PickerHarnessState extends State<_PickerHarness> {
       );
 }
 
-Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+Widget _wrap(Widget child) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he', 'MA'),
+      home: Scaffold(body: child),
+    );
 
 void main() {
   group('WeekdayPicker', () {

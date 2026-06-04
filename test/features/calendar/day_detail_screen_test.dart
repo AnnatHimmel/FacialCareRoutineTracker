@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
 import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
@@ -124,7 +125,12 @@ Widget _wrap({required MasterContent master, required _FakeUDR udr}) {
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
       userDataRepositoryProvider.overrideWithValue(udr),
     ],
-    child: MaterialApp.router(routerConfig: router),
+    child: MaterialApp.router(
+      routerConfig: router,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he', 'MA'),
+    ),
   );
 }
 

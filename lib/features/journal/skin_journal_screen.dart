@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/l10n/generated/app_localizations.dart';
-import '../../core/l10n/hebrew_date_strings.dart';
+import '../../core/l10n/hebrew_date_strings.dart' show HebrewDateStrings, EnglishDateStrings;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/skin_log_entry.dart';
@@ -100,7 +100,7 @@ class _JournalEntryCard extends ConsumerWidget {
               style: AppTypography.bodyMd.copyWith(
                 color: AppColors.onSurfaceVariant,
               ),
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.start,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
@@ -116,9 +116,11 @@ class _JournalEntryCard extends ConsumerWidget {
     final day = int.tryParse(parts[2]) ?? 0;
     final month = int.tryParse(parts[1]) ?? 0;
     final year = parts[0];
-    final monthName =
-        (month >= 1 && month <= 12) ? HebrewDateStrings.months[month - 1] : '';
-    return l.journalDateFormat(day, monthName, year);
+    if (month < 1 || month > 12) return date;
+    final isEn = l.localeName == 'en';
+    final monthName = isEn ? EnglishDateStrings.months[month - 1] : HebrewDateStrings.months[month - 1];
+    final dayStr = isEn ? EnglishDateStrings.ordinal(day) : '$day';
+    return l.journalDateFormat(dayStr, monthName, year);
   }
 }
 

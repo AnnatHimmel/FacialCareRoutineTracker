@@ -280,7 +280,7 @@ class _SectionCard extends StatelessWidget {
                 child: Text(
                   title,
                   style: AppTypography.headlineMd,
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.start,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -293,7 +293,7 @@ class _SectionCard extends StatelessWidget {
             style: AppTypography.bodyMd.copyWith(
               color: AppColors.onSurfaceVariant,
             ),
-            textAlign: TextAlign.right,
+            textAlign: TextAlign.start,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

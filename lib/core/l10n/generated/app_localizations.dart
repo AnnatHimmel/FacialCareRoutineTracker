@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_en.dart';
 import 'app_localizations_he.dart';
 
 // ignore_for_file: type=lint
@@ -93,15 +94,10 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
     Locale('he'),
     Locale('he', 'MA'),
   ];
-
-  /// No description provided for @appName.
-  ///
-  /// In he, this message translates to:
-  /// **'מעקב שגרת טיפוח'**
-  String get appName;
 
   /// No description provided for @navToday.
   ///
@@ -280,7 +276,7 @@ abstract class AppLocalizations {
   /// No description provided for @continueAction.
   ///
   /// In he, this message translates to:
-  /// **'המשך'**
+  /// **'המשיכי'**
   String get continueAction;
 
   /// No description provided for @backAction.
@@ -694,7 +690,7 @@ abstract class AppLocalizations {
   /// No description provided for @calendarDailyRecord.
   ///
   /// In he, this message translates to:
-  /// **'תיעוד יומי: {day} ב {month}'**
+  /// **'תיעוד יומי: {day} ב{month}'**
   String calendarDailyRecord(Object day, Object month);
 
   /// No description provided for @calendarEdit.
@@ -1390,7 +1386,7 @@ abstract class AppLocalizations {
   /// No description provided for @mergeKeepLocalDesc.
   ///
   /// In he, this message translates to:
-  /// **'המשך עם הנתונים הנוכחיים במכשיר'**
+  /// **'המשיכי עם הנתונים הנוכחיים במכשיר'**
   String get mergeKeepLocalDesc;
 
   /// No description provided for @mergeUseArchive.
@@ -1768,7 +1764,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleContinueTo.
   ///
   /// In he, this message translates to:
-  /// **'המשך ל{routine}'**
+  /// **'המשיכי ל{routine}'**
   String scheduleContinueTo(Object routine);
 
   /// No description provided for @scheduleNextStepPending.
@@ -1818,6 +1814,78 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'מדיניות פרטיות'**
   String get aboutPrivacyPolicyLink;
+
+  /// No description provided for @settingsSectionLanguage.
+  ///
+  /// In he, this message translates to:
+  /// **'שפה'**
+  String get settingsSectionLanguage;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In he, this message translates to:
+  /// **'שפה'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsLanguageSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'עברית / אנגלית'**
+  String get settingsLanguageSubtitle;
+
+  /// No description provided for @settingsLanguageHebrew.
+  ///
+  /// In he, this message translates to:
+  /// **'עברית'**
+  String get settingsLanguageHebrew;
+
+  /// No description provided for @settingsLanguageEnglish.
+  ///
+  /// In he, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglish;
+
+  /// No description provided for @calendarDayFullSun.
+  ///
+  /// In he, this message translates to:
+  /// **'ראשון'**
+  String get calendarDayFullSun;
+
+  /// No description provided for @calendarDayFullMon.
+  ///
+  /// In he, this message translates to:
+  /// **'שני'**
+  String get calendarDayFullMon;
+
+  /// No description provided for @calendarDayFullTue.
+  ///
+  /// In he, this message translates to:
+  /// **'שלישי'**
+  String get calendarDayFullTue;
+
+  /// No description provided for @calendarDayFullWed.
+  ///
+  /// In he, this message translates to:
+  /// **'רביעי'**
+  String get calendarDayFullWed;
+
+  /// No description provided for @calendarDayFullThu.
+  ///
+  /// In he, this message translates to:
+  /// **'חמישי'**
+  String get calendarDayFullThu;
+
+  /// No description provided for @calendarDayFullFri.
+  ///
+  /// In he, this message translates to:
+  /// **'שישי'**
+  String get calendarDayFullFri;
+
+  /// No description provided for @calendarDayFullSat.
+  ///
+  /// In he, this message translates to:
+  /// **'שבת'**
+  String get calendarDayFullSat;
 }
 
 class _AppLocalizationsDelegate
@@ -1831,7 +1899,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['he'].contains(locale.languageCode);
+      <String>['en', 'he'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1852,6 +1920,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
     case 'he':
       return AppLocalizationsHe();
   }

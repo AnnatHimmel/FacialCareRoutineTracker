@@ -55,6 +55,7 @@ class MasterProduct {
   final String name;
   final String? imageAsset;
   final String? comment;
+  final String? commentEn;
   final String categoryId;
   final SlotConfig? morningConfig;
   final SlotConfig? eveningConfig;
@@ -66,6 +67,7 @@ class MasterProduct {
     required this.name,
     this.imageAsset,
     this.comment,
+    this.commentEn,
     required this.categoryId,
     this.morningConfig,
     this.eveningConfig,
@@ -83,11 +85,15 @@ class MasterProduct {
       other.name == name &&
       other.imageAsset == imageAsset &&
       other.comment == comment &&
+      other.commentEn == commentEn &&
       other.categoryId == categoryId &&
       other.morningConfig == morningConfig &&
       other.eveningConfig == eveningConfig &&
       other.isDeprecated == isDeprecated &&
       other.addedInVersion == addedInVersion;
+
+  String localizedComment(String locale) =>
+      locale == 'en' ? (commentEn ?? comment ?? '') : (comment ?? '');
 
   @override
   int get hashCode => Object.hash(
@@ -95,6 +101,7 @@ class MasterProduct {
         name,
         imageAsset,
         comment,
+        commentEn,
         categoryId,
         morningConfig,
         eveningConfig,
@@ -107,6 +114,7 @@ class MasterProduct {
     String? name,
     String? imageAsset,
     String? comment,
+    String? commentEn,
     String? categoryId,
     SlotConfig? morningConfig,
     SlotConfig? eveningConfig,
@@ -118,6 +126,7 @@ class MasterProduct {
         name: name ?? this.name,
         imageAsset: imageAsset ?? this.imageAsset,
         comment: comment ?? this.comment,
+        commentEn: commentEn ?? this.commentEn,
         categoryId: categoryId ?? this.categoryId,
         morningConfig: morningConfig ?? this.morningConfig,
         eveningConfig: eveningConfig ?? this.eveningConfig,

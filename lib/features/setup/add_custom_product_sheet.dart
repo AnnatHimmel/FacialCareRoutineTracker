@@ -477,8 +477,7 @@ class _AddCustomProductSheetState
       ),
       child: TextField(
         controller: controller,
-        textDirection: TextDirection.rtl,
-        textAlign: TextAlign.right,
+        textAlign: TextAlign.start,
         onChanged: onChanged,
         style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
         decoration: InputDecoration(

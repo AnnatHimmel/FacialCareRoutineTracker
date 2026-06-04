@@ -1,6 +1,5 @@
 {
   "@@locale": "he",
-  "appName": "מעקב שגרת טיפוח",
   "navToday": "היום",
   "navCalendar": "יומן",
   "navJournal": "יומן עור",
@@ -36,7 +35,7 @@
   "skinLogPlaceholder": "איך העור שלך היום?",
   "emptyRoutine": "אין מוצרים מתוכננים להיום",
   "emptyJournal": "עדיין אין תמונות ביומן",
-  "continueAction": "המשך",
+  "continueAction": "המשיכי",
   "backAction": "חזרה",
   "saveAction": "שמור",
   "cancelAction": "ביטול",
@@ -143,7 +142,7 @@
   "calendarProgress": "התקדמות",
   "calendarVsPrevMonth": "לעומת חודש קודם",
   "calendarNoComparison": "אין נתוני השוואה",
-  "calendarDailyRecord": "תיעוד יומי: {day} ב {month}",
+  "calendarDailyRecord": "תיעוד יומי: {day} ב{month}",
   "@calendarDailyRecord": {
     "placeholders": {
       "day": {},
@@ -286,7 +285,7 @@
       "version": {}
     }
   },
-"aboutChangelog": "מה חדש",
+  "aboutChangelog": "מה חדש",
   "exportDataTitle": "ייצוא נתונים",
   "exportDataDesc": "שמור גיבוי של כל הנתונים שלך כארכיון ZIP",
   "exportDataAction": "ייצוא",
@@ -350,7 +349,7 @@
   },
   "mergeChooseVersion": "בחרי איזו גרסה לשמור:",
   "mergeKeepLocal": "שמור גרסה מקומית",
-  "mergeKeepLocalDesc": "המשך עם הנתונים הנוכחיים במכשיר",
+  "mergeKeepLocalDesc": "המשיכי עם הנתונים הנוכחיים במכשיר",
   "mergeUseArchive": "השתמשי בגרסת הגיבוי",
   "mergeUseArchiveDesc": "החלף עם הנתונים מקובץ הגיבוי",
   "mergeAllResolved": "כל ההתנגשויות נפתרו",
@@ -448,7 +447,7 @@
       "routine": {}
     }
   },
-  "scheduleContinueTo": "המשך ל{routine}",
+  "scheduleContinueTo": "המשיכי ל{routine}",
   "@scheduleContinueTo": {
     "placeholders": {
       "routine": {}
@@ -474,5 +473,17 @@
   "scheduleDailyCollapse": "סגירה",
   "scheduleBadgeNoneSelected": "לא נבחר",
   "aboutDisclaimer": "האפליקציה מיועדת למעקב אישי בלבד ואינה מהווה ייעוץ רפואי או קוסמטי.",
-  "aboutPrivacyPolicyLink": "מדיניות פרטיות"
+  "aboutPrivacyPolicyLink": "מדיניות פרטיות",
+  "settingsSectionLanguage": "שפה",
+  "settingsLanguage": "שפה",
+  "settingsLanguageSubtitle": "עברית / אנגלית",
+  "settingsLanguageHebrew": "עברית",
+  "settingsLanguageEnglish": "English",
+  "calendarDayFullSun": "ראשון",
+  "calendarDayFullMon": "שני",
+  "calendarDayFullTue": "שלישי",
+  "calendarDayFullWed": "רביעי",
+  "calendarDayFullThu": "חמישי",
+  "calendarDayFullFri": "שישי",
+  "calendarDayFullSat": "שבת"
 }

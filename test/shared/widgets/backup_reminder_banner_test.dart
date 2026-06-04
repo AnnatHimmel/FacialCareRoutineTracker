@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
 import 'package:skincare_tracker/shared/widgets/backup_reminder_banner.dart';
@@ -38,6 +39,8 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setRoutineViewMode(String m) async {}
   @override Future<bool> getRoutineShowNames() async => false;
   @override Future<void> setRoutineShowNames(bool v) async {}
+  @override Future<String> getAppLanguage() async => 'he';
+  @override Future<void> setAppLanguage(String code) async {}
 }
 
 Widget _buildBanner({String? lastExportDate}) => ProviderScope(
@@ -46,8 +49,11 @@ Widget _buildBanner({String? lastExportDate}) => ProviderScope(
           _FakeSettings(lastExportDate: lastExportDate),
         ),
       ],
-      child: const MaterialApp(
-        home: Scaffold(body: BackupReminderBanner()),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('he', 'MA'),
+        home: const Scaffold(body: BackupReminderBanner()),
       ),
     );
 

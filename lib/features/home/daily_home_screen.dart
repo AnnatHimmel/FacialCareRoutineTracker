@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/l10n/generated/app_localizations.dart';
-import '../../core/l10n/hebrew_date_strings.dart';
+import '../../core/l10n/hebrew_date_strings.dart' show HebrewDateStrings, EnglishDateStrings;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
@@ -210,7 +210,10 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     // Build day label from current date + user name
     final effectiveDate = boundary.todayEffectiveDate;
     final userName = ref.watch(_userNameProvider).valueOrNull;
-    final dayName = HebrewDateStrings.weekdays[effectiveDate.weekday - 1];
+    final isEn = l.localeName == 'en';
+    final dayName = isEn
+        ? EnglishDateStrings.weekdays[effectiveDate.weekday - 1]
+        : HebrewDateStrings.weekdays[effectiveDate.weekday - 1];
     final dayLabel = (userName != null && userName.trim().isNotEmpty)
         ? l.homeDayLabelGreeting(dayName, userName.trim().split(' ').first)
         : l.homeDayLabel(dayName);
@@ -859,7 +862,7 @@ class _JournalCtaCard extends StatelessWidget {
                   l.journalCtaTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.start,
                   style: AppTypography.bodyLg.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -870,7 +873,7 @@ class _JournalCtaCard extends StatelessWidget {
                   l.journalCtaSubtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.start,
                   style: AppTypography.labelMd.copyWith(
                     color: const Color(0xCCFFFFFF),
                   ),

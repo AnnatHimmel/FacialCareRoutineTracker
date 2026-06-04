@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
 import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
@@ -147,7 +148,12 @@ Widget _wrap({
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
       userDataRepositoryProvider.overrideWithValue(udr ?? _FakeUDR()),
     ],
-    child: MaterialApp.router(routerConfig: router),
+    child: MaterialApp.router(
+      routerConfig: router,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he', 'MA'),
+    ),
   );
 }
 
@@ -160,7 +166,10 @@ Widget _wrapDirect({required MasterContent master, _FakeUDR? udr}) {
       userDataRepositoryProvider.overrideWithValue(udr ?? _FakeUDR()),
     ],
     child: MaterialApp(
-      home: ScheduleSetupScreen(fromProducts: true),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he', 'MA'),
+      home: const ScheduleSetupScreen(fromProducts: true),
     ),
   );
 }
@@ -192,7 +201,7 @@ void main() {
       expect(find.text('קרם לחות'), findsOneWidget);
     });
 
-    testWidgets('fromSetup: true → CTA label is הבא', (tester) async {
+    testWidgets('fromSetup: true → CTA label is המשך', (tester) async {
       final product = _weeklyProduct('p1', 'סרום');
       final udr = _FakeUDR(morningSelections: [_sel('p1', Slot.morning)]);
 
@@ -201,7 +210,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('הבא'), findsOneWidget);
+      expect(find.text('המשך'), findsOneWidget);
     });
 
     testWidgets('fromSetup: false → CTA label is שמור', (tester) async {
@@ -226,7 +235,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('הבא'));
+      await tester.tap(find.text('המשך'));
       await tester.pumpAndSettle();
 
       expect(find.text('order-from=setup'), findsOneWidget);

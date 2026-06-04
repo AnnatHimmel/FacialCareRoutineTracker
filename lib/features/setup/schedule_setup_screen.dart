@@ -22,8 +22,28 @@ import '../../shared/widgets/weekday_picker.dart';
 
 const _uuid = Uuid();
 
-const _dayLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
-const _dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+String _getDayAbbrev(int d, AppLocalizations l) => switch (d) {
+  0 => l.calendarDayAbbrevSun,
+  1 => l.calendarDayAbbrevMon,
+  2 => l.calendarDayAbbrevTue,
+  3 => l.calendarDayAbbrevWed,
+  4 => l.calendarDayAbbrevThu,
+  5 => l.calendarDayAbbrevFri,
+  6 => l.calendarDayAbbrevSat,
+  _ => '',
+};
+
+String _getDayFullName(int d, AppLocalizations l) => switch (d) {
+  0 => l.calendarDayFullSun,
+  1 => l.calendarDayFullMon,
+  2 => l.calendarDayFullTue,
+  3 => l.calendarDayFullWed,
+  4 => l.calendarDayFullThu,
+  5 => l.calendarDayFullFri,
+  6 => l.calendarDayFullSat,
+  _ => '',
+};
+
 
 class ScheduleSetupScreen extends ConsumerStatefulWidget {
   final bool fromSetup;
@@ -81,7 +101,9 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     if (widget.fromSetup) {
       context.go('/setup/order?from=setup');
     } else {
-      context.pop();
+      // Pop with `true` so callers (e.g. onboarding) can distinguish a
+      // deliberate finish from a plain back, which pops with no result.
+      context.pop(true);
     }
   }
 
@@ -197,8 +219,8 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           final nextSlotRoutine = nextSlot == null
               ? null
               : nextSlot == Slot.morning
-                  ? l.slotMorningRoutine
-                  : l.slotEveningRoutine;
+                  ? l.slotMorning
+                  : l.slotEvening;
           final nextSlotIcon = nextSlot == null
               ? null
               : nextSlot == Slot.morning
@@ -373,7 +395,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                             ),
                                           ),
                                         ),
-                                        const Icon(Icons.chevron_left_rounded,
+                                        const Icon(Icons.chevron_right,
                                             size: 18,
                                             color: AppColors.error),
                                       ],
@@ -446,7 +468,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
             child: Text(
               label,
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.start,
               style: AppTypography.labelMd.copyWith(
                 color: AppColors.onSurfaceVariant,
                 fontWeight: FontWeight.w700,
@@ -650,7 +672,7 @@ class _WeekAtAGlanceCard extends StatelessWidget {
                 if (d > 0) const SizedBox(width: 6),
                 Expanded(
                   child: _DayCell(
-                    label: _dayLabels[d],
+                    label: _getDayAbbrev(d, l),
                     count: _countOnDay(d),
                     isConflict: conflictDays.contains(d),
                     isOpen: openDay == d,
@@ -663,9 +685,10 @@ class _WeekAtAGlanceCard extends StatelessWidget {
 
           if (openDay != null && conflictDays.contains(openDay!))
             _ConflictDetailPanel(
-              dayLabel: _dayNames[openDay!],
+              dayLabel: _getDayFullName(openDay!, l),
               conflicts: _conflictInfoOnDay(openDay!),
               categories: categories,
+              isEnglish: l.localeName == 'en',
               onClose: onCloseDetail,
               onToggleDay: (productId) => onToggleDay(productId, openDay!),
               l: l,
@@ -694,15 +717,20 @@ class _DayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          label,
-          style: AppTypography.labelSm.copyWith(
-            fontSize: 10,
-            color: isConflict
-                ? AppColors.error
-                : AppColors.onSurfaceVariant,
-            fontWeight: isConflict ? FontWeight.w700 : FontWeight.w600,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: AppTypography.labelSm.copyWith(
+              fontSize: 10,
+              color: isConflict
+                  ? AppColors.error
+                  : AppColors.onSurfaceVariant,
+              fontWeight: isConflict ? FontWeight.w700 : FontWeight.w600,
+            ),
           ),
         ),
         const SizedBox(height: 4),
@@ -770,6 +798,7 @@ class _ConflictDetailPanel extends StatelessWidget {
   final String dayLabel;
   final List<ConflictInfo> conflicts;
   final List<Category> categories;
+  final bool isEnglish;
   final VoidCallback onClose;
   final void Function(String productId) onToggleDay;
   final AppLocalizations l;
@@ -778,6 +807,7 @@ class _ConflictDetailPanel extends StatelessWidget {
     required this.dayLabel,
     required this.conflicts,
     required this.categories,
+    required this.isEnglish,
     required this.onClose,
     required this.onToggleDay,
     required this.l,
@@ -795,9 +825,7 @@ class _ConflictDetailPanel extends StatelessWidget {
           border: Border.all(
               color: AppColors.error.withValues(alpha: 0.25)),
         ),
-        child: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Column(
+        child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildHeader(),
@@ -819,7 +847,6 @@ class _ConflictDetailPanel extends StatelessWidget {
               ),
             ],
           ),
-        ),
       ),
     );
   }
@@ -919,7 +946,8 @@ class _ConflictDetailPanel extends StatelessWidget {
           _buildConnector(),
           _buildProductRow(conflict.productB, catB,
               () => onToggleDay(conflict.productB.id)),
-          if (conflict.reason != null) _buildReasonRow(conflict.reason!),
+          if (conflict.localizedReason(isEnglish ? 'en' : 'he') != null)
+              _buildReasonRow(conflict.localizedReason(isEnglish ? 'en' : 'he')!),
         ],
       ),
     );
@@ -943,8 +971,7 @@ class _ConflictDetailPanel extends StatelessWidget {
               children: [
                 Text(
                   product.name,
-                  textDirection: TextDirection.ltr,
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.start,
                   style: AppTypography.labelSm.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
@@ -967,6 +994,7 @@ class _ConflictDetailPanel extends StatelessWidget {
   }
 
   Widget _buildCategoryChip(Category cat) {
+    final displayName = cat.localizedName(isEnglish ? 'en' : 'he');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -985,7 +1013,7 @@ class _ConflictDetailPanel extends StatelessWidget {
             const SizedBox(width: 4),
           ],
           Text(
-            cat.name,
+            displayName,
             style: AppTypography.labelSm.copyWith(
               fontSize: 9,
               color: AppColors.primary,
@@ -1000,8 +1028,8 @@ class _ConflictDetailPanel extends StatelessWidget {
     return GestureDetector(
       onTap: onRemove,
       child: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        constraints: const BoxConstraints(minHeight: 32, maxWidth: 96),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: AppColors.error,
           borderRadius: BorderRadius.circular(9999),
@@ -1009,16 +1037,21 @@ class _ConflictDetailPanel extends StatelessWidget {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Icon(Icons.event_busy_rounded,
                 color: Colors.white, size: 14),
             const SizedBox(width: 4),
-            Text(
-              l.scheduleRemoveFrom(dayLabel),
-              style: AppTypography.labelSm.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
+            Flexible(
+              child: Text(
+                l.scheduleRemoveFrom(dayLabel),
+                style: AppTypography.labelSm.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                ),
+                maxLines: 2,
+                textAlign: TextAlign.center,
               ),
             ),
           ],
@@ -1357,7 +1390,7 @@ class _ProductScheduleCard extends ConsumerWidget {
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.right,
+                            textAlign: TextAlign.start,
                           ),
                     Text(
                       isDaily
@@ -1369,7 +1402,7 @@ class _ProductScheduleCard extends ConsumerWidget {
                         color: AppColors.onSurfaceVariant,
                         fontSize: 10.5,
                       ),
-                      textAlign: TextAlign.right,
+                      textAlign: TextAlign.start,
                     ),
                   ],
                 ),
@@ -1446,6 +1479,7 @@ class _CountBadge extends StatelessWidget {
       ),
       child: Text(
         text,
+        textDirection: TextDirection.ltr,
         style: AppTypography.labelSm.copyWith(
           color: isError ? Colors.white : AppColors.onSurfaceVariant,
           fontSize: 11,
@@ -1557,7 +1591,7 @@ class _DailyScheduleCardState extends State<_DailyScheduleCard> {
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.right,
+                            textAlign: TextAlign.start,
                           ),
                     Text(
                       widget.l.scheduleRecommendedDaily,
@@ -1565,7 +1599,7 @@ class _DailyScheduleCardState extends State<_DailyScheduleCard> {
                         color: AppColors.onSurfaceVariant,
                         fontSize: 10.5,
                       ),
-                      textAlign: TextAlign.right,
+                      textAlign: TextAlign.start,
                     ),
                   ],
                 ),
@@ -1711,7 +1745,7 @@ class _BottomCta extends StatelessWidget {
     final IconData trailingIcon;
     if (isAdvancing) {
       label = l.scheduleContinueTo(nextSlotRoutine!);
-      trailingIcon = Icons.arrow_forward_rounded;
+      trailingIcon = Icons.arrow_forward;
     } else {
       label = fromSetup
           ? l.continueAction
@@ -1742,7 +1776,7 @@ class _BottomCta extends StatelessWidget {
                       color: AppColors.surfaceLow,
                       borderRadius: BorderRadius.circular(9999),
                     ),
-                    child: const Icon(Icons.arrow_back_rounded,
+                    child: const Icon(Icons.arrow_back,
                         color: AppColors.onSurface, size: 20),
                   ),
                 ),

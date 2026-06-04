@@ -1,26 +1,31 @@
 {
   "contentVersion": "1.0.0",
   "categories": [
-    {"id":"cat-cleanser-step1","name":"ניקוי שלב 1","order":1,"icon":"soap"},
-    {"id":"cat-cleanser-step2","name":"ניקוי שלב 2","order":2,"icon":"bubble_chart"},
-    {"id":"cat-toner","name":"טונר / אסנס","order":3,"icon":"water_drop"},
-    {"id":"cat-retinoid","name":"רטינואידים","order":4,"icon":"science"},
-    {"id":"cat-serum","name":"סרום / חומצות","order":5,"icon":"auto_awesome"},
-    {"id":"cat-moisturizer","name":"לחות","order":6,"icon":"opacity"},
-    {"id":"cat-oil","name":"שמנים","order":7,"icon":"spa"},
-    {"id":"cat-spf","name":"הגנה","order":8,"icon":"wb_sunny"}
+    {"id":"cat-cleanser-step1","name":"ניקוי שלב 1","nameEn":"Cleanse — Step 1","order":1,"icon":"soap"},
+    {"id":"cat-cleanser-step2","name":"ניקוי שלב 2","nameEn":"Cleanse — Step 2","order":2,"icon":"bubble_chart"},
+    {"id":"cat-toner","name":"טונר / אסנס","nameEn":"Toner / Essence","order":3,"icon":"water_drop"},
+    {"id":"cat-retinoid","name":"רטינואידים","nameEn":"Retinoid","order":4,"icon":"science"},
+    {"id":"cat-serum","name":"סרום / חומצות","nameEn":"Serum / Active","order":5,"icon":"auto_awesome"},
+    {"id":"cat-moisturizer","name":"לחות","nameEn":"Moisturizer","order":6,"icon":"opacity"},
+    {"id":"cat-oil","name":"שמנים","nameEn":"Face Oil","order":7,"icon":"spa"},
+    {"id":"cat-spf","name":"הגנה","nameEn":"Protect (SPF)","order":8,"icon":"wb_sunny"}
   ],
   "products": [
     {
       "id": "prod-039",
       "name": "Generic Cleansing Gel",
+      "imageAsset": "assets/images/products/generic_cleansing_gel.jpg",
       "categoryId": "cat-cleanser-step2",
+      "comment": "ג'ל ניקוי פנים עדין על בסיס מים לניקוי יסודי של העור, הסרת שאריות לכלוך ורענון מבלי לייבש",
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "imageAsset": "assets/images/products/generic_cleansing_gel.jpg",
-      "comment": "ג'ל ניקוי פנים עדין על בסיס מים לניקוי יסודי של העור, הסרת שאריות לכלוך ורענון מבלי לייבש",
       "morningConfig": null,
-      "eveningConfig": {"order": 0, "frequency": {"type": "daily"}}
+      "eveningConfig": {
+        "order": 0,
+        "frequency": {
+          "type": "daily"
+        }
+      }
     },
     {
       "id": "prod-007",
@@ -33,7 +38,8 @@
       "morningConfig": {
         "order": 20,
         "frequency": {
-          "type": "daily"
+          "type": "weeklyMax",
+          "maxPerWeek": 3
         }
       },
       "eveningConfig": null
@@ -555,13 +561,18 @@
     {
       "id": "prod-038",
       "name": "Beauty of Joseon Revive Eye Serum Ginseng + Retinal",
+      "imageAsset": "assets/images/products/beauty_of_joseon_revive_eye_serum.jpg",
       "categoryId": "cat-retinoid",
+      "comment": "סרום עיניים טיפולי המשלב רטינאל וג'ינסנג לחידוש עדין של עור העיניים, הפחתת מראה קמטוטים ושיפור האלסטיות",
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "imageAsset": "assets/images/products/beauty_of_joseon_revive_eye_serum.jpg",
-      "comment": "סרום עיניים טיפולי המשלב רטינאל וג'ינסנג לחידוש עדין של עור העיניים, הפחתת מראה קמטוטים ושיפור האלסטיות",
       "morningConfig": null,
-      "eveningConfig": {"order": 0, "frequency": {"type": "daily"}}
+      "eveningConfig": {
+        "order": 0,
+        "frequency": {
+          "type": "daily"
+        }
+      }
     },
     {
       "id": "prod-035",

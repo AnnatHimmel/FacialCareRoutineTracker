@@ -65,6 +65,8 @@ class SettingsScreen extends ConsumerWidget {
           _SectionLabel(label: l.settingsSectionData),
           const SizedBox(height: 8),
 
+          _LanguageRow(),
+          const SizedBox(height: 12),
           _SettingsRow(
             icon: Icons.cloud_download_outlined,
             label: l.exportTitle,
@@ -132,7 +134,7 @@ class SettingsScreen extends ConsumerWidget {
                         l.settingsLogout,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
+                        textAlign: TextAlign.start,
                         style: AppTypography.bodyMd.copyWith(
                           fontWeight: FontWeight.w700,
                           color: AppColors.error,
@@ -143,7 +145,7 @@ class SettingsScreen extends ConsumerWidget {
                         l.settingsLogoutSubtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
+                        textAlign: TextAlign.start,
                         style: AppTypography.labelSm.copyWith(
                           color: AppColors.onSurfaceVariant,
                         ),
@@ -173,10 +175,10 @@ Future<void> _confirmLogout(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: Text(l.settingsLogout, textAlign: TextAlign.right),
+      title: Text(l.settingsLogout, textAlign: TextAlign.start),
       content: Text(
         l.settingsLogoutConfirmContent,
-        textAlign: TextAlign.right,
+        textAlign: TextAlign.start,
       ),
       actions: [
         TextButton(
@@ -205,15 +207,122 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 4),
+      padding: const EdgeInsetsDirectional.only(start: 4),
       child: Text(
         label,
-        textAlign: TextAlign.right,
+        textAlign: TextAlign.start,
         style: AppTypography.labelMd.copyWith(
           color: AppColors.onSurfaceVariant,
         ),
       ),
     );
+  }
+}
+
+class _LanguageRow extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final locale = ref.watch(appLocaleProvider);
+    final isEnglish = locale.languageCode == 'en';
+    final currentLabel = isEnglish ? l.settingsLanguageEnglish : l.settingsLanguageHebrew;
+
+    return GlowCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      shadow: AppColors.glowSm,
+      onTap: () => _showLanguagePicker(context, ref, l, isEnglish),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: AppColors.primaryFixed,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.language, color: AppColors.primary, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l.settingsLanguage,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodyMd.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  currentLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant, size: 22),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _showLanguagePicker(
+  BuildContext context,
+  WidgetRef ref,
+  AppLocalizations l,
+  bool isEnglish,
+) async {
+  final picked = await showDialog<String>(
+    context: context,
+    builder: (ctx) => SimpleDialog(
+      title: Text(l.settingsLanguage),
+      children: [
+        SimpleDialogOption(
+          onPressed: () => Navigator.of(ctx).pop('he'),
+          child: Row(
+            children: [
+              if (!isEnglish)
+                const Icon(Icons.check, size: 20, color: AppColors.primary),
+              if (isEnglish) const SizedBox(width: 20),
+              const SizedBox(width: 8),
+              Text(l.settingsLanguageHebrew),
+            ],
+          ),
+        ),
+        SimpleDialogOption(
+          onPressed: () => Navigator.of(ctx).pop('en'),
+          child: Row(
+            children: [
+              if (isEnglish)
+                const Icon(Icons.check, size: 20, color: AppColors.primary),
+              if (!isEnglish) const SizedBox(width: 20),
+              const SizedBox(width: 8),
+              Text(l.settingsLanguageEnglish),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+  if (picked == null || !context.mounted) return;
+  final settings = ref.read(settingsRepositoryProvider);
+  await settings.setAppLanguage(picked);
+  if (picked == 'en') {
+    ref.read(appLocaleProvider.notifier).state = const Locale('en');
+  } else {
+    final gender = await settings.getUserGender();
+    ref.read(appLocaleProvider.notifier).state =
+        gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
   }
 }
 
@@ -262,7 +371,7 @@ class _SettingsRow extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.start,
                   style: AppTypography.bodyMd.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.onSurface,
@@ -273,7 +382,7 @@ class _SettingsRow extends StatelessWidget {
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.start,
                   style: AppTypography.labelSm.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),

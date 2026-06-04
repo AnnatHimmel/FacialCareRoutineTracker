@@ -139,7 +139,7 @@ class _OrderCustomizationScreenState
                 children: [
                   Text(
                     l.orderInstruction,
-                    textAlign: TextAlign.right,
+                    textAlign: TextAlign.start,
                     style: AppTypography.bodyMd
                         .copyWith(color: AppColors.onSurfaceVariant),
                   ),

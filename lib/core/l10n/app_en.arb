@@ -1,0 +1,489 @@
+{
+  "@@locale": "en",
+  "navToday": "Today",
+  "navCalendar": "Journal",
+  "navJournal": "Skin Log",
+  "navProducts": "My Products",
+  "navSettings": "Settings",
+  "slotMorning": "Morning",
+  "slotEvening": "Evening",
+  "productSelectionTitle": "Select Products",
+  "scheduleTitle": "Schedule Products",
+  "streakCurrent": "Day Streak",
+  "streakLongest": "Longest Streak",
+  "streakMissesThisWeek": "Misses This Week",
+  "streakMissesOf": "{current} of {max}",
+  "@streakMissesOf": {
+    "placeholders": {
+      "current": {},
+      "max": {}
+    }
+  },
+  "warningDeprecated": "No longer recommended",
+  "warningIncompatible": "Not recommended to use together",
+  "warningMute": "Mute",
+  "warningOverCap": "More days selected than recommended",
+  "exportTitle": "Export / Import",
+  "exportAction": "Export Now",
+  "importAction": "Import",
+  "importReplace": "Replace",
+  "importMerge": "Merge",
+  "aboutTitle": "About / What's New",
+  "updateReviewTitle": "Update Complete",
+  "backupReminderMessage": "Back up your data",
+  "backupAction": "Backup",
+  "skinLogPlaceholder": "How is your skin today?",
+  "emptyRoutine": "No products planned for today",
+  "emptyJournal": "No photos in journal yet",
+  "continueAction": "Continue",
+  "backAction": "Back",
+  "saveAction": "Save",
+  "cancelAction": "Cancel",
+  "resetOrder": "Reset to recommended order",
+  "dataIntactConfirmation": "All your data is saved and intact",
+  "before6amNote": "Activity before 6:00 is logged to yesterday",
+  "chooseArchive": "From backup",
+  "chooseDevice": "From device",
+  "webStorageWarning": "Photos are stored in limited space. Backup recommended.",
+  "genericError": "Error: {error}",
+  "@genericError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "homeTitle": "Your Routine Today",
+  "homeTapImageToDone": "Tap an image to mark as done",
+  "homeTapProductToDone": "Tap a product to mark as done",
+  "homeEmptyToday": "No products for today",
+  "homeAddProducts": "Add Products",
+  "homeDayLabel": "{day}",
+  "@homeDayLabel": {
+    "placeholders": {
+      "day": {}
+    }
+  },
+  "homeDayLabelGreeting": "Hi {name} • {day}",
+  "@homeDayLabelGreeting": {
+    "placeholders": {
+      "day": {},
+      "name": {}
+    }
+  },
+  "homeViewListSemantics": "List view active",
+  "homeViewImagesSemantics": "Images view active",
+  "homeViewList": "List",
+  "homeViewImages": "Images",
+  "homeNamesToggleHide": "Hide product names",
+  "homeNamesToggleShow": "Show product names",
+  "homeNames": "Names",
+  "homeProductStepDone": "{name}, step {step}, done",
+  "@homeProductStepDone": {
+    "placeholders": {
+      "name": {},
+      "step": {}
+    }
+  },
+  "homeProductStepNotDone": "{name}, step {step}, not done",
+  "@homeProductStepNotDone": {
+    "placeholders": {
+      "name": {},
+      "step": {}
+    }
+  },
+  "journalCtaTitle": "How's your skin?",
+  "journalCtaSubtitle": "Track your progress",
+  "journalCtaButton": "Log Now",
+  "onboardingSkip": "Skip",
+  "onboardingWelcome": "Welcome",
+  "onboardingAppIntro": "to The Glow Protocol",
+  "onboardingTagline": "Your routine, your pace.\nDaily tracking, smart product scheduling, and consistent glow.",
+  "onboardingStart": "Let's Begin",
+  "onboardingTakesMinute": "Takes less than a minute",
+  "onboardingFeature1": "Daily routine tracking",
+  "onboardingFeature2": "Per-product weekly scheduling",
+  "onboardingFeature3": "Skin & mood journal",
+  "onboardingTellUs": "Tell us about you",
+  "onboardingPrivacyDesc": "We'll use these details to personalise your content and address you directly. Everything is stored on your device.",
+  "onboardingNamePrompt": "What should we call you?",
+  "onboardingNameHint": "Your name",
+  "onboardingGenderLabel": "Gender",
+  "onboardingGenderFemale": "Female",
+  "onboardingGenderMale": "Male",
+  "onboardingPrivacyLock": "Details are stored only on your device",
+  "onboardingYourProducts": "Your Products",
+  "onboardingProductInstruction": "Select the products you have in your cabinet. You can edit, add, and schedule them at any time.",
+  "onboardingProductCount": "{count} products selected",
+  "@onboardingProductCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "onboardingCanAddLater": "You can add more products later",
+  "onboardingFinish": "Finish & Start",
+  "onboardingFrequencyDaily": "Daily",
+  "onboardingFrequencyWeekly": "Up to {max} times per week",
+  "@onboardingFrequencyWeekly": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "calendarDayAbbrevSun": "Sun",
+  "calendarDayAbbrevMon": "Mon",
+  "calendarDayAbbrevTue": "Tue",
+  "calendarDayAbbrevWed": "Wed",
+  "calendarDayAbbrevThu": "Thu",
+  "calendarDayAbbrevFri": "Fri",
+  "calendarDayAbbrevSat": "Sat",
+  "calendarStateComplete": "Complete",
+  "calendarStatePartial": "Partial",
+  "calendarStateMissed": "Missed",
+  "calendarStateNoData": "No data",
+  "calendarMonthlyAvg": "Monthly average",
+  "calendarProgress": "Progress",
+  "calendarVsPrevMonth": "vs. previous month",
+  "calendarNoComparison": "No comparison data",
+  "calendarDailyRecord": "Daily record: {month} {day}",
+  "@calendarDailyRecord": {
+    "placeholders": {
+      "day": {},
+      "month": {}
+    }
+  },
+  "calendarEdit": "Edit",
+  "calendarSkinState": "Skin state today",
+  "calendarNoNotes": "No notes recorded",
+  "calendarTasksDone": "Tasks you completed today:",
+  "journalNoPhotos": "No photos yet",
+  "journalEmptyInstruction": "Add photos in the daily skin log to track your progress",
+  "journalStartDocumenting": "Start documenting",
+  "journalDateFormat": "{month} {day}, {year}",
+  "@journalDateFormat": {
+    "placeholders": {
+      "day": {},
+      "month": {},
+      "year": {}
+    }
+  },
+  "productSelStepCounter": "Step {step} of {total}",
+  "@productSelStepCounter": {
+    "placeholders": {
+      "step": {},
+      "total": {}
+    }
+  },
+  "productSelSkipToSummary": "Skip to summary",
+  "productSelToSummary": "Summary",
+  "productSelSkipStep": "Skip this step",
+  "productSelNoCategories": "No categories found",
+  "productSelNoProducts": "No products in this category",
+  "productSelSummaryTitle": "Summary · Your Cabinet",
+  "productSelSummarySubtitle": "Select a product once. Filter morning/evening to view each routine separately.",
+  "productSelContinueToSchedule": "Continue to Schedule",
+  "productSelFilterAll": "All",
+  "productSelCategoryOptions": "{count} options",
+  "@productSelCategoryOptions": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "productSelCategorySelected": "{count} selected",
+  "@productSelCategorySelected": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "productSelFrequencyLabel": "Recommended frequency: ",
+  "productSelTimingLabel": "When?",
+  "catHintCleanser1": "Removes makeup and sunscreen — usually in the evening.",
+  "catHintCleanser2": "Gentle daily face cleanse.",
+  "catHintRetinoid": "Skin renewal — evening only, gradually.",
+  "catHintToner": "Balances skin and preps it for the next steps.",
+  "catHintSerum": "Your active ingredients. Choose as many as you like.",
+  "catHintMoisturizer": "Locks in moisture and soothes skin.",
+  "catHintOil": "Final nourishing layer, usually in the evening.",
+  "catHintSpf": "Sun protection — the last morning step, essential.",
+  "catUsageCleanser1": "Massage onto dry skin to dissolve makeup and sunscreen, then rinse with lukewarm water.",
+  "catUsageCleanser2": "Lather with a little water, gently massage in circular motions and rinse.",
+  "catUsageRetinoid": "Pea-sized amount on dry skin, avoid the eye area. Evening only, gradually.",
+  "catUsageToner": "Pat a few drops into your palms onto clean skin, before serums.",
+  "catUsageSerum": "A few drops on clean skin. Wait for absorption before the next step.",
+  "catUsageMoisturizer": "Apply an even layer to lock in moisture and soothe skin.",
+  "catUsageOil": "Warm a few drops between your palms and press onto skin as the last step.",
+  "catUsageSpf": "Generous amount (a finger-length) as the last morning step — even on cloudy days.",
+  "scheduleNoProducts": "No products selected yet",
+  "scheduleConflictInMorning": "There is a conflict in the morning routine — tap to fix",
+  "scheduleConflictInEvening": "There is a conflict in the evening routine — tap to fix",
+  "scheduleOccasional": "Not for daily use",
+  "scheduleDaily": "Daily",
+  "scheduleWeeklyView": "Weekly view",
+  "scheduleTapConflictDay": "Tap a flagged day",
+  "scheduleProductsPerDay": "Products per day",
+  "scheduleProductWillRemain": "The product will remain on all other days — we won't block this if you keep it.",
+  "scheduleConflictHeader": "Not recommended combination on {day}",
+  "@scheduleConflictHeader": {
+    "placeholders": {
+      "day": {}
+    }
+  },
+  "scheduleConflictInstruction": "Tap «Remove» on one of them to resolve",
+  "scheduleClose": "Close",
+  "scheduleRemoveFrom": "Remove from {day}",
+  "@scheduleRemoveFrom": {
+    "placeholders": {
+      "day": {}
+    }
+  },
+  "scheduleNoMix": "Do not combine",
+  "scheduleRecommendedDaily": "Recommended: every day",
+  "scheduleRecommendedWeekly": "Recommended: up to {max} times per week",
+  "@scheduleRecommendedWeekly": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "scheduleCountEveryDay": "Every day",
+  "scheduleOverCap": "Exceeds recommendation — consider reducing to {max} days per week",
+  "@scheduleOverCap": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "scheduleNoDaySelected": "No day selected — product will not be scheduled",
+  "scheduleSaveFinish": "Finish & Save Routine",
+  "orderInstruction": "Drag products to reorder your routine",
+  "orderNoProducts": "No products selected",
+  "orderResetToRecommended": "Reset to recommended order",
+  "orderSaveFinish": "Finish & Start",
+  "orderSaveNew": "Save New Order",
+  "settingsGreeting": "Hello",
+  "settingsWelcome": "Welcome to The Glow Protocol",
+  "settingsSectionRoutine": "My Skincare Routine",
+  "settingsOrderProducts": "Product Order",
+  "settingsOrderSubtitle": "Drag to personalise order",
+  "settingsSectionData": "Data",
+  "settingsExportSubtitle": "Local data backup",
+  "settingsSectionInfo": "Info",
+  "settingsAbout": "About & What's New",
+  "settingsAboutSubtitle": "Version {version} • Changelog",
+  "@settingsAboutSubtitle": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "settingsCheckUpdates": "Check for Updates",
+  "settingsCheckUpdatesSubtitle": "Check for latest version",
+  "settingsPremium": "Activate License",
+  "settingsPremiumSubtitle": "Cloud backup & restore",
+  "settingsSectionAccount": "Account",
+  "settingsLogout": "Sign Out",
+  "settingsLogoutSubtitle": "Reset profile and return to start",
+  "settingsLogoutConfirmContent": "This will reset your profile and return you to the start screen. Your data will be preserved.",
+  "settingsLogoutConfirmBtn": "Sign Out",
+  "aboutVersionLabel": "Version {version}",
+  "@aboutVersionLabel": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "aboutChangelog": "What's New",
+  "exportDataTitle": "Export Data",
+  "exportDataDesc": "Save a backup of all your data as a ZIP archive",
+  "exportDataAction": "Export",
+  "importDataTitle": "Import Data",
+  "importDataDesc": "Restore data from an existing backup (full replace or merge)",
+  "importDataAction": "Import",
+  "exportSuccess": "Export completed successfully",
+  "exportError": "Export error: {error}",
+  "@exportError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "importError": "Import error: {error}",
+  "@importError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "importFileReadError": "Cannot read the file",
+  "importInvalidFile": "Invalid file",
+  "importDialogQuestion": "How should existing data be handled?",
+  "importReplaceSuccess": "Data replaced successfully",
+  "importMergeNoConflicts": "Merge complete — no conflicts found",
+  "updateAllUpToDate": "Everything is up to date",
+  "updateGoBack": "Go back",
+  "updateDataIntact": "Your data is saved and still exists",
+  "updateExportBefore": "Before continuing:",
+  "updateBackupAction": "Back up data",
+  "updateNewProducts": "New products ({count})",
+  "@updateNewProducts": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "updateNewProductsDesc": "These products haven't been selected yet — add them in product selection",
+  "updateDeprecated": "Products no longer recommended ({count})",
+  "@updateDeprecated": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "updateDeprecatedDesc": "These products are in your list but are no longer recommended",
+  "updateAcknowledge": "Got it, continue",
+  "mergeNoData": "No data to merge",
+  "mergeCompleting": "Merging...",
+  "mergeFinish": "Finish",
+  "mergeProgressCounter": "Conflict {current} of {total}",
+  "@mergeProgressCounter": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "mergeRecordInfo": "Type: {recordType}  ·  ID: {recordId}",
+  "@mergeRecordInfo": {
+    "placeholders": {
+      "recordType": {},
+      "recordId": {}
+    }
+  },
+  "mergeChooseVersion": "Choose which version to keep:",
+  "mergeKeepLocal": "Keep local version",
+  "mergeKeepLocalDesc": "Continue with the current data on this device",
+  "mergeUseArchive": "Use backup version",
+  "mergeUseArchiveDesc": "Replace with data from the backup file",
+  "mergeAllResolved": "All conflicts resolved",
+  "mergeClickFinish": "Press \"Finish\" to apply the merge",
+  "mergeSuccess": "Merge completed successfully",
+  "premiumTitle": "Cloud Backup — Coming Soon",
+  "premiumDescWeb": "Enter an activation key to enable automatic backup and restore across devices",
+  "premiumDescAndroid": "This feature is available in the web version only",
+  "premiumKeyLabel": "Activation key",
+  "premiumActivate": "Activate",
+  "skinLogNotesHint": "Notes about your skin today...",
+  "skinLogAddPhotoLabel": "Add a photo",
+  "skinLogTakePhoto": "Take a photo",
+  "skinLogGallery": "Choose from gallery",
+  "skinLogWebStorageWarning": "Browser photos may be deleted by Safari. Back up your data.",
+  "dayDetailNoData": "No data for this day",
+  "dayDetailJournalTooltip": "Skin log",
+  "streakDaysInRow": "Days in a row",
+  "streakOnTrack": "You're on track for a perfect glow!",
+  "streakStartToday": "Every day counts — let's start today ✨",
+  "streakPersonalBest": "Personal best · {days} days",
+  "@streakPersonalBest": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "streakNoGraces": "No more \"oops, I missed...\"",
+  "streakGracesLeft": "{count} \"oops, I missed...\" left",
+  "@streakGracesLeft": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "streakSemanticDays": "{count} days in a row",
+  "@streakSemanticDays": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "routineItemDone": "Done",
+  "routineItemNotDone": "Not done",
+  "routineItemFlexibleSlots": "Morning • Evening",
+  "routineItemDeprecatedPill": "Not recommended",
+  "routineItemDeprecatedWarning": "This product is no longer recommended",
+  "backupReminderText": "It is recommended to back up your data",
+  "backupNowAction": "Back up now",
+  "categoryItemsSuffix": "items",
+  "fixedSlotMorningOnly": "Morning only",
+  "fixedSlotEveningOnly": "Evening only",
+  "skinStateCalm": "Calm",
+  "skinStateMoist": "Moist",
+  "skinStateOily": "Oily",
+  "weekdayOverCapWarning": "Over recommended — consider reducing",
+  "customProductTitle": "Add Custom Product",
+  "customProductPhotoLabel": "Add photo (optional)",
+  "customProductNameLabel": "Product name",
+  "customProductNameHint": "e.g. Personal moisturising serum",
+  "customProductCategoryLabel": "Category",
+  "customProductSlotLabel": "Routine time",
+  "customProductSlotBoth": "Morning + Evening",
+  "customProductFrequencyLabel": "Frequency",
+  "customProductFrequencyWeekly": "How many times per week",
+  "customProductTimesPerWeekLabel": "Times per week:",
+  "customProductSave": "Add to my routine",
+  "customProductEditButton": "Edit product",
+  "customProductEditTitle": "Edit Product",
+  "customProductEditSave": "Save changes",
+  "customProductDeleteButton": "Remove product",
+  "customProductDeleteConfirmTitle": "Remove Product",
+  "customProductDeleteConfirmBody": "The product will be permanently removed from your list. This action cannot be undone.",
+  "customProductDeleteConfirmAction": "Remove",
+  "scheduleConflictWarning": "There are still conflict days in {slot}",
+  "@scheduleConflictWarning": {
+    "placeholders": {
+      "slot": {}
+    }
+  },
+  "slotMorningRoutine": "Morning Routine",
+  "slotEveningRoutine": "Evening Routine",
+  "scheduleStepBadge": "Step {n} of {total}",
+  "@scheduleStepBadge": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleGuidedBothSlots": "Schedule morning routine first, then we'll continue to the evening routine together. You can exceed the recommendation — we'll just remind you.",
+  "scheduleGuidedSingleSlot": "Which days to use each product in {routine}…",
+  "@scheduleGuidedSingleSlot": {
+    "placeholders": {
+      "routine": {}
+    }
+  },
+  "scheduleContinueTo": "Continue to {routine}",
+  "@scheduleContinueTo": {
+    "placeholders": {
+      "routine": {}
+    }
+  },
+  "scheduleNextStepPending": "One more step — {routine} is waiting to be scheduled",
+  "@scheduleNextStepPending": {
+    "placeholders": {
+      "routine": {}
+    }
+  },
+  "scheduleConflictWarningCount": "There are still {count} conflict days in {label}",
+  "@scheduleConflictWarningCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {}
+    }
+  },
+  "scheduleCustomizeDays": "Select days",
+  "scheduleDailyDefaultSuffix": "· every day by default",
+  "scheduleDailyCollapse": "Collapse",
+  "scheduleBadgeNoneSelected": "None selected",
+  "aboutDisclaimer": "This app is intended for personal tracking only and does not constitute medical or cosmetic advice.",
+  "aboutPrivacyPolicyLink": "Privacy Policy",
+  "settingsSectionLanguage": "Language",
+  "settingsLanguage": "Language",
+  "settingsLanguageSubtitle": "Hebrew / English",
+  "settingsLanguageHebrew": "עברית",
+  "settingsLanguageEnglish": "English",
+  "calendarDayFullSun": "Sunday",
+  "calendarDayFullMon": "Monday",
+  "calendarDayFullTue": "Tuesday",
+  "calendarDayFullWed": "Wednesday",
+  "calendarDayFullThu": "Thursday",
+  "calendarDayFullFri": "Friday",
+  "calendarDayFullSat": "Saturday"
+}

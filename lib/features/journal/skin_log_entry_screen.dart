@@ -241,8 +241,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                         TextField(
                           controller: _notesController,
                           maxLines: 5,
-                          textDirection: TextDirection.rtl,
-                          textAlign: TextAlign.right,
+                          textAlign: TextAlign.start,
                           style: AppTypography.bodyMd.copyWith(
                             color: AppColors.onSurface,
                           ),

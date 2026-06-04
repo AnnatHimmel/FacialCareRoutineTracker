@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
 import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
@@ -126,8 +127,11 @@ Widget _buildScreen(_FakeUserDataRepo repo) => ProviderScope(
         userDataRepositoryProvider.overrideWithValue(repo),
         photoRepositoryProvider.overrideWithValue(_FakePhotoRepo()),
       ],
-      child: const MaterialApp(
-        home: SkinLogEntryScreen(date: '2024-01-15'),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('he', 'MA'),
+        home: const SkinLogEntryScreen(date: '2024-01-15'),
       ),
     );
 
@@ -170,7 +174,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap the "שמני" (oily) chip
-      await tester.tap(find.text('שמני'));
+      await tester.tap(find.text('שומני'));
       await tester.pump();
 
       // Chip tap should mark the form dirty — save button should activate
@@ -198,7 +202,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap "שמני" again to deselect it
-      await tester.tap(find.text('שמני'));
+      await tester.tap(find.text('שומני'));
       await tester.pump();
 
       // Press save

@@ -30,16 +30,6 @@ const _catIcon = <String, IconData>{
   'cat-spf': Icons.wb_sunny,
 };
 
-const _catEn = <String, String>{
-  'cat-cleanser-step1': 'Cleanse 1',
-  'cat-cleanser-step2': 'Cleanse 2',
-  'cat-retinoid': 'Retinoid',
-  'cat-toner': 'Toner / Essence',
-  'cat-serum': 'Serum / Active',
-  'cat-moisturizer': 'Moisturize',
-  'cat-oil': 'Oil',
-  'cat-spf': 'Protect',
-};
 
 String? _getCatHint(String catId, AppLocalizations l) => switch (catId) {
   'cat-cleanser-step1' => l.catHintCleanser1,
@@ -336,7 +326,7 @@ class _ProductSelectionScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                (_catEn[cat.id] ?? '').toUpperCase(),
+                                cat.localizedName(l.localeName).toUpperCase(),
                                 style: AppTypography.labelSm.copyWith(
                                   color: AppColors.primary,
                                   fontSize: 10,
@@ -344,7 +334,7 @@ class _ProductSelectionScreenState
                                 ),
                               ),
                               Text(
-                                cat.name,
+                                cat.localizedName(l.localeName),
                                 style: AppTypography.headlineMd.copyWith(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w700,
@@ -440,7 +430,7 @@ class _ProductSelectionScreenState
                         color: AppColors.surfaceLow,
                         borderRadius: BorderRadius.circular(9999),
                       ),
-                      child: const Icon(Icons.arrow_back_rounded,
+                      child: const Icon(Icons.arrow_back,
                           color: AppColors.onSurface, size: 20),
                     ),
                   ),
@@ -468,7 +458,7 @@ class _ProductSelectionScreenState
                 Expanded(
                   child: PrimaryButton(
                     label: ctaLabel,
-                    trailingIcon: Icons.arrow_forward_rounded,
+                    trailingIcon: Icons.arrow_forward,
                     onTap: () {
                       if (isLast) {
                         _goToSummary();
@@ -639,7 +629,7 @@ class _ProductSelectionScreenState
                       color: AppColors.surfaceLow,
                       borderRadius: BorderRadius.circular(9999),
                     ),
-                    child: const Icon(Icons.arrow_back_rounded,
+                    child: const Icon(Icons.arrow_back,
                         color: AppColors.onSurface, size: 20),
                   ),
                 ),
@@ -666,7 +656,7 @@ class _ProductSelectionScreenState
                 Expanded(
                   child: PrimaryButton(
                     label: l.productSelContinueToSchedule,
-                    trailingIcon: Icons.arrow_back_rounded,
+                    trailingIcon: Icons.arrow_forward,
                     onTap: widget.onDone ?? () => _goToSchedule(context),
                   ),
                 ),
@@ -861,7 +851,7 @@ class _SelectRowState extends State<_SelectRow> {
                                 p.name,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.right,
+                                textAlign: TextAlign.start,
                                 style: AppTypography.bodyMd.copyWith(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14.5,
@@ -887,7 +877,7 @@ class _SelectRowState extends State<_SelectRow> {
                 child: Container(
                   width: 40,
                   height: 40,
-                  margin: const EdgeInsets.only(right: 8),
+                  margin: const EdgeInsetsDirectional.only(end: 8),
                   alignment: Alignment.center,
                   child: AnimatedRotation(
                     turns: _infoOpen ? 0.5 : 0,
@@ -911,10 +901,10 @@ class _SelectRowState extends State<_SelectRow> {
                 children: [
                   const Divider(height: 1, color: AppColors.outlineVariant),
                   const SizedBox(height: 10),
-                  if (p.comment != null && p.comment!.isNotEmpty)
+                  if (p.localizedComment(l.localeName).isNotEmpty)
                     Text(
-                      p.comment!,
-                      textAlign: TextAlign.right,
+                      p.localizedComment(l.localeName),
+                      textAlign: TextAlign.start,
                       style: AppTypography.bodyMd.copyWith(
                         color: AppColors.onSurface,
                         fontSize: 12.5,
@@ -932,7 +922,7 @@ class _SelectRowState extends State<_SelectRow> {
                         Expanded(
                           child: Text(
                             widget.categoryUsage,
-                            textAlign: TextAlign.right,
+                            textAlign: TextAlign.start,
                             style: AppTypography.labelSm.copyWith(
                               color: AppColors.onSurfaceVariant,
                               fontSize: 12,
@@ -950,20 +940,14 @@ class _SelectRowState extends State<_SelectRow> {
                       const Icon(Icons.event_repeat_rounded,
                           size: 14, color: AppColors.onSurfaceVariant),
                       const SizedBox(width: 6),
-                      Text(
-                        l.productSelFrequencyLabel,
-                        style: AppTypography.labelSm.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        _frequencyLabel(),
-                        style: AppTypography.labelSm.copyWith(
-                          color: AppColors.onSurface,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          l.productSelFrequencyLabel + _frequencyLabel(),
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -1300,7 +1284,7 @@ class _CategorySection extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          category.name,
+                          category.localizedName(l.localeName),
                           style: AppTypography.labelMd.copyWith(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,

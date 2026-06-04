@@ -111,6 +111,8 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setRoutineViewMode(String m) async {}
   @override Future<bool> getRoutineShowNames() async => true;
   @override Future<void> setRoutineShowNames(bool v) async {}
+  @override Future<String> getAppLanguage() async => 'he';
+  @override Future<void> setAppLanguage(String code) async {}
 }
 
 // ── Test data ─────────────────────────────────────────────────────────────────
@@ -137,8 +139,9 @@ MasterContent _masterWith(List<MasterProduct> products, List<Category> cats) =>
       ),
     );
 
-// Stub route that immediately pops itself so that `await context.push(...)` in
-// _continueToSchedule resolves and _handleFinish() is reached in tests.
+// Stub route that immediately pops itself with `true` — mirroring the schedule
+// screen finishing — so that `await context.push(...)` in _continueToSchedule
+// resolves with a finished result and _handleFinish() is reached in tests.
 class _AutoPopScreen extends StatefulWidget {
   const _AutoPopScreen();
   @override
@@ -150,7 +153,7 @@ class _AutoPopScreenState extends State<_AutoPopScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.pop();
+      if (mounted) context.pop(true);
     });
   }
 
@@ -302,7 +305,7 @@ void main() {
         (widget) =>
             widget is ElevatedButton &&
             widget.child is Text &&
-            (widget.child as Text).data == 'המשך',
+            (widget.child as Text).data == 'המשיכי',
       );
 
       expect(continueButton, findsOneWidget);
@@ -328,7 +331,7 @@ void main() {
         (widget) =>
             widget is ElevatedButton &&
             widget.child is Text &&
-            (widget.child as Text).data == 'המשך',
+            (widget.child as Text).data == 'המשיכי',
       );
 
       expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNull);
@@ -353,7 +356,7 @@ void main() {
         (widget) =>
             widget is ElevatedButton &&
             widget.child is Text &&
-            (widget.child as Text).data == 'המשך',
+            (widget.child as Text).data == 'המשיכי',
       );
 
       expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNull);
@@ -381,7 +384,7 @@ void main() {
         (widget) =>
             widget is ElevatedButton &&
             widget.child is Text &&
-            (widget.child as Text).data == 'המשך',
+            (widget.child as Text).data == 'המשיכי',
       );
 
       expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNotNull);
@@ -426,7 +429,7 @@ void main() {
       await tester.tap(find.text('נקבה'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשך'));
+      await tester.tap(find.text('המשיכי'));
       await tester.pumpAndSettle();
 
       // Guided step 0 shows cat1 products; cat2 products are on a later step.
@@ -452,7 +455,7 @@ void main() {
       await tester.tap(find.text('נקבה'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשך'));
+      await tester.tap(find.text('המשיכי'));
       await tester.pumpAndSettle();
 
       // Skip to summary from guided view
@@ -483,7 +486,7 @@ void main() {
       await tester.tap(find.text('נקבה'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשך'));
+      await tester.tap(find.text('המשיכי'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('דלגי לסיכום'));
@@ -527,7 +530,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Step 2 → Step 3
-      await tester.tap(find.text('המשך'));
+      await tester.tap(find.text('המשיכי'));
       await tester.pumpAndSettle();
       expect(find.text('קרם לחות'), findsOneWidget);
 

@@ -287,8 +287,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _continueToSchedule() async {
-    await context.push<void>('/products/schedule');
+    // The schedule screen pops with `true` only when the user finishes it.
+    // A back press pops with no result — in that case we stay on the product
+    // selection step rather than completing onboarding.
+    final finished = await context.push<bool>('/products/schedule');
     if (!mounted) return;
-    await _handleFinish();
+    if (finished == true) {
+      await _handleFinish();
+    }
   }
 }

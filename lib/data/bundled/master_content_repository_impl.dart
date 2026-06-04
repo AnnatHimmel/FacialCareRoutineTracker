@@ -57,6 +57,7 @@ class MasterContentRepositoryImpl implements MasterContentRepository {
   Category _parseCategory(Map<String, dynamic> m) => Category(
         id: m['id'] as String,
         name: m['name'] as String,
+        nameEn: m['nameEn'] as String?,
         order: m['order'] as int,
         icon: m['icon'] as String?,
       );
@@ -66,6 +67,7 @@ class MasterContentRepositoryImpl implements MasterContentRepository {
         name: m['name'] as String,
         imageAsset: m['imageAsset'] as String?,
         comment: m['comment'] as String?,
+        commentEn: m['commentEn'] as String?,
         categoryId: m['categoryId'] as String,
         morningConfig: m['morningConfig'] == null
             ? null
@@ -97,6 +99,7 @@ class MasterContentRepositoryImpl implements MasterContentRepository {
         entityB: _parseTarget(m['entityB'] as Map<String, dynamic>),
         scope: _parseScope(m['scope'] as String),
         reason: m['reason'] as String?,
+        reasonEn: m['reasonEn'] as String?,
       );
 
   RuleTarget _parseTarget(Map<String, dynamic> m) => RuleTarget(

@@ -32,23 +32,18 @@ class AboutScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGlowGradient,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: AppColors.glow,
-                      ),
-                      child: const Icon(
-                        Icons.spa_outlined,
-                        size: 40,
-                        color: AppColors.onPrimary,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'assets/images/app_icon.png',
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      l.appName,
+                      'The Glow Protocol',
                       style: AppTypography.headlineLg.copyWith(
                         color: AppColors.onSurface,
                       ),
@@ -87,7 +82,7 @@ class AboutScreen extends ConsumerWidget {
                   style: AppTypography.headlineMd.copyWith(
                     color: AppColors.primary,
                   ),
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.start,
                 ),
               ),
 
@@ -187,7 +182,7 @@ class _ChangelogCard extends StatelessWidget {
                       style: AppTypography.bodyMd.copyWith(
                         color: AppColors.onSurface,
                       ),
-                      textAlign: TextAlign.right,
+                      textAlign: TextAlign.start,
                     ),
                   ),
                 ],

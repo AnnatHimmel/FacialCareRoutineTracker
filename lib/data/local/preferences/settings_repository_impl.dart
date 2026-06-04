@@ -11,6 +11,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyUserGender = 'user_gender';
   static const _keyRoutineViewMode = 'routine_view_mode';
   static const _keyRoutineShowNames = 'routine_show_names';
+  static const _keyAppLanguage = 'app_language';
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
@@ -93,4 +94,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<void> setRoutineShowNames(bool value) async =>
       (await _prefs).setBool(_keyRoutineShowNames, value);
+
+  @override
+  Future<String> getAppLanguage() async =>
+      (await _prefs).getString(_keyAppLanguage) ?? 'he';
+
+  @override
+  Future<void> setAppLanguage(String languageCode) async =>
+      (await _prefs).setString(_keyAppLanguage, languageCode);
 }

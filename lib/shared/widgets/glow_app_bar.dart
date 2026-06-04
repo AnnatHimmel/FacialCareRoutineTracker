@@ -49,7 +49,7 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       leading: showBack
           ? IconButton(
-              icon: const Icon(Icons.arrow_back_rounded),
+              icon: const Icon(Icons.arrow_back),
               color: AppColors.primary,
               onPressed: onBack ?? () => Navigator.of(context).pop(),
             )
@@ -65,31 +65,34 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
                 letterSpacing: -0.2,
               ),
             )
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'The Glow Protocol',
-                  style: AppTypography.headlineMd.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    height: 1,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CustomPaint(
-                    painter: _SunLogoPainter(
-                      color: AppColors.primary,
-                      colorLight: AppColors.primaryContainer,
+          : Directionality(
+              textDirection: TextDirection.ltr,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CustomPaint(
+                      painter: _SunLogoPainter(
+                        color: AppColors.primary,
+                        colorLight: AppColors.primaryContainer,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Text(
+                    'The Glow Protocol',
+                    style: AppTypography.headlineMd.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                      height: 1,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
+              ),
             ),
       // Balance the leading area so the title stays truly centered.
       actions: [

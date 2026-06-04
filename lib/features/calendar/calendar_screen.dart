@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/l10n/generated/app_localizations.dart';
-import '../../core/l10n/hebrew_date_strings.dart';
+import '../../core/l10n/hebrew_date_strings.dart' show HebrewDateStrings, EnglishDateStrings;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
@@ -109,30 +109,30 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 2),
                   radius: 20,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left),
-                        onPressed: !_displayMonth.isBefore(
-                                DateTime(today.year, today.month))
-                            ? null
-                            : _nextMonth,
-                        color: AppColors.onSurface,
-                      ),
-                      Text(
-                        _monthLabel(_displayMonth),
-                        style: AppTypography.headlineMd,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: _prevMonth,
-                        color: AppColors.onSurface,
-                      ),
-                    ],
-                  ),
+                  child: Builder(builder: (ctx) {
+                    final canGoToNext = _displayMonth.isBefore(DateTime(today.year, today.month));
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left),
+                          onPressed: _prevMonth,
+                          color: AppColors.onSurface,
+                        ),
+                        Text(
+                          _monthLabel(_displayMonth, l),
+                          style: AppTypography.headlineMd,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right),
+                          onPressed: canGoToNext ? _nextMonth : null,
+                          color: AppColors.onSurface,
+                        ),
+                      ],
+                    );
+                  }),
                 ),
                 const SizedBox(height: 6),
 
@@ -287,8 +287,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  String _monthLabel(DateTime date) {
-    return '${HebrewDateStrings.months[date.month - 1]} ${date.year}';
+  String _monthLabel(DateTime date, AppLocalizations l) {
+    final months = l.localeName == 'en' ? EnglishDateStrings.months : HebrewDateStrings.months;
+    return '${months[date.month - 1]} ${date.year}';
   }
 
   static String _dateStr(DateTime date) =>
@@ -446,7 +447,11 @@ class _DayDetailSection extends ConsumerWidget {
     final parts = date.split('-');
     final day = int.parse(parts[2]);
     final month = int.parse(parts[1]);
-    final monthName = HebrewDateStrings.months[month - 1];
+    final isEn = l.localeName == 'en';
+    final monthName = isEn
+        ? EnglishDateStrings.months[month - 1]
+        : HebrewDateStrings.months[month - 1];
+    final dayStr = isEn ? EnglishDateStrings.ordinal(day) : '$day';
 
     final skinLog = skinLogAsync.valueOrNull;
     final photoPaths = skinLog?.photoPaths ?? const [];
@@ -480,7 +485,7 @@ class _DayDetailSection extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              l.calendarDailyRecord(day, monthName),
+              l.calendarDailyRecord(dayStr, monthName),
               style: AppTypography.bodyLg.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.onSurface,
@@ -575,7 +580,7 @@ class _DayDetailSection extends ConsumerWidget {
                   color: AppColors.onSurfaceVariant,
                   height: 1.5,
                 ),
-                textAlign: TextAlign.right,
+                textAlign: TextAlign.start,
               ),
             ],
             if (skinState != null) ...[
@@ -591,7 +596,7 @@ class _DayDetailSection extends ConsumerWidget {
               l.calendarNoNotes,
               style: AppTypography.labelMd
                   .copyWith(color: AppColors.onSurfaceVariant),
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.start,
             ),
           ],
         ],
@@ -622,7 +627,7 @@ class _DayDetailSection extends ConsumerWidget {
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
             ),
-            textAlign: TextAlign.right,
+            textAlign: TextAlign.start,
           ),
           const SizedBox(height: 12),
           for (final id in resolvedIds)
@@ -667,7 +672,7 @@ class _DayDetailSection extends ConsumerWidget {
                             .copyWith(color: AppColors.onSurface),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
+                        textAlign: TextAlign.start,
                       ),
                     ),
                   ],

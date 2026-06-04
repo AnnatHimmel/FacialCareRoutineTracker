@@ -121,7 +121,7 @@ class _MergeConflictScreenState
                 style: AppTypography.labelSm.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
-                textAlign: TextAlign.right,
+                textAlign: TextAlign.start,
               ),
             ],
           ),
@@ -139,7 +139,7 @@ class _MergeConflictScreenState
                 style: AppTypography.headlineMd.copyWith(
                   color: AppColors.primary,
                 ),
-                textAlign: TextAlign.right,
+                textAlign: TextAlign.start,
               ),
               const SizedBox(height: 16),
 
@@ -259,7 +259,7 @@ class _ConflictOption extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.start,
                   style: AppTypography.bodyMd.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -268,7 +268,7 @@ class _ConflictOption extends StatelessWidget {
                 ),
                 Text(
                   description,
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.start,
                   style: AppTypography.labelSm.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),

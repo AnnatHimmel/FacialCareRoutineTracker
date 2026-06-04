@@ -4,10 +4,13 @@ import 'package:meta/meta.dart';
 class Category {
   final String id;
   final String name;
+  final String? nameEn;
   final int order;
   final String? icon;
 
-  const Category({required this.id, required this.name, required this.order, this.icon});
+  const Category({required this.id, required this.name, this.nameEn, required this.order, this.icon});
+
+  String localizedName(String locale) => locale == 'en' ? (nameEn ?? name) : name;
 
   @override
   bool operator ==(Object other) =>
@@ -16,6 +19,6 @@ class Category {
   @override
   int get hashCode => Object.hash(id, name, order);
 
-  Category copyWith({String? id, String? name, int? order, String? icon}) =>
-      Category(id: id ?? this.id, name: name ?? this.name, order: order ?? this.order, icon: icon ?? this.icon);
+  Category copyWith({String? id, String? name, String? nameEn, int? order, String? icon}) =>
+      Category(id: id ?? this.id, name: name ?? this.name, nameEn: nameEn ?? this.nameEn, order: order ?? this.order, icon: icon ?? this.icon);
 }

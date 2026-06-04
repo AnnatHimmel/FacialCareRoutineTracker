@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/l10n/generated/app_localizations.dart';
-import '../../core/l10n/hebrew_date_strings.dart';
+import '../../core/l10n/hebrew_date_strings.dart' show HebrewDateStrings, EnglishDateStrings;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
@@ -79,8 +79,8 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                   child: Text(
-                    _formatDateHebrew(widget.date),
-                    textAlign: TextAlign.right,
+                    _formatDateHebrew(widget.date, l),
+                    textAlign: TextAlign.start,
                     style: AppTypography.headlineMd.copyWith(
                       color: AppColors.onSurface,
                       fontWeight: FontWeight.w700,
@@ -189,11 +189,14 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     );
   }
 
-  String _formatDateHebrew(String dateStr) {
+  String _formatDateHebrew(String dateStr, AppLocalizations l) {
     final parts = dateStr.split('-');
     if (parts.length != 3) return dateStr;
     final day = int.tryParse(parts[2]) ?? 0;
     final month = int.tryParse(parts[1]) ?? 1;
+    if (l.localeName == 'en') {
+      return '${EnglishDateStrings.months[month - 1]} ${EnglishDateStrings.ordinal(day)}';
+    }
     return '$day ב${HebrewDateStrings.months[month - 1]}';
   }
 }

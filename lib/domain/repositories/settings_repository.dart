@@ -26,4 +26,7 @@ abstract class SettingsRepository {
   Future<void> setRoutineViewMode(String mode);
   Future<bool> getRoutineShowNames();
   Future<void> setRoutineShowNames(bool value);
+
+  Future<String> getAppLanguage();
+  Future<void> setAppLanguage(String languageCode);
 }

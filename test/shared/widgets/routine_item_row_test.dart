@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/domain/entities/master_product.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/shared/widgets/routine_item_row.dart';
@@ -14,7 +15,12 @@ MasterProduct _product({bool deprecated = false, String name = 'Test Product'}) 
       addedInVersion: '1.0.0',
     );
 
-Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+Widget _wrap(Widget child) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he', 'MA'),
+      home: Scaffold(body: child),
+    );
 
 void main() {
   group('RoutineItemRow', () {

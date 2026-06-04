@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
 import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
@@ -94,7 +95,12 @@ Widget _wrap(List<SkinLogEntry> logs, {List<RouteBase> extra = const []}) {
       userDataRepositoryProvider.overrideWithValue(_FakeUDR(logs)),
       photoRepositoryProvider.overrideWithValue(_FakePhotoRepo()),
     ],
-    child: MaterialApp.router(routerConfig: router),
+    child: MaterialApp.router(
+      routerConfig: router,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he', 'MA'),
+    ),
   );
 }
 

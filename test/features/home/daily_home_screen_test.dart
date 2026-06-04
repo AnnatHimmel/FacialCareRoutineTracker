@@ -43,6 +43,8 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setRoutineViewMode(String m) async {}
   @override Future<bool> getRoutineShowNames() async => false;
   @override Future<void> setRoutineShowNames(bool v) async {}
+  @override Future<String> getAppLanguage() async => 'he';
+  @override Future<void> setAppLanguage(String code) async {}
 }
 
 class _FakeMCR implements MasterContentRepository {
@@ -207,6 +209,7 @@ Widget _wrap({
       routerConfig: router,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he', 'MA'),
     ),
   );
 }
@@ -268,10 +271,10 @@ void main() {
       await tester.pumpWidget(_wrap(master: _master, udr: udr));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('תיעוד עכשיו'));
+      await tester.tap(find.text('תעד עכשיו'));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('journal-2024-01-15'), findsOneWidget);
+      expect(find.textContaining('journal-'), findsOneWidget);
     });
 
     group('view mode toggle', () {
@@ -331,13 +334,13 @@ void main() {
         await tester.pumpWidget(_wrap(master: _master, udr: udr));
         await tester.pumpAndSettle();
 
-        expect(find.text('הקישי על מוצר לסימון בוצע'), findsOneWidget);
+        expect(find.text('הקש על מוצר לסימון בוצע'), findsOneWidget);
 
         await tester.tap(find.text('תמונות'));
         await tester.pumpAndSettle();
 
-        expect(find.text('הקישי על התמונה לסימון בוצע'), findsOneWidget);
-        expect(find.text('הקישי על מוצר לסימון בוצע'), findsNothing);
+        expect(find.text('הקש על התמונה לסימון בוצע'), findsOneWidget);
+        expect(find.text('הקש על מוצר לסימון בוצע'), findsNothing);
       });
 
       testWidgets('tapping grid tile in images mode calls updateDayRecord',

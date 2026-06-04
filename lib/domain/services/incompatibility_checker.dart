@@ -11,6 +11,7 @@ class ConflictInfo {
   final RuleScope scope;
   final bool isMuted;
   final String? reason;
+  final String? reasonEn;
 
   const ConflictInfo({
     required this.ruleId,
@@ -19,7 +20,11 @@ class ConflictInfo {
     required this.scope,
     required this.isMuted,
     this.reason,
+    this.reasonEn,
   });
+
+  String? localizedReason(String locale) =>
+      locale == 'en' ? (reasonEn ?? reason) : reason;
 }
 
 class IncompatibilityChecker {
@@ -109,6 +114,7 @@ class IncompatibilityChecker {
             scope: rule.scope,
             isMuted: muted.contains(rule.id),
             reason: rule.reason,
+            reasonEn: rule.reasonEn,
           ));
           return;
         }
@@ -137,6 +143,7 @@ class IncompatibilityChecker {
             scope: rule.scope,
             isMuted: muted.contains(rule.id),
             reason: rule.reason,
+            reasonEn: rule.reasonEn,
           ));
           return;
         }

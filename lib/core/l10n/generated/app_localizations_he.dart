@@ -9,9 +9,6 @@ class AppLocalizationsHe extends AppLocalizations {
   AppLocalizationsHe([String locale = 'he']) : super(locale);
 
   @override
-  String get appName => 'מעקב שגרת טיפוח';
-
-  @override
   String get navToday => 'היום';
 
   @override
@@ -101,7 +98,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get emptyJournal => 'עדיין אין תמונות ביומן';
 
   @override
-  String get continueAction => 'המשך';
+  String get continueAction => 'המשיכי';
 
   @override
   String get backAction => 'חזרה';
@@ -326,7 +323,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String calendarDailyRecord(Object day, Object month) {
-    return 'תיעוד יומי: $day ב $month';
+    return 'תיעוד יומי: $day ב$month';
   }
 
   @override
@@ -721,7 +718,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get mergeKeepLocal => 'שמור גרסה מקומית';
 
   @override
-  String get mergeKeepLocalDesc => 'המשך עם הנתונים הנוכחיים במכשיר';
+  String get mergeKeepLocalDesc => 'המשיכי עם הנתונים הנוכחיים במכשיר';
 
   @override
   String get mergeUseArchive => 'השתמשי בגרסת הגיבוי';
@@ -927,7 +924,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String scheduleContinueTo(Object routine) {
-    return 'המשך ל$routine';
+    return 'המשיכי ל$routine';
   }
 
   @override
@@ -958,6 +955,42 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get aboutPrivacyPolicyLink => 'מדיניות פרטיות';
+
+  @override
+  String get settingsSectionLanguage => 'שפה';
+
+  @override
+  String get settingsLanguage => 'שפה';
+
+  @override
+  String get settingsLanguageSubtitle => 'עברית / אנגלית';
+
+  @override
+  String get settingsLanguageHebrew => 'עברית';
+
+  @override
+  String get settingsLanguageEnglish => 'English';
+
+  @override
+  String get calendarDayFullSun => 'ראשון';
+
+  @override
+  String get calendarDayFullMon => 'שני';
+
+  @override
+  String get calendarDayFullTue => 'שלישי';
+
+  @override
+  String get calendarDayFullWed => 'רביעי';
+
+  @override
+  String get calendarDayFullThu => 'חמישי';
+
+  @override
+  String get calendarDayFullFri => 'שישי';
+
+  @override
+  String get calendarDayFullSat => 'שבת';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -969,6 +1002,9 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get backupReminderMessage => 'גבה את הנתונים שלך';
+
+  @override
+  String get continueAction => 'המשך';
 
   @override
   String get resetOrder => 'אפס לסדר מומלץ';
