@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>מדיניות פרטיות – The Glow Protocol</title>
+  <title>Privacy Policy – The Glow Protocol</title>
   <style>
     :root {
       --primary: #9e412c;
@@ -90,19 +90,18 @@
     .lang-section { display: none; }
     .lang-section.visible { display: block; }
     .lang-section[data-lang="en"] { direction: ltr; text-align: left; }
-    .lang-section[data-lang="en"] header { flex-direction: row-reverse; }
   </style>
 </head>
 <body>
 <div class="container">
 
   <div class="lang-toggle">
-    <button id="btn-he" class="active" onclick="switchLang('he')">עברית</button>
-    <button id="btn-en" onclick="switchLang('en')">English</button>
+    <button id="btn-en" class="active" onclick="switchLang('en')">English</button>
+    <button id="btn-he" onclick="switchLang('he')">עברית</button>
   </div>
 
   <!-- Hebrew -->
-  <div class="lang-section visible" data-lang="he">
+  <div class="lang-section" data-lang="he">
     <header>
       <img class="icon" src="icons/Icon-192.png" alt="The Glow Protocol" />
       <div>
@@ -152,7 +151,7 @@
   </div>
 
   <!-- English -->
-  <div class="lang-section" data-lang="en">
+  <div class="lang-section visible" data-lang="en">
     <header>
       <img class="icon" src="icons/Icon-192.png" alt="The Glow Protocol" />
       <div>
