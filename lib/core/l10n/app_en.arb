@@ -250,6 +250,27 @@
   },
   "scheduleNoDaySelected": "No day selected — product will not be scheduled",
   "scheduleSaveFinish": "Finish & Save Routine",
+  "scheduleAlertsOne": "1 alert",
+  "scheduleAlertsCount": "{count} alerts",
+  "@scheduleAlertsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduleAlertsConflicts": "{count} conflicts",
+  "@scheduleAlertsConflicts": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduleAlertsOverFreq": "{count} over recommended",
+  "@scheduleAlertsOverFreq": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduleConflictsSection": "Not recommended together",
+  "scheduleOverFreqSection": "Over recommended frequency",
+  "scheduleByFrequency": "By frequency",
+  "scheduleDayChip": "{day}",
+  "@scheduleDayChip": {
+    "placeholders": { "day": {} }
+  },
+  "scheduleSoftAlertsNote": "All alerts are soft — you can exceed, we'll just remind you.",
   "orderInstruction": "Drag products to reorder your routine",
   "orderNoProducts": "No products selected",
   "orderResetToRecommended": "Reset to recommended order",

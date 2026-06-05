@@ -34,7 +34,8 @@ class _AddCustomProductSheetState
   Uint8List? _photoBytes;
   bool _photoChanged = false;
   String? _categoryId;
-  String _slot = 'morning';
+  bool _inMorning = true;
+  bool _inEvening = false;
   bool _isDaily = true;
   int _timesPerWeek = 3;
   bool _saving = false;
@@ -49,13 +50,8 @@ class _AddCustomProductSheetState
       _nameController.text = p.name;
       _categoryId = p.categoryId;
       // comment is loaded after locale is available — deferred to didChangeDependencies
-      if (p.inMorning && p.inEvening) {
-        _slot = 'both';
-      } else if (p.inEvening) {
-        _slot = 'evening';
-      } else {
-        _slot = 'morning';
-      }
+      _inMorning = p.inMorning;
+      _inEvening = p.inEvening;
       _isDaily = p.isDaily;
       _timesPerWeek = p.timesPerWeek ?? 3;
       if (p.photoKey != null) _loadInitialPhoto(p.photoKey!);
@@ -160,8 +156,8 @@ class _AddCustomProductSheetState
         await ref.read(photoRepositoryProvider).savePhoto(photoKey, _photoBytes!);
       }
 
-      final inMorning = _slot == 'morning' || _slot == 'both';
-      final inEvening = _slot == 'evening' || _slot == 'both';
+      final inMorning = _inMorning;
+      final inEvening = _inEvening;
 
       final product = UserCustomProduct(
         id: id,
@@ -409,14 +405,30 @@ class _AddCustomProductSheetState
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _PillRow(
-                      options: [
-                        ('morning', l.slotMorning),
-                        ('evening', l.slotEvening),
-                        ('both', l.customProductSlotBoth),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _SlotTogglePill(
+                            label: l.slotMorning,
+                            selected: _inMorning,
+                            onTap: () {
+                              if (_inMorning && !_inEvening) return;
+                              setState(() => _inMorning = !_inMorning);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _SlotTogglePill(
+                            label: l.slotEvening,
+                            selected: _inEvening,
+                            onTap: () {
+                              if (_inEvening && !_inMorning) return;
+                              setState(() => _inEvening = !_inEvening);
+                            },
+                          ),
+                        ),
                       ],
-                      selected: _slot,
-                      onSelect: (v) => setState(() => _slot = v),
                     ),
                     const SizedBox(height: 20),
 
@@ -586,6 +598,45 @@ class _CategoryDropdown extends StatelessWidget {
           onChanged: (v) {
             if (v != null) onSelect(v);
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _SlotTogglePill extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SlotTogglePill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : AppColors.surfaceLow,
+          borderRadius: BorderRadius.circular(9999),
+          boxShadow: selected ? AppColors.glowSm : null,
+        ),
+        child: Center(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: AppTypography.labelMd.copyWith(
+              color: selected ? AppColors.onPrimary : AppColors.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
     );

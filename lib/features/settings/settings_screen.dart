@@ -191,7 +191,8 @@ class _AvatarCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final symbol = gender == 'female' ? '♀' : gender == 'male' ? '♂' : null;
+    final IconData? genderIcon =
+        gender == 'female' ? Icons.female : gender == 'male' ? Icons.male : null;
     return Container(
       width: 56,
       height: 56,
@@ -201,14 +202,16 @@ class _AvatarCircle extends StatelessWidget {
         boxShadow: AppColors.glowSm,
       ),
       alignment: Alignment.center,
-      child: Text(
-        symbol ?? initial,
-        style: AppTypography.headlineMd.copyWith(
-          color: AppColors.onPrimary,
-          fontWeight: FontWeight.w700,
-          fontSize: symbol != null ? 26 : 22,
-        ),
-      ),
+      child: genderIcon != null
+          ? Icon(genderIcon, color: AppColors.onPrimary, size: 28)
+          : Text(
+              initial,
+              style: AppTypography.headlineMd.copyWith(
+                color: AppColors.onPrimary,
+                fontWeight: FontWeight.w700,
+                fontSize: 22,
+              ),
+            ),
     );
   }
 }
@@ -287,6 +290,7 @@ Future<void> _showEditProfileSheet(
               gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
         }
         ref.invalidate(_userProfileProvider);
+        ref.invalidate(userNameProvider);
       },
     ),
   );

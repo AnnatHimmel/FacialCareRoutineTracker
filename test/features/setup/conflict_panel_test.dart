@@ -220,24 +220,8 @@ void main() {
 
   // ── UI integration tests ─────────────────────────────────────────────────────
 
-  // Helper: tap the first conflict day cell.
-  // Day-cell conflict badges are inside a Positioned widget; slot-tab indicators
-  // are not — so we filter by Positioned to avoid hitting the slot-tab GD first.
-  Future<void> tapFirstConflictDay(WidgetTester tester) async {
-    final iconInPositioned = find.descendant(
-      of: find.byType(Positioned),
-      matching: find.byIcon(Icons.priority_high_rounded),
-    ).first;
-    final dayCellGD = find.ancestor(
-      of: iconInPositioned,
-      matching: find.byType(GestureDetector),
-    ).first;
-    await tester.tap(dayCellGD);
-    await tester.pumpAndSettle();
-  }
-
-  group('ConflictDetailPanel UI', () {
-    testWidgets('conflict day cell is tappable and opens the conflict panel', (tester) async {
+  group('IssuesPanel UI', () {
+    testWidgets('issues panel is visible and collapsed by default when there are conflicts', (tester) async {
       final pa = _daily('pa', 'מוצר א׳');
       final pb = _daily('pb', 'מוצר ב׳');
       final rule = _productRule('pa', 'pb', reason: 'סיבת ההתנגשות');
@@ -248,16 +232,13 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Panel title text is not visible before tap
-      expect(find.textContaining('שילוב לא מומלץ'), findsNothing);
-
-      await tapFirstConflictDay(tester);
-
-      // Panel should now be visible with title
-      expect(find.textContaining('שילוב לא מומלץ'), findsOneWidget);
+      // Issues panel header is always visible — conflict count shown
+      expect(find.textContaining('התראות'), findsWidgets);
+      // Expand/collapse chevron shows collapsed state by default
+      expect(find.byIcon(Icons.expand_more_rounded), findsWidgets);
     });
 
-    testWidgets('conflict panel shows product names inside the panel', (tester) async {
+    testWidgets('issues panel shows product names after expanding', (tester) async {
       final pa = _daily('pa', 'מוצר א׳');
       final pb = _daily('pb', 'מוצר ב׳');
       final rule = _productRule('pa', 'pb', reason: 'סיבה');
@@ -268,14 +249,16 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      await tapFirstConflictDay(tester);
+      // Expand the panel first
+      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
+      await tester.pumpAndSettle();
 
-      // Names appear in the panel (2 occurrences each: schedule list + conflict panel)
+      // Product names visible in the issues panel after expanding
       expect(find.text('מוצר א׳'), findsWidgets);
       expect(find.text('מוצר ב׳'), findsWidgets);
     });
 
-    testWidgets('conflict panel shows reason text', (tester) async {
+    testWidgets('issues panel shows reason text after expanding', (tester) async {
       final pa = _daily('pa', 'A');
       final pb = _daily('pb', 'B');
       final rule = _productRule('pa', 'pb', reason: 'סיבת ההתנגשות');
@@ -286,12 +269,15 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      await tapFirstConflictDay(tester);
+      // Expand the panel first
+      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
+      await tester.pumpAndSettle();
 
-      expect(find.text('סיבת ההתנגשות'), findsOneWidget);
+      // Reason visible after expanding (once per conflict day card)
+      expect(find.text('סיבת ההתנגשות'), findsWidgets);
     });
 
-    testWidgets('close button dismisses the conflict panel', (tester) async {
+    testWidgets('tapping panel header expands and collapses the content', (tester) async {
       final pa = _daily('pa', 'A');
       final pb = _daily('pb', 'B');
       final rule = _productRule('pa', 'pb', reason: 'סיבה');
@@ -302,17 +288,27 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      await tapFirstConflictDay(tester);
-      expect(find.textContaining('שילוב לא מומלץ'), findsOneWidget);
+      // Panel is collapsed by default: soft note not visible
+      expect(find.textContaining('כל ההתראות הן רכות'), findsNothing);
+      expect(find.byIcon(Icons.expand_more_rounded), findsWidgets);
 
-      // Close via ✕ button (semantics label 'סגור')
-      await tester.tap(find.bySemanticsLabel('סגור'));
+      // Tap header to expand
+      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('שילוב לא מומלץ'), findsNothing);
+      // Panel body now visible
+      expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
+
+      // Tap again to collapse
+      await tester.tap(find.byIcon(Icons.expand_less_rounded).first);
+      await tester.pumpAndSettle();
+
+      // Panel body hidden again
+      expect(find.textContaining('כל ההתראות הן רכות'), findsNothing);
+      expect(find.byIcon(Icons.expand_more_rounded), findsWidgets);
     });
 
-    testWidgets('fix button removes weekly product from the tapped day', (tester) async {
+    testWidgets('fix button removes weekly product from its conflict day', (tester) async {
       final pa = _weekly('pa', 'מוצר א׳');
       final pb = _weekly('pb', 'מוצר ב׳');
       final rule = _productRule('pa', 'pb', reason: 'סיבה');
@@ -324,10 +320,17 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      await tapFirstConflictDay(tester);
+      // Expand panel first
+      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
+      await tester.pumpAndSettle();
 
-      // Tap the first 'הסר מ...' button
-      await tester.tap(find.textContaining('הסר מ').first);
+      // Tap the first remove button (event_busy icon) directly in the issues panel
+      final fixButtonIcon = find.byIcon(Icons.event_busy_rounded).first;
+      final fixButton = find.ancestor(
+        of: fixButtonIcon,
+        matching: find.byType(GestureDetector),
+      ).first;
+      await tester.tap(fixButton);
       await tester.pumpAndSettle();
 
       expect(udr.lastUpserted, isNotNull);
@@ -346,9 +349,17 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      await tapFirstConflictDay(tester);
+      // Expand panel first
+      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
+      await tester.pumpAndSettle();
 
-      await tester.tap(find.textContaining('הסר מ').first);
+      // Tap the first remove button
+      final fixButtonIcon = find.byIcon(Icons.event_busy_rounded).first;
+      final fixButton = find.ancestor(
+        of: fixButtonIcon,
+        matching: find.byType(GestureDetector),
+      ).first;
+      await tester.tap(fixButton);
       await tester.pumpAndSettle();
 
       expect(udr.lastUpserted, isNotNull);
@@ -357,7 +368,7 @@ void main() {
       expect(udr.lastUpserted!.weekdays.contains(0), isFalse);
     });
 
-    testWidgets('panel shows footer note', (tester) async {
+    testWidgets('panel shows soft alerts footer note after expanding', (tester) async {
       final pa = _daily('pa', 'A');
       final pb = _daily('pb', 'B');
       final rule = _productRule('pa', 'pb');
@@ -368,12 +379,15 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      await tapFirstConflictDay(tester);
+      // Expand panel first
+      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
+      await tester.pumpAndSettle();
 
-      expect(find.textContaining('המוצר יישאר בכל שאר הימים'), findsOneWidget);
+      // Footer note visible in the expanded panel body
+      expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
     });
 
-    testWidgets('category chip shows category name inside the panel', (tester) async {
+    testWidgets('category name shows inside the panel after expanding', (tester) async {
       final pa = _daily('pa', 'A', catId: 'cat-moisturizer');
       final pb = _daily('pb', 'B', catId: 'cat-moisturizer');
       final rule = _productRule('pa', 'pb');
@@ -389,9 +403,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tapFirstConflictDay(tester);
+      // Expand panel first
+      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
+      await tester.pumpAndSettle();
 
-      // Category name 'לחות' appears in the chips (once per product row)
+      // Category name visible in the issues panel after expanding
       expect(find.text('לחות'), findsWidgets);
     });
   });

@@ -6,7 +6,6 @@ import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
-import '../../domain/entities/incompatibility_rule.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/rule_scope.dart';
@@ -22,28 +21,48 @@ import '../../shared/widgets/weekday_picker.dart';
 
 const _uuid = Uuid();
 
-String _getDayAbbrev(int d, AppLocalizations l) => switch (d) {
-  0 => l.calendarDayAbbrevSun,
-  1 => l.calendarDayAbbrevMon,
-  2 => l.calendarDayAbbrevTue,
-  3 => l.calendarDayAbbrevWed,
-  4 => l.calendarDayAbbrevThu,
-  5 => l.calendarDayAbbrevFri,
-  6 => l.calendarDayAbbrevSat,
-  _ => '',
-};
-
 String _getDayFullName(int d, AppLocalizations l) => switch (d) {
-  0 => l.calendarDayFullSun,
-  1 => l.calendarDayFullMon,
-  2 => l.calendarDayFullTue,
-  3 => l.calendarDayFullWed,
-  4 => l.calendarDayFullThu,
-  5 => l.calendarDayFullFri,
-  6 => l.calendarDayFullSat,
-  _ => '',
-};
+      0 => l.calendarDayFullSun,
+      1 => l.calendarDayFullMon,
+      2 => l.calendarDayFullTue,
+      3 => l.calendarDayFullWed,
+      4 => l.calendarDayFullThu,
+      5 => l.calendarDayFullFri,
+      6 => l.calendarDayFullSat,
+      _ => '',
+    };
 
+String _getDayAbbrName(int d, AppLocalizations l) => switch (d) {
+      0 => l.calendarDayAbbrevSun,
+      1 => l.calendarDayAbbrevMon,
+      2 => l.calendarDayAbbrevTue,
+      3 => l.calendarDayAbbrevWed,
+      4 => l.calendarDayAbbrevThu,
+      5 => l.calendarDayAbbrevFri,
+      6 => l.calendarDayAbbrevSat,
+      _ => '',
+    };
+
+/// Renders a product name, wrapping Latin brand names as an LTR island so
+/// they read correctly inside the RTL layout (mirrors the rest of the app).
+Widget _productName(MasterProduct p,
+    {double fontSize = 13, FontWeight weight = FontWeight.w700}) {
+  final latin = p.name.codeUnits.every((c) => c < 128);
+  final text = Text(
+    p.name,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    textAlign: TextAlign.start,
+    style: AppTypography.bodyMd.copyWith(
+      color: AppColors.onSurface,
+      fontWeight: weight,
+      fontSize: fontSize,
+    ),
+  );
+  return latin
+      ? Directionality(textDirection: TextDirection.ltr, child: text)
+      : text;
+}
 
 class ScheduleSetupScreen extends ConsumerStatefulWidget {
   final bool fromSetup;
@@ -62,8 +81,15 @@ class ScheduleSetupScreen extends ConsumerStatefulWidget {
 
 class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
   Slot _activeSlot = Slot.morning;
-  int? _openConflictDay;
   Set<Slot> _visitedSlots = {Slot.morning};
+
+  // Redesign state
+  String? _openProductId; // which product row's day-editor is expanded
+  bool _issuesOpen = false; // is the issues panel expanded (starts collapsed)
+  bool _showDaily = false; // is the "every day" group expanded
+
+  final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _rowKeys = {};
 
   Future<void> _updateSchedule(
     String productId,
@@ -82,16 +108,22 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
         );
   }
 
-  Future<void> _toggleDay(String productId, int dayId) async {
+  /// Remove a single weekday for a product (used by the conflict "remove from
+  /// {day}" action). Daily products with no override start as all-7.
+  Future<void> _removeDay(String productId, int dayId) async {
     final schedules = ref.read(allSchedulesProvider).valueOrNull ?? [];
     final existing = schedules
         .where((s) => s.productId == productId && s.slot == _activeSlot)
         .firstOrNull;
+    final master = ref.read(masterContentProvider).valueOrNull;
+    final product = master?.products.where((p) => p.id == productId).firstOrNull;
     final Set<int> current;
     if (existing != null && existing.weekdays.isNotEmpty) {
       current = Set.from(existing.weekdays);
-    } else {
+    } else if (product?.configForSlot(_activeSlot)?.frequencyRule is DailyRule) {
       current = {0, 1, 2, 3, 4, 5, 6};
+    } else {
+      current = <int>{};
     }
     current.remove(dayId);
     await _updateSchedule(productId, _activeSlot, current, existing);
@@ -100,21 +132,62 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
   void _handleContinue(BuildContext context) {
     if (widget.fromSetup) {
       context.go('/setup/order?from=setup');
+    } else if (_isProductsFlow) {
+      context.go('/today');
     } else {
-      // Pop with `true` so callers (e.g. onboarding) can distinguish a
-      // deliberate finish from a plain back, which pops with no result.
       context.pop(true);
     }
   }
 
   bool get _isProductsFlow => widget.fromProducts && !widget.fromSetup;
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   void _switchSlot(Slot slot) {
     setState(() {
       _activeSlot = slot;
-      _openConflictDay = null;
       _visitedSlots = {..._visitedSlots, slot};
+      _openProductId = null;
+      _issuesOpen = false;
+      _showDaily = false;
+      _rowKeys.clear();
     });
+  }
+
+  void _openAndScrollToProduct(String id) {
+    setState(() => _openProductId = id);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final key = _rowKeys[id];
+      if (key?.currentContext != null) {
+        Scrollable.ensureVisible(
+          key!.currentContext!,
+          alignment: 0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  // ── derived helpers ────────────────────────────────────────────────────────
+
+  Set<int> _effectiveDays(
+    MasterProduct p,
+    Slot slot,
+    List<WeekdaySchedule> schedules,
+  ) {
+    final sched = schedules
+        .where((s) => s.productId == p.id && s.slot == slot)
+        .firstOrNull;
+    if (sched != null && sched.weekdays.isNotEmpty) return sched.weekdays;
+    if (p.configForSlot(slot)?.frequencyRule is DailyRule) {
+      return {0, 1, 2, 3, 4, 5, 6};
+    }
+    return <int>{};
   }
 
   @override
@@ -189,9 +262,8 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .toList()
             ..sort((a, b) => categoryThenSlotOrder(a, b, Slot.evening));
 
-          final activeProducts = _activeSlot == Slot.morning
-              ? morningProducts
-              : eveningProducts;
+          final activeProducts =
+              _activeSlot == Slot.morning ? morningProducts : eveningProducts;
 
           final occasional = activeProducts
               .where((p) =>
@@ -201,16 +273,24 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .where((p) =>
                   p.configForSlot(_activeSlot)?.frequencyRule is DailyRule)
               .toList();
+          final narrowed = daily
+              .where((p) =>
+                  _effectiveDays(p, _activeSlot, schedules).length < 7)
+              .toList();
+          final everyDay = daily
+              .where((p) =>
+                  _effectiveDays(p, _activeSlot, schedules).length == 7)
+              .toList();
+          final flexed = [...occasional, ...narrowed]
+            ..sort((a, b) => categoryThenSlotOrder(a, b, _activeSlot));
 
-          final isEmpty =
-              morningProducts.isEmpty && eveningProducts.isEmpty;
+          final isEmpty = morningProducts.isEmpty && eveningProducts.isEmpty;
 
-          // Guided AM→PM progression
+          // Guided AM→PM progression (unchanged behaviour)
           final activeSlots = [
             if (morningProducts.isNotEmpty) Slot.morning,
             if (eveningProducts.isNotEmpty) Slot.evening,
           ];
-          final bothSlots = activeSlots.length > 1;
           final slotIdx = activeSlots.indexOf(_activeSlot).clamp(0, 99);
           final allVisited = activeSlots.every(_visitedSlots.contains);
           final nextSlot = (!allVisited && slotIdx < activeSlots.length - 1)
@@ -232,89 +312,94 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .where((r) => r.scope == RuleScope.withinSlot)
               .toList();
 
-          List<int> conflictDaysFor(
-              Slot slot, List<MasterProduct> slotProducts) {
-            final result = <int>[];
-            for (int d = 0; d < 7; d++) {
-              final onDay = slotProducts.where((p) {
-                final sched = schedules
-                    .where((s) => s.productId == p.id && s.slot == slot)
-                    .firstOrNull;
-                if (sched != null && sched.weekdays.isNotEmpty) {
-                  return sched.weekdays.contains(d);
-                }
-                return p.configForSlot(slot)?.frequencyRule is DailyRule;
-              }).toList();
-              final conflicts = checker.getConflictsForSelection(
-                activeSlot: slot,
-                slotProducts: onDay,
-                otherSlotProducts: [],
-                rules: withinSlotRules,
-                categories: master.categories,
-                mutedRuleIds: mutedIds,
-              );
-              if (conflicts.any((c) => !c.isMuted)) result.add(d);
+          // ── conflict + over-frequency computation for the ACTIVE slot ──
+          final Map<int, List<ConflictInfo>> activeDayPairs = {};
+          final Set<String> cellSet = {};
+          for (int d = 0; d < 7; d++) {
+            final onDay = activeProducts
+                .where((p) =>
+                    _effectiveDays(p, _activeSlot, schedules).contains(d))
+                .toList();
+            final pairs = checker
+                .getConflictsForSelection(
+                  activeSlot: _activeSlot,
+                  slotProducts: onDay,
+                  otherSlotProducts: const [],
+                  rules: withinSlotRules,
+                  categories: master.categories,
+                  mutedRuleIds: mutedIds,
+                )
+                .where((c) => !c.isMuted)
+                .toList();
+            if (pairs.isNotEmpty) {
+              activeDayPairs[d] = pairs;
+              for (final c in pairs) {
+                cellSet.add('${c.productA.id}-$d');
+                cellSet.add('${c.productB.id}-$d');
+              }
             }
-            return result;
+          }
+          final conflictDays = activeDayPairs.keys.toList()..sort();
+          final pairCount =
+              activeDayPairs.values.fold<int>(0, (a, b) => a + b.length);
+
+          final overProds = flexed.where((p) {
+            final rule = p.configForSlot(_activeSlot)?.frequencyRule;
+            if (rule is! WeeklyMaxRule) return false;
+            return _effectiveDays(p, _activeSlot, schedules).length >
+                rule.maxPerWeek;
+          }).toList();
+
+          final totalIssues = pairCount + overProds.length;
+
+          // per-slot issue totals for the tab badges
+          int slotIssueCount(Slot slot, List<MasterProduct> products) {
+            int pairs = 0;
+            for (int d = 0; d < 7; d++) {
+              final onDay = products
+                  .where((p) => _effectiveDays(p, slot, schedules).contains(d))
+                  .toList();
+              pairs += checker
+                  .getConflictsForSelection(
+                    activeSlot: slot,
+                    slotProducts: onDay,
+                    otherSlotProducts: const [],
+                    rules: withinSlotRules,
+                    categories: master.categories,
+                    mutedRuleIds: mutedIds,
+                  )
+                  .where((c) => !c.isMuted)
+                  .length;
+            }
+            final over = products.where((p) {
+              final r = p.configForSlot(slot)?.frequencyRule;
+              return r is WeeklyMaxRule &&
+                  _effectiveDays(p, slot, schedules).length > r.maxPerWeek;
+            }).length;
+            return pairs + over;
           }
 
-          final activeConflictDays =
-              conflictDaysFor(_activeSlot, activeProducts);
-          final otherSlot =
-              _activeSlot == Slot.morning ? Slot.evening : Slot.morning;
-          final otherProducts =
-              _activeSlot == Slot.morning ? eveningProducts : morningProducts;
-          final otherConflictDays =
-              conflictDaysFor(otherSlot, otherProducts);
+          final isEnglish = l.localeName == 'en';
 
           return Column(
             children: [
               if (!isEmpty) ...[
-                if (bothSlots)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceLow,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            l.scheduleStepBadge(
-                                slotIdx + 1, activeSlots.length),
-                            style: AppTypography.labelSm.copyWith(
-                              color: AppColors.onSurfaceVariant,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
                   child: _SlotTabSwitcher(
                     activeSlot: _activeSlot,
                     hasMorning: morningProducts.isNotEmpty,
                     hasEvening: eveningProducts.isNotEmpty,
-                    morningHasConflict: conflictDaysFor(
-                            Slot.morning, morningProducts)
-                        .isNotEmpty,
-                    eveningHasConflict: conflictDaysFor(
-                            Slot.evening, eveningProducts)
-                        .isNotEmpty,
+                    morningIssues:
+                        slotIssueCount(Slot.morning, morningProducts),
+                    eveningIssues:
+                        slotIssueCount(Slot.evening, eveningProducts),
                     visitedSlots: _visitedSlots,
                     onSelect: _switchSlot,
                     l: l,
                   ),
                 ),
               ],
-
               Expanded(
                 child: isEmpty
                     ? Center(
@@ -329,115 +414,107 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                           ),
                         ),
                       )
-                    : CustomScrollView(
+                    : ListView(
                         key: ValueKey(_activeSlot),
-                        slivers: [
-                          if (activeProducts.isNotEmpty)
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                                child: _WeekAtAGlanceCard(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                        children: [
+                          // 1 · single collapsible issues panel
+                          if (totalIssues > 0) ...[
+                            _IssuesPanel(
+                              open: _issuesOpen,
+                              onToggle: () => setState(
+                                  () => _issuesOpen = !_issuesOpen),
+                              totalIssues: totalIssues,
+                              pairCount: pairCount,
+                              conflictDays: conflictDays,
+                              dayPairs: activeDayPairs,
+                              overProds: overProds,
+                              slot: _activeSlot,
+                              schedules: schedules,
+                              categories: master.categories,
+                              isEnglish: isEnglish,
+                              onRemoveFromDay: _removeDay,
+                              onTapOver: _openAndScrollToProduct,
+                              effectiveDays: (p) =>
+                                  _effectiveDays(p, _activeSlot, schedules),
+                              l: l,
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+
+                          // 2 · calm "by frequency" list
+                          if (flexed.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  right: 4, left: 4, bottom: 2),
+                              child: Text(
+                                '${l.scheduleByFrequency} (${flexed.length})',
+                                textAlign: TextAlign.start,
+                                style: AppTypography.labelMd.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            for (final p in flexed)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: _ListRow(
+                                  key: _rowKeys.putIfAbsent(
+                                      p.id, () => GlobalKey()),
+                                  product: p,
                                   slot: _activeSlot,
-                                  products: activeProducts,
                                   schedules: schedules,
-                                  conflictDays: activeConflictDays,
-                                  openDay: _openConflictDay,
-                                  onDayTap: (d) => setState(() {
-                                    _openConflictDay =
-                                        _openConflictDay == d ? null : d;
-                                  }),
-                                  onCloseDetail: () =>
-                                      setState(() => _openConflictDay = null),
-                                  onToggleDay: _toggleDay,
-                                  checker: checker,
-                                  withinSlotRules: withinSlotRules,
+                                  cellSet: cellSet,
                                   categories: master.categories,
-                                  mutedIds: mutedIds,
+                                  isEnglish: isEnglish,
+                                  open: _openProductId == p.id,
+                                  onToggleOpen: () => setState(() =>
+                                      _openProductId =
+                                          _openProductId == p.id ? null : p.id),
+                                  selectedDays:
+                                      _effectiveDays(p, _activeSlot, schedules),
+                                  onChanged: (days, existing) =>
+                                      _updateSchedule(
+                                          p.id, _activeSlot, days, existing),
                                   l: l,
                                 ),
                               ),
-                            ),
+                          ],
 
-                          if (activeConflictDays.isEmpty &&
-                              otherConflictDays.isNotEmpty)
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                                child: GestureDetector(
-                                  onTap: () => _switchSlot(otherSlot),
-                                  child: Container(
-                                    padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.errorContainer
-                                          .withAlpha(128),
-                                      borderRadius:
-                                          BorderRadius.circular(18),
-                                      border: Border.all(
-                                          color: AppColors.error
-                                              .withAlpha(64)),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.warning_rounded,
-                                            size: 17,
-                                            color: AppColors.error),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Text(
-                                            otherSlot == Slot.morning
-                                                ? l.scheduleConflictInMorning
-                                                : l.scheduleConflictInEvening,
-                                            style:
-                                                AppTypography.labelSm.copyWith(
-                                              color: AppColors.onSurface,
-                                              fontSize: 12,
-                                              height: 1.4,
-                                            ),
-                                          ),
-                                        ),
-                                        const Icon(Icons.chevron_right,
-                                            size: 18,
-                                            color: AppColors.error),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          if (occasional.isNotEmpty)
-                            _buildSubSection(
-                              label: '${l.scheduleOccasional} (${occasional.length})',
-                              products: occasional,
+                          // 3 · "every day" group, collapsed
+                          if (everyDay.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            _DailyGroup(
+                              products: everyDay,
+                              open: _showDaily,
+                              onToggle: () =>
+                                  setState(() => _showDaily = !_showDaily),
                               slot: _activeSlot,
                               schedules: schedules,
+                              cellSet: cellSet,
+                              categories: master.categories,
+                              isEnglish: isEnglish,
+                              openProductId: _openProductId,
+                              onToggleOpen: (id) => setState(() =>
+                                  _openProductId =
+                                      _openProductId == id ? null : id),
+                              effectiveDays: (p) =>
+                                  _effectiveDays(p, _activeSlot, schedules),
+                              onChanged: (id, days, existing) =>
+                                  _updateSchedule(
+                                      id, _activeSlot, days, existing),
                               l: l,
                             ),
-
-                          if (daily.isNotEmpty)
-                            _buildSubSection(
-                              label:
-                                  '${l.scheduleDaily} (${daily.length}) ${l.scheduleDailyDefaultSuffix}',
-                              products: daily,
-                              slot: _activeSlot,
-                              schedules: schedules,
-                              l: l,
-                              isDaily: true,
-                            ),
-
-                          const SliverToBoxAdapter(
-                              child: SizedBox(height: 32)),
+                          ],
                         ],
                       ),
               ),
-
               _BottomCta(
                 fromSetup: widget.fromSetup,
                 isProductsFlow: _isProductsFlow,
-                hasConflicts: activeConflictDays.isNotEmpty,
-                conflictCount: activeConflictDays.length,
-                activeSlotLabel:
-                    _activeSlot == Slot.morning ? l.slotMorning : l.slotEvening,
                 nextSlotRoutine: nextSlotRoutine,
                 nextSlotIcon: nextSlotIcon,
                 l: l,
@@ -450,70 +527,6 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           );
         },
       ),
-    );
-  }
-
-  SliverMainAxisGroup _buildSubSection({
-    required String label,
-    required List<MasterProduct> products,
-    required Slot slot,
-    required List<WeekdaySchedule> schedules,
-    required AppLocalizations l,
-    bool isDaily = false,
-  }) {
-    return SliverMainAxisGroup(
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-            child: Text(
-              label,
-              textAlign: TextAlign.start,
-              style: AppTypography.labelMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => Padding(
-                padding: EdgeInsets.only(
-                    bottom: index < products.length - 1 ? 10 : 0),
-                child: isDaily
-                    ? _DailyScheduleCard(
-                        product: products[index],
-                        slot: slot,
-                        schedules: schedules,
-                        l: l,
-                        onChanged: (weekdays, existing) => _updateSchedule(
-                          products[index].id,
-                          slot,
-                          weekdays,
-                          existing,
-                        ),
-                      )
-                    : _ProductScheduleCard(
-                        product: products[index],
-                        slot: slot,
-                        schedules: schedules,
-                        l: l,
-                        onChanged: (weekdays, existing) => _updateSchedule(
-                          products[index].id,
-                          slot,
-                          weekdays,
-                          existing,
-                        ),
-                      ),
-              ),
-              childCount: products.length,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -549,149 +562,234 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
       );
 }
 
-// ── Week-at-a-glance card ──────────────────────────────────────────────────────
+// ── Issues panel (collapsible; all warnings live here) ──────────────────────
 
-class _WeekAtAGlanceCard extends StatelessWidget {
-  final Slot slot;
-  final List<MasterProduct> products;
-  final List<WeekdaySchedule> schedules;
+class _IssuesPanel extends StatelessWidget {
+  final bool open;
+  final VoidCallback onToggle;
+  final int totalIssues;
+  final int pairCount;
   final List<int> conflictDays;
-  final int? openDay;
-  final ValueChanged<int> onDayTap;
-  final VoidCallback onCloseDetail;
-  final Future<void> Function(String productId, int dayId) onToggleDay;
-  final IncompatibilityChecker checker;
-  final List<IncompatibilityRule> withinSlotRules;
+  final Map<int, List<ConflictInfo>> dayPairs;
+  final List<MasterProduct> overProds;
+  final Slot slot;
+  final List<WeekdaySchedule> schedules;
   final List<Category> categories;
-  final Set<String> mutedIds;
+  final bool isEnglish;
+  final Future<void> Function(String productId, int dayId) onRemoveFromDay;
+  final ValueChanged<String> onTapOver;
+  final Set<int> Function(MasterProduct p) effectiveDays;
   final AppLocalizations l;
 
-  const _WeekAtAGlanceCard({
-    required this.slot,
-    required this.products,
-    required this.schedules,
+  const _IssuesPanel({
+    required this.open,
+    required this.onToggle,
+    required this.totalIssues,
+    required this.pairCount,
     required this.conflictDays,
-    required this.openDay,
-    required this.onDayTap,
-    required this.onCloseDetail,
-    required this.onToggleDay,
-    required this.checker,
-    required this.withinSlotRules,
+    required this.dayPairs,
+    required this.overProds,
+    required this.slot,
+    required this.schedules,
     required this.categories,
-    required this.mutedIds,
+    required this.isEnglish,
+    required this.onRemoveFromDay,
+    required this.onTapOver,
+    required this.effectiveDays,
     required this.l,
   });
 
-  int _countOnDay(int dayId) {
-    return products.where((p) {
-      final sched = schedules
-          .where((s) => s.productId == p.id && s.slot == slot)
-          .firstOrNull;
-      if (sched != null && sched.weekdays.isNotEmpty) {
-        return sched.weekdays.contains(dayId);
-      }
-      return p.configForSlot(slot)?.frequencyRule is DailyRule;
-    }).length;
-  }
-
-  List<ConflictInfo> _conflictInfoOnDay(int dayId) {
-    final onDay = products.where((p) {
-      final sched = schedules
-          .where((s) => s.productId == p.id && s.slot == slot)
-          .firstOrNull;
-      if (sched != null && sched.weekdays.isNotEmpty) {
-        return sched.weekdays.contains(dayId);
-      }
-      return p.configForSlot(slot)?.frequencyRule is DailyRule;
-    }).toList();
-    return checker
-        .getConflictsForSelection(
-          activeSlot: slot,
-          slotProducts: onDay,
-          otherSlotProducts: const [],
-          rules: withinSlotRules,
-          categories: categories,
-          mutedRuleIds: mutedIds,
-        )
-        .where((c) => !c.isMuted)
-        .toList();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final hasConflicts = conflictDays.isNotEmpty;
+    final breakdown = <String>[
+      if (pairCount > 0) l.scheduleAlertsConflicts(pairCount),
+      if (overProds.isNotEmpty) l.scheduleAlertsOverFreq(overProds.length),
+    ].join('  ·  ');
 
-    return GlowCard(
-      padding: const EdgeInsets.all(12),
-      shadow: AppColors.glowSm,
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.errorContainer.withValues(alpha: 0.40),
+        borderRadius: BorderRadius.circular(22),
+        border:
+            Border.all(color: AppColors.error.withValues(alpha: 0.20)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Text(
-                l.scheduleWeeklyView,
-                style: AppTypography.labelMd.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12.5,
-                  color: AppColors.onSurface,
+          // header / toggle
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onToggle,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                      color: AppColors.error,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.priority_high_rounded,
+                        size: 16, color: Colors.white),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          totalIssues == 1
+                              ? l.scheduleAlertsOne
+                              : l.scheduleAlertsCount(totalIssues),
+                          style: AppTypography.labelMd.copyWith(
+                            color: AppColors.error,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                            height: 1.1,
+                          ),
+                        ),
+                        if (breakdown.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            breakdown,
+                            style: AppTypography.labelSm.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 10,
+                              height: 1.375,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    open ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                    size: 20,
+                    color: AppColors.error.withValues(alpha: 0.6),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // expanded content
+          if (open)
+            Container(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                      color: AppColors.error.withValues(alpha: 0.15)),
                 ),
               ),
-              const Spacer(),
-              if (hasConflicts)
-                Row(
-                  children: [
-                    const Icon(Icons.touch_app_rounded,
-                        size: 12, color: AppColors.error),
-                    const SizedBox(width: 4),
-                    Text(
-                      l.scheduleTapConflictDay,
-                      style: AppTypography.labelSm.copyWith(
-                        color: AppColors.error,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 10.5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // conflicts
+                  if (pairCount > 0) ...[
+                    const SizedBox(height: 12),
+                    if (overProds.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          l.scheduleConflictsSection,
+                          textAlign: TextAlign.start,
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.error.withValues(alpha: 0.8),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 10.5,
+                          ),
+                        ),
+                      ),
+                    for (final d in conflictDays)
+                      for (int i = 0; i < dayPairs[d]!.length; i++)
+                        Padding(
+                          padding: EdgeInsets.only(
+                              top: (d == conflictDays.first && i == 0) ? 0 : 8),
+                          child: _ConflictPairCard(
+                            conflict: dayPairs[d]![i],
+                            dayLabel: _getDayFullName(d, l),
+                            dayAbbrLabel: _getDayAbbrName(d, l),
+                            categories: categories,
+                            isEnglish: isEnglish,
+                            onRemoveA: () =>
+                                onRemoveFromDay(dayPairs[d]![i].productA.id, d),
+                            onRemoveB: () =>
+                                onRemoveFromDay(dayPairs[d]![i].productB.id, d),
+                            l: l,
+                          ),
+                        ),
+                  ],
+
+                  // over-frequency
+                  if (overProds.isNotEmpty) ...[
+                    Container(
+                      margin: EdgeInsets.only(top: pairCount > 0 ? 8 : 12),
+                      padding: EdgeInsets.only(top: pairCount > 0 ? 8 : 0),
+                      decoration: pairCount > 0
+                          ? BoxDecoration(
+                              border: Border(
+                                top: BorderSide(
+                                    color: AppColors.error
+                                        .withValues(alpha: 0.15)),
+                              ),
+                            )
+                          : null,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (pairCount > 0)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                l.scheduleOverFreqSection,
+                                textAlign: TextAlign.start,
+                                style: AppTypography.labelSm.copyWith(
+                                  color:
+                                      AppColors.error.withValues(alpha: 0.8),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ),
+                          for (int i = 0; i < overProds.length; i++)
+                            Padding(
+                              padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
+                              child: _OverFreqRow(
+                                product: overProds[i],
+                                slot: slot,
+                                count: effectiveDays(overProds[i]).length,
+                                cap: (overProds[i]
+                                        .configForSlot(slot)!
+                                        .frequencyRule as WeeklyMaxRule)
+                                    .maxPerWeek,
+                                onTap: () => onTapOver(overProds[i].id),
+                                l: l,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ],
-                )
-              else
-                Text(
-                  l.scheduleProductsPerDay,
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                    fontSize: 10.5,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
 
-          Row(
-            children: [
-              for (int d = 0; d < 7; d++) ...[
-                if (d > 0) const SizedBox(width: 6),
-                Expanded(
-                  child: _DayCell(
-                    label: _getDayAbbrev(d, l),
-                    count: _countOnDay(d),
-                    isConflict: conflictDays.contains(d),
-                    isOpen: openDay == d,
-                    onTap: conflictDays.contains(d) ? () => onDayTap(d) : null,
+                  const SizedBox(height: 10),
+                  Text(
+                    l.scheduleSoftAlertsNote,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.labelSm.copyWith(
+                      color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 9.5,
+                      height: 1.375,
+                    ),
                   ),
-                ),
-              ],
-            ],
-          ),
-
-          if (openDay != null && conflictDays.contains(openDay!))
-            _ConflictDetailPanel(
-              dayLabel: _getDayFullName(openDay!, l),
-              conflicts: _conflictInfoOnDay(openDay!),
-              categories: categories,
-              isEnglish: l.localeName == 'en',
-              onClose: onCloseDetail,
-              onToggleDay: (productId) => onToggleDay(productId, openDay!),
-              l: l,
+                ],
+              ),
             ),
         ],
       ),
@@ -699,373 +797,132 @@ class _WeekAtAGlanceCard extends StatelessWidget {
   }
 }
 
-class _DayCell extends StatelessWidget {
-  final String label;
-  final int count;
-  final bool isConflict;
-  final bool isOpen;
-  final VoidCallback? onTap;
-
-  const _DayCell({
-    required this.label,
-    required this.count,
-    required this.isConflict,
-    required this.isOpen,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          height: 14,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: AppTypography.labelSm.copyWith(
-                fontSize: 10,
-                color: isConflict
-                    ? AppColors.error
-                    : AppColors.onSurfaceVariant,
-                fontWeight: isConflict ? FontWeight.w700 : FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        GestureDetector(
-          onTap: onTap,
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              decoration: BoxDecoration(
-                color: isConflict
-                    ? AppColors.error
-                    : count > 0
-                        ? AppColors.neutralFill
-                        : AppColors.neutralFill.withAlpha(8),
-                borderRadius: BorderRadius.circular(12),
-                border: isOpen
-                    ? Border.all(
-                        color: AppColors.error, width: 2)
-                    : null,
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Text(
-                    count > 0 ? '$count' : '·',
-                    style: AppTypography.labelMd.copyWith(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: isConflict
-                          ? Colors.white
-                          : count > 0
-                              ? AppColors.onSurface
-                              : AppColors.onSurfaceVariant.withAlpha(102),
-                    ),
-                  ),
-                  if (isConflict)
-                    Positioned(
-                      top: -4,
-                      right: -4,
-                      child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          border:
-                              Border.all(color: AppColors.error, width: 1),
-                        ),
-                        child: const Icon(Icons.priority_high_rounded,
-                            size: 9, color: AppColors.error),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ConflictDetailPanel extends StatelessWidget {
+class _ConflictPairCard extends StatelessWidget {
+  final ConflictInfo conflict;
   final String dayLabel;
-  final List<ConflictInfo> conflicts;
+  final String dayAbbrLabel;
   final List<Category> categories;
   final bool isEnglish;
-  final VoidCallback onClose;
-  final void Function(String productId) onToggleDay;
+  final VoidCallback onRemoveA;
+  final VoidCallback onRemoveB;
   final AppLocalizations l;
 
-  const _ConflictDetailPanel({
+  const _ConflictPairCard({
+    required this.conflict,
     required this.dayLabel,
-    required this.conflicts,
+    required this.dayAbbrLabel,
     required this.categories,
     required this.isEnglish,
-    required this.onClose,
-    required this.onToggleDay,
+    required this.onRemoveA,
+    required this.onRemoveB,
     required this.l,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.errorContainer.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-              color: AppColors.error.withValues(alpha: 0.25)),
-        ),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 10),
-              for (int i = 0; i < conflicts.length; i++) ...[
-                if (i > 0) const SizedBox(height: 10),
-                _buildPairCard(conflicts[i]),
-              ],
-              const SizedBox(height: 10),
-              Text(
-                l.scheduleProductWillRemain,
-                style: AppTypography.labelSm.copyWith(
-                  color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
-                  fontSize: 10,
-                  height: 1.375,
-                  fontWeight: FontWeight.w400,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: const BoxDecoration(
-            color: AppColors.error,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.priority_high_rounded,
-            color: Colors.white,
-            size: 18,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  l.scheduleConflictHeader(dayLabel),
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.error,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                    height: 1.1,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  l.scheduleConflictInstruction,
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                    fontSize: 10.5,
-                    height: 1.375,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Semantics(
-          label: l.scheduleClose,
-          button: true,
-          child: GestureDetector(
-            onTap: onClose,
-            child: Container(
-              width: 28,
-              height: 28,
-              decoration: const BoxDecoration(
-                color: Colors.transparent,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.close_rounded,
-                color: AppColors.error,
-                size: 18,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPairCard(ConflictInfo conflict) {
     final catA = categories
         .where((c) => c.id == conflict.productA.categoryId)
         .firstOrNull;
     final catB = categories
         .where((c) => c.id == conflict.productB.categoryId)
         .firstOrNull;
+    final reason = conflict.localizedReason(isEnglish ? 'en' : 'he');
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: AppColors.error.withValues(alpha: 0.15)),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.15)),
       ),
-      clipBehavior: Clip.hardEdge,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildProductRow(conflict.productA, catA,
-              () => onToggleDay(conflict.productA.id)),
-          _buildConnector(),
-          _buildProductRow(conflict.productB, catB,
-              () => onToggleDay(conflict.productB.id)),
-          if (conflict.localizedReason(isEnglish ? 'en' : 'he') != null)
-              _buildReasonRow(conflict.localizedReason(isEnglish ? 'en' : 'he')!),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProductRow(
-    MasterProduct product,
-    Category? cat,
-    VoidCallback onRemove,
-  ) {
-    return Padding(
       padding: const EdgeInsets.all(10),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ProductThumb(imageAsset: product.imageAsset, size: 44),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  product.name,
-                  textAlign: TextAlign.start,
+          // day chip
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6, right: 2, left: 2),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  l.scheduleDayChip(dayLabel),
                   style: AppTypography.labelSm.copyWith(
+                    color: AppColors.error,
                     fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                    color: AppColors.onSurface,
-                    height: 1.375,
+                    fontSize: 9,
                   ),
                 ),
-                if (cat != null) ...[
-                  const SizedBox(height: 4),
-                  _buildCategoryChip(cat),
-                ],
-              ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          _buildFixButton(onRemove),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryChip(Category cat) {
-    final displayName = cat.localizedName(isEnglish ? 'en' : 'he');
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppColors.primaryFixed.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(9999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (cat.icon != null) ...[
-            Icon(
-              _iconData(cat.icon!),
-              size: 10,
-              color: AppColors.primary,
-            ),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            displayName,
-            style: AppTypography.labelSm.copyWith(
-              fontSize: 9,
-              color: AppColors.primary,
-            ),
+          _ConflictFixRow(
+            product: conflict.productA,
+            category: catA,
+            dayLabel: dayLabel,
+            dayAbbrLabel: dayAbbrLabel,
+            onRemove: onRemoveA,
+            isEnglish: isEnglish,
+            l: l,
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFixButton(VoidCallback onRemove) {
-    return GestureDetector(
-      onTap: onRemove,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 32, maxWidth: 96),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppColors.error,
-          borderRadius: BorderRadius.circular(9999),
-          boxShadow: AppColors.glowSm,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Icon(Icons.event_busy_rounded,
-                color: Colors.white, size: 14),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                l.scheduleRemove,
-                style: AppTypography.labelSm.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 11,
+          _connector(),
+          _ConflictFixRow(
+            product: conflict.productB,
+            category: catB,
+            dayLabel: dayLabel,
+            dayAbbrLabel: dayAbbrLabel,
+            onRemove: onRemoveB,
+            isEnglish: isEnglish,
+            l: l,
+          ),
+          if (reason != null) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                      color: AppColors.error.withValues(alpha: 0.10)),
                 ),
-                maxLines: 2,
-                textAlign: TextAlign.center,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1),
+                    child: Icon(Icons.info_rounded,
+                        size: 12,
+                        color: AppColors.error.withValues(alpha: 0.7)),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      reason,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 10,
+                        height: 1.375,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildConnector() {
+  Widget _connector() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
       child: Row(
         children: [
           Expanded(
@@ -1080,14 +937,13 @@ class _ConflictDetailPanel extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.block_rounded,
-                    size: 11,
-                    color: AppColors.error.withValues(alpha: 0.9)),
+                    size: 10, color: AppColors.error.withValues(alpha: 0.8)),
                 const SizedBox(width: 4),
                 Text(
                   l.scheduleNoMix,
                   style: AppTypography.labelSm.copyWith(
-                    fontSize: 8.5,
-                    color: AppColors.error.withValues(alpha: 0.9),
+                    fontSize: 8,
+                    color: AppColors.error.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -1103,34 +959,83 @@ class _ConflictDetailPanel extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildReasonRow(String reason) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-      decoration: BoxDecoration(
-        color: AppColors.errorContainer.withValues(alpha: 0.35),
-        border: Border(
-          top: BorderSide(
-              color: AppColors.error.withValues(alpha: 0.10)),
-        ),
-      ),
+class _ConflictFixRow extends StatelessWidget {
+  final MasterProduct product;
+  final Category? category;
+  final String dayLabel;
+  final String dayAbbrLabel;
+  final VoidCallback onRemove;
+  final bool isEnglish;
+  final AppLocalizations l;
+
+  const _ConflictFixRow({
+    required this.product,
+    required this.category,
+    required this.dayLabel,
+    required this.dayAbbrLabel,
+    required this.onRemove,
+    required this.isEnglish,
+    required this.l,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 1),
-            child: Icon(Icons.info_rounded,
-                size: 13, color: AppColors.error),
-          ),
-          const SizedBox(width: 6),
+          ProductThumb(imageAsset: product.imageAsset, size: 32),
+          const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              reason,
-              style: AppTypography.labelSm.copyWith(
-                color: AppColors.onSurfaceVariant,
-                fontSize: 10.5,
-                height: 1.375,
-                fontWeight: FontWeight.w400,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _productName(product, fontSize: 11),
+                if (category != null)
+                  Text(
+                    category!.localizedName(isEnglish ? 'en' : 'he'),
+                    textAlign: TextAlign.start,
+                    style: AppTypography.labelSm.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 9,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: onRemove,
+            child: Container(
+              padding: const EdgeInsetsDirectional.fromSTEB(8, 6, 10, 6),
+              decoration: BoxDecoration(
+                color: AppColors.error,
+                borderRadius: BorderRadius.circular(999),
+                boxShadow: AppColors.glowSm,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(Icons.event_busy_rounded,
+                      color: Colors.white, size: 13),
+                  const SizedBox(width: 4),
+                  Text(
+                    isEnglish
+                        ? 'Remove from\n$dayAbbrLabel'
+                        : l.scheduleRemoveFrom(dayLabel),
+                    textAlign: TextAlign.center,
+                    style: AppTypography.labelSm.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10.5,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1138,18 +1043,478 @@ class _ConflictDetailPanel extends StatelessWidget {
       ),
     );
   }
+}
 
-  static IconData _iconData(String name) => switch (name) {
-        'soap' => Icons.soap_rounded,
-        'bubble_chart' => Icons.bubble_chart_rounded,
-        'science' => Icons.science_rounded,
-        'water_drop' => Icons.water_drop_rounded,
-        'auto_awesome' => Icons.auto_awesome_rounded,
-        'opacity' => Icons.opacity_rounded,
-        'spa' => Icons.spa_rounded,
-        'wb_sunny' => Icons.wb_sunny_rounded,
-        _ => Icons.circle_outlined,
-      };
+class _OverFreqRow extends StatelessWidget {
+  final MasterProduct product;
+  final Slot slot;
+  final int count;
+  final int cap;
+  final VoidCallback onTap;
+  final AppLocalizations l;
+
+  const _OverFreqRow({
+    required this.product,
+    required this.slot,
+    required this.count,
+    required this.cap,
+    required this.onTap,
+    required this.l,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.error.withValues(alpha: 0.15)),
+        ),
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          children: [
+            ProductThumb(imageAsset: product.imageAsset, size: 32),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _productName(product, fontSize: 11),
+                  Text(
+                    l.scheduleRecommendedWeekly(cap),
+                    textAlign: TextAlign.start,
+                    style: AppTypography.labelSm.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 9,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.errorContainer,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '$count/$cap×',
+                textDirection: TextDirection.ltr,
+                style: AppTypography.labelSm.copyWith(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11.5,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.keyboard_arrow_down_rounded,
+                size: 16, color: AppColors.error.withValues(alpha: 0.5)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Calm product row (read-only ribbon; tap to edit days) ───────────────────
+
+class _MiniWeek extends StatelessWidget {
+  final Set<int> days;
+  final Slot slot;
+  final String pid;
+  final Set<String> cellSet;
+
+  const _MiniWeek({
+    required this.days,
+    required this.slot,
+    required this.pid,
+    required this.cellSet,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final onColor =
+        slot == Slot.morning ? AppColors.primaryContainer : AppColors.tertiary;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int d = 0; d < 7; d++) ...[
+          if (d > 0) const SizedBox(width: 3),
+          () {
+            final on = days.contains(d);
+            final conflict = on && cellSet.contains('$pid-$d');
+            return Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: conflict
+                    ? AppColors.error
+                    : on
+                        ? onColor
+                        : const Color(0x1A000000),
+              ),
+            );
+          }(),
+        ],
+      ],
+    );
+  }
+}
+
+class _ListRow extends StatelessWidget {
+  final MasterProduct product;
+  final Slot slot;
+  final List<WeekdaySchedule> schedules;
+  final Set<String> cellSet;
+  final List<Category> categories;
+  final bool isEnglish;
+  final bool open;
+  final VoidCallback onToggleOpen;
+  final Set<int> selectedDays;
+  final void Function(Set<int> weekdays, WeekdaySchedule? existing) onChanged;
+  final AppLocalizations l;
+
+  const _ListRow({
+    super.key,
+    required this.product,
+    required this.slot,
+    required this.schedules,
+    required this.cellSet,
+    required this.categories,
+    required this.isEnglish,
+    required this.open,
+    required this.onToggleOpen,
+    required this.selectedDays,
+    required this.onChanged,
+    required this.l,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final existing = schedules
+        .where((s) => s.productId == product.id && s.slot == slot)
+        .firstOrNull;
+    final rule = product.configForSlot(slot)?.frequencyRule;
+    final cap = rule is WeeklyMaxRule ? rule.maxPerWeek : null;
+    final count = selectedDays.length;
+    final over = cap != null && count > cap;
+    final everyDay = cap == null && count == 7;
+    final hasConflict =
+        List.generate(7, (d) => '${product.id}-$d').any(cellSet.contains);
+    final freqText =
+        cap != null ? l.scheduleRecommendedWeekly(cap) : l.scheduleRecommendedDaily;
+    final cat = categories
+        .where((c) => c.id == product.categoryId)
+        .firstOrNull;
+
+    return GlowCard(
+      radius: 20,
+      padding: EdgeInsets.zero,
+      shadow: AppColors.glowSm,
+      border: open
+          ? Border.all(color: AppColors.primary.withValues(alpha: 0.2))
+          : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onToggleOpen,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  ProductThumb(imageAsset: product.imageAsset, size: 52),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _productName(product, fontSize: 13),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            _MiniWeek(
+                              days: selectedDays,
+                              slot: slot,
+                              pid: product.id,
+                              cellSet: cellSet,
+                            ),
+                            const SizedBox(width: 8),
+                            if (over)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.errorContainer,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.warning_rounded,
+                                        size: 11, color: AppColors.error),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      '$count/$cap×',
+                                      textDirection: TextDirection.ltr,
+                                      style: AppTypography.labelSm.copyWith(
+                                        color: AppColors.error,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              Text(
+                                everyDay
+                                    ? l.scheduleCountEveryDay
+                                    : '$count/${cap ?? 7}',
+                                textDirection: TextDirection.ltr,
+                                style: AppTypography.labelSm.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            if (cat != null) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceLow,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  cat.localizedName(isEnglish ? 'en' : 'he'),
+                                  style: AppTypography.labelSm.copyWith(
+                                    color: AppColors.onSurfaceVariant,
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 9,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (hasConflict) ...[
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            color: AppColors.error,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.priority_high_rounded,
+                              size: 12, color: Colors.white),
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                      Icon(
+                        open ? Icons.expand_less_rounded : Icons.tune_rounded,
+                        size: 17,
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (open)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      freqText,
+                      textAlign: TextAlign.start,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ),
+                  WeekdayPicker(
+                    selectedDays: selectedDays,
+                    onChanged: (days) => onChanged(days, existing),
+                  ),
+                  if (over) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.warning_rounded,
+                            size: 13, color: AppColors.error),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            l.scheduleOverCap(cap),
+                            style: AppTypography.labelSm.copyWith(
+                                color: AppColors.error, fontSize: 10.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── "Every day" group (collapsed summary with stacked thumbs) ───────────────
+
+class _DailyGroup extends StatelessWidget {
+  final List<MasterProduct> products;
+  final bool open;
+  final VoidCallback onToggle;
+  final Slot slot;
+  final List<WeekdaySchedule> schedules;
+  final Set<String> cellSet;
+  final List<Category> categories;
+  final bool isEnglish;
+  final String? openProductId;
+  final ValueChanged<String> onToggleOpen;
+  final Set<int> Function(MasterProduct p) effectiveDays;
+  final void Function(String id, Set<int> days, WeekdaySchedule? existing)
+      onChanged;
+  final AppLocalizations l;
+
+  const _DailyGroup({
+    required this.products,
+    required this.open,
+    required this.onToggle,
+    required this.slot,
+    required this.schedules,
+    required this.cellSet,
+    required this.categories,
+    required this.isEnglish,
+    required this.openProductId,
+    required this.onToggleOpen,
+    required this.effectiveDays,
+    required this.onChanged,
+    required this.l,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onToggle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${l.scheduleCountEveryDay} (${products.length})',
+                    textAlign: TextAlign.start,
+                    style: AppTypography.labelMd.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                _StackedThumbs(products: products, max: 10),
+                const SizedBox(width: 8),
+                Icon(
+                  open ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                  size: 18,
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (open)
+          for (final p in products)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: _ListRow(
+                product: p,
+                slot: slot,
+                schedules: schedules,
+                cellSet: cellSet,
+                categories: categories,
+                isEnglish: isEnglish,
+                open: openProductId == p.id,
+                onToggleOpen: () => onToggleOpen(p.id),
+                selectedDays: effectiveDays(p),
+                onChanged: (days, existing) => onChanged(p.id, days, existing),
+                l: l,
+              ),
+            ),
+      ],
+    );
+  }
+}
+
+class _StackedThumbs extends StatelessWidget {
+  final List<MasterProduct> products;
+  final double size;
+  final int max;
+
+  const _StackedThumbs({required this.products, this.size = 24, this.max = 5});
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = products.take(max).toList();
+    const step = 16.0; // overlap step (size - 8)
+    final width = shown.isEmpty ? 0.0 : size + (shown.length - 1) * step;
+    return SizedBox(
+      width: width,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          for (int i = 0; i < shown.length; i++)
+            PositionedDirectional(
+              start: i * step,
+              child: Container(
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.surface,
+                ),
+                padding: const EdgeInsets.all(1.5),
+                child: ProductThumb(
+                    imageAsset: shown[i].imageAsset, size: size - 3),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _DashedLinePainter extends CustomPainter {
@@ -1171,14 +1536,14 @@ class _DashedLinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ── Slot tab switcher ──────────────────────────────────────────────────────────
+// ── Slot tab switcher ───────────────────────────────────────────────────────
 
 class _SlotTabSwitcher extends StatelessWidget {
   final Slot activeSlot;
   final bool hasMorning;
   final bool hasEvening;
-  final bool morningHasConflict;
-  final bool eveningHasConflict;
+  final int morningIssues;
+  final int eveningIssues;
   final Set<Slot> visitedSlots;
   final ValueChanged<Slot> onSelect;
   final AppLocalizations l;
@@ -1187,8 +1552,8 @@ class _SlotTabSwitcher extends StatelessWidget {
     required this.activeSlot,
     required this.hasMorning,
     required this.hasEvening,
-    required this.morningHasConflict,
-    required this.eveningHasConflict,
+    required this.morningIssues,
+    required this.eveningIssues,
     required this.visitedSlots,
     required this.onSelect,
     required this.l,
@@ -1211,7 +1576,7 @@ class _SlotTabSwitcher extends StatelessWidget {
             icon: Icons.wb_sunny_rounded,
             active: activeSlot == Slot.morning,
             isMorning: true,
-            hasConflict: morningHasConflict,
+            issueCount: morningIssues,
             isVisited: visitedSlots.contains(Slot.morning),
             onTap: hasMorning ? () => onSelect(Slot.morning) : null,
           ),
@@ -1220,7 +1585,7 @@ class _SlotTabSwitcher extends StatelessWidget {
             icon: Icons.dark_mode_rounded,
             active: activeSlot == Slot.evening,
             isMorning: false,
-            hasConflict: eveningHasConflict,
+            issueCount: eveningIssues,
             isVisited: visitedSlots.contains(Slot.evening),
             onTap: hasEvening ? () => onSelect(Slot.evening) : null,
           ),
@@ -1235,7 +1600,7 @@ class _SlotTab extends StatelessWidget {
   final IconData icon;
   final bool active;
   final bool isMorning;
-  final bool hasConflict;
+  final int issueCount;
   final bool isVisited;
   final VoidCallback? onTap;
 
@@ -1244,7 +1609,7 @@ class _SlotTab extends StatelessWidget {
     required this.icon,
     required this.active,
     required this.isMorning,
-    required this.hasConflict,
+    required this.issueCount,
     required this.isVisited,
     required this.onTap,
   });
@@ -1255,7 +1620,8 @@ class _SlotTab extends StatelessWidget {
         isMorning ? AppColors.primaryContainer : AppColors.tertiary;
     const activeText = AppColors.onPrimary;
     final inactiveText = AppColors.onSurfaceVariant.withValues(alpha: 0.6);
-    final showVisited = isVisited && !active && !hasConflict;
+    final hasIssues = issueCount > 0;
+    final showVisited = isVisited && !active && !hasIssues;
 
     return Expanded(
       child: GestureDetector(
@@ -1282,19 +1648,25 @@ class _SlotTab extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Icon(icon, size: 16, color: active ? activeText : inactiveText),
-              if (hasConflict) ...[
+              if (hasIssues) ...[
                 const SizedBox(width: 4),
                 Container(
-                  width: 16,
-                  height: 16,
+                  width: 18,
+                  height: 18,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: active ? Colors.white : AppColors.error,
+                    color: active
+                        ? Colors.white.withValues(alpha: 0.9)
+                        : AppColors.error,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.priority_high_rounded,
-                    size: 11,
-                    color: active ? AppColors.error : Colors.white,
+                  child: Text(
+                    '$issueCount',
+                    style: AppTypography.labelSm.copyWith(
+                      color: active ? AppColors.error : Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               ] else if (showVisited) ...[
@@ -1306,11 +1678,8 @@ class _SlotTab extends StatelessWidget {
                     color: AppColors.primary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    size: 11,
-                    color: AppColors.primary,
-                  ),
+                  child: const Icon(Icons.check_rounded,
+                      size: 11, color: AppColors.primary),
                 ),
               ],
             ],
@@ -1321,406 +1690,11 @@ class _SlotTab extends StatelessWidget {
   }
 }
 
-// ── Product schedule card ──────────────────────────────────────────────────────
-
-class _ProductScheduleCard extends ConsumerWidget {
-  final MasterProduct product;
-  final Slot slot;
-  final List<WeekdaySchedule> schedules;
-  final AppLocalizations l;
-  final void Function(Set<int> weekdays, WeekdaySchedule? existing) onChanged;
-
-  const _ProductScheduleCard({
-    required this.product,
-    required this.slot,
-    required this.schedules,
-    required this.l,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final existing = schedules
-        .where((s) => s.productId == product.id && s.slot == slot)
-        .firstOrNull;
-    final rule = product.configForSlot(slot)?.frequencyRule;
-    final isDaily = rule is DailyRule;
-    final maxPerWeek = rule is WeeklyMaxRule ? rule.maxPerWeek : null;
-    final selectedDays = existing?.weekdays ??
-        (isDaily ? {0, 1, 2, 3, 4, 5, 6} : <int>{});
-    final count = selectedDays.length;
-    final overCap = maxPerWeek != null && count > maxPerWeek;
-    final dailyNoDay = isDaily && count == 0;
-
-    final isLikelyLatin =
-        product.name.codeUnits.every((c) => c < 128);
-
-    return GlowCard(
-      padding: const EdgeInsets.all(14),
-      shadow: AppColors.glowSm,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ProductThumb(imageAsset: product.imageAsset, size: 40),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    isLikelyLatin
-                        ? Directionality(
-                            textDirection: TextDirection.ltr,
-                            child: Text(
-                              product.name,
-                              style: AppTypography.bodyMd.copyWith(
-                                color: AppColors.onSurface,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13.5,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )
-                        : Text(
-                            product.name,
-                            style: AppTypography.bodyMd.copyWith(
-                              color: AppColors.onSurface,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13.5,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.start,
-                          ),
-                    Text(
-                      isDaily
-                          ? l.scheduleRecommendedDaily
-                          : maxPerWeek != null
-                              ? l.scheduleRecommendedWeekly(maxPerWeek)
-                              : '',
-                      style: AppTypography.labelSm.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                        fontSize: 10.5,
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              if (maxPerWeek != null)
-                _CountBadge(text: '$count/$maxPerWeek', isError: overCap)
-              else if (isDaily)
-                _CountBadge(
-                  text: count == 7 ? l.scheduleCountEveryDay : '$count/7',
-                  isError: dailyNoDay,
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          WeekdayPicker(
-            selectedDays: selectedDays,
-            onChanged: (days) => onChanged(days, existing),
-          ),
-
-          if (overCap) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.warning_rounded,
-                    size: 13, color: AppColors.error),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    l.scheduleOverCap(maxPerWeek),
-                    style: AppTypography.labelSm
-                        .copyWith(color: AppColors.error, fontSize: 11),
-                  ),
-                ),
-              ],
-            ),
-          ] else if (dailyNoDay) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.warning_rounded,
-                    size: 13, color: AppColors.error),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    l.scheduleNoDaySelected,
-                    style: AppTypography.labelSm
-                        .copyWith(color: AppColors.error, fontSize: 11),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _CountBadge extends StatelessWidget {
-  final String text;
-  final bool isError;
-
-  const _CountBadge({required this.text, required this.isError});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: isError ? AppColors.error : AppColors.neutralFill,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        text,
-        textDirection: TextDirection.ltr,
-        style: AppTypography.labelSm.copyWith(
-          color: isError ? Colors.white : AppColors.onSurfaceVariant,
-          fontSize: 11,
-        ),
-      ),
-    );
-  }
-}
-
-// ── Daily product card (collapsed by default) ─────────────────────────────────
-
-class _DailyScheduleCard extends StatefulWidget {
-  final MasterProduct product;
-  final Slot slot;
-  final List<WeekdaySchedule> schedules;
-  final AppLocalizations l;
-  final void Function(Set<int> weekdays, WeekdaySchedule? existing) onChanged;
-
-  const _DailyScheduleCard({
-    required this.product,
-    required this.slot,
-    required this.schedules,
-    required this.l,
-    required this.onChanged,
-  });
-
-  @override
-  State<_DailyScheduleCard> createState() => _DailyScheduleCardState();
-}
-
-class _DailyScheduleCardState extends State<_DailyScheduleCard> {
-  late bool _open;
-
-  @override
-  void initState() {
-    super.initState();
-    final existing = widget.schedules
-        .where((s) => s.productId == widget.product.id && s.slot == widget.slot)
-        .firstOrNull;
-    final days = existing?.weekdays ?? {0, 1, 2, 3, 4, 5, 6};
-    _open = days.length != 7; // auto-expand when narrowed below daily
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final existing = widget.schedules
-        .where((s) => s.productId == widget.product.id && s.slot == widget.slot)
-        .firstOrNull;
-    final selectedDays = existing?.weekdays ?? {0, 1, 2, 3, 4, 5, 6};
-    final count = selectedDays.length;
-    final everyDay = count == 7;
-    final isError = count == 0;
-
-    final badgeText = isError
-        ? widget.l.scheduleBadgeNoneSelected
-        : everyDay
-            ? widget.l.scheduleCountEveryDay
-            : '$count/7';
-    final badgeColor = isError
-        ? AppColors.error
-        : everyDay
-            ? AppColors.primaryFixed.withValues(alpha: 0.6)
-            : AppColors.neutralFill;
-    final badgeTextColor = isError
-        ? Colors.white
-        : everyDay
-            ? AppColors.primary
-            : AppColors.onSurfaceVariant;
-
-    final isLikelyLatin =
-        widget.product.name.codeUnits.every((c) => c < 128);
-
-    return GlowCard(
-      padding: const EdgeInsets.all(14),
-      shadow: AppColors.glowSm,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header — always visible
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ProductThumb(imageAsset: widget.product.imageAsset, size: 40),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    isLikelyLatin
-                        ? Directionality(
-                            textDirection: TextDirection.ltr,
-                            child: Text(
-                              widget.product.name,
-                              style: AppTypography.bodyMd.copyWith(
-                                color: AppColors.onSurface,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13.5,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )
-                        : Text(
-                            widget.product.name,
-                            style: AppTypography.bodyMd.copyWith(
-                              color: AppColors.onSurface,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13.5,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.start,
-                          ),
-                    Text(
-                      widget.l.scheduleRecommendedDaily,
-                      style: AppTypography.labelSm.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                        fontSize: 10.5,
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: badgeColor,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  badgeText,
-                  style: AppTypography.labelSm.copyWith(
-                    color: badgeTextColor,
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          if (!_open)
-            // Collapsed — "customize days" button
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: GestureDetector(
-                onTap: () => setState(() => _open = true),
-                child: Container(
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceLow,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.tune_rounded,
-                          size: 14, color: AppColors.onSurfaceVariant),
-                      const SizedBox(width: 6),
-                      Text(
-                        widget.l.scheduleCustomizeDays,
-                        style: AppTypography.labelSm.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          else ...[
-            // Expanded — day picker + optional warning + close
-            const SizedBox(height: 12),
-            WeekdayPicker(
-              selectedDays: selectedDays,
-              onChanged: (days) => widget.onChanged(days, existing),
-              showOverCapWarning: false,
-            ),
-            if (isError) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.warning_rounded,
-                      size: 13, color: AppColors.error),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      widget.l.scheduleNoDaySelected,
-                      style: AppTypography.labelSm
-                          .copyWith(color: AppColors.error, fontSize: 11),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Center(
-                child: GestureDetector(
-                  onTap: () => setState(() => _open = false),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.expand_less_rounded,
-                          size: 15, color: AppColors.onSurfaceVariant),
-                      const SizedBox(width: 4),
-                      Text(
-                        widget.l.scheduleDailyCollapse,
-                        style: AppTypography.labelSm.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-// ── Bottom CTA ─────────────────────────────────────────────────────────────────
+// ── Bottom CTA (unchanged behaviour) ────────────────────────────────────────
 
 class _BottomCta extends StatelessWidget {
   final bool fromSetup;
   final bool isProductsFlow;
-  final bool hasConflicts;
-  final int conflictCount;
-  final String activeSlotLabel;
   final String? nextSlotRoutine;
   final IconData? nextSlotIcon;
   final AppLocalizations l;
@@ -1730,9 +1704,6 @@ class _BottomCta extends StatelessWidget {
   const _BottomCta({
     required this.fromSetup,
     required this.isProductsFlow,
-    required this.hasConflicts,
-    required this.conflictCount,
-    required this.activeSlotLabel,
     required this.nextSlotRoutine,
     required this.nextSlotIcon,
     required this.l,
@@ -1796,17 +1767,6 @@ class _BottomCta extends StatelessWidget {
               ),
             ],
           ),
-          if (hasConflicts) ...[
-            const SizedBox(height: 6),
-            Text(
-              l.scheduleConflictWarningCount(conflictCount, activeSlotLabel),
-              textAlign: TextAlign.center,
-              style: AppTypography.labelSm.copyWith(
-                color: AppColors.error,
-                fontSize: 11,
-              ),
-            ),
-          ],
         ],
       ),
     );

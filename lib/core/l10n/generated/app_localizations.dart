@@ -1041,6 +1041,60 @@ abstract class AppLocalizations {
   /// **'סיום ושמירת השגרה'**
   String get scheduleSaveFinish;
 
+  /// No description provided for @scheduleAlertsOne.
+  ///
+  /// In he, this message translates to:
+  /// **'התראה אחת'**
+  String get scheduleAlertsOne;
+
+  /// No description provided for @scheduleAlertsCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} התראות'**
+  String scheduleAlertsCount(int count);
+
+  /// No description provided for @scheduleAlertsConflicts.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} שילובים'**
+  String scheduleAlertsConflicts(int count);
+
+  /// No description provided for @scheduleAlertsOverFreq.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} חריגה בתדירות'**
+  String scheduleAlertsOverFreq(int count);
+
+  /// No description provided for @scheduleConflictsSection.
+  ///
+  /// In he, this message translates to:
+  /// **'שילובים לא מומלצים'**
+  String get scheduleConflictsSection;
+
+  /// No description provided for @scheduleOverFreqSection.
+  ///
+  /// In he, this message translates to:
+  /// **'חריגה בתדירות'**
+  String get scheduleOverFreqSection;
+
+  /// No description provided for @scheduleByFrequency.
+  ///
+  /// In he, this message translates to:
+  /// **'לפי תדירות'**
+  String get scheduleByFrequency;
+
+  /// No description provided for @scheduleDayChip.
+  ///
+  /// In he, this message translates to:
+  /// **'יום {day}'**
+  String scheduleDayChip(Object day);
+
+  /// No description provided for @scheduleSoftAlertsNote.
+  ///
+  /// In he, this message translates to:
+  /// **'כל ההתראות הן רכות — מותר לחרוג, רק מזכירים.'**
+  String get scheduleSoftAlertsNote;
+
   /// No description provided for @orderInstruction.
   ///
   /// In he, this message translates to:
@@ -1914,7 +1968,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsProfileGuest.
   ///
   /// In he, this message translates to:
-  /// **'אורח'**
+  /// **'אורחת'**
   String get settingsProfileGuest;
 
   /// No description provided for @settingsProfileNameLabel.
@@ -1974,7 +2028,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStartNeutral.
   ///
   /// In he, this message translates to:
-  /// **'בוא נתחיל'**
+  /// **'נתחיל?'**
   String get onboardingStartNeutral;
 
   /// No description provided for @continueActionNeutral.

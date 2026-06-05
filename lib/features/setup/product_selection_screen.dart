@@ -55,8 +55,6 @@ String _getCatUsage(String catId, AppLocalizations l) => switch (catId) {
   _ => '',
 };
 
-enum _SelectionView { guided, summary }
-
 class ProductSelectionScreen extends ConsumerStatefulWidget {
   final bool fromSetup;
   final bool isTabDestination;
@@ -78,21 +76,7 @@ class ProductSelectionScreen extends ConsumerStatefulWidget {
 
 class _ProductSelectionScreenState
     extends ConsumerState<ProductSelectionScreen> {
-  _SelectionView _view = _SelectionView.guided;
   int _catStep = 0;
-
-  Set<String> _slotFilter = {'AM', 'PM'};
-  String? _openCategoryId;
-
-  void _goToSummary() => setState(() {
-        _view = _SelectionView.summary;
-        _openCategoryId = null;
-      });
-
-  void _backToGuided(int totalCategories) => setState(() {
-    _view = _SelectionView.guided;
-    _catStep = totalCategories - 1;
-  });
 
   void _goToSchedule(BuildContext context) {
     if (widget.fromSetup) {
@@ -220,9 +204,7 @@ class _ProductSelectionScreenState
           ...customProds.map((p) => p.toMasterProduct()),
         ];
 
-        return _view == _SelectionView.guided
-            ? _buildGuided(context, allProducts, categories, selMap, morning, evening, l)
-            : _buildSummary(context, allProducts, categories, selMap, morning, evening, l);
+        return _buildGuided(context, allProducts, categories, selMap, morning, evening, l);
       },
     );
 
@@ -268,7 +250,7 @@ class _ProductSelectionScreenState
 
     final catSel = catProducts.where((p) => selMap.containsKey(p.id)).length;
     final ctaLabel = isLast
-        ? l.productSelToSummary
+        ? l.productSelContinueToSchedule
         : catSel > 0
             ? l.continueAction
             : l.productSelSkipStep;
@@ -284,27 +266,6 @@ class _ProductSelectionScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      children: [
-                        TextButton(
-                          key: const Key('skip_to_summary'),
-                          onPressed: _goToSummary,
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            textStyle: AppTypography.labelMd.copyWith(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12.5,
-                            ),
-                          ),
-                          child: Text(l.productSelSkipToSummary),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
                     _ProgressBar(step: step, total: total),
                     const SizedBox(height: 16),
 
@@ -453,7 +414,11 @@ class _ProductSelectionScreenState
                     trailingIcon: Icons.arrow_forward,
                     onTap: () {
                       if (isLast) {
-                        _goToSummary();
+                        if (widget.onDone != null) {
+                          widget.onDone!();
+                        } else {
+                          _goToSchedule(context);
+                        }
                       } else {
                         setState(() => _catStep++);
                       }
@@ -465,199 +430,6 @@ class _ProductSelectionScreenState
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSummary(
-    BuildContext context,
-    List<MasterProduct> allProducts,
-    List<Category> categories,
-    Map<String, Set<Slot>> selMap,
-    List<ProductSelection> morning,
-    List<ProductSelection> evening,
-    AppLocalizations l,
-  ) {
-    final amCount =
-        selMap.values.where((s) => s.contains(Slot.morning)).length;
-    final pmCount =
-        selMap.values.where((s) => s.contains(Slot.evening)).length;
-
-    final onlyAM = _slotFilter.contains('AM') && !_slotFilter.contains('PM');
-    final onlyPM = !_slotFilter.contains('AM') && _slotFilter.contains('PM');
-    final filterSlot = onlyAM
-        ? Slot.morning
-        : onlyPM
-            ? Slot.evening
-            : null;
-
-    final visibleCats = categories.where((cat) {
-      return allProducts.any((p) {
-        if (p.isDeprecated || p.categoryId != cat.id) return false;
-        if (onlyAM) return p.morningConfig != null;
-        if (onlyPM) return p.eveningConfig != null;
-        return true;
-      });
-    }).toList();
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _backToGuided(categories.length);
-      },
-      child: Stack(
-        children: [
-          CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      l.productSelSummaryTitle,
-                      style: AppTypography.headlineMd.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l.productSelSummarySubtitle,
-                      style: AppTypography.labelSm.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                        fontSize: 12,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _SlotFilter(
-                      value: _slotFilter,
-                      onChanged: (v) => setState(() => _slotFilter = v),
-                      counts: {'AM': amCount, 'PM': pmCount},
-                      l: l,
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                ),
-              ),
-            ),
-
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, idx) {
-                    final cat = visibleCats[idx];
-                    final catProducts = allProducts.where((p) {
-                      if (p.isDeprecated || p.categoryId != cat.id) return false;
-                      if (onlyAM) return p.morningConfig != null;
-                      if (onlyPM) return p.eveningConfig != null;
-                      return true;
-                    }).toList();
-                    final catSel = catProducts.where((p) {
-                      if (filterSlot != null) {
-                        return selMap[p.id]?.contains(filterSlot) ?? false;
-                      }
-                      return selMap.containsKey(p.id);
-                    }).length;
-
-                    return Padding(
-                      padding: EdgeInsets.only(
-                          bottom: idx < visibleCats.length - 1 ? 10 : 0),
-                      child: _CategorySection(
-                        category: cat,
-                        products: catProducts,
-                        selMap: selMap,
-                        slotFilter: _slotFilter,
-                        isOpen: _openCategoryId == cat.id,
-                        catSelCount: catSel,
-                        categoryUsage: _getCatUsage(cat.id, l),
-                        onToggleOpen: () => setState(() {
-                          _openCategoryId =
-                              _openCategoryId == cat.id ? null : cat.id;
-                        }),
-                        onToggleProduct: (p) => _toggleProduct(
-                          p, selMap, morning, evening,
-                          filterSlot: filterSlot,
-                        ),
-                        onTimingChange: (p, slot, enabled) =>
-                            _setTiming(p, slot, enabled, morning, evening),
-                        onEditProduct: (p) => _editCustomProduct(context, p),
-                        l: l,
-                      ),
-                    );
-                  },
-                  childCount: visibleCats.length,
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
-        ),
-
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-            decoration: BoxDecoration(
-              color: AppColors.surface.withAlpha(242),
-              boxShadow: AppColors.navGlow,
-              border: const Border(
-                  top: BorderSide(color: AppColors.primaryFixed, width: 0.5)),
-            ),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => _backToGuided(categories.length),
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceLow,
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                    child: const Icon(Icons.arrow_back,
-                        color: AppColors.onSurface, size: 20),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: () => showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => const AddCustomProductSheet(),
-                  ),
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryFixed.withAlpha(153),
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                    child: const Icon(Icons.add_rounded,
-                        color: AppColors.primary, size: 22),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: PrimaryButton(
-                    label: l.productSelContinueToSchedule,
-                    trailingIcon: Icons.arrow_forward,
-                    onTap: widget.onDone ?? () => _goToSchedule(context),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-      ),
     );
   }
 }

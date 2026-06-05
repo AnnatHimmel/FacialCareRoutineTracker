@@ -535,6 +535,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleSaveFinish => 'Finish & Save Routine';
 
   @override
+  String get scheduleAlertsOne => '1 alert';
+
+  @override
+  String scheduleAlertsCount(int count) {
+    return '$count alerts';
+  }
+
+  @override
+  String scheduleAlertsConflicts(int count) {
+    return '$count conflicts';
+  }
+
+  @override
+  String scheduleAlertsOverFreq(int count) {
+    return '$count over recommended';
+  }
+
+  @override
+  String get scheduleConflictsSection => 'Not recommended together';
+
+  @override
+  String get scheduleOverFreqSection => 'Over recommended frequency';
+
+  @override
+  String get scheduleByFrequency => 'By frequency';
+
+  @override
+  String scheduleDayChip(Object day) {
+    return '$day';
+  }
+
+  @override
+  String get scheduleSoftAlertsNote =>
+      'All alerts are soft — you can exceed, we\'ll just remind you.';
+
+  @override
   String get orderInstruction => 'Drag products to reorder your routine';
 
   @override

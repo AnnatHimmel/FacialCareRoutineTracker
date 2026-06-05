@@ -189,85 +189,115 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _buildStep2(AppLocalizations l) {
     final canContinue = _name.trim().isNotEmpty && _gender != null;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 32),
-          Text(
-            l.onboardingTellUsNeutral,
-            style:
-                const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          Text(l.onboardingPrivacyDesc),
-          const SizedBox(height: 24),
-          Text(l.onboardingNamePrompt),
-          const SizedBox(height: 8),
-          TextField(
-            textDirection: TextDirection.rtl,
-            decoration: InputDecoration(
-              hintText: l.onboardingNameHint,
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16)),
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 32),
+                Text(
+                  l.onboardingTellUsNeutral,
+                  style:
+                      const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Text(l.onboardingPrivacyDesc),
+                const SizedBox(height: 24),
+                Text(l.onboardingNamePrompt),
+                const SizedBox(height: 8),
+                TextField(
+                  textDirection: TextDirection.rtl,
+                  decoration: InputDecoration(
+                    hintText: l.onboardingNameHint,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onChanged: (v) => setState(() => _name = v),
+                ),
+                const SizedBox(height: 20),
+                Text(l.onboardingGenderLabel),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                        child: _genderButton(l.onboardingGenderFemale, 'female')),
+                    const SizedBox(width: 12),
+                    Expanded(
+                        child: _genderButton(l.onboardingGenderMale, 'male')),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Icon(Icons.lock_outline,
+                        size: 14, color: AppColors.onSurfaceVariant),
+                    const SizedBox(width: 6),
+                    Text(l.onboardingPrivacyLock,
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.onSurfaceVariant)),
+                  ],
+                ),
+              ],
             ),
-            onChanged: (v) => setState(() => _name = v),
           ),
-          const SizedBox(height: 20),
-          Text(l.onboardingGenderLabel),
-          const SizedBox(height: 8),
-          Row(
+        ),
+        Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
             children: [
-              Expanded(
-                  child: _genderButton(l.onboardingGenderFemale, 'female')),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: _genderButton(l.onboardingGenderMale, 'male')),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const Icon(Icons.lock_outline,
-                  size: 14, color: AppColors.onSurfaceVariant),
-              const SizedBox(width: 6),
-              Text(l.onboardingPrivacyLock,
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.onSurfaceVariant)),
-            ],
-          ),
-          const SizedBox(height: 32),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _back,
-                  child: Text(l.backAction),
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.outline),
+                  borderRadius: BorderRadius.circular(9999),
+                ),
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    onTap: _back,
+                    borderRadius: BorderRadius.circular(9999),
+                    child: const Icon(Icons.arrow_back,
+                        color: AppColors.primary),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Opacity(
                   opacity: canContinue ? 1.0 : 0.5,
-                  child: ElevatedButton(
-                    onPressed: canContinue ? _next : null,
-                    child: Text(l.continueActionNeutral),
+                  child: IgnorePointer(
+                    ignoring: !canContinue,
+                    child: PrimaryButton(
+                      label: l.continueActionNeutral,
+                      trailingIcon: Icons.arrow_forward,
+                      onTap: _next,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _genderButton(String label, String value) {
     final selected = _gender == value;
     return GestureDetector(
-      onTap: () => setState(() => _gender = value),
+      onTap: () {
+        setState(() => _gender = value);
+        final locale = ref.read(appLocaleProvider);
+        if (locale.languageCode != 'en') {
+          ref.read(appLocaleProvider.notifier).state =
+              value == 'male' ? const Locale('he', 'MA') : const Locale('he');
+        }
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(

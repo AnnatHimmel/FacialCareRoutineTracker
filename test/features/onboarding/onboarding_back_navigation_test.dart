@@ -198,16 +198,17 @@ Widget _wrap({
 }
 
 /// Drives the onboarding flow up to the schedule screen.
+/// Assumes language (step 0) was already selected before calling this.
 Future<void> _advanceToSchedule(WidgetTester tester) async {
   // Step 1 → Step 2
-  await tester.tap(find.text('בואי נתחיל'));
+  await tester.tap(find.text('נתחיל?'));
   await tester.pumpAndSettle();
   // Step 2 → Step 3 (product selection)
   await tester.enterText(find.byType(TextField).first, 'שמי');
   await tester.pumpAndSettle();
   await tester.tap(find.text('נקבה'));
   await tester.pumpAndSettle();
-  await tester.tap(find.text('המשיכי'));
+  await tester.tap(find.text('המשך'));
   await tester.pumpAndSettle();
   // Step 3: skip to summary, then continue to schedule
   await tester.tap(find.text('דלגי לסיכום'));
@@ -231,6 +232,10 @@ void main() {
           _wrap(master: master, onFinish: () => onFinishCalled = true));
       await tester.pumpAndSettle();
 
+      // Step 0: select language (added when language selection step was introduced)
+      await tester.tap(find.text('עברית'));
+      await tester.pumpAndSettle();
+
       await _advanceToSchedule(tester);
 
       // We should now be on the schedule screen with a back button.
@@ -244,7 +249,7 @@ void main() {
 
       // Should land on product selection (its CTA), NOT the onboarding
       // welcome screen, and onboarding must NOT have been finished.
-      expect(find.text('ברוכה הבאה'), findsNothing,
+      expect(find.text('The Glow Protocol'), findsNothing,
           reason: 'Back must not return to onboarding step 1');
       expect(onFinishCalled, isFalse,
           reason: 'Pressing back must not complete onboarding');

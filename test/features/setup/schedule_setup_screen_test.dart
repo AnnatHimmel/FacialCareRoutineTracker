@@ -188,7 +188,7 @@ void main() {
       expect(find.text('סרום ויטמין C'), findsOneWidget);
     });
 
-    testWidgets('DailyRule product shown in יומיים section', (tester) async {
+    testWidgets('DailyRule product shown under "כל יום" group', (tester) async {
       final product = _dailyProduct('p1', 'קרם לחות');
       final udr = _FakeUDR(
         morningSelections: [_sel('p1', Slot.morning)],
@@ -197,7 +197,10 @@ void main() {
       await tester.pumpWidget(_wrap(master: _master([product]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Daily products are now shown in the "יומיים" sub-section
+      // Daily products are in the collapsed "כל יום" group — expand it first
+      await tester.tap(find.textContaining('כל יום'));
+      await tester.pumpAndSettle();
+
       expect(find.text('קרם לחות'), findsOneWidget);
     });
 
@@ -247,6 +250,11 @@ void main() {
 
       // Use direct wrapper to avoid GoRouter's navigation barrier at scroll depth
       await tester.pumpWidget(_wrapDirect(master: _master([product]), udr: udr));
+      await tester.pumpAndSettle();
+
+      // Weekly product is in the "לפי תדירות" list as a collapsed _ListRow.
+      // Tap the row to expand it and reveal the WeekdayPicker.
+      await tester.tap(find.text('סרום'));
       await tester.pumpAndSettle();
 
       // Tap the first GestureDetector inside the WeekdayPicker (Sunday chip)

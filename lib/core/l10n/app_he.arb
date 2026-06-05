@@ -250,6 +250,27 @@
   },
   "scheduleNoDaySelected": "לא נבחר יום — המוצר לא ישובץ",
   "scheduleSaveFinish": "סיום ושמירת השגרה",
+  "scheduleAlertsOne": "התראה אחת",
+  "scheduleAlertsCount": "{count} התראות",
+  "@scheduleAlertsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduleAlertsConflicts": "{count} שילובים",
+  "@scheduleAlertsConflicts": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduleAlertsOverFreq": "{count} חריגה בתדירות",
+  "@scheduleAlertsOverFreq": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduleConflictsSection": "שילובים לא מומלצים",
+  "scheduleOverFreqSection": "חריגה בתדירות",
+  "scheduleByFrequency": "לפי תדירות",
+  "scheduleDayChip": "יום {day}",
+  "@scheduleDayChip": {
+    "placeholders": { "day": {} }
+  },
+  "scheduleSoftAlertsNote": "כל ההתראות הן רכות — מותר לחרוג, רק מזכירים.",
   "orderInstruction": "גררו את המוצרים כדי לסדר את השגרה שלכם",
   "orderNoProducts": "לא נבחרו מוצרים",
   "orderResetToRecommended": "איפוס לסדר המומלץ",
@@ -495,7 +516,7 @@
   "calendarDayFullFri": "שישי",
   "calendarDayFullSat": "שבת",
   "settingsProfileEdit": "עריכת פרופיל",
-  "settingsProfileGuest": "אורח",
+  "settingsProfileGuest": "אורחת",
   "settingsProfileNameLabel": "השם שלך",
   "settingsProfileNameHint": "הכניסי שם",
   "settingsProfileSave": "שמירה",
@@ -512,6 +533,6 @@
   "onboardingFrequencyWeeklyShort": "שבועי",
   "onboardingWelcomeNeutral": "ברוך הבא",
   "onboardingTellUsNeutral": "כמה פרטים כדי להתחיל",
-  "onboardingStartNeutral": "בוא נתחיל",
+  "onboardingStartNeutral": "נתחיל?",
   "continueActionNeutral": "המשך"
 }

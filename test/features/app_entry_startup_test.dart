@@ -25,6 +25,10 @@ Widget buildTestApp({
       // If AppEntryPoint doesn't watch silentStartupProvider, this body never
       // executes and the test correctly fails (RED).
       silentStartupProvider.overrideWith((_) async => onStartupRan()),
+      // localeSyncProvider reads settingsRepository which isn't available in
+      // tests — override it to complete immediately so pumpAndSettle doesn't
+      // time out waiting for locale initialization.
+      localeSyncProvider.overrideWith((_) async {}),
     ],
     child: MaterialApp.router(routerConfig: router),
   );

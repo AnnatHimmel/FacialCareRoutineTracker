@@ -528,6 +528,42 @@ class AppLocalizationsHe extends AppLocalizations {
   String get scheduleSaveFinish => 'סיום ושמירת השגרה';
 
   @override
+  String get scheduleAlertsOne => 'התראה אחת';
+
+  @override
+  String scheduleAlertsCount(int count) {
+    return '$count התראות';
+  }
+
+  @override
+  String scheduleAlertsConflicts(int count) {
+    return '$count שילובים';
+  }
+
+  @override
+  String scheduleAlertsOverFreq(int count) {
+    return '$count חריגה בתדירות';
+  }
+
+  @override
+  String get scheduleConflictsSection => 'שילובים לא מומלצים';
+
+  @override
+  String get scheduleOverFreqSection => 'חריגה בתדירות';
+
+  @override
+  String get scheduleByFrequency => 'לפי תדירות';
+
+  @override
+  String scheduleDayChip(Object day) {
+    return 'יום $day';
+  }
+
+  @override
+  String get scheduleSoftAlertsNote =>
+      'כל ההתראות הן רכות — מותר לחרוג, רק מזכירים.';
+
+  @override
   String get orderInstruction => 'גררו את המוצרים כדי לסדר את השגרה שלכם';
 
   @override
@@ -1007,7 +1043,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get settingsProfileEdit => 'עריכת פרופיל';
 
   @override
-  String get settingsProfileGuest => 'אורח';
+  String get settingsProfileGuest => 'אורחת';
 
   @override
   String get settingsProfileNameLabel => 'השם שלך';
@@ -1039,7 +1075,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get onboardingTellUsNeutral => 'כמה פרטים כדי להתחיל';
 
   @override
-  String get onboardingStartNeutral => 'בוא נתחיל';
+  String get onboardingStartNeutral => 'נתחיל?';
 
   @override
   String get continueActionNeutral => 'המשך';
@@ -1637,7 +1673,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get settingsProfileNameLabel => 'השם שלך';
 
   @override
-  String get settingsProfileNameHint => 'הכניסי שם';
+  String get settingsProfileNameHint => 'הכנס שם';
 
   @override
   String get settingsProfileSave => 'שמירה';

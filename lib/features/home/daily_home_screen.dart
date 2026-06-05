@@ -209,7 +209,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
 
     // Build day label from current date + user name
     final effectiveDate = boundary.todayEffectiveDate;
-    final userName = ref.watch(_userNameProvider).valueOrNull;
+    final userName = ref.watch(userNameProvider).valueOrNull;
     final isEn = l.localeName == 'en';
     final dayName = isEn
         ? EnglishDateStrings.weekdays[effectiveDate.weekday - 1]
@@ -915,6 +915,3 @@ final _dayRecordProvider =
       .watchDayRecord(params.date, params.slot),
 );
 
-final _userNameProvider = FutureProvider<String?>(
-  (ref) => ref.watch(settingsRepositoryProvider).getUserName(),
-);

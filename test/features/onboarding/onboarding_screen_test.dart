@@ -194,13 +194,17 @@ Widget _wrap({
   );
 }
 
+Future<void> _selectHebrew(WidgetTester tester) async {
+  await tester.tap(find.text('עברית'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   const cat1 = Category(id: 'cat1', name: 'לחות', order: 1);
   const cat2 = Category(id: 'cat2', name: 'ניקוי', order: 2);
 
   group('OnboardingScreen', () {
-    testWidgets('Step 1 displays welcome headline "ברוכה הבאה"',
-        (tester) async {
+    testWidgets('Step 1 displays app brand name', (tester) async {
       final master = _masterWith(
         [
           _product('p1', 'קרם לחות', 'cat1'),
@@ -212,17 +216,21 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      expect(find.text('ברוכה הבאה'), findsOneWidget);
+      await _selectHebrew(tester);
+
+      expect(find.text('The Glow Protocol'), findsOneWidget);
     });
 
-    testWidgets('Step 1 displays "בואי נתחיל" button', (tester) async {
+    testWidgets('Step 1 displays start button', (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
 
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      expect(find.text('בואי נתחיל'), findsOneWidget);
+      await _selectHebrew(tester);
+
+      expect(find.text('נתחיל?'), findsOneWidget);
     });
 
     testWidgets('Step 1 does NOT display a skip link', (tester) async {
@@ -236,30 +244,34 @@ void main() {
       expect(find.text('דלגי'), findsNothing);
     });
 
-    testWidgets('Tapping "בואי נתחיל" advances to Step 2', (tester) async {
+    testWidgets('Tapping start button advances to Step 2', (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
 
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
-      expect(find.text('ספרי לנו עלייך'), findsOneWidget);
+      expect(find.text('כמה פרטים כדי להתחיל'), findsOneWidget);
     });
 
-    testWidgets('Step 2 displays "ספרי לנו עלייך" headline', (tester) async {
+    testWidgets('Step 2 displays personal info headline', (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
 
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
-      expect(find.text('ספרי לנו עלייך'), findsOneWidget);
+      expect(find.text('כמה פרטים כדי להתחיל'), findsOneWidget);
     });
 
     testWidgets('Step 2 displays name text field', (tester) async {
@@ -269,7 +281,9 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
       expect(find.byType(TextField), findsWidgets);
@@ -283,14 +297,16 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
       expect(find.text('נקבה'), findsOneWidget);
       expect(find.text('זכר'), findsOneWidget);
     });
 
-    testWidgets('Step 2: "המשך" button is disabled when name is empty',
+    testWidgets('Step 2: continue button is disabled when name is empty',
         (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
@@ -298,22 +314,22 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
-      final continueButton = find.byWidgetPredicate(
-        (widget) =>
-            widget is ElevatedButton &&
-            widget.child is Text &&
-            (widget.child as Text).data == 'המשיכי',
+      final ignorePointer = tester.widget<IgnorePointer>(
+        find.ancestor(
+          of: find.text('המשך'),
+          matching: find.byType(IgnorePointer),
+        ).first,
       );
-
-      expect(continueButton, findsOneWidget);
-      expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNull);
+      expect(ignorePointer.ignoring, isTrue);
     });
 
     testWidgets(
-        'Step 2: "המשך" button is disabled when name non-empty but gender not selected',
+        'Step 2: continue button is disabled when name non-empty but gender not selected',
         (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
@@ -321,24 +337,25 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField).first, 'שמי');
       await tester.pumpAndSettle();
 
-      final continueButton = find.byWidgetPredicate(
-        (widget) =>
-            widget is ElevatedButton &&
-            widget.child is Text &&
-            (widget.child as Text).data == 'המשיכי',
+      final ignorePointer = tester.widget<IgnorePointer>(
+        find.ancestor(
+          of: find.text('המשך'),
+          matching: find.byType(IgnorePointer),
+        ).first,
       );
-
-      expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNull);
+      expect(ignorePointer.ignoring, isTrue);
     });
 
     testWidgets(
-        'Step 2: "המשך" button is disabled when gender selected but name empty',
+        'Step 2: continue button is disabled when gender selected but name empty',
         (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
@@ -346,24 +363,25 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('נקבה'));
       await tester.pumpAndSettle();
 
-      final continueButton = find.byWidgetPredicate(
-        (widget) =>
-            widget is ElevatedButton &&
-            widget.child is Text &&
-            (widget.child as Text).data == 'המשיכי',
+      final ignorePointer = tester.widget<IgnorePointer>(
+        find.ancestor(
+          of: find.text('המשך'),
+          matching: find.byType(IgnorePointer),
+        ).first,
       );
-
-      expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNull);
+      expect(ignorePointer.ignoring, isTrue);
     });
 
     testWidgets(
-        'Step 2: "המשך" button is enabled when name non-empty AND gender selected',
+        'Step 2: continue button is enabled when name non-empty AND gender selected',
         (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
@@ -371,7 +389,9 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField).first, 'שמי');
@@ -380,30 +400,31 @@ void main() {
       await tester.tap(find.text('נקבה'));
       await tester.pumpAndSettle();
 
-      final continueButton = find.byWidgetPredicate(
-        (widget) =>
-            widget is ElevatedButton &&
-            widget.child is Text &&
-            (widget.child as Text).data == 'המשיכי',
+      final ignorePointer = tester.widget<IgnorePointer>(
+        find.ancestor(
+          of: find.text('המשך'),
+          matching: find.byType(IgnorePointer),
+        ).first,
       );
-
-      expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNotNull);
+      expect(ignorePointer.ignoring, isFalse);
     });
 
-    testWidgets('Step 2: "חזרה" button returns to Step 1', (tester) async {
+    testWidgets('Step 2: back button returns to Step 1', (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
 
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('חזרה'));
+      await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
 
-      expect(find.text('ברוכה הבאה'), findsOneWidget);
+      expect(find.text('The Glow Protocol'), findsOneWidget);
     });
 
     testWidgets('Step 3 shows the first category and its products',
@@ -421,7 +442,9 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField).first, 'שמי');
@@ -429,7 +452,7 @@ void main() {
       await tester.tap(find.text('נקבה'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשיכי'));
+      await tester.tap(find.text('המשך'));
       await tester.pumpAndSettle();
 
       // Guided step 0 shows cat1 products; cat2 products are on a later step.
@@ -447,7 +470,9 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, onFinish: () {}));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField).first, 'שמי');
@@ -455,7 +480,7 @@ void main() {
       await tester.tap(find.text('נקבה'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשיכי'));
+      await tester.tap(find.text('המשך'));
       await tester.pumpAndSettle();
 
       // Skip to summary from guided view
@@ -478,7 +503,9 @@ void main() {
           _wrap(master: master, onFinish: () => onFinishCalled = true));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('בואי נתחיל'));
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField).first, 'שמי');
@@ -486,7 +513,7 @@ void main() {
       await tester.tap(find.text('נקבה'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשיכי'));
+      await tester.tap(find.text('המשך'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('דלגי לסיכום'));
@@ -515,13 +542,16 @@ void main() {
           _wrap(master: master, onFinish: () => onFinishCalled = true));
       await tester.pumpAndSettle();
 
+      // Step 0: select language
+      await _selectHebrew(tester);
+
       // Step 1
-      expect(find.text('ברוכה הבאה'), findsOneWidget);
+      expect(find.text('The Glow Protocol'), findsOneWidget);
 
       // Step 1 → Step 2
-      await tester.tap(find.text('בואי נתחיל'));
+      await tester.tap(find.text('נתחיל?'));
       await tester.pumpAndSettle();
-      expect(find.text('ספרי לנו עלייך'), findsOneWidget);
+      expect(find.text('כמה פרטים כדי להתחיל'), findsOneWidget);
 
       // Step 2: fill form
       await tester.enterText(find.byType(TextField).first, 'שמי');
@@ -530,7 +560,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Step 2 → Step 3
-      await tester.tap(find.text('המשיכי'));
+      await tester.tap(find.text('המשך'));
       await tester.pumpAndSettle();
       expect(find.text('קרם לחות'), findsOneWidget);
 

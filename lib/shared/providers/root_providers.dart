@@ -148,6 +148,10 @@ final customProductsProvider = StreamProvider<List<UserCustomProduct>>(
   (ref) => ref.watch(userDataRepositoryProvider).watchCustomProducts(),
 );
 
+final userNameProvider = FutureProvider<String?>(
+  (ref) => ref.watch(settingsRepositoryProvider).getUserName(),
+);
+
 // ── Per-day routine provider ──────────────────────────────────────────────────
 
 typedef _DailyRoutineParams = ({String date, Slot slot});

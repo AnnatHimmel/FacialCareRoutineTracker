@@ -288,7 +288,7 @@
   "settingsProfileEdit": "עריכת פרופיל",
   "settingsProfileGuest": "אורח",
   "settingsProfileNameLabel": "השם שלך",
-  "settingsProfileNameHint": "הכניסי שם",
+  "settingsProfileNameHint": "הכנס שם",
   "settingsProfileSave": "שמירה",
   "backupNeverBacked": "לא גיבית את הנתונים שלך מעולם",
   "backupDaysAgo": "גיבוי אחרון לפני {days} ימים",
