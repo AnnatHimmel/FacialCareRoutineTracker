@@ -286,8 +286,11 @@ Future<void> _showEditProfileSheet(
         if (name.trim().isNotEmpty) await settings.setUserName(name.trim());
         if (gender != null) {
           await settings.setUserGender(gender);
-          ref.read(appLocaleProvider.notifier).state =
-              gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
+          final savedLang = await settings.getAppLanguage();
+          if (savedLang != 'en') {
+            ref.read(appLocaleProvider.notifier).state =
+                gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
+          }
         }
         ref.invalidate(_userProfileProvider);
         ref.invalidate(userNameProvider);

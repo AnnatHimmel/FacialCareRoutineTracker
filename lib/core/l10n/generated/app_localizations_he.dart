@@ -356,12 +356,6 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get productSelSkipToSummary => 'דלגי לסיכום';
-
-  @override
-  String get productSelToSummary => 'לסיכום';
-
-  @override
   String get productSelSkipStep => 'דלגי על השלב';
 
   @override
@@ -369,13 +363,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get productSelNoProducts => 'אין מוצרים בקטגוריה זו';
-
-  @override
-  String get productSelSummaryTitle => 'סיכום · הארון שלך';
-
-  @override
-  String get productSelSummarySubtitle =>
-      'בחרי מוצר פעם אחת. סנני בוקר/ערב כדי לראות כל שגרה בנפרד.';
 
   @override
   String get productSelContinueToSchedule => 'המשיכי לתזמון';
@@ -537,12 +524,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String scheduleAlertsConflicts(int count) {
-    return '$count שילובים';
+    return '$count שילובים בעיתיים';
   }
 
   @override
   String scheduleAlertsOverFreq(int count) {
-    return '$count חריגה בתדירות';
+    return '$count שימושים מעל המומלץ';
   }
 
   @override
@@ -1079,6 +1066,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get continueActionNeutral => 'המשך';
+
+  @override
+  String get addCustomProductCtaTitle => 'הוסיפי מוצר חדש';
+
+  @override
+  String get addCustomProductCtaSub => 'המוצר שלך לא ברשימה?';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -1223,14 +1216,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get journalStartDocumenting => 'התחל לתעד';
 
   @override
-  String get productSelSkipToSummary => 'דלג לסיכום';
-
-  @override
   String get productSelSkipStep => 'דלג על השלב';
-
-  @override
-  String get productSelSummarySubtitle =>
-      'בחר מוצר פעם אחת. סנן בוקר/ערב כדי לראות כל שגרה בנפרד.';
 
   @override
   String get productSelContinueToSchedule => 'המשך לתזמון';
@@ -1700,4 +1686,10 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get continueActionNeutral => 'המשך';
+
+  @override
+  String get addCustomProductCtaTitle => 'הוסף מוצר חדש';
+
+  @override
+  String get addCustomProductCtaSub => 'המוצר שלך לא ברשימה?';
 }

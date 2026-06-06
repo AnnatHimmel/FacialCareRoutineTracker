@@ -95,7 +95,7 @@ class _OrderCustomizationScreenState
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: GlowAppBar(showBack: !widget.fromSetup),
-      bottomNavigationBar: _buildSetupNav(context, l),
+      bottomNavigationBar: AppBottomNav.setup(context),
       body: masterAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
@@ -325,37 +325,6 @@ class _OrderCustomizationScreenState
       ],
     );
   }
-
-  Widget _buildSetupNav(BuildContext context, AppLocalizations l) =>
-      GlassBottomNav(
-        currentIndex: -1,
-        onDestinationSelected: (i) {
-          const routes = ['/today', '/calendar', '/journal', '/settings'];
-          if (i < routes.length) context.go(routes[i]);
-        },
-        items: [
-          GlassNavItem(
-            icon: Icons.wb_sunny_outlined,
-            selectedIcon: Icons.wb_sunny_rounded,
-            label: l.navToday,
-          ),
-          GlassNavItem(
-            icon: Icons.calendar_today_outlined,
-            selectedIcon: Icons.calendar_today_rounded,
-            label: l.navCalendar,
-          ),
-          GlassNavItem(
-            icon: Icons.auto_stories_outlined,
-            selectedIcon: Icons.auto_stories_rounded,
-            label: l.navJournal,
-          ),
-          GlassNavItem(
-            icon: Icons.settings_outlined,
-            selectedIcon: Icons.settings_rounded,
-            label: l.navSettings,
-          ),
-        ],
-      );
 }
 
 final _orderOverrideProvider =

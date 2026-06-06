@@ -20,6 +20,14 @@ class StreakWidget extends StatelessWidget {
   static const Color _white = Color(0xFFFFFFFF);
   static const Color _whiteDim = Color(0xCCFFFFFF);
 
+  // Scale badge contents down for wide streak numbers so the badge never grows.
+  static _StreakScale _scaleFor(int streak) {
+    final digits = streak == 0 ? 1 : streak.toString().length;
+    if (digits >= 4) return const _StreakScale(fontSize: 36, iconSize: 18, iconTopPad: 2, spacing: 1, startPad: 12);
+    if (digits == 3) return const _StreakScale(fontSize: 44, iconSize: 22, iconTopPad: 3, spacing: 2, startPad: 8);
+    return const _StreakScale(fontSize: 64, iconSize: 28, iconTopPad: 5, spacing: 4, startPad: 20);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -27,6 +35,7 @@ class StreakWidget extends StatelessWidget {
     final subtitle = currentStreak > 0
         ? l.streakOnTrack
         : l.streakStartToday;
+    final scale = _scaleFor(currentStreak);
 
     return Container(
       decoration: BoxDecoration(
@@ -39,7 +48,7 @@ class StreakWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            padding: EdgeInsetsDirectional.fromSTEB(scale.startPad, 20, 20, 16),
             child: IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -55,21 +64,21 @@ class StreakWidget extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Padding(
-                              padding: EdgeInsets.only(top: 5),
+                            Padding(
+                              padding: EdgeInsets.only(top: scale.iconTopPad),
                               child: Icon(
                                 Icons.local_fire_department_rounded,
                                 color: _white,
-                                size: 28,
+                                size: scale.iconSize,
                               ),
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: scale.spacing),
                             Text(
                               '$currentStreak',
                               style: AppTypography.displayLg.copyWith(
                                 color: _white,
                                 fontWeight: FontWeight.w700,
-                                fontSize: 64,
+                                fontSize: scale.fontSize,
                                 height: 1.0,
                               ),
                             ),
@@ -143,11 +152,15 @@ class _BestStreakChip extends StatelessWidget {
         children: [
           const Icon(Icons.emoji_events_rounded, color: _white, size: 14),
           const SizedBox(width: 5),
-          Text(
-            l.streakPersonalBest(bestStreak),
-            style: AppTypography.labelSm.copyWith(
-              color: _white,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              l.streakPersonalBest(bestStreak),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.labelSm.copyWith(
+                color: _white,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -234,4 +247,20 @@ class _GraceToken extends StatelessWidget {
       ),
     );
   }
+}
+
+class _StreakScale {
+  final double fontSize;
+  final double iconSize;
+  final double iconTopPad;
+  final double spacing;
+  final double startPad;
+
+  const _StreakScale({
+    required this.fontSize,
+    required this.iconSize,
+    required this.iconTopPad,
+    required this.spacing,
+    required this.startPad,
+  });
 }

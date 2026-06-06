@@ -357,12 +357,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get productSelSkipToSummary => 'Skip to summary';
-
-  @override
-  String get productSelToSummary => 'Summary';
-
-  @override
   String get productSelSkipStep => 'Skip this step';
 
   @override
@@ -370,13 +364,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productSelNoProducts => 'No products in this category';
-
-  @override
-  String get productSelSummaryTitle => 'Summary · Your Cabinet';
-
-  @override
-  String get productSelSummarySubtitle =>
-      'Select a product once. Filter morning/evening to view each routine separately.';
 
   @override
   String get productSelContinueToSchedule => 'Continue to Schedule';
@@ -520,7 +507,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get scheduleCountEveryDay => 'Every day';
+  String get scheduleCountEveryDay => 'Daily';
 
   @override
   String scheduleOverCap(Object max) {
@@ -544,12 +531,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String scheduleAlertsConflicts(int count) {
-    return '$count conflicts';
+    return '$count products conflicts';
   }
 
   @override
   String scheduleAlertsOverFreq(int count) {
-    return '$count over recommended';
+    return '$count over recommended usage';
   }
 
   @override
@@ -1092,4 +1079,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueActionNeutral => 'Continue';
+
+  @override
+  String get addCustomProductCtaTitle => 'Add New Product';
+
+  @override
+  String get addCustomProductCtaSub => 'Your product not in the list?';
 }

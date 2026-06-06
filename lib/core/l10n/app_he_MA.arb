@@ -12,7 +12,6 @@
   "journalEmptyInstruction": "הוסף תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך",
   "journalStartDocumenting": "התחל לתעד",
   "productSelSkipStep": "דלג על השלב",
-  "productSelSummarySubtitle": "בחר מוצר פעם אחת. סנן בוקר/ערב כדי לראות כל שגרה בנפרד.",
   "catHintSerum": "החומרים הפעילים שלך. אפשר לבחור כמה שתרצה.",
   "catUsageCleanser1": "עסה על עור יבש להמסת איפור ומסנני הגנה, ושטוף במים פושרים.",
   "catUsageCleanser2": "הקצף עם מעט מים, עסה בעדינות בתנועות מעגליות ושטוף.",
@@ -43,7 +42,6 @@
   "homeNamesToggleShow": "הצג שמות מוצרים",
   "journalCtaButton": "תעד עכשיו",
   "calendarEdit": "ערוך",
-  "productSelSkipToSummary": "דלג לסיכום",
   "productSelContinueToSchedule": "המשך לתזמון",
   "updateNewProductsDesc": "מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים",
   "mergeUseArchive": "השתמש בגרסת הגיבוי",
@@ -302,5 +300,7 @@
   "onboardingSelectLanguage": "בחרי שפה",
   "onboardingWelcomeNeutral": "ברוך הבא",
   "onboardingStartNeutral": "בוא נתחיל",
-  "continueActionNeutral": "המשך"
+  "continueActionNeutral": "המשך",
+  "addCustomProductCtaTitle": "הוסף מוצר חדש",
+  "addCustomProductCtaSub": "המוצר שלך לא ברשימה?"
 }

@@ -483,10 +483,7 @@ void main() {
       await tester.tap(find.text('המשך'));
       await tester.pumpAndSettle();
 
-      // Skip to summary from guided view
-      await tester.tap(find.text('דלגי לסיכום'));
-      await tester.pumpAndSettle();
-
+      // Single category means we're on the last step; CTA is already "המשיכי לתזמון"
       expect(find.text('המשיכי לתזמון'), findsOneWidget);
     });
 
@@ -514,9 +511,6 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('המשך'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('דלגי לסיכום'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('המשיכי לתזמון'));
@@ -564,8 +558,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('קרם לחות'), findsOneWidget);
 
-      // Step 3: skip to summary and finish
-      await tester.tap(find.text('דלגי לסיכום'));
+      // Step 3: advance past first category (nothing selected → skip), then finish from last category
+      await tester.tap(find.text('דלגי על השלב'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('המשיכי לתזמון'));

@@ -264,22 +264,6 @@ void main() {
       expect(find.text('ג׳ל ניקוי'), findsNothing);
     });
 
-    testWidgets('"דלג לסיכום" button is visible and navigates to summary',
-        (tester) async {
-      final master =
-          _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
-
-      await tester.pumpWidget(_wrap(master: master));
-      await tester.pumpAndSettle();
-
-      expect(find.text('דלגי לסיכום'), findsOneWidget);
-      await tester.tap(find.text('דלגי לסיכום'));
-      await tester.pumpAndSettle();
-
-      // Summary shows "סיכום · הארון שלך"
-      expect(find.text('סיכום · הארון שלך'), findsOneWidget);
-    });
-
     testWidgets('"המשך" advances to next category', (tester) async {
       final master = _masterWith([
         _amProduct('p1', 'קרם', 'cat-serum'),
@@ -349,32 +333,25 @@ void main() {
     });
   });
 
-  group('ProductSelectionScreen — summary view', () {
-    testWidgets('"המשך לתזמון" visible in summary after navigating there',
+  group('ProductSelectionScreen — last step navigation', () {
+    testWidgets('"המשיכי לתזמון" is the CTA on the last guided step',
         (tester) async {
       final master =
           _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
 
       await tester.pumpWidget(_wrap(master: master, fromSetup: true));
-      await tester.pumpAndSettle();
-
-      // Navigate to summary
-      await tester.tap(find.text('דלגי לסיכום'));
       await tester.pumpAndSettle();
 
       expect(find.text('המשיכי לתזמון'), findsOneWidget);
     });
 
     testWidgets(
-        '"המשך לתזמון" from summary with fromSetup navigates to /setup/schedule?from=setup',
+        'last step CTA with fromSetup navigates to /setup/schedule?from=setup',
         (tester) async {
       final master =
           _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
 
       await tester.pumpWidget(_wrap(master: master, fromSetup: true));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('דלגי לסיכום'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('המשיכי לתזמון'));
@@ -383,10 +360,12 @@ void main() {
       expect(find.text('schedule-from=setup'), findsOneWidget);
     });
 
-    testWidgets('guided step does NOT show "המשך לתזמון" initially',
+    testWidgets('first step of multi-category flow does NOT show "המשיכי לתזמון"',
         (tester) async {
-      final master =
-          _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
+      final master = _masterWith([
+        _amProduct('p1', 'קרם', 'cat-serum'),
+        _amProduct('p2', 'קרם הגנה', 'cat-spf'),
+      ], [cat1, cat2]);
 
       await tester.pumpWidget(_wrap(master: master, fromSetup: false));
       await tester.pumpAndSettle();
@@ -425,6 +404,35 @@ void main() {
       expect(deselected.length, 2,
           reason: 'both duplicate rows must be set to isSelected:false');
       expect(deselected.map((s) => s.id).toSet(), {'uuid-1', 'uuid-2'});
+    });
+  });
+
+  group('ProductSelectionScreen — add custom product CTA', () {
+    testWidgets('CTA card is visible in guided step view', (tester) async {
+      final master =
+          _masterWith([_amProduct('p1', 'קרם לחות', 'cat-serum')], [cat1]);
+
+      await tester.pumpWidget(_wrap(master: master));
+      await tester.pumpAndSettle();
+
+      // New full-width CTA card should be visible
+      expect(find.text('הוסיפי מוצר חדש'), findsOneWidget);
+    });
+
+    testWidgets('old small icon-only add button is NOT in guided bottom bar',
+        (tester) async {
+      final master =
+          _masterWith([_amProduct('p1', 'קרם לחות', 'cat-serum')], [cat1]);
+
+      await tester.pumpWidget(_wrap(master: master));
+      await tester.pumpAndSettle();
+
+      // The old button was a 52×52 circle with Icons.add_rounded
+      // After the change there should only be ONE add_rounded icon
+      // (inside the CTA card itself), not two
+      final addIcons = find.byIcon(Icons.add_rounded);
+      expect(addIcons, findsOneWidget,
+          reason: 'Only the CTA card icon should remain; old bottom-bar button removed');
     });
   });
 

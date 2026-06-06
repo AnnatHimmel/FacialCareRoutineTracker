@@ -203,7 +203,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: const GlowAppBar(),
-      bottomNavigationBar: _isProductsFlow ? null : _buildSetupNav(context, l),
+      bottomNavigationBar: _isProductsFlow ? null : AppBottomNav.setup(context),
       body: masterAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(l.genericError(e))),
@@ -529,37 +529,6 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
       ),
     );
   }
-
-  Widget _buildSetupNav(BuildContext context, AppLocalizations l) =>
-      GlassBottomNav(
-        currentIndex: -1,
-        onDestinationSelected: (i) {
-          const routes = ['/today', '/calendar', '/journal', '/settings'];
-          if (i < routes.length) context.go(routes[i]);
-        },
-        items: [
-          GlassNavItem(
-            icon: Icons.wb_sunny_outlined,
-            selectedIcon: Icons.wb_sunny_rounded,
-            label: l.navToday,
-          ),
-          GlassNavItem(
-            icon: Icons.calendar_today_outlined,
-            selectedIcon: Icons.calendar_today_rounded,
-            label: l.navCalendar,
-          ),
-          GlassNavItem(
-            icon: Icons.auto_stories_outlined,
-            selectedIcon: Icons.auto_stories_rounded,
-            label: l.navJournal,
-          ),
-          GlassNavItem(
-            icon: Icons.settings_outlined,
-            selectedIcon: Icons.settings_rounded,
-            label: l.navSettings,
-          ),
-        ],
-      );
 }
 
 // ── Issues panel (collapsible; all warnings live here) ──────────────────────
@@ -1290,19 +1259,23 @@ class _ListRow extends StatelessWidget {
                               ),
                             if (cat != null) ...[
                               const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surfaceLow,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  cat.localizedName(isEnglish ? 'en' : 'he'),
-                                  style: AppTypography.labelSm.copyWith(
-                                    color: AppColors.onSurfaceVariant,
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 9,
+                              Flexible(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceLow,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Text(
+                                    cat.localizedName(isEnglish ? 'en' : 'he'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTypography.labelSm.copyWith(
+                                      color: AppColors.onSurfaceVariant,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 9,
+                                    ),
                                   ),
                                 ),
                               ),

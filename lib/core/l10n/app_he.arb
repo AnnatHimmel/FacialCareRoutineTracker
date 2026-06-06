@@ -170,13 +170,9 @@
       "total": {}
     }
   },
-  "productSelSkipToSummary": "דלגי לסיכום",
-  "productSelToSummary": "לסיכום",
   "productSelSkipStep": "דלגי על השלב",
   "productSelNoCategories": "לא נמצאו קטגוריות",
   "productSelNoProducts": "אין מוצרים בקטגוריה זו",
-  "productSelSummaryTitle": "סיכום · הארון שלך",
-  "productSelSummarySubtitle": "בחרי מוצר פעם אחת. סנני בוקר/ערב כדי לראות כל שגרה בנפרד.",
   "productSelContinueToSchedule": "המשיכי לתזמון",
   "productSelFilterAll": "הכל",
   "productSelCategoryOptions": "{count} אפשרויות",
@@ -255,11 +251,11 @@
   "@scheduleAlertsCount": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "scheduleAlertsConflicts": "{count} שילובים",
+  "scheduleAlertsConflicts": "{count} שילובים בעיתיים",
   "@scheduleAlertsConflicts": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "scheduleAlertsOverFreq": "{count} חריגה בתדירות",
+  "scheduleAlertsOverFreq": "{count} שימושים מעל המומלץ",
   "@scheduleAlertsOverFreq": {
     "placeholders": { "count": { "type": "int" } }
   },
@@ -534,5 +530,7 @@
   "onboardingWelcomeNeutral": "ברוך הבא",
   "onboardingTellUsNeutral": "כמה פרטים כדי להתחיל",
   "onboardingStartNeutral": "נתחיל?",
-  "continueActionNeutral": "המשך"
+  "continueActionNeutral": "המשך",
+  "addCustomProductCtaTitle": "הוסיפי מוצר חדש",
+  "addCustomProductCtaSub": "המוצר שלך לא ברשימה?"
 }

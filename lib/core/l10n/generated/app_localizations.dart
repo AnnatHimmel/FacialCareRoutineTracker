@@ -741,18 +741,6 @@ abstract class AppLocalizations {
   /// **'שלב {step} מתוך {total}'**
   String productSelStepCounter(Object step, Object total);
 
-  /// No description provided for @productSelSkipToSummary.
-  ///
-  /// In he, this message translates to:
-  /// **'דלגי לסיכום'**
-  String get productSelSkipToSummary;
-
-  /// No description provided for @productSelToSummary.
-  ///
-  /// In he, this message translates to:
-  /// **'לסיכום'**
-  String get productSelToSummary;
-
   /// No description provided for @productSelSkipStep.
   ///
   /// In he, this message translates to:
@@ -770,18 +758,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'אין מוצרים בקטגוריה זו'**
   String get productSelNoProducts;
-
-  /// No description provided for @productSelSummaryTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'סיכום · הארון שלך'**
-  String get productSelSummaryTitle;
-
-  /// No description provided for @productSelSummarySubtitle.
-  ///
-  /// In he, this message translates to:
-  /// **'בחרי מוצר פעם אחת. סנני בוקר/ערב כדי לראות כל שגרה בנפרד.'**
-  String get productSelSummarySubtitle;
 
   /// No description provided for @productSelContinueToSchedule.
   ///
@@ -1056,13 +1032,13 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleAlertsConflicts.
   ///
   /// In he, this message translates to:
-  /// **'{count} שילובים'**
+  /// **'{count} שילובים בעיתיים'**
   String scheduleAlertsConflicts(int count);
 
   /// No description provided for @scheduleAlertsOverFreq.
   ///
   /// In he, this message translates to:
-  /// **'{count} חריגה בתדירות'**
+  /// **'{count} שימושים מעל המומלץ'**
   String scheduleAlertsOverFreq(int count);
 
   /// No description provided for @scheduleConflictsSection.
@@ -2036,6 +2012,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'המשך'**
   String get continueActionNeutral;
+
+  /// No description provided for @addCustomProductCtaTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסיפי מוצר חדש'**
+  String get addCustomProductCtaTitle;
+
+  /// No description provided for @addCustomProductCtaSub.
+  ///
+  /// In he, this message translates to:
+  /// **'המוצר שלך לא ברשימה?'**
+  String get addCustomProductCtaSub;
 }
 
 class _AppLocalizationsDelegate

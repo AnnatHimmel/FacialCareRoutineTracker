@@ -2,10 +2,12 @@
 Resizes the master logo to every platform icon size.
 
 Workflow:
-  1. Edit  assets/images/app_icon.png  in your image editor (1024×1024 recommended).
+  1. Edit  assets/images/app_icon.png        (with background, 1024×1024 recommended)
+     and   assets/images/app_icon_no_bg.png  (transparent background, same size)
+     in your image editor.
   2. Run   python tools/generate_icons.py
 
-The script never overwrites the source file — only the platform icon files.
+The script never overwrites the source files — only the platform icon files.
 
 To regenerate the source PNG from the built-in drawing (overwrites source!):
     python tools/generate_icons.py --regen
@@ -13,10 +15,11 @@ To regenerate the source PNG from the built-in drawing (overwrites source!):
 
 from __future__ import annotations
 from PIL import Image, ImageDraw
-import math, os, sys
+import math, os, subprocess, sys
 
-ROOT   = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
-SOURCE = os.path.join(ROOT, "assets", "images", "app_icon.png")
+ROOT      = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+SOURCE    = os.path.join(ROOT, "assets", "images", "app_icon.png")
+SOURCE_NB = os.path.join(ROOT, "assets", "images", "app_icon_no_bg.png")
 
 # ── Built-in drawing (fallback / --regen) ────────────────────────────────────
 
@@ -120,12 +123,36 @@ def main() -> None:
             print(f"WARNING: source is {w}×{h}, expected square.")
         print(f"Source: {os.path.relpath(SOURCE, ROOT)}  ({w}×{h})\n")
 
-    print("Android:")
+    # Load no-bg variant for adaptive icon foreground; fall back to master.
+    if os.path.exists(SOURCE_NB):
+        master_nb = Image.open(SOURCE_NB).convert("RGBA")
+        print(f"No-bg source: {os.path.relpath(SOURCE_NB, ROOT)}  ({master_nb.width}×{master_nb.height})\n")
+    else:
+        master_nb = master
+        print(f"WARNING: {os.path.relpath(SOURCE_NB, ROOT)} not found — using master for adaptive foreground.\n")
+
+    print("Android (mipmap — legacy / pre-API-26):")
     for density, px in [("mdpi", 48), ("hdpi", 72), ("xhdpi", 96),
                          ("xxhdpi", 144), ("xxxhdpi", 192)]:
         _save(_resize(master, px),
               "android", "app", "src", "main", "res",
               f"mipmap-{density}", "ic_launcher.png")
+
+    # Adaptive icon foreground (API 26+). The canvas is 108dp per density;
+    # the 72dp safe zone sits centred inside it, leaving a 18dp bleed on each
+    # side that is cropped when the launcher applies its mask shape.
+    print("Android (adaptive foreground — API 26+):")
+    for density, px in [("mdpi", 108), ("hdpi", 162), ("xhdpi", 216),
+                         ("xxhdpi", 324), ("xxxhdpi", 432)]:
+        # Scale so the icon fills the safe zone (72/108 ≈ 66.7 % of canvas).
+        safe = round(px * 72 / 108)
+        canvas = Image.new("RGBA", (px, px), (0, 0, 0, 0))
+        fg = _resize(master_nb, safe)
+        offset = (px - safe) // 2
+        canvas.paste(fg, (offset, offset), fg)
+        _save(canvas,
+              "android", "app", "src", "main", "res",
+              f"drawable-{density}", "ic_launcher_foreground.png")
 
     print("Web:")
     for px in (192, 512):
@@ -164,6 +191,14 @@ def main() -> None:
                  append_images=imgs[1:],
                  sizes=[(s, s) for s in sizes])
     print(f"  windows/runner/resources/app_icon.ico")
+
+    print("\nRunning flutter_launcher_icons …")
+    result = subprocess.run(
+        ["dart", "run", "flutter_launcher_icons"],
+        cwd=ROOT,
+    )
+    if result.returncode != 0:
+        sys.exit(result.returncode)
 
     print("\nDone.")
 

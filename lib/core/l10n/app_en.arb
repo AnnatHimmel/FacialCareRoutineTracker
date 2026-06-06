@@ -170,13 +170,9 @@
       "total": {}
     }
   },
-  "productSelSkipToSummary": "Skip to summary",
-  "productSelToSummary": "Summary",
   "productSelSkipStep": "Skip this step",
   "productSelNoCategories": "No categories found",
   "productSelNoProducts": "No products in this category",
-  "productSelSummaryTitle": "Summary · Your Cabinet",
-  "productSelSummarySubtitle": "Select a product once. Filter morning/evening to view each routine separately.",
   "productSelContinueToSchedule": "Continue to Schedule",
   "productSelFilterAll": "All",
   "productSelCategoryOptions": "{count} options",
@@ -241,7 +237,7 @@
       "max": {}
     }
   },
-  "scheduleCountEveryDay": "Every day",
+  "scheduleCountEveryDay": "Daily",
   "scheduleOverCap": "Exceeds recommendation — consider reducing to {max} days per week",
   "@scheduleOverCap": {
     "placeholders": {
@@ -255,11 +251,11 @@
   "@scheduleAlertsCount": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "scheduleAlertsConflicts": "{count} conflicts",
+  "scheduleAlertsConflicts": "{count} products conflicts",
   "@scheduleAlertsConflicts": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "scheduleAlertsOverFreq": "{count} over recommended",
+  "scheduleAlertsOverFreq": "{count} over recommended usage",
   "@scheduleAlertsOverFreq": {
     "placeholders": { "count": { "type": "int" } }
   },
@@ -534,5 +530,7 @@
   "onboardingWelcomeNeutral": "Welcome",
   "onboardingTellUsNeutral": "Tell us about you",
   "onboardingStartNeutral": "Let's Begin",
-  "continueActionNeutral": "Continue"
+  "continueActionNeutral": "Continue",
+  "addCustomProductCtaTitle": "Add New Product",
+  "addCustomProductCtaSub": "Your product not in the list?"
 }

@@ -28,6 +28,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void _next() => setState(() => _step++);
   void _back() => setState(() => _step--);
 
+  // Saves name+gender to disk immediately when the user leaves Step 2.
+  // Uses fire-and-forget because product selection gives enough time before
+  // the data is needed, and saving the same values twice in _handleFinish is harmless.
+  void _onStep2Continue() {
+    _persistPersonalInfo();
+    _next();
+  }
+
+  Future<void> _persistPersonalInfo() async {
+    try {
+      final settings = ref.read(settingsRepositoryProvider);
+      if (_name.trim().isNotEmpty) await settings.setUserName(_name.trim());
+      if (_gender != null) await settings.setUserGender(_gender!);
+    } catch (_) {}
+  }
+
   Future<void> _handleFinish() async {
     try {
       final settings = ref.read(settingsRepositoryProvider);
@@ -275,7 +291,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     child: PrimaryButton(
                       label: l.continueActionNeutral,
                       trailingIcon: Icons.arrow_forward,
-                      onTap: _next,
+                      onTap: _onStep2Continue,
                     ),
                   ),
                 ),
@@ -322,7 +338,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _continueToSchedule() async {
-    final finished = await context.push<bool>('/products/schedule');
+    // Use /setup/schedule (no fromProducts flag) so _handleContinue pops with
+    // true instead of calling context.go('/today'), which would silently drop
+    // the push result and prevent _handleFinish from ever running.
+    final finished = await context.push<bool>('/setup/schedule');
     if (!mounted) return;
     if (finished == true) {
       await _handleFinish();

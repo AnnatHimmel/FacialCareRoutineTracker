@@ -208,8 +208,6 @@ class _ProductSelectionScreenState
       },
     );
 
-    if (widget.onDone != null) return body;
-
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: const GlowAppBar(),
@@ -355,6 +353,20 @@ class _ProductSelectionScreenState
                 ),
               ),
 
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                child: _AddCustomProductCTA(
+                  onTap: () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => const AddCustomProductSheet(),
+                  ),
+                ),
+              ),
+            ),
+
             const SliverToBoxAdapter(child: SizedBox(height: 120)),
           ],
         ),
@@ -389,25 +401,6 @@ class _ProductSelectionScreenState
                   ),
                   const SizedBox(width: 10),
                 ],
-                GestureDetector(
-                  onTap: () => showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => const AddCustomProductSheet(),
-                  ),
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryFixed.withAlpha(153),
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                    child: const Icon(Icons.add_rounded,
-                        color: AppColors.primary, size: 22),
-                  ),
-                ),
-                const SizedBox(width: 10),
                 Expanded(
                   child: PrimaryButton(
                     label: ctaLabel,
@@ -888,234 +881,76 @@ class _TimingPill extends StatelessWidget {
   }
 }
 
-// ── Slot filter ────────────────────────────────────────────────────────────────
+// ── Add Custom Product CTA card ───────────────────────────────────────────────
 
-class _SlotFilter extends StatelessWidget {
-  final Set<String> value;
-  final ValueChanged<Set<String>> onChanged;
-  final Map<String, int>? counts;
-  final AppLocalizations l;
+class _AddCustomProductCTA extends StatelessWidget {
+  final VoidCallback onTap;
 
-  const _SlotFilter({
-    required this.value,
-    required this.onChanged,
-    this.counts,
-    required this.l,
-  });
+  const _AddCustomProductCTA({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final opts = [
-      (key: 'AM', label: l.slotMorning, icon: Icons.wb_sunny_rounded, active: AppColors.primaryContainer),
-      (key: 'PM', label: l.slotEvening, icon: Icons.dark_mode_rounded, active: AppColors.tertiary),
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLow,
-        borderRadius: BorderRadius.circular(9999),
-      ),
-      child: Row(
-        children: opts.map((opt) {
-          final isActive = value.contains(opt.key);
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                if (isActive && value.length > 1) {
-                  onChanged(Set.from(value)..remove(opt.key));
-                } else if (!isActive) {
-                  onChanged(Set.from(value)..add(opt.key));
-                }
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isActive ? opt.active : Colors.transparent,
-                  borderRadius: BorderRadius.circular(9999),
-                  boxShadow: isActive ? AppColors.glowSm : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(opt.icon,
-                        size: 16,
-                        color: isActive ? Colors.white : AppColors.onSurfaceVariant),
-                    const SizedBox(width: 4),
-                    Text(
-                      opt.label,
-                      style: AppTypography.labelMd.copyWith(
-                        color: isActive ? Colors.white : AppColors.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                      ),
-                    ),
-                    if (counts?[opt.key] != null) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? Colors.white.withAlpha(64)
-                              : AppColors.primaryFixed.withAlpha(153),
-                          borderRadius: BorderRadius.circular(9999),
-                        ),
-                        child: Text(
-                          '${counts![opt.key]}',
-                          style: AppTypography.labelSm.copyWith(
-                            color: isActive ? Colors.white : AppColors.primary,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-// ── Category section (summary view) ───────────────────────────────────────────
-
-class _CategorySection extends StatelessWidget {
-  final Category category;
-  final List<MasterProduct> products;
-  final Map<String, Set<Slot>> selMap;
-  final Set<String> slotFilter;
-  final bool isOpen;
-  final int catSelCount;
-  final String categoryUsage;
-  final VoidCallback onToggleOpen;
-  final Future<void> Function(MasterProduct) onToggleProduct;
-  final Future<void> Function(MasterProduct, Slot, bool) onTimingChange;
-  final void Function(MasterProduct)? onEditProduct;
-  final AppLocalizations l;
-
-  const _CategorySection({
-    required this.category,
-    required this.products,
-    required this.selMap,
-    required this.slotFilter,
-    required this.isOpen,
-    required this.catSelCount,
-    required this.categoryUsage,
-    required this.onToggleOpen,
-    required this.onToggleProduct,
-    required this.onTimingChange,
-    this.onEditProduct,
-    required this.l,
-  });
-
-  Set<Slot> _rowSlots(MasterProduct p) => selMap[p.id] ?? {};
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: isOpen
-              ? AppColors.primaryFixed.withAlpha(153)
-              : Colors.transparent,
-        ),
-        boxShadow: isOpen ? AppColors.glowSm : null,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: onToggleOpen,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-              child: Row(
-                children: [
-                  _CategoryGlyph(
-                      categoryId: category.id, size: 40, active: isOpen),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          category.localizedName(l.localeName),
-                          style: AppTypography.labelMd.copyWith(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                            color: AppColors.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (catSelCount > 0) ...[
-                    Container(
-                      constraints: const BoxConstraints(minWidth: 24),
-                      height: 24,
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(9999),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$catSelCount',
-                          style: AppTypography.labelSm.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                  AnimatedRotation(
-                    turns: isOpen ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: const Icon(Icons.expand_more_rounded,
-                        color: AppColors.outline, size: 22),
-                  ),
-                ],
-              ),
-            ),
+    final l = AppLocalizations.of(context)!;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(128),
+          borderRadius: BorderRadius.circular(26),
+          border: Border.all(
+            color: AppColors.primaryFixed,
+            width: 3.0,
           ),
-
-          if (isOpen)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryFixed,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add_rounded,
+                color: AppColors.primary,
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (int i = 0; i < products.length; i++) ...[
-                    if (i > 0) const SizedBox(height: 8),
-                    _SelectRow(
-                      product: products[i],
-                      selectedSlots: _rowSlots(products[i]),
-                      categoryUsage: categoryUsage,
-                      onToggle: () => onToggleProduct(products[i]),
-                      onTimingChange: (slot, enabled) =>
-                          onTimingChange(products[i], slot, enabled),
-                      onEdit: onEditProduct != null
-                          ? () => onEditProduct!(products[i])
-                          : null,
-                      l: l,
+                  Text(
+                    l.addCustomProductCtaTitle,
+                    style: AppTypography.labelMd.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
                     ),
-                  ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l.addCustomProductCtaSub,
+                    style: AppTypography.labelSm.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
-        ],
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.outline,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+

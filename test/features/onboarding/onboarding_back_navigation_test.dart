@@ -210,9 +210,7 @@ Future<void> _advanceToSchedule(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(find.text('המשך'));
   await tester.pumpAndSettle();
-  // Step 3: skip to summary, then continue to schedule
-  await tester.tap(find.text('דלגי לסיכום'));
-  await tester.pumpAndSettle();
+  // Step 3: single category means we're on the last step; CTA is already "המשיכי לתזמון"
   await tester.tap(find.text('המשיכי לתזמון'));
   await tester.pumpAndSettle();
 }

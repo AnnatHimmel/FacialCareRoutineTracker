@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -60,6 +62,62 @@ class GlassBottomNav extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The standard 4-item app navigation bar. Owns the canonical items list so all
+/// call sites stay in sync. Pass [currentIndex] = -1 for screens outside the
+/// main shell (setup flow).
+class AppBottomNav extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onDestinationSelected;
+
+  static const _routes = ['/today', '/products', '/calendar', '/settings'];
+
+  const AppBottomNav({
+    super.key,
+    required this.currentIndex,
+    required this.onDestinationSelected,
+  });
+
+  /// Convenience constructor for setup screens: no active tab, navigates via
+  /// context.go so the shell branch state is not required.
+  static Widget setup(BuildContext context) => AppBottomNav(
+        currentIndex: -1,
+        onDestinationSelected: (i) {
+          if (i < _routes.length) context.go(_routes[i]);
+        },
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return GlassBottomNav(
+      currentIndex: currentIndex,
+      onDestinationSelected: onDestinationSelected,
+      items: [
+        GlassNavItem(
+          icon: Icons.wb_sunny_outlined,
+          selectedIcon: Icons.wb_sunny_rounded,
+          label: l.navToday,
+        ),
+        GlassNavItem(
+          icon: Icons.spa_outlined,
+          selectedIcon: Icons.spa_rounded,
+          label: l.navProducts,
+        ),
+        GlassNavItem(
+          icon: Icons.calendar_today_outlined,
+          selectedIcon: Icons.calendar_today_rounded,
+          label: l.navCalendar,
+        ),
+        GlassNavItem(
+          icon: Icons.settings_outlined,
+          selectedIcon: Icons.settings_rounded,
+          label: l.navSettings,
+        ),
+      ],
     );
   }
 }

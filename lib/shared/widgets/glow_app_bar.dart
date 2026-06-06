@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -70,17 +69,13 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CustomPaint(
-                      painter: _SunLogoPainter(
-                        color: AppColors.primary,
-                        colorLight: AppColors.primaryContainer,
-                      ),
-                    ),
+                  Image.asset(
+                    'assets/images/app_icon_line_art.png',
+                    width: 32,
+                    height: 32,
+                    fit: BoxFit.contain,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 2),
                   Text(
                     'The Glow Protocol',
                     style: AppTypography.headlineMd.copyWith(
@@ -120,50 +115,4 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
-}
-
-/// Stylized sun: hollow ring + 12 alternating long/short pill rays.
-/// Matches the `LeafLogo` SVG in components.jsx (viewBox 0 0 32 32).
-class _SunLogoPainter extends CustomPainter {
-  final Color color;
-  final Color colorLight;
-
-  const _SunLogoPainter({required this.color, required this.colorLight});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final scale = size.width / 32;
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-
-    // Hollow ring center
-    canvas.drawCircle(
-      Offset(cx, cy),
-      6.2 * scale,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.1 * scale
-        ..color = color,
-    );
-
-    // 12 rays, alternating long/short
-    for (int i = 0; i < 12; i++) {
-      final angle = (-90 + i * 30) * (math.pi / 180);
-      final isLong = i % 2 == 0;
-      final r1 = (isLong ? 9.2 : 9.5) * scale;
-      final r2 = (isLong ? 13.6 : 12.2) * scale;
-      canvas.drawLine(
-        Offset(cx + r1 * math.cos(angle), cy + r1 * math.sin(angle)),
-        Offset(cx + r2 * math.cos(angle), cy + r2 * math.sin(angle)),
-        Paint()
-          ..color = isLong ? color : colorLight
-          ..strokeWidth = 1.7 * scale
-          ..strokeCap = StrokeCap.round,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_SunLogoPainter old) =>
-      old.color != color || old.colorLight != colorLight;
 }
