@@ -1,4 +1,0 @@
-# Sensitive files — never read by Claude
-android/key.properties
-*.jks
-*.keystore

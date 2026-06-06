@@ -15,7 +15,7 @@ if (keyPropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.skincareroutine.skincare_tracker"
+    namespace = "com.opengridstudio.theglowprotocol"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.skincareroutine.skincare_tracker"
+        applicationId = "com.opengridstudio.theglowprotocol"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
