@@ -316,6 +316,20 @@ class _ProductSelectionScreenState
               ),
             ),
 
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: Text(
+                  l.productSelListHint,
+                  style: AppTypography.bodyMd.copyWith(
+                    color: AppColors.onSurface,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ),
+
             if (catProducts.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,

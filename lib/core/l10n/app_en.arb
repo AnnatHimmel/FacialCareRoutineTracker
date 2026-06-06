@@ -189,6 +189,7 @@
   },
   "productSelFrequencyLabel": "Recommended frequency: ",
   "productSelTimingLabel": "When?",
+  "productSelListHint": "Tap a product to add it to your list, or add a new product",
   "catHintCleanser1": "Removes makeup and sunscreen — usually in the evening.",
   "catHintCleanser2": "Gentle daily face cleanse.",
   "catHintRetinoid": "Skin renewal — evening only, gradually.",

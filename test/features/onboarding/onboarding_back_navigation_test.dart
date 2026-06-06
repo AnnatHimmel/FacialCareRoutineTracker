@@ -19,7 +19,6 @@ import 'package:skincare_tracker/domain/repositories/master_content_repository.d
 import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
 import 'package:skincare_tracker/features/onboarding/onboarding_screen.dart';
-import 'package:skincare_tracker/features/setup/product_selection_screen.dart';
 import 'package:skincare_tracker/features/setup/schedule_setup_screen.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
 
@@ -141,8 +140,9 @@ MasterContent _masterWith(List<MasterProduct> products, List<Category> cats) =>
     );
 
 /// Router that mirrors the real app structure: `/onboarding` embeds the
-/// product-selection step, which pushes the nested `/products/schedule` route
-/// living inside the shell — exactly as in [appRouter].
+/// product-selection step, whose summary CTA pushes the top-level
+/// `/setup/schedule` route — exactly as in [appRouter] (see
+/// `_continueToSchedule` in [OnboardingScreen], which pushes `/setup/schedule`).
 Widget _wrap({
   required MasterContent master,
   required VoidCallback onFinish,
@@ -159,26 +159,12 @@ Widget _wrap({
         builder: (_, __) =>
             const Scaffold(body: Center(child: Text('TODAY_SCREEN'))),
       ),
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, shell) => Scaffold(body: shell),
-        branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/products',
-                builder: (_, __) =>
-                    const ProductSelectionScreen(isTabDestination: true),
-                routes: [
-                  GoRoute(
-                    path: 'schedule',
-                    builder: (_, __) =>
-                        const ScheduleSetupScreen(fromProducts: true),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
+      // Onboarding pushes `/setup/schedule` (bare, no query) so that the
+      // schedule screen pops with `true` on finish and its back button pops
+      // back to the product-selection step.
+      GoRoute(
+        path: '/setup/schedule',
+        builder: (_, __) => const ScheduleSetupScreen(),
       ),
     ],
   );
@@ -247,8 +233,11 @@ void main() {
 
       // Should land on product selection (its CTA), NOT the onboarding
       // welcome screen, and onboarding must NOT have been finished.
-      expect(find.text('The Glow Protocol'), findsNothing,
-          reason: 'Back must not return to onboarding step 1');
+      // Note: "The Glow Protocol" is the app-wide GlowAppBar wordmark shown on
+      // the product-selection screen too, so it is NOT a reliable step-1 marker.
+      // The start button 'נתחיל?' is unique to the onboarding welcome step.
+      expect(find.text('נתחיל?'), findsNothing,
+          reason: 'Back must not return to onboarding step 1 (welcome)');
       expect(onFinishCalled, isFalse,
           reason: 'Pressing back must not complete onboarding');
       expect(find.text('המשיכי לתזמון'), findsOneWidget,

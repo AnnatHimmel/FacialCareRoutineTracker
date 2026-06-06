@@ -388,6 +388,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productSelTimingLabel => 'When?';
 
   @override
+  String get productSelListHint =>
+      'Tap a product to add it to your list, or add a new product';
+
+  @override
   String get catHintCleanser1 =>
       'Removes makeup and sunscreen — usually in the evening.';
 

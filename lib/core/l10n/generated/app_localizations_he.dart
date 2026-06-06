@@ -387,6 +387,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get productSelTimingLabel => 'מתי?';
 
   @override
+  String get productSelListHint =>
+      'לחצי על מוצר כדי להוסיף לרשימה או הוסיפי מוצר חדש';
+
+  @override
   String get catHintCleanser1 => 'הסרת איפור ומסנני הגנה — לרוב בערב.';
 
   @override
@@ -1220,6 +1224,10 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get productSelContinueToSchedule => 'המשך לתזמון';
+
+  @override
+  String get productSelListHint =>
+      'לחץ על מוצר כדי להוסיף לרשימה או הוסף מוצר חדש';
 
   @override
   String get catHintCleanser1 => 'הסרת איפור ומסנני הגנה — לרוב בערב.';

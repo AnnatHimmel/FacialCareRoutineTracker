@@ -795,6 +795,12 @@ abstract class AppLocalizations {
   /// **'מתי?'**
   String get productSelTimingLabel;
 
+  /// No description provided for @productSelListHint.
+  ///
+  /// In he, this message translates to:
+  /// **'לחצי על מוצר כדי להוסיף לרשימה או הוסיפי מוצר חדש'**
+  String get productSelListHint;
+
   /// No description provided for @catHintCleanser1.
   ///
   /// In he, this message translates to:

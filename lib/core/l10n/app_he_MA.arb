@@ -302,5 +302,6 @@
   "onboardingStartNeutral": "בוא נתחיל",
   "continueActionNeutral": "המשך",
   "addCustomProductCtaTitle": "הוסף מוצר חדש",
-  "addCustomProductCtaSub": "המוצר שלך לא ברשימה?"
+  "addCustomProductCtaSub": "המוצר שלך לא ברשימה?",
+  "productSelListHint": "לחץ על מוצר כדי להוסיף לרשימה או הוסף מוצר חדש"
 }
