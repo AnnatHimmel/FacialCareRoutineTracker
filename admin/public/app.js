@@ -44,7 +44,7 @@ function updateCategoryDropdowns() {
     for (const cat of masterData.categories) {
       const opt = document.createElement('option');
       opt.value = cat.id;
-      opt.textContent = cat.name || cat.id;
+      opt.textContent = locName(cat.name) || cat.id;
       sel.appendChild(opt);
     }
     if (current) sel.value = current;
@@ -54,12 +54,20 @@ function updateCategoryDropdowns() {
 function categoryOptions() {
   return ['<option value="">— בחר קטגוריה —</option>',
     ...masterData.categories.map(c =>
-      `<option value="${esc(c.id)}">${esc(c.name || c.id)}</option>`)
+      `<option value="${esc(c.id)}">${esc(locName(c.name) || c.id)}</option>`)
   ].join('');
 }
 
 function esc(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+}
+
+// Extract the Hebrew (primary) display value from a multilingual {he, en} field,
+// falling back to English or the raw value if it's a plain string.
+function locName(val) {
+  if (!val) return '';
+  if (typeof val === 'object') return val.he || val.en || '';
+  return String(val);
 }
 
 // ─── Product card ──────────────────────────────────────────────────────────
@@ -71,6 +79,14 @@ function renderCard(product) {
 
   const morningCfg = product.morningConfig || null;
   const eveningCfg = product.eveningConfig || null;
+
+  // Support legacy plain-string comment and new multilingual {he, en} object
+  const commentHe = product.comment && typeof product.comment === 'object'
+    ? product.comment.he || ''
+    : (product.comment || '');
+  const commentEn = product.comment && typeof product.comment === 'object'
+    ? product.comment.en || ''
+    : '';
 
   card.innerHTML = `
     <button class="card-delete" title="Remove card">&times;</button>
@@ -91,8 +107,9 @@ function renderCard(product) {
       <select class="cat-select">${categoryOptions()}</select>
     </div>
     <div class="card-field">
-      <label>Comment (Admin Note)</label>
-      <textarea class="f-comment" placeholder="הערה לאדמין">${esc(product.comment || '')}</textarea>
+      <label>Comment</label>
+      <textarea class="f-comment-he" placeholder="הערה (עברית)">${esc(commentHe)}</textarea>
+      <textarea class="f-comment-en" placeholder="Note (English)" style="direction:ltr">${esc(commentEn)}</textarea>
     </div>
 
     <div class="slot-section">
@@ -175,12 +192,15 @@ function readCard(card) {
     return { type: 'weeklyMax', maxPerWeek: parseInt(card.querySelector(`.f-${slot}-freq-max`).value, 10) || 1 };
   }
 
+  const commentHe = card.querySelector('.f-comment-he').value.trim();
+  const commentEn = card.querySelector('.f-comment-en').value.trim();
+
   return {
     id: card.dataset.id,
     name: card.querySelector('.f-name').value.trim(),
     imageAsset: card.querySelector('.f-imageurl').value.trim() || null,
     categoryId: card.querySelector('.cat-select').value || null,
-    comment: card.querySelector('.f-comment').value.trim() || null,
+    comment: (commentHe || commentEn) ? { he: commentHe || null, en: commentEn || null } : null,
     isDeprecated: card.querySelector('.f-deprecated').checked,
     addedInVersion: '1.0.0',
     morningConfig: morningEnabled ? {
@@ -344,7 +364,7 @@ function renderOrderingTab() {
   catList.innerHTML = '';
   const sortedCats = [...masterData.categories].sort((a, b) => (a.order || 0) - (b.order || 0));
   for (const cat of sortedCats) {
-    catList.appendChild(createSortItem(cat.id, cat.name || cat.id));
+    catList.appendChild(createSortItem(cat.id, locName(cat.name) || cat.id));
   }
   makeSortable(catList, syncCategoryOrder);
 
@@ -381,7 +401,7 @@ function renderGroupedSlot(containerId, byCat, sortedCats, slot) {
     const products = byCat[cat.id];
     if (!products || products.length === 0) continue;
     products.sort((a, b) => a.order - b.order);
-    appendCatGroup(container, cat.name || cat.id, cat.id, products, slot);
+    appendCatGroup(container, locName(cat.name) || cat.id, cat.id, products, slot);
   }
 
   const uncatProducts = byCat['uncategorized'];
@@ -440,7 +460,7 @@ function getEntityName(entity) {
     return entity.id;
   } else {
     const c = masterData.categories.find(c => c.id === entity.id);
-    return c ? (c.name || c.id) : entity.id;
+    return c ? (locName(c.name) || c.id) : entity.id;
   }
 }
 
@@ -457,6 +477,7 @@ function renderRules() {
     const nameA = getEntityName(rule.entityA);
     const nameB = getEntityName(rule.entityB);
     const scopeLabel = rule.scope === 'withinSlot' ? 'Same slot' : 'Same day';
+    const reasonText = rule.reason ? locName(rule.reason) : '';
 
     const row = document.createElement('div');
     row.className = 'rule-row';
@@ -465,6 +486,7 @@ function renderRules() {
       <span class="rule-arrow">&#8596;</span>
       <span class="rule-entity rule-entity-${rule.entityB.type}" title="${esc(rule.entityB.type)}: ${esc(rule.entityB.id)}">${esc(nameB)}</span>
       <span class="rule-scope-badge">${esc(scopeLabel)}</span>
+      ${reasonText ? `<span class="rule-reason">${esc(reasonText)}</span>` : ''}
       <span class="rule-id-label">${esc(rule.id)}</span>
       <button class="rule-delete" data-rule-id="${esc(rule.id)}" title="Delete rule">&times;</button>
     `;
@@ -492,7 +514,7 @@ function populateEntitySelector(type, selectEl) {
   selectEl.innerHTML = '';
   const items = type === 'product'
     ? masterData.products.map(p => ({ id: p.id, label: p.name }))
-    : masterData.categories.map(c => ({ id: c.id, label: c.name || c.id }));
+    : masterData.categories.map(c => ({ id: c.id, label: locName(c.name) || c.id }));
   for (const item of items) {
     const opt = document.createElement('option');
     opt.value = item.id;
@@ -508,6 +530,8 @@ function addRule() {
   const bType = document.getElementById('rule-b-type').value;
   const bId = document.getElementById('rule-b-id').value;
   const scope = document.getElementById('rule-scope').value;
+  const reasonHe = document.getElementById('rule-reason-he').value.trim();
+  const reasonEn = document.getElementById('rule-reason-en').value.trim();
 
   if (!aId || !bId) { alert('Please select both entities.'); return; }
   if (aType === bType && aId === bId) { alert('Entities A and B must be different.'); return; }
@@ -523,7 +547,10 @@ function addRule() {
     entityA: { type: aType, id: aId },
     entityB: { type: bType, id: bId },
     scope,
+    ...(reasonHe || reasonEn ? { reason: { he: reasonHe || null, en: reasonEn || null } } : {}),
   });
+  document.getElementById('rule-reason-he').value = '';
+  document.getElementById('rule-reason-en').value = '';
   renderRules();
 }
 
@@ -537,16 +564,19 @@ document.getElementById('add-category-btn').addEventListener('click', () => {
 
 document.getElementById('add-category-confirm').addEventListener('click', () => {
   const idInput = document.getElementById('new-cat-id');
-  const nameInput = document.getElementById('new-cat-name');
+  const nameHeInput = document.getElementById('new-cat-name-he');
+  const nameEnInput = document.getElementById('new-cat-name-en');
   const id = idInput.value.trim();
-  const name = nameInput.value.trim();
-  if (!id || !name) { alert('Both ID and name are required'); return; }
+  const nameHe = nameHeInput.value.trim();
+  const nameEn = nameEnInput.value.trim();
+  if (!id || !nameHe) { alert('ID and Hebrew name are required'); return; }
   const maxOrder = masterData.categories.reduce((m, c) => Math.max(m, c.order || 0), 0);
-  masterData.categories.push({ id, name, order: maxOrder + 1 });
+  masterData.categories.push({ id, name: { he: nameHe, en: nameEn || null }, order: maxOrder + 1 });
   updateCategoryDropdowns();
   updateRuleEntitySelectors();
   idInput.value = '';
-  nameInput.value = '';
+  nameHeInput.value = '';
+  nameEnInput.value = '';
   document.getElementById('add-category-form').style.display = 'none';
 });
 

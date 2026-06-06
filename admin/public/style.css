@@ -513,6 +513,36 @@ body {
 
 .rule-delete:hover { color: #dc3545; }
 
+.rule-reason {
+  font-size: 12px;
+  color: #555;
+  font-style: italic;
+  flex-basis: 100%;
+  padding: 2px 4px;
+}
+
+.rule-reason-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-basis: 100%;
+}
+
+.rule-reason-fields label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.rule-reason-fields textarea {
+  padding: 5px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  height: 44px;
+  resize: vertical;
+}
+
 .rules-footer {
   padding-top: 8px;
 }

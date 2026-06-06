@@ -16,7 +16,10 @@
       "name": "Generic Cleansing Gel",
       "imageAsset": "assets/images/products/generic_cleansing_gel.jpg",
       "categoryId": "cat-cleanser-step2",
-      "comment": {"he":"ג'ל ניקוי פנים עדין על בסיס מים לניקוי יסודי של העור, הסרת שאריות לכלוך ורענון מבלי לייבש","en":"Gentle water-based facial cleansing gel for thorough cleansing, removing dirt residue and refreshing without drying"},
+      "comment": {
+        "he": "ג'ל ניקוי פנים עדין על בסיס מים לניקוי יסודי של העור, הסרת שאריות לכלוך ורענון מבלי לייבש",
+        "en": "Gentle water-based facial cleansing gel for thorough cleansing, removing dirt residue and refreshing without drying"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": null,
@@ -32,14 +35,16 @@
       "name": "Beauty of Joseon Relief Sun: Rice + Probiotics",
       "imageAsset": "assets/images/products/prod-007.jpg",
       "categoryId": "cat-spf",
-      "comment": {"he":"קרם הגנה קוריאני קל ומרגיע עם אורז ופרוביוטיקה, SPF50+ PA+++","en":"Lightweight, soothing Korean sunscreen with rice and probiotics, SPF50+ PA+++"},
+      "comment": {
+        "he": "קרם הגנה קוריאני קל ומרגיע עם אורז ופרוביוטיקה, SPF50+ PA+++",
+        "en": "Lightweight, soothing Korean sunscreen with rice and probiotics, SPF50+ PA+++"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
         "order": 20,
         "frequency": {
-          "type": "weeklyMax",
-          "maxPerWeek": 3
+          "type": "daily"
         }
       },
       "eveningConfig": null
@@ -49,7 +54,10 @@
       "name": "Heimish All Clean Balm",
       "imageAsset": "assets/images/products/heimish_all_clean_balm.jpg",
       "categoryId": "cat-cleanser-step1",
-      "comment": {"he":"באלם ניקוי להסרת איפור ומסנני הגנה","en":"Cleansing balm for removing makeup and sunscreen"},
+      "comment": {
+        "he": "באלם ניקוי להסרת איפור ומסנני הגנה",
+        "en": "Cleansing balm for removing makeup and sunscreen"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": null,
@@ -65,7 +73,10 @@
       "name": "Heimish All Clean Green Foam",
       "imageAsset": "assets/images/products/heimish_all_clean_green_foam.jpg",
       "categoryId": "cat-cleanser-step2",
-      "comment": {"he":"סבון פנים עדין ומאזן לחומציות מומלצת","en":"Gentle, pH-balancing facial cleanser"},
+      "comment": {
+        "he": "סבון פנים עדין ומאזן לחומציות מומלצת",
+        "en": "Gentle, pH-balancing facial cleanser"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": null,
@@ -81,7 +92,10 @@
       "name": "MarulaLab Anti-Aging Marula Oil",
       "imageAsset": "assets/images/products/marulalab_marula_oil.jpg",
       "categoryId": "cat-oil",
-      "comment": {"he":"שמן מרולה טהור להזנה מוגברת ואנטי אייג'ינג","en":"Pure marula oil for intensive nourishment and anti-aging"},
+      "comment": {
+        "he": "שמן מרולה טהור להזנה מוגברת ואנטי אייג'ינג",
+        "en": "Pure marula oil for intensive nourishment and anti-aging"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": null,
@@ -97,7 +111,10 @@
       "name": "ILLIYOON Ceramide Ato Concentrate Cream",
       "imageAsset": "assets/images/products/illiyoon_ceramide_ato_cream.jpg",
       "categoryId": "cat-moisturizer",
-      "comment": {"he":"קרם לחות עשיר בסרמידים לשיקום והרגעת מחסום העור","en":"Ceramide-rich moisturizer for repairing and soothing the skin barrier"},
+      "comment": {
+        "he": "קרם לחות עשיר בסרמידים לשיקום והרגעת מחסום העור",
+        "en": "Ceramide-rich moisturizer for repairing and soothing the skin barrier"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -118,7 +135,10 @@
       "name": "Purito SEOUL Daily Soft Touch Sunscreen",
       "imageAsset": "assets/images/products/purito_seoul_soft_touch_sunscreen.jpg",
       "categoryId": "cat-spf",
-      "comment": {"he":"קרם הגנה לחותי במרקם קל ונעים לשימוש יומיומי","en":"Moisturizing sunscreen with a light, pleasant texture for daily use"},
+      "comment": {
+        "he": "קרם הגנה לחותי במרקם קל ונעים לשימוש יומיומי",
+        "en": "Moisturizing sunscreen with a light, pleasant texture for daily use"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -134,7 +154,10 @@
       "name": "AXIS-Y Heartleaf My-Type Calming Cream",
       "imageAsset": "assets/images/products/axis_y_heartleaf_calming_cream.jpg",
       "categoryId": "cat-moisturizer",
-      "comment": {"he":"קרם לחות קליל ומרגיע עם הארטליף להפחתת אדמומיות","en":"Light, calming moisturizer with heartleaf extract to reduce redness"},
+      "comment": {
+        "he": "קרם לחות קליל ומרגיע עם הארטליף להפחתת אדמומיות",
+        "en": "Light, calming moisturizer with heartleaf extract to reduce redness"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -155,7 +178,10 @@
       "name": "iUNIK Tea Tree Relief Serum",
       "imageAsset": "assets/images/products/iunik_tea_tree_relief_serum.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"סרום עץ התה להרגעה, איזון והפחתת פגמים בעור","en":"Tea tree serum for soothing, balancing, and reducing blemishes"},
+      "comment": {
+        "he": "סרום עץ התה להרגעה, איזון והפחתת פגמים בעור",
+        "en": "Tea tree serum for soothing, balancing, and reducing blemishes"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -176,7 +202,10 @@
       "name": "S.NATURE Aqua Squalane Moisturizing Cream",
       "imageAsset": "assets/images/products/snature_aqua_squalane_cream.jpg",
       "categoryId": "cat-moisturizer",
-      "comment": {"he":"קרם לחות עשיר בסקוואלן להזנה, ריכוך ושמירה על לחות העור","en":"Squalane-rich moisturizer for nourishing, softening, and maintaining skin hydration"},
+      "comment": {
+        "he": "קרם לחות עשיר בסקוואלן להזנה, ריכוך ושמירה על לחות העור",
+        "en": "Squalane-rich moisturizer for nourishing, softening, and maintaining skin hydration"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -197,7 +226,10 @@
       "name": "Beauty of Joseon Light On Serum Centella + Vita C",
       "imageAsset": "assets/images/products/beauty_of_joseon_light_on_serum.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"סרום ויטמין C וסנטלה להבהרה, האחדת גוון העור והגנה אנטיאוקסידנטית","en":"Vitamin C and centella serum for brightening, evening skin tone, and antioxidant protection"},
+      "comment": {
+        "he": "סרום ויטמין C וסנטלה להבהרה, האחדת גוון העור והגנה אנטיאוקסידנטית",
+        "en": "Vitamin C and centella serum for brightening, evening skin tone, and antioxidant protection"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -213,7 +245,10 @@
       "name": "Isntree Hyper Acid 4 AHA BHA PHA LHA 30 Serum",
       "imageAsset": "assets/images/products/isntree_hyper_acid_30_serum.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"סרום פילינג עוצמתי המשלב 4 חומצות לחידוש מרקם העור, ניקוי נקבוביות והבהרה","en":"Powerful exfoliating serum combining 4 acids for skin texture renewal, pore cleansing, and brightening"},
+      "comment": {
+        "he": "סרום פילינג עוצמתי המשלב 4 חומצות לחידוש מרקם העור, ניקוי נקבוביות והבהרה",
+        "en": "Powerful exfoliating serum combining 4 acids for skin texture renewal, pore cleansing, and brightening"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": null,
@@ -230,7 +265,10 @@
       "name": "Dr.Jart+ Cicapair Intensive Soothing Repair Treatment Lotion",
       "imageAsset": "assets/images/products/dr_jart_cicapair_treatment_lotion.jpg",
       "categoryId": "cat-moisturizer",
-      "comment": {"he":"תחליב טיפולי אינטנסיבי להרגעה מהירה, שיקום מחסום העור והפחתת אדמומיות עם קומפלקס סינטלה","en":"Intensive treatment lotion for rapid soothing, skin barrier repair, and redness reduction with centella complex"},
+      "comment": {
+        "he": "תחליב טיפולי אינטנסיבי להרגעה מהירה, שיקום מחסום העור והפחתת אדמומיות עם קומפלקס סינטלה",
+        "en": "Intensive treatment lotion for rapid soothing, skin barrier repair, and redness reduction with centella complex"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -251,7 +289,10 @@
       "name": "Beauty of Joseon Relief Sun Aqua Fresh Rice+B5",
       "imageAsset": "assets/images/products/beauty_of_joseon_relief_sun_aqua_fresh.jpg",
       "categoryId": "cat-spf",
-      "comment": {"he":"קרם הגנה קליל במרקם קל ומרענן, מועשר באורז וויטמין B5 להגנה ולחות מוגברת","en":"Lightweight, refreshing sunscreen enriched with rice and vitamin B5 for protection and enhanced hydration"},
+      "comment": {
+        "he": "קרם הגנה קליל במרקם קל ומרענן, מועשר באורז וויטמין B5 להגנה ולחות מוגברת",
+        "en": "Lightweight, refreshing sunscreen enriched with rice and vitamin B5 for protection and enhanced hydration"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -267,7 +308,10 @@
       "name": "Kisocare Azelaic Acid Cream 20%",
       "imageAsset": "assets/images/products/kisocare_azelaic_acid_cream_20.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"קרם טיפולי פעיל בריכוז 20% חומצה אזלאית להבהרת כתמים, טיפול בפגמי עור ושיפור מרקם העור","en":"Active treatment cream with 20% azelaic acid for brightening dark spots, treating blemishes, and improving skin texture"},
+      "comment": {
+        "he": "קרם טיפולי פעיל בריכוז 20% חומצה אזלאית להבהרת כתמים, טיפול בפגמי עור ושיפור מרקם העור",
+        "en": "Active treatment cream with 20% azelaic acid for brightening dark spots, treating blemishes, and improving skin texture"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -288,7 +332,10 @@
       "name": "JUMISO Niacinamide 20 Serum",
       "imageAsset": "assets/images/products/jumiso_niacinamide_20_serum.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"סרום פעיל בריכוז 20% ניאצינמיד להבהרה, איזון סבום, כיווץ נקבוביות ושיפור מרקם העור","en":"Active serum with 20% niacinamide for brightening, sebum control, pore minimizing, and skin texture improvement"},
+      "comment": {
+        "he": "סרום פעיל בריכוז 20% ניאצינמיד להבהרה, איזון סבום, כיווץ נקבוביות ושיפור מרקם העור",
+        "en": "Active serum with 20% niacinamide for brightening, sebum control, pore minimizing, and skin texture improvement"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -309,7 +356,10 @@
       "name": "PURCELL 88B/mL L-Glutathione Flexible Liposome",
       "imageAsset": "assets/images/products/purcell_l_glutathione_liposome.jpg",
       "categoryId": "cat-toner",
-      "comment": {"he":"סרום אנטיאוקסידנטי מתקדם עם גלוטתיון ליפוזומלי להבהרה, הגנה מפני רדיקלים חופשיים והאחדת גוון העור","en":"Advanced antioxidant serum with liposomal glutathione for brightening, free radical protection, and evening skin tone"},
+      "comment": {
+        "he": "סרום אנטיאוקסידנטי מתקדם עם גלוטתיון ליפוזומלי להבהרה, הגנה מפני רדיקלים חופשיים והאחדת גוון העור",
+        "en": "Advanced antioxidant serum with liposomal glutathione for brightening, free radical protection, and evening skin tone"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -330,7 +380,10 @@
       "name": "Cos De BAHA T15 Serum",
       "imageAsset": "assets/images/products/cos_de_baha_t15_serum.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"סרום טיפולי פעיל בריכוז 15% חומצה טרנקסמית להבהרת פיגמנטציה, טיפול בכתמי עור עקשניים והאחדת גוון העור","en":"Active treatment serum with 15% tranexamic acid for fading pigmentation, treating stubborn dark spots, and evening skin tone"},
+      "comment": {
+        "he": "סרום טיפולי פעיל בריכוז 15% חומצה טרנקסמית להבהרת פיגמנטציה, טיפול בכתמי עור עקשניים והאחדת גוון העור",
+        "en": "Active treatment serum with 15% tranexamic acid for fading pigmentation, treating stubborn dark spots, and evening skin tone"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -351,7 +404,10 @@
       "name": "Genabelle PDRN 3% Hyper Boost Ampoule",
       "imageAsset": "assets/images/products/genabelle_pdrn_hyper_boost_ampoule.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"אמפולה טיפולית מרוכזת עם 3% PDRN לשיקום עמוק, שיפור אלסטיות העור, עידוד התחדשות התאים וחיזוק מחסום העור","en":"Concentrated treatment ampoule with 3% PDRN for deep repair, improving skin elasticity, stimulating cell renewal, and strengthening the skin barrier"},
+      "comment": {
+        "he": "אמפולה טיפולית מרוכזת עם 3% PDRN לשיקום עמוק, שיפור אלסטיות העור, עידוד התחדשות התאים וחיזוק מחסום העור",
+        "en": "Concentrated treatment ampoule with 3% PDRN for deep repair, improving skin elasticity, stimulating cell renewal, and strengthening the skin barrier"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -372,7 +428,10 @@
       "name": "DERMA E Acne Blemish Control Treatment Serum",
       "imageAsset": "assets/images/products/derma_e_acne_blemish_control_serum.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"סרום טיפולי לעור מעורב עד שמן, מסייע במניעה וטיפול בפגמי עור, ניקוי נקבוביות והאיזון בלוטות החלב","en":"Treatment serum for combination to oily skin; helps prevent and treat blemishes, cleanse pores, and balance sebaceous glands"},
+      "comment": {
+        "he": "סרום טיפולי לעור מעורב עד שמן, מסייע במניעה וטיפול בפגמי עור, ניקוי נקבוביות והאיזון בלוטות החלב",
+        "en": "Treatment serum for combination to oily skin; helps prevent and treat blemishes, cleanse pores, and balance sebaceous glands"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": null,
@@ -389,7 +448,10 @@
       "name": "Cos De BAHA AZ15 Serum",
       "imageAsset": "assets/images/products/cos_de_baha_az15_serum.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"סרום טיפולי המכיל 15% חומצה אזלאית להרגעת אדמומיות, טיפול בדלקתיות ועור מגורה, והבהרת פגמי עור","en":"Treatment serum with 15% azelaic acid for calming redness, treating inflammation and irritated skin, and brightening blemishes"},
+      "comment": {
+        "he": "סרום טיפולי המכיל 15% חומצה אזלאית להרגעת אדמומיות, טיפול בדלקתיות ועור מגורה, והבהרת פגמי עור",
+        "en": "Treatment serum with 15% azelaic acid for calming redness, treating inflammation and irritated skin, and brightening blemishes"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -410,7 +472,10 @@
       "name": "boben Ectoin Moisturizing Soothing Sensitivity Repair Cream",
       "imageAsset": "assets/images/products/boben_ectoin_sensitivity_repair_cream.jpg",
       "categoryId": "cat-moisturizer",
-      "comment": {"he":"קרם לחות טיפולי משקם להרגעת עור רגיש ומגורה, חיזוק מחסום העור והפחתת רגישות בעזרת אקטואין","en":"Restorative treatment moisturizer for soothing sensitive and irritated skin, strengthening the skin barrier, and reducing sensitivity with ectoin"},
+      "comment": {
+        "he": "קרם לחות טיפולי משקם להרגעת עור רגיש ומגורה, חיזוק מחסום העור והפחתת רגישות בעזרת אקטואין",
+        "en": "Restorative treatment moisturizer for soothing sensitive and irritated skin, strengthening the skin barrier, and reducing sensitivity with ectoin"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -431,7 +496,10 @@
       "name": "I'm from Rice Toner",
       "imageAsset": "assets/images/products/im_from_rice_toner.jpg",
       "categoryId": "cat-toner",
-      "comment": {"he":"טונר אורז עשיר להזנה אינטנסיבית, הבהרה, והענקת מראה חיוני וקורן לעור","en":"Rich rice toner for intensive nourishment, brightening, and a healthy, radiant complexion"},
+      "comment": {
+        "he": "טונר אורז עשיר להזנה אינטנסיבית, הבהרה, והענקת מראה חיוני וקורן לעור",
+        "en": "Rich rice toner for intensive nourishment, brightening, and a healthy, radiant complexion"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -452,7 +520,10 @@
       "name": "By Wishtrend Vitamin A-mazing Bakuchiol Night Cream",
       "imageAsset": "assets/images/products/by_wishtrend_vitamin_amazing_bakuchiol_cream.jpg",
       "categoryId": "cat-retinoid",
-      "comment": {"he":"קרם לילה טיפולי המשלב רטינאל ובקוצ'יול לחידוש אינטנסיבי של תאי העור, טשטוש קמטוטים ושיפור מוצקות העור ללא גירוי","en":"Treatment night cream combining retinal and bakuchiol for intensive skin cell renewal, softening fine lines, and improving firmness without irritation"},
+      "comment": {
+        "he": "קרם לילה טיפולי המשלב רטינאל ובקוצ'יול לחידוש אינטנסיבי של תאי העור, טשטוש קמטוטים ושיפור מוצקות העור ללא גירוי",
+        "en": "Treatment night cream combining retinal and bakuchiol for intensive skin cell renewal, softening fine lines, and improving firmness without irritation"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": null,
@@ -468,7 +539,10 @@
       "name": "Anua Niacinamide 10% + TXA 4% Serum",
       "imageAsset": "assets/images/products/anua_niacinamide_txa_serum.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"סרום מתקדם המשלב 10% ניאצינמיד ו-4% חומצה טרנקסמית להבהרה עוצמתית של פיגמנטציה, טשטוש כתמים כהים והאחדת גוון העור","en":"Advanced serum combining 10% niacinamide and 4% tranexamic acid for powerful pigmentation brightening, fading dark spots, and evening skin tone"},
+      "comment": {
+        "he": "סרום מתקדם המשלב 10% ניאצינמיד ו-4% חומצה טרנקסמית להבהרה עוצמתית של פיגמנטציה, טשטוש כתמים כהים והאחדת גוון העור",
+        "en": "Advanced serum combining 10% niacinamide and 4% tranexamic acid for powerful pigmentation brightening, fading dark spots, and evening skin tone"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -489,7 +563,10 @@
       "name": "Beauty of Joseon Dynasty Cream",
       "imageAsset": "assets/images/products/beauty_of_joseon_dynasty_cream.jpg",
       "categoryId": "cat-moisturizer",
-      "comment": {"he":"קרם לחות עשיר ומזין המבוסס על רכיבים קוריאניים מסורתיים להזנה עמוקה, הבהרה וחיזוק מחסום הלחות של העור","en":"Rich, nourishing moisturizer based on traditional Korean ingredients for deep nourishment, brightening, and strengthening the skin's moisture barrier"},
+      "comment": {
+        "he": "קרם לחות עשיר ומזין המבוסס על רכיבים קוריאניים מסורתיים להזנה עמוקה, הבהרה וחיזוק מחסום הלחות של העור",
+        "en": "Rich, nourishing moisturizer based on traditional Korean ingredients for deep nourishment, brightening, and strengthening the skin's moisture barrier"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -510,7 +587,10 @@
       "name": "Medicube Deep Vita A Retinol Serum",
       "imageAsset": "assets/images/products/medicube_deep_vita_a_retinol_serum.jpg",
       "categoryId": "cat-retinoid",
-      "comment": {"he":"סרום אנטי-אייג'ינג מרוכז עם רטינול (ויטמין A) המסייע בצמצום מראה קמטים, מיצוק העור, שיפור האלסטיות וחידוש המרקם יחד עם הזנה עמוקה","en":"Concentrated anti-aging serum with retinol (Vitamin A) that helps reduce the appearance of wrinkles, firm the skin, improve elasticity, and renew texture with deep nourishment"},
+      "comment": {
+        "he": "סרום אנטי-אייג'ינג מרוכז עם רטינול (ויטמין A) המסייע בצמצום מראה קמטים, מיצוק העור, שיפור האלסטיות וחידוש המרקם יחד עם הזנה עמוקה",
+        "en": "Concentrated anti-aging serum with retinol (Vitamin A) that helps reduce the appearance of wrinkles, firm the skin, improve elasticity, and renew texture with deep nourishment"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": null,
@@ -526,7 +606,10 @@
       "name": "haruharu wonder Black Rice Moisture Airyfit Sunscreen",
       "imageAsset": "assets/images/products/haruharu_wonder_black_rice_airyfit_sunscreen.jpg",
       "categoryId": "cat-spf",
-      "comment": {"he":"קרם הגנה קליל במרקם אוורירי, מועשר בתמצית אורז שחור מותסס להגנה גבוהה מפני השמש והזנת העור בנוגדי חמצון","en":"Lightweight sunscreen with an airy texture, enriched with fermented black rice extract for high UV protection and antioxidant skin nourishment"},
+      "comment": {
+        "he": "קרם הגנה קליל במרקם אוורירי, מועשר בתמצית אורז שחור מותסס להגנה גבוהה מפני השמש והזנת העור בנוגדי חמצון",
+        "en": "Lightweight sunscreen with an airy texture, enriched with fermented black rice extract for high UV protection and antioxidant skin nourishment"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -542,7 +625,10 @@
       "name": "Beauty of Joseon Glow Replenishing Rice Milk",
       "imageAsset": "assets/images/products/beauty_of_joseon_glow_replenishing_rice_milk.jpg",
       "categoryId": "cat-toner",
-      "comment": {"he":"טונר חלבי מזין המבוסס על תמצית אורז להענקת לחות עמוקה, ריכוך מרקם העור ומראה קורן וגלוסי","en":"Nourishing milky toner based on rice extract for deep hydration, skin texture softening, and a radiant, glossy complexion"},
+      "comment": {
+        "he": "טונר חלבי מזין המבוסס על תמצית אורז להענקת לחות עמוקה, ריכוך מרקם העור ומראה קורן וגלוסי",
+        "en": "Nourishing milky toner based on rice extract for deep hydration, skin texture softening, and a radiant, glossy complexion"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -563,7 +649,10 @@
       "name": "Beauty of Joseon Revive Eye Serum Ginseng + Retinal",
       "imageAsset": "assets/images/products/beauty_of_joseon_revive_eye_serum.jpg",
       "categoryId": "cat-retinoid",
-      "comment": {"he":"סרום עיניים טיפולי המשלב רטינאל וג'ינסנג לחידוש עדין של עור העיניים, הפחתת מראה קמטוטים ושיפור האלסטיות","en":"Treatment eye serum combining retinal and ginseng for gentle renewal of the eye area, reducing the appearance of fine lines, and improving elasticity"},
+      "comment": {
+        "he": "סרום עיניים טיפולי המשלב רטינאל וג'ינסנג לחידוש עדין של עור העיניים, הפחתת מראה קמטוטים ושיפור האלסטיות",
+        "en": "Treatment eye serum combining retinal and ginseng for gentle renewal of the eye area, reducing the appearance of fine lines, and improving elasticity"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": null,
@@ -579,7 +668,10 @@
       "name": "COSRX The 6 Peptide Skin Booster",
       "imageAsset": "assets/images/products/cosrx_the_6_peptide_skin_booster.jpg",
       "categoryId": "cat-toner",
-      "comment": {"he":"סרום-בוסטר קליל המשלב 6 סוגי פפטידים לשיפור גמישות העור, החלקת מרקם העור, הבהרה והכנת העור לספיגה מיטבית של השלבים הבאים בשגרה","en":"Lightweight serum booster combining 6 types of peptides for improving skin flexibility, smoothing texture, brightening, and preparing skin for optimal absorption of subsequent routine steps"},
+      "comment": {
+        "he": "סרום-בוסטר קליל המשלב 6 סוגי פפטידים לשיפור גמישות העור, החלקת מרקם העור, הבהרה והכנת העור לספיגה מיטבית של השלבים הבאים בשגרה",
+        "en": "Lightweight serum booster combining 6 types of peptides for improving skin flexibility, smoothing texture, brightening, and preparing skin for optimal absorption of subsequent routine steps"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -600,7 +692,10 @@
       "name": "medicube PDRN Pink Peptide Serum",
       "imageAsset": "assets/images/products/medicube_pdrn_pink_peptide_serum.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"סרום אנטי-אייג'ינג מתקדם המשלב PDRN וקומפלקס פפטידים לשיפור מוצקות וצפיפות העור, הבהרת גוון העור והענקת מראה חיוני וקורן","en":"Advanced anti-aging serum combining PDRN and peptide complex for improving skin firmness and density, brightening skin tone, and a vibrant, radiant appearance"},
+      "comment": {
+        "he": "סרום אנטי-אייג'ינג מתקדם המשלב PDRN וקומפלקס פפטידים לשיפור מוצקות וצפיפות העור, הבהרת גוון העור והענקת מראה חיוני וקורן",
+        "en": "Advanced anti-aging serum combining PDRN and peptide complex for improving skin firmness and density, brightening skin tone, and a vibrant, radiant appearance"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {
@@ -621,7 +716,10 @@
       "name": "THE ORDINARY Argireline Solution 10%",
       "imageAsset": "assets/images/products/the_ordinary_argireline_solution_10.jpg",
       "categoryId": "cat-serum",
-      "comment": {"he":"תמיסת פפטידים מרוכזת המכילה 10% ארגירלין, המיועדת לטיפול ממוקד במראה קמטי הבעה דינמיים וקמטוטים באזורי המצח ומסביב לעיניים","en":"Concentrated peptide solution containing 10% argireline, designed for targeted treatment of dynamic expression lines and fine wrinkles around the forehead and eyes"},
+      "comment": {
+        "he": "תמיסת פפטידים מרוכזת המכילה 10% ארגירלין, המיועדת לטיפול ממוקד במראה קמטי הבעה דינמיים וקמטוטים באזורי המצח ומסביב לעיניים",
+        "en": "Concentrated peptide solution containing 10% argireline, designed for targeted treatment of dynamic expression lines and fine wrinkles around the forehead and eyes"
+      },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
       "morningConfig": {

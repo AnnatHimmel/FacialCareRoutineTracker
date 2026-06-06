@@ -30,7 +30,8 @@
           <button id="add-category-btn">+ Add Category</button>
           <div id="add-category-form">
             <input id="new-cat-id" type="text" placeholder="Category ID (e.g. cat-toner)">
-            <input id="new-cat-name" type="text" placeholder="Hebrew name (e.g. טונר)">
+            <input id="new-cat-name-he" type="text" placeholder="שם עברי (לדוגמא: טונר)">
+            <input id="new-cat-name-en" type="text" dir="ltr" placeholder="English name (e.g. Toner)">
             <button id="add-category-confirm">Add</button>
           </div>
         </section>
@@ -90,6 +91,11 @@
                 <option value="withinSlot">Within same slot</option>
                 <option value="sameDayAcrossBoth">Same day (across both slots)</option>
               </select>
+            </div>
+            <div class="rule-reason-fields">
+              <label>Reason (optional)</label>
+              <textarea id="rule-reason-he" placeholder="סיבה (עברית)" rows="2"></textarea>
+              <textarea id="rule-reason-en" placeholder="Reason (English)" dir="ltr" style="direction:ltr" rows="2"></textarea>
             </div>
             <button id="add-rule-btn">+ Add Rule</button>
           </div>
