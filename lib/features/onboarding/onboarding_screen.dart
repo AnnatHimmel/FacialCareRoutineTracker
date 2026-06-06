@@ -47,16 +47,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _handleFinish() async {
     try {
       final settings = ref.read(settingsRepositoryProvider);
-      if (_name.trim().isNotEmpty) {
-        await settings.setUserName(_name.trim());
-      }
-      if (_gender != null) {
-        await settings.setUserGender(_gender!);
-        if (ref.read(appLocaleProvider).languageCode != 'en') {
-          ref.read(appLocaleProvider.notifier).state =
-              _gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
+      // Save name and gender independently so a failure in one does not
+      // prevent onboarding_completed from being written below.
+      try {
+        if (_name.trim().isNotEmpty) {
+          await settings.setUserName(_name.trim());
         }
-      }
+        if (_gender != null) {
+          await settings.setUserGender(_gender!);
+          if (ref.read(appLocaleProvider).languageCode != 'en') {
+            ref.read(appLocaleProvider.notifier).state =
+                _gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
+          }
+        }
+      } catch (_) {}
+      // Always mark onboarding done — if this is skipped the app re-routes to
+      // onboarding on every cold start, losing all previously entered data.
       await settings.setOnboardingCompleted(true);
     } catch (_) {
       // Repository may not be available in tests; always proceed.

@@ -234,7 +234,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutTitle.
   ///
   /// In he, this message translates to:
-  /// **'אודות / מה חדש'**
+  /// **'אודות'**
   String get aboutTitle;
 
   /// No description provided for @updateReviewTitle.
@@ -1152,7 +1152,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAbout.
   ///
   /// In he, this message translates to:
-  /// **'אודות ומה חדש'**
+  /// **'אודות'**
   String get settingsAbout;
 
   /// No description provided for @settingsAboutSubtitle.

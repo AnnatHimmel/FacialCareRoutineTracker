@@ -15,6 +15,7 @@ class AboutScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
+    final appVersion = ref.watch(appVersionProvider).valueOrNull ?? '—';
     final masterAsync = ref.watch(masterContentProvider);
 
     return Scaffold(
@@ -24,7 +25,6 @@ class AboutScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (master) {
-          final manifest = master.manifest;
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
@@ -61,7 +61,7 @@ class AboutScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        l.aboutVersionLabel(manifest.appVersion),
+                        l.aboutVersionLabel(appVersion),
                         style: AppTypography.labelMd.copyWith(
                           color: AppColors.secondary,
                         ),
@@ -86,7 +86,7 @@ class AboutScreen extends ConsumerWidget {
                 ),
               ),
 
-              for (final entry in manifest.changelog) ...[
+              for (final entry in master.manifest.changelog) ...[
                 _ChangelogCard(entry: entry),
                 const SizedBox(height: 16),
               ],

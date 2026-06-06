@@ -224,4 +224,90 @@ void main() {
       expect(await repo.getUserGender(), equals('male'));
     });
   });
+
+  // ── SettingsRepositoryImpl — app language ─────────────────────────────────
+
+  group('SettingsRepositoryImpl — app language', () {
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test('getAppLanguage() returns he by default', () async {
+      final repo = SettingsRepositoryImpl();
+      expect(await repo.getAppLanguage(), equals('he'));
+    });
+
+    test('setAppLanguage() persists value and getAppLanguage() returns it',
+        () async {
+      final repo = SettingsRepositoryImpl();
+      await repo.setAppLanguage('en');
+      expect(await repo.getAppLanguage(), equals('en'));
+    });
+
+    test('app_language persists across two SettingsRepositoryImpl instances',
+        () async {
+      final writer = SettingsRepositoryImpl();
+      await writer.setAppLanguage('en');
+      final reader = SettingsRepositoryImpl();
+      expect(await reader.getAppLanguage(), equals('en'));
+    });
+
+    test('clearUserProfile() preserves app_language', () async {
+      /// Given: language and user profile are both set
+      final repo = SettingsRepositoryImpl();
+      await repo.setAppLanguage('en');
+      await repo.setUserName('Anna');
+      await repo.setUserGender('female');
+      await repo.setOnboardingCompleted(true);
+
+      /// When: profile is cleared (e.g. logout)
+      await repo.clearUserProfile();
+
+      /// Then: language is still there, profile fields are gone
+      expect(await repo.getAppLanguage(), equals('en'));
+      expect(await repo.getUserName(), isNull);
+      expect(await repo.getUserGender(), isNull);
+      expect(await repo.getOnboardingCompleted(), isFalse);
+    });
+  });
+
+  // ── SettingsRepositoryImpl — upgrade survival ─────────────────────────────
+
+  group('SettingsRepositoryImpl — upgrade survival', () {
+    test(
+        'user name, language, gender and onboarding flag survive a simulated app upgrade',
+        () async {
+      /// Given: SharedPreferences pre-populated as if written by a previous
+      /// version of the app (simulates an APK upgrade where OS preserves data)
+      SharedPreferences.setMockInitialValues({
+        'user_name': 'Anna',
+        'app_language': 'he',
+        'user_gender': 'female',
+        'onboarding_completed': true,
+      });
+
+      /// When: a fresh SettingsRepositoryImpl is created (new app version)
+      final repo = SettingsRepositoryImpl();
+
+      /// Then: all settings are intact
+      expect(await repo.getUserName(), equals('Anna'));
+      expect(await repo.getAppLanguage(), equals('he'));
+      expect(await repo.getUserGender(), equals('female'));
+      expect(await repo.getOnboardingCompleted(), isTrue);
+    });
+
+    test('English language survives upgrade', () async {
+      SharedPreferences.setMockInitialValues({
+        'user_name': 'Bob',
+        'app_language': 'en',
+        'user_gender': 'male',
+        'onboarding_completed': true,
+      });
+
+      final repo = SettingsRepositoryImpl();
+
+      expect(await repo.getUserName(), equals('Bob'));
+      expect(await repo.getAppLanguage(), equals('en'));
+      expect(await repo.getUserGender(), equals('male'));
+      expect(await repo.getOnboardingCompleted(), isTrue);
+    });
+  });
 }

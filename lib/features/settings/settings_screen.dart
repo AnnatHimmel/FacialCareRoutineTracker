@@ -25,8 +25,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
-    final masterAsync = ref.watch(masterContentProvider);
-    final appVersion = masterAsync.valueOrNull?.manifest.appVersion ?? '—';
+    final appVersion = ref.watch(appVersionProvider).valueOrNull ?? '—';
     final profileAsync = ref.watch(_userProfileProvider);
 
     return Scaffold(
@@ -78,13 +77,6 @@ class SettingsScreen extends ConsumerWidget {
             label: l.settingsAbout,
             subtitle: l.settingsAboutSubtitle(appVersion),
             onTap: () => context.push('/about'),
-          ),
-          const SizedBox(height: 12),
-          _SettingsRow(
-            icon: Icons.system_update_outlined,
-            label: l.settingsCheckUpdates,
-            subtitle: l.settingsCheckUpdatesSubtitle,
-            onTap: () => context.push('/update-review'),
           ),
 
           if (kIsWeb) ...[

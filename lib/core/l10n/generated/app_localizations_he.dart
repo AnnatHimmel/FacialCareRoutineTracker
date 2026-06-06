@@ -77,7 +77,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get importMerge => 'מיזוג';
 
   @override
-  String get aboutTitle => 'אודות / מה חדש';
+  String get aboutTitle => 'אודות';
 
   @override
   String get updateReviewTitle => 'עדכון הושלם';
@@ -590,7 +590,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get settingsSectionInfo => 'מידע';
 
   @override
-  String get settingsAbout => 'אודות ומה חדש';
+  String get settingsAbout => 'אודות';
 
   @override
   String settingsAboutSubtitle(Object version) {

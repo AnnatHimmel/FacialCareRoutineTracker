@@ -92,6 +92,19 @@ class _FakeUDR implements UserDataRepository {
 }
 
 class _FakeSettings implements SettingsRepository {
+  /// When true, setUserName/setUserGender throw — simulating a transient
+  /// persistence failure. The regression guard for the bug where a throw here
+  /// skipped setOnboardingCompleted() and re-routed the user to onboarding on
+  /// every cold start.
+  final bool failOnProfileSave;
+  _FakeSettings({this.failOnProfileSave = false});
+
+  /// Records what was actually persisted, so tests assert on the side effect
+  /// (the saved flag) rather than only on the navigation callback.
+  bool? onboardingCompletedValue;
+  String? savedName;
+  String? savedGender;
+
   @override Future<String?> getLastExportDate() async => null;
   @override Future<void> setLastExportDate(String d) async {}
   @override Future<String?> getLastKnownMasterVersion() async => null;
@@ -100,12 +113,21 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setUserSchemaVersion(int v) async {}
   @override Future<int> getLongestStreak() async => 0;
   @override Future<void> setLongestStreak(int s) async {}
-  @override Future<bool> getOnboardingCompleted() async => false;
-  @override Future<void> setOnboardingCompleted(bool v) async {}
-  @override Future<String?> getUserName() async => null;
-  @override Future<void> setUserName(String n) async {}
-  @override Future<String?> getUserGender() async => null;
-  @override Future<void> setUserGender(String g) async {}
+  @override Future<bool> getOnboardingCompleted() async =>
+      onboardingCompletedValue ?? false;
+  @override Future<void> setOnboardingCompleted(bool v) async {
+    onboardingCompletedValue = v;
+  }
+  @override Future<String?> getUserName() async => savedName;
+  @override Future<void> setUserName(String n) async {
+    if (failOnProfileSave) throw Exception('simulated name save failure');
+    savedName = n;
+  }
+  @override Future<String?> getUserGender() async => savedGender;
+  @override Future<void> setUserGender(String g) async {
+    if (failOnProfileSave) throw Exception('simulated gender save failure');
+    savedGender = g;
+  }
   @override Future<void> clearUserProfile() async {}
   @override Future<String> getRoutineViewMode() async => 'images';
   @override Future<void> setRoutineViewMode(String m) async {}
@@ -165,6 +187,7 @@ class _AutoPopScreenState extends State<_AutoPopScreen> {
 Widget _wrap({
   required MasterContent master,
   required VoidCallback onFinish,
+  _FakeSettings? settings,
 }) {
   final router = GoRouter(
     initialLocation: '/',
@@ -174,7 +197,7 @@ Widget _wrap({
         builder: (_, __) => OnboardingScreen(onFinish: onFinish),
       ),
       GoRoute(
-        path: '/products/schedule',
+        path: '/setup/schedule',
         builder: (_, __) => const _AutoPopScreen(),
       ),
     ],
@@ -183,7 +206,8 @@ Widget _wrap({
     overrides: [
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
       userDataRepositoryProvider.overrideWithValue(_FakeUDR()),
-      settingsRepositoryProvider.overrideWithValue(_FakeSettings()),
+      settingsRepositoryProvider
+          .overrideWithValue(settings ?? _FakeSettings()),
     ],
     child: MaterialApp.router(
       routerConfig: router,
@@ -566,6 +590,55 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _handleFinish async continuation
 
+      expect(onFinishCalled, isTrue);
+    });
+
+    // Regression: a transient failure saving name/gender must NOT prevent
+    // onboarding_completed from being persisted. Before the fix, all saves
+    // shared one try/catch, so a throw in setUserName skipped
+    // setOnboardingCompleted(true) → the app re-routed to onboarding on every
+    // cold start and the user appeared to "lose" their name and language.
+    testWidgets(
+        'onboarding_completed is still persisted when name/gender save throws',
+        (tester) async {
+      final master = _masterWith(
+        [_product('p1', 'קרם לחות', 'cat1')],
+        [cat1],
+      );
+
+      final settings = _FakeSettings(failOnProfileSave: true);
+      bool onFinishCalled = false;
+
+      await tester.pumpWidget(_wrap(
+        master: master,
+        onFinish: () => onFinishCalled = true,
+        settings: settings,
+      ));
+      await tester.pumpAndSettle();
+
+      await _selectHebrew(tester);
+
+      await tester.tap(find.text('נתחיל?'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'שמי');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('נקבה'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('המשך'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('המשיכי לתזמון'));
+      await tester.pumpAndSettle();
+      await tester.pump(Duration.zero); // flush _handleFinish async continuation
+
+      // The critical assertion is on the PERSISTED side effect, not just the
+      // navigation callback: onboarding must be marked complete even though the
+      // profile-field saves threw.
+      expect(settings.onboardingCompletedValue, isTrue,
+          reason:
+              'setOnboardingCompleted(true) must run even when profile saves fail');
       expect(onFinishCalled, isTrue);
     });
   });

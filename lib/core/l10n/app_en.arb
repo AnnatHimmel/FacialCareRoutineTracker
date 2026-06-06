@@ -28,7 +28,7 @@
   "importAction": "Import",
   "importReplace": "Replace",
   "importMerge": "Merge",
-  "aboutTitle": "About / What's New",
+  "aboutTitle": "About",
   "updateReviewTitle": "Update Complete",
   "backupReminderMessage": "Back up your data",
   "backupAction": "Backup",
@@ -280,7 +280,7 @@
   "settingsSectionData": "Data",
   "settingsExportSubtitle": "Local data backup",
   "settingsSectionInfo": "Info",
-  "settingsAbout": "About & What's New",
+  "settingsAbout": "About",
   "settingsAboutSubtitle": "Version {version} • Changelog",
   "@settingsAboutSubtitle": {
     "placeholders": {

@@ -77,7 +77,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importMerge => 'Merge';
 
   @override
-  String get aboutTitle => 'About / What\'s New';
+  String get aboutTitle => 'About';
 
   @override
   String get updateReviewTitle => 'Update Complete';
@@ -597,7 +597,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionInfo => 'Info';
 
   @override
-  String get settingsAbout => 'About & What\'s New';
+  String get settingsAbout => 'About';
 
   @override
   String settingsAboutSubtitle(Object version) {

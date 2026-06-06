@@ -44,7 +44,8 @@
       "morningConfig": {
         "order": 20,
         "frequency": {
-          "type": "daily"
+          "type": "weeklyMax",
+          "maxPerWeek": 3
         }
       },
       "eveningConfig": null

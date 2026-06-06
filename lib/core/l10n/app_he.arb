@@ -28,7 +28,7 @@
   "importAction": "ייבא",
   "importReplace": "החלפה",
   "importMerge": "מיזוג",
-  "aboutTitle": "אודות / מה חדש",
+  "aboutTitle": "אודות",
   "updateReviewTitle": "עדכון הושלם",
   "backupReminderMessage": "גבי את הנתונים שלך",
   "backupAction": "גיבוי",
@@ -280,7 +280,7 @@
   "settingsSectionData": "נתונים",
   "settingsExportSubtitle": "גיבוי מקומי של הנתונים",
   "settingsSectionInfo": "מידע",
-  "settingsAbout": "אודות ומה חדש",
+  "settingsAbout": "אודות",
   "settingsAboutSubtitle": "גרסה {version} • יומן שינויים",
   "@settingsAboutSubtitle": {
     "placeholders": {
