@@ -8,6 +8,14 @@ Persists architectural and implementation decisions across task contexts. Each a
 
 ## Decisions
 
+### MOD-DEC-SUP-001: Supabase Remote Product Database
+**Date**: 2026-06-15
+**Request**: Replace bundled JSON master product list with live Supabase (PostgreSQL + Storage) data source, fetched on S1 entry and cached locally. Product `name` field split into `brand` + `name`.
+**Decision**: Add `RemoteCachedMasterContentRepositoryImpl` that composes: (1) `SupabaseMasterContentDataSource` (single RPC call), (2) `SharedPrefsMasterContentCache` (JSON string in SharedPreferences), (3) `MasterContentRepositoryImpl` as bundled first-launch fallback. `MasterProduct` entity gains `brand: String?`. `ProductThumb` gains HTTPS URL branch using `cached_network_image`.
+**Rationale**: Offline-first preserved — network never blocks load; cache outlasts sessions; bundled JSON is permanent fallback. Single RPC avoids 4 round-trips. Existing `MasterContentRepository` interface unchanged.
+**Alternatives Rejected**: Static file hosting (no admin CRUD UI for images); 4 separate table fetches (extra latency); replacing bundled JSON (loses first-launch offline).
+**Affects Files**: `MasterProduct`, `MasterContentRepositoryImpl`, `ProductThumb`, `root_providers.dart`, `main.dart`, `product_selection_screen.dart`, 8 new files.
+
 ### Flutter / Dart
 
 #### DEC-001: State Management — Riverpod 2.x

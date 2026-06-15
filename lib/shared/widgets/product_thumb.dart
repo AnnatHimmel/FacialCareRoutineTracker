@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
@@ -34,6 +35,24 @@ class ProductThumb extends ConsumerWidget {
             : _fallback(),
         loading: _fallback,
         error: (_, _) => _fallback(),
+      );
+    } else if (asset != null &&
+        (asset.startsWith('https://') || asset.startsWith('http://'))) {
+      final localFilename = asset.split('/').last;
+      final localAsset = 'assets/images/products/$localFilename';
+      child = CachedNetworkImage(
+        imageUrl: asset,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        placeholder: (_, __) => Image.asset(
+          localAsset,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _fallback(),
+        ),
+        errorWidget: (_, __, ___) => _fallback(),
       );
     } else if (asset != null) {
       child = Image.asset(

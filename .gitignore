@@ -49,4 +49,7 @@ app.*.map.json
 *.jks
 *.keystore
 
+# Supabase credentials — never commit
+credentials.json
+
 claude-workspace.code-workspace

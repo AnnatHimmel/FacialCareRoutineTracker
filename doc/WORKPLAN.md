@@ -42,6 +42,26 @@ Total Tasks: 35 + 6 MOD tasks (Admin Portal)
 **Files**: `admin/test/scrapers.test.js`
 **Status**: ✅ Written — pending first run (requires Node.js install on dev machine)
 
+### MOD-SUP-001: Add `brand` field to `MasterProduct` + update bundled JSON — ✅ DONE
+**Description**: Add `brand: String?` to `MasterProduct` entity (with `==`, `hashCode`, `copyWith` updates). Split all 33 product names in `assets/data/master_products.json` into `brand` + `name`.
+**Files**: `lib/domain/entities/master_product.dart`, `assets/data/master_products.json`
+
+### MOD-SUP-002: `MasterContentSerializer` + `MasterContent ==` — ✅ DONE
+**Description**: Extract parsing methods from `MasterContentRepositoryImpl` into `MasterContentSerializer` (static class). Add `fromCombinedJson()` (Supabase RPC format) and `toJson()` (for cache). Add `==`/`hashCode` to `MasterContent`. Update bundled impl to delegate parsing and parse `brand`.
+**Files**: `lib/data/cache/master_content_serializer.dart` (new), `lib/domain/repositories/master_content_repository.dart`, `lib/data/bundled/master_content_repository_impl.dart`
+
+### MOD-SUP-003: Cache layer — ✅ DONE
+**Description**: `MasterContentCache` abstract interface + `SharedPrefsMasterContentCache` impl.
+**Files**: `lib/data/cache/master_content_cache.dart` (new), `lib/data/cache/shared_prefs_master_content_cache.dart` (new)
+
+### MOD-SUP-004: Remote data source + composed repository — ✅ DONE
+**Description**: `RemoteContentDataSource` interface, `SupabaseMasterContentDataSource` impl (single RPC), `RemoteCachedMasterContentRepositoryImpl` composing all three. Add `RefreshableRepository` interface and `SupabaseConfig`.
+**Files**: `lib/core/config/supabase_config.dart` (new), `lib/domain/repositories/refreshable_repository.dart` (new), `lib/data/remote/remote_content_data_source.dart` (new), `lib/data/remote/supabase_master_content_data_source.dart` (new), `lib/data/remote_cached/remote_cached_master_content_repository_impl.dart` (new)
+
+### MOD-SUP-005: ProductThumb HTTPS + provider wiring + S1 refresh — ✅ DONE
+**Description**: Add HTTPS URL branch to `ProductThumb` (using `cached_network_image`). Add `supabase_flutter` and `cached_network_image` to pubspec. Update `root_providers.dart` to use `RemoteCachedMasterContentRepositoryImpl` + add `masterContentRefreshProvider`. Update `main.dart` with `Supabase.initialize()`. Update `product_selection_screen.dart` to trigger refresh in `initState`.
+**Files**: `lib/shared/widgets/product_thumb.dart`, `pubspec.yaml`, `lib/shared/providers/root_providers.dart`, `lib/main.dart`, `lib/features/setup/product_selection_screen.dart`
+
 ---
 
 ## Overview

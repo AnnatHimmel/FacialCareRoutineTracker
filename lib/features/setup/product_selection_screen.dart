@@ -92,6 +92,8 @@ class _ProductSelectionScreenState
     _searchController.addListener(() {
       setState(() => _searchQuery = _searchController.text);
     });
+    // Fire-and-forget background fetch; silently updates cache if network available.
+    ref.read(masterContentRefreshProvider)();
   }
 
   @override

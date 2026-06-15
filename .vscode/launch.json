@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "skincare_tracker (debug)",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "--dart-define-from-file=credentials.json"
+      ]
+    },
+    {
+      "name": "skincare_tracker (release APK)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "args": [
+        "--dart-define-from-file=credentials.json"
+      ]
+    },
+    {
+      "name": "skincare_tracker (web)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "args": [
+        "--dart-define-from-file=credentials.json"
+      ]
+    }
+  ]
+}

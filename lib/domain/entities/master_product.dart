@@ -52,6 +52,7 @@ class SlotConfig {
 @immutable
 class MasterProduct {
   final String id;
+  final String? brand;
   final String name;
   final String? imageAsset;
   final String? comment;
@@ -64,6 +65,7 @@ class MasterProduct {
 
   const MasterProduct({
     required this.id,
+    this.brand,
     required this.name,
     this.imageAsset,
     this.comment,
@@ -82,6 +84,7 @@ class MasterProduct {
   bool operator ==(Object other) =>
       other is MasterProduct &&
       other.id == id &&
+      other.brand == brand &&
       other.name == name &&
       other.imageAsset == imageAsset &&
       other.comment == comment &&
@@ -98,6 +101,7 @@ class MasterProduct {
   @override
   int get hashCode => Object.hash(
         id,
+        brand,
         name,
         imageAsset,
         comment,
@@ -111,6 +115,7 @@ class MasterProduct {
 
   MasterProduct copyWith({
     String? id,
+    Object? brand = _sentinel,
     String? name,
     String? imageAsset,
     String? comment,
@@ -123,6 +128,7 @@ class MasterProduct {
   }) =>
       MasterProduct(
         id: id ?? this.id,
+        brand: brand == _sentinel ? this.brand : brand as String?,
         name: name ?? this.name,
         imageAsset: imageAsset ?? this.imageAsset,
         comment: comment ?? this.comment,
@@ -134,3 +140,5 @@ class MasterProduct {
         addedInVersion: addedInVersion ?? this.addedInVersion,
       );
 }
+
+const _sentinel = Object();

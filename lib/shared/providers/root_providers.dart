@@ -2,8 +2,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/material.dart' show Locale;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/bundled/master_content_repository_impl.dart';
+import '../../data/cache/shared_prefs_master_content_cache.dart';
 import '../../data/local/database/app_database.dart';
+import '../../data/remote/supabase_master_content_data_source.dart';
+import '../../data/remote_cached/remote_cached_master_content_repository_impl.dart';
 import '../../data/local/photo_storage/photo_repository_android.dart';
 import '../../data/local/photo_storage/photo_repository_web.dart';
 import '../../data/local/preferences/settings_repository_impl.dart';
@@ -15,6 +19,7 @@ import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../domain/repositories/photo_repository.dart';
+import '../../domain/repositories/refreshable_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/repositories/user_data_repository.dart';
 import '../../domain/services/day_boundary_service.dart';
@@ -33,8 +38,27 @@ final appDatabaseProvider = Provider<AppDatabase>(
 // ── Repositories ─────────────────────────────────────────────────────────────
 
 final masterContentRepositoryProvider = Provider<MasterContentRepository>(
-  (ref) => MasterContentRepositoryImpl(),
+  (ref) => RemoteCachedMasterContentRepositoryImpl(
+    bundled: MasterContentRepositoryImpl(),
+    remote: SupabaseMasterContentDataSource(Supabase.instance.client),
+    cache: SharedPrefsMasterContentCache(),
+  ),
 );
+
+/// Returns a callback that triggers a background remote refresh and
+/// invalidates [masterContentProvider] when fresh data arrives.
+/// In tests that override [masterContentRepositoryProvider] with a fake
+/// that does not implement [RefreshableRepository], returns a no-op.
+final masterContentRefreshProvider = Provider<Future<void> Function()>((ref) {
+  final repo = ref.watch(masterContentRepositoryProvider);
+  if (repo is RefreshableRepository) {
+    return () async {
+      await (repo as RefreshableRepository).refresh();
+      ref.invalidate(masterContentProvider);
+    };
+  }
+  return () async {};
+});
 
 final userDataRepositoryProvider = Provider<UserDataRepository>(
   (ref) => UserDataRepositoryImpl(ref.watch(appDatabaseProvider)),
