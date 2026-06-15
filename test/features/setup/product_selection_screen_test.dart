@@ -463,4 +463,234 @@ void main() {
       expect(find.byType(GlassBottomNav), findsNothing);
     });
   });
+
+  // ── Browse mode (isTabDestination: true) ─────────────────────────────────────
+
+  group('ProductSelectionScreen — browse mode renders', () {
+    testWidgets('shows search field when isTabDestination', (tester) async {
+      final master =
+          _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextField), findsOneWidget);
+    });
+
+    testWidgets('shows slot filter chips in browse mode', (tester) async {
+      final master =
+          _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      // All three chips should be present
+      expect(find.text('הכל'), findsOneWidget);
+      expect(find.text('בוקר'), findsOneWidget);
+      expect(find.text('ערב'), findsOneWidget);
+    });
+
+    testWidgets('all products across multiple categories visible at once',
+        (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם לחות', 'cat-serum'),
+        _amProduct('p2', 'קרם הגנה', 'cat-spf'),
+      ], [cat1, cat2]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      // Both products visible at once (no step-by-step)
+      expect(find.text('קרם לחות'), findsOneWidget);
+      expect(find.text('קרם הגנה'), findsOneWidget);
+    });
+
+    testWidgets('guided step-by-step view is NOT shown when isTabDestination',
+        (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם', 'cat-serum'),
+        _amProduct('p2', 'הגנה', 'cat-spf'),
+      ], [cat1, cat2]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      // Progress bar is only rendered in guided mode — should be absent
+      expect(find.text('המשיכי לתזמון'), findsNothing);
+      expect(find.text('דלגי על השלב'), findsNothing);
+    });
+
+    testWidgets('add custom product CTA is visible in browse mode',
+        (tester) async {
+      final master =
+          _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      expect(find.text('הוסיפי מוצר חדש'), findsOneWidget);
+    });
+  });
+
+  group('ProductSelectionScreen — browse mode search', () {
+    testWidgets('search query filters products by name', (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם לחות', 'cat-serum'),
+        _amProduct('p2', 'קרם הגנה', 'cat-spf'),
+        _amProduct('p3', 'שמן ורדים', 'cat-serum'),
+      ], [cat1, cat2]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'קרם');
+      await tester.pumpAndSettle();
+
+      expect(find.text('קרם לחות'), findsOneWidget);
+      expect(find.text('קרם הגנה'), findsOneWidget);
+      expect(find.text('שמן ורדים'), findsNothing);
+    });
+
+    testWidgets('search is case-insensitive for Latin brand names',
+        (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'CeraVe Cleanser', 'cat-serum'),
+        _amProduct('p2', 'קרם לחות', 'cat-serum'),
+      ], [cat1]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'cerave');
+      await tester.pumpAndSettle();
+
+      expect(find.text('CeraVe Cleanser'), findsOneWidget);
+      expect(find.text('קרם לחות'), findsNothing);
+    });
+
+    testWidgets('empty search shows all products', (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם לחות', 'cat-serum'),
+        _amProduct('p2', 'קרם הגנה', 'cat-spf'),
+      ], [cat1, cat2]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'קרם');
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), '');
+      await tester.pumpAndSettle();
+
+      expect(find.text('קרם לחות'), findsOneWidget);
+      expect(find.text('קרם הגנה'), findsOneWidget);
+    });
+
+    testWidgets('no-match search shows empty state', (tester) async {
+      final master =
+          _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'xxxxxx');
+      await tester.pumpAndSettle();
+
+      expect(find.text('קרם'), findsNothing);
+    });
+  });
+
+  group('ProductSelectionScreen — browse mode slot filter', () {
+    testWidgets('morning filter hides evening-only products', (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם בוקר', 'cat-serum'),   // morning only
+        _pmProduct('p2', 'קרם לילה', 'cat-serum'),   // evening only
+        _flexProduct('p3', 'קרם גמיש', 'cat-serum'), // both slots
+      ], [cat1]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      // Tap the "בוקר" chip
+      await tester.tap(find.text('בוקר'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('קרם בוקר'), findsOneWidget);
+      expect(find.text('קרם גמיש'), findsOneWidget);
+      expect(find.text('קרם לילה'), findsNothing);
+    });
+
+    testWidgets('evening filter hides morning-only products', (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם בוקר', 'cat-serum'),
+        _pmProduct('p2', 'קרם לילה', 'cat-serum'),
+        _flexProduct('p3', 'קרם גמיש', 'cat-serum'),
+      ], [cat1]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('ערב'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('קרם לילה'), findsOneWidget);
+      expect(find.text('קרם גמיש'), findsOneWidget);
+      expect(find.text('קרם בוקר'), findsNothing);
+    });
+
+    testWidgets('tapping active morning chip again returns to "all"',
+        (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם בוקר', 'cat-serum'),
+        _pmProduct('p2', 'קרם לילה', 'cat-serum'),
+      ], [cat1]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('בוקר'));
+      await tester.pumpAndSettle();
+      expect(find.text('קרם לילה'), findsNothing);
+
+      // Tap "בוקר" again → toggle off → back to all
+      await tester.tap(find.text('בוקר'));
+      await tester.pumpAndSettle();
+      expect(find.text('קרם לילה'), findsOneWidget);
+    });
+
+    testWidgets('deprecated products are hidden in browse mode', (tester) async {
+      final deprecated = MasterProduct(
+        id: 'p_old',
+        name: 'מוצר ישן',
+        categoryId: 'cat-serum',
+        isDeprecated: true,
+        addedInVersion: '1.0.0',
+        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+      );
+      final master = _masterWith([
+        _amProduct('p1', 'קרם טוב', 'cat-serum'),
+        deprecated,
+      ], [cat1]);
+
+      await tester.pumpWidget(
+          _wrap(master: master, isTabDestination: true));
+      await tester.pumpAndSettle();
+
+      expect(find.text('קרם טוב'), findsOneWidget);
+      expect(find.text('מוצר ישן'), findsNothing);
+    });
+  });
 }
