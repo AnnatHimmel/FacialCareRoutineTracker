@@ -322,7 +322,7 @@ class _ProductSelectionScreenState
                 child: Text(
                   l.productSelListHint,
                   style: AppTypography.bodyMd.copyWith(
-                    color: AppColors.onSurface,
+                    color: AppColors.primary,
                     fontSize: 12,
                     height: 1.5,
                   ),
