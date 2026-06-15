@@ -417,6 +417,7 @@ User requests Export
 | RTL / i18n | `flutter_localizations` + `intl` + ARB files | Hebrew locale (`he`); `Directionality.rtl` at root |
 | Typography | `google_fonts` | Quicksand + Plus Jakarta Sans; both available on Google Fonts; offline-cached in build |
 | Preferences | `shared_preferences` | Key-value settings (last export date, schema version, master version) |
+| Barcode Scanning | `mobile_scanner ^5.2.3` | Camera-based barcode/QR scan for product lookup; Android only (guarded by `kIsWeb`); requires `CAMERA` permission in `AndroidManifest.xml` |
 | Testing | `flutter_test` + `mockito` + `drift` test utilities | Unit tests for domain services; widget tests for key screens |
 
 ---
@@ -468,9 +469,11 @@ User requests Export
 ### Navigation Structure
 
 ```
-Bottom Navigation (RTL-mirrored):
-  [היום / Today S4] [יומן / Calendar S6] [עור / Skin S9] [הגדרות / Settings S11]
+Bottom Navigation (RTL-mirrored, 4 tabs):
+  [היום / Today S4] [המוצרים שלי / My Products S1-browse] [יומן / Calendar S6] [הגדרות / Settings S11]
 ```
+
+Note: The Skin Journal (S9) is not a bottom-nav tab. It is accessible from Calendar (S6) and from the skin-log icon on S4. The second tab is My Products — the browse view of `ProductSelectionScreen(isTabDestination: true)`.
 
 ### Shared Widget Contracts
 
@@ -584,9 +587,11 @@ skincare_tracker/
 │   │
 │   ├── features/
 │   │   ├── setup/
-│   │   │   ├── selection/               # S1 — Product Selection
-│   │   │   ├── schedule/                # S2 — Schedule Setup
-│   │   │   └── ordering/               # S3 — Order Customization
+│   │   │   ├── product_selection_screen.dart  # S1 guided + S1b browse tab (isTabDestination)
+│   │   │   ├── barcode_scan_sheet.dart        # Camera barcode scanner modal (Android only)
+│   │   │   ├── add_custom_product_sheet.dart  # Add/edit custom product
+│   │   │   ├── schedule/                      # S2 — Schedule Setup
+│   │   │   └── ordering/                      # S3 — Order Customization
 │   │   ├── daily_home/                  # S4 — Daily Home + S10 Streak widget
 │   │   ├── history/
 │   │   │   ├── calendar/               # S6 — Calendar

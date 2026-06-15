@@ -1076,6 +1076,31 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get addCustomProductCtaSub => 'המוצר שלך לא ברשימה?';
+
+  @override
+  String get myProductsSearchHint => 'חיפוש מוצרים...';
+
+  @override
+  String get barcodeScan => 'סריקת ברקוד';
+
+  @override
+  String get barcodeScanHint => 'כוונו את המצלמה לברקוד שעל האריזה';
+
+  @override
+  String get barcodeScanFound => 'ברקוד זוהה';
+
+  @override
+  String get barcodeScanLookingUp =>
+      'חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסיפי ידנית לעת עתה';
+
+  @override
+  String get barcodeScanAddManually => 'הוסיפי ידנית';
+
+  @override
+  String get barcodeScanRetry => 'סריקה חוזרת';
+
+  @override
+  String get barcodeScanPermissionDenied => 'נדרשת הרשאת מצלמה לסריקת ברקודים';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -1700,4 +1725,29 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get addCustomProductCtaSub => 'המוצר שלך לא ברשימה?';
+
+  @override
+  String get myProductsSearchHint => 'חיפוש מוצרים...';
+
+  @override
+  String get barcodeScan => 'סריקת ברקוד';
+
+  @override
+  String get barcodeScanHint => 'כוון את המצלמה לברקוד שעל האריזה';
+
+  @override
+  String get barcodeScanFound => 'ברקוד זוהה';
+
+  @override
+  String get barcodeScanLookingUp =>
+      'חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסף ידנית לעת עתה';
+
+  @override
+  String get barcodeScanAddManually => 'הוסף ידנית';
+
+  @override
+  String get barcodeScanRetry => 'סריקה חוזרת';
+
+  @override
+  String get barcodeScanPermissionDenied => 'נדרשת הרשאת מצלמה לסריקת ברקודים';
 }

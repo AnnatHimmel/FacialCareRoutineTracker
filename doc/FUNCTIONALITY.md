@@ -73,9 +73,12 @@ The Admin authors content at **build time** (bundled data, not a runtime UI). Th
 ## 6. Core Features (Priority Order)
 
 ### Setup & Personalization
-1. **Product Selection (UC-4, S1):** User selects which master products they own, per slot (Morning/Evening), organized by category. Daily incompatibility conflicts surface here with mutable soft warnings.
-2. **Schedule Setup (UC-5, S2):** For "max N/week" products, user assigns specific weekdays (Sunday-first toggles). Soft over-cap warning; day-dependent incompatibility conflicts surface here.
-3. **Order Customization (UC-6, S3):** Optional drag-to-reorder within a slot. "Reset to recommended order" action. Personal override stored locally.
+1. **Product Selection (UC-4, S1 — setup wizard):** Step-by-step per-category flow for first-time setup. User marks owned products per slot (Morning/Evening). Daily incompatibility conflicts surface here with mutable soft warnings.
+2. **My Products Tab (S1b — browse mode):** Persistent bottom-nav tab (`/products`). Flat searchable product list grouped by category. Search bar + slot filter chips (All / Morning / Evening). Same toggle/timing controls as S1. Selected-count badge. "Add custom product" CTA at bottom. Barcode scan FAB on Android.
+3. **Barcode Scan (S1c — Android only):** Camera-based barcode scanner bottom sheet. Detects any barcode/QR on product packaging. Product lookup is **deferred** — detected barcode transitions directly to the Add Custom Product sheet for now. No image is stored; camera access is session-scoped. Requires `CAMERA` permission.
+4. **Custom Products:** User can add their own products (name, slot, timing) via the Add Custom Product sheet, accessible from S1, S1b, and post-barcode-scan. Custom products are stored locally, not in the admin master list.
+5. **Schedule Setup (UC-5, S2):** For "max N/week" products, user assigns specific weekdays (Sunday-first toggles). Soft over-cap warning; day-dependent incompatibility conflicts surface here.
+6. **Order Customization (UC-6, S3):** Optional drag-to-reorder within a slot. "Reset to recommended order" action. Personal override stored locally.
 
 ### Daily Use
 4. **Daily Home / Today's Routine (UC-8, UC-9, S4):** Primary screen. Shows today's Morning + Evening resolved routine (all daily products + occasional products scheduled today), in effective order. Users optionally record each product as "done" — reversible, never required. 6am day boundary governs which day it's credited to.
@@ -162,7 +165,7 @@ A standalone local web app (`admin/`) that the admin runs on their machine to bu
 - **Premium-readiness (for v1.0 data model):** Local data structured so a full dataset can be serialized/restored as a unit; records carry stable IDs and last-modified metadata. Free-product behavior must never depend on any backend.
 - **No reminders/push notifications** in v1.0.
 - **No multiple user profiles** on a single device.
-- **No user-authored products** — users only select from the admin's master list.
+- **Custom products are local only** — users may add their own products via the Add Custom Product sheet; these are stored only on-device and are not part of the admin master list. Custom products are not subject to incompatibility rules or frequency validation.
 - **Design system:** "Radiant Dew" — warm golden-hour aesthetic; soft minimalism + glassmorphism; Quicksand + Plus Jakarta Sans (both must render Hebrew well); pill buttons, extreme roundness; cream surface (#FFF8F6); primary Vibrant Peach (#9E412C).
 
 ---

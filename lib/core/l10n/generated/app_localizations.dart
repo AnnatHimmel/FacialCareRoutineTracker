@@ -2030,6 +2030,54 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'המוצר שלך לא ברשימה?'**
   String get addCustomProductCtaSub;
+
+  /// No description provided for @myProductsSearchHint.
+  ///
+  /// In he, this message translates to:
+  /// **'חיפוש מוצרים...'**
+  String get myProductsSearchHint;
+
+  /// No description provided for @barcodeScan.
+  ///
+  /// In he, this message translates to:
+  /// **'סריקת ברקוד'**
+  String get barcodeScan;
+
+  /// No description provided for @barcodeScanHint.
+  ///
+  /// In he, this message translates to:
+  /// **'כוונו את המצלמה לברקוד שעל האריזה'**
+  String get barcodeScanHint;
+
+  /// No description provided for @barcodeScanFound.
+  ///
+  /// In he, this message translates to:
+  /// **'ברקוד זוהה'**
+  String get barcodeScanFound;
+
+  /// No description provided for @barcodeScanLookingUp.
+  ///
+  /// In he, this message translates to:
+  /// **'חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסיפי ידנית לעת עתה'**
+  String get barcodeScanLookingUp;
+
+  /// No description provided for @barcodeScanAddManually.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסיפי ידנית'**
+  String get barcodeScanAddManually;
+
+  /// No description provided for @barcodeScanRetry.
+  ///
+  /// In he, this message translates to:
+  /// **'סריקה חוזרת'**
+  String get barcodeScanRetry;
+
+  /// No description provided for @barcodeScanPermissionDenied.
+  ///
+  /// In he, this message translates to:
+  /// **'נדרשת הרשאת מצלמה לסריקת ברקודים'**
+  String get barcodeScanPermissionDenied;
 }
 
 class _AppLocalizationsDelegate

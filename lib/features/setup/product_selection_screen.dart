@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +17,7 @@ import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/product_thumb.dart';
 import 'add_custom_product_sheet.dart';
+import 'barcode_scan_sheet.dart';
 
 const _uuid = Uuid();
 
@@ -76,7 +78,27 @@ class ProductSelectionScreen extends ConsumerStatefulWidget {
 
 class _ProductSelectionScreenState
     extends ConsumerState<ProductSelectionScreen> {
+  // Guided flow state
   int _catStep = 0;
+
+  // Browse view state
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  Slot? _slotFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _searchQuery = _searchController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _goToSchedule(BuildContext context) {
     if (widget.fromSetup) {
@@ -180,13 +202,21 @@ class _ProductSelectionScreenState
     );
   }
 
+  void _showBarcodeScan(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const BarcodeScanSheet(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
     final morningAsync = ref.watch(selectionsProvider(Slot.morning));
     final eveningAsync = ref.watch(selectionsProvider(Slot.evening));
-
     final customAsync = ref.watch(customProductsProvider);
 
     final body = masterAsync.when(
@@ -204,7 +234,12 @@ class _ProductSelectionScreenState
           ...customProds.map((p) => p.toMasterProduct()),
         ];
 
-        return _buildGuided(context, allProducts, categories, selMap, morning, evening, l);
+        if (widget.isTabDestination) {
+          return _buildBrowse(
+              context, allProducts, categories, selMap, morning, evening, l);
+        }
+        return _buildGuided(
+            context, allProducts, categories, selMap, morning, evening, l);
       },
     );
 
@@ -212,8 +247,131 @@ class _ProductSelectionScreenState
       backgroundColor: AppColors.surface,
       appBar: const GlowAppBar(),
       body: body,
+      floatingActionButton: widget.isTabDestination && !kIsWeb
+          ? _BarcodeFAB(onTap: () => _showBarcodeScan(context))
+          : null,
     );
   }
+
+  // ── Browse view (tab destination) ──────────────────────────────────────────
+
+  Widget _buildBrowse(
+    BuildContext context,
+    List<MasterProduct> allProducts,
+    List<Category> categories,
+    Map<String, Set<Slot>> selMap,
+    List<ProductSelection> morning,
+    List<ProductSelection> evening,
+    AppLocalizations l,
+  ) {
+    final query = _searchQuery.toLowerCase().trim();
+
+    // Filter products
+    final filtered = allProducts.where((p) {
+      if (p.isDeprecated) return false;
+      if (query.isNotEmpty && !p.name.toLowerCase().contains(query)) {
+        return false;
+      }
+      if (_slotFilter == Slot.morning && p.morningConfig == null) return false;
+      if (_slotFilter == Slot.evening && p.eveningConfig == null) return false;
+      return true;
+    }).toList();
+
+    // Group by category (preserving category order)
+    final catProducts = <String, List<MasterProduct>>{};
+    for (final product in filtered) {
+      catProducts.putIfAbsent(product.categoryId, () => []).add(product);
+    }
+    // Sort within each category by order
+    for (final list in catProducts.values) {
+      list.sort((a, b) {
+        final ao = a.morningConfig?.order ?? a.eveningConfig?.order ?? 9999;
+        final bo = b.morningConfig?.order ?? b.eveningConfig?.order ?? 9999;
+        return ao.compareTo(bo);
+      });
+    }
+
+    final totalSelected = selMap.length;
+    final orderedCategories =
+        categories.where((c) => catProducts.containsKey(c.id)).toList();
+
+    return Column(
+      children: [
+        // Sticky search + filter bar
+        _BrowseFilterBar(
+          controller: _searchController,
+          slotFilter: _slotFilter,
+          onSlotFilter: (s) => setState(() => _slotFilter = s),
+          selectedCount: totalSelected,
+          l: l,
+        ),
+        // Scrollable product list
+        Expanded(
+          child: orderedCategories.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.search_off_rounded,
+                            size: 48,
+                            color: AppColors.onSurfaceVariant.withAlpha(80)),
+                        const SizedBox(height: 12),
+                        Text(
+                          l.productSelNoProducts,
+                          style: AppTypography.bodyMd.copyWith(
+                              color: AppColors.onSurfaceVariant),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 100),
+                  itemCount: orderedCategories.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == orderedCategories.length) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                        child: _AddCustomProductCTA(
+                          onTap: () => showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => const AddCustomProductSheet(),
+                          ),
+                        ),
+                      );
+                    }
+                    final cat = orderedCategories[index];
+                    final products = catProducts[cat.id]!;
+                    final selectedInCat =
+                        products.where((p) => selMap.containsKey(p.id)).length;
+                    return _CategorySection(
+                      key: Key('cat_section_${cat.id}'),
+                      cat: cat,
+                      products: products,
+                      selMap: selMap,
+                      selectedInCat: selectedInCat,
+                      catUsage: _getCatUsage(cat.id, l),
+                      onToggle: (p) =>
+                          _toggleProduct(p, selMap, morning, evening),
+                      onTimingChange: (p, slot, enabled) =>
+                          _setTiming(p, slot, enabled, morning, evening),
+                      onEdit: (p) => _editCustomProduct(context, p),
+                      l: l,
+                      locale: l.localeName,
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  // ── Guided flow (setup) ─────────────────────────────────────────────────────
 
   Widget _buildGuided(
     BuildContext context,
@@ -441,6 +599,303 @@ class _ProductSelectionScreenState
   }
 }
 
+// ── Browse filter bar ─────────────────────────────────────────────────────────
+
+class _BrowseFilterBar extends StatelessWidget {
+  final TextEditingController controller;
+  final Slot? slotFilter;
+  final ValueChanged<Slot?> onSlotFilter;
+  final int selectedCount;
+  final AppLocalizations l;
+
+  const _BrowseFilterBar({
+    required this.controller,
+    required this.slotFilter,
+    required this.onSlotFilter,
+    required this.selectedCount,
+    required this.l,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          bottom: BorderSide(color: AppColors.outlineVariant, width: 0.5),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Search field
+          Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(9999),
+              border: Border.all(color: AppColors.outlineVariant),
+            ),
+            child: TextField(
+              controller: controller,
+              textAlignVertical: TextAlignVertical.center,
+              style: AppTypography.bodyMd.copyWith(
+                  color: AppColors.onSurface, fontSize: 14),
+              decoration: InputDecoration(
+                hintText: l.myProductsSearchHint,
+                hintStyle: AppTypography.bodyMd.copyWith(
+                  color: AppColors.outline.withAlpha(153),
+                  fontSize: 14,
+                ),
+                prefixIcon: const Icon(Icons.search_rounded,
+                    color: AppColors.onSurfaceVariant, size: 20),
+                suffixIcon: controller.text.isNotEmpty
+                    ? GestureDetector(
+                        onTap: () => controller.clear(),
+                        child: const Icon(Icons.close_rounded,
+                            size: 18, color: AppColors.onSurfaceVariant),
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 4),
+                isDense: true,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Filter chips + selected count
+          Row(
+            children: [
+              _SlotChip(
+                label: l.productSelFilterAll,
+                isSelected: slotFilter == null,
+                onTap: () => onSlotFilter(null),
+              ),
+              const SizedBox(width: 8),
+              _SlotChip(
+                label: l.slotMorning,
+                icon: Icons.wb_sunny_rounded,
+                activeColor: AppColors.secondaryContainer,
+                activeTextColor: AppColors.secondary,
+                isSelected: slotFilter == Slot.morning,
+                onTap: () => onSlotFilter(
+                    slotFilter == Slot.morning ? null : Slot.morning),
+              ),
+              const SizedBox(width: 8),
+              _SlotChip(
+                label: l.slotEvening,
+                icon: Icons.dark_mode_rounded,
+                activeColor: AppColors.tertiaryFixed,
+                activeTextColor: AppColors.onTertiaryContainer,
+                isSelected: slotFilter == Slot.evening,
+                onTap: () => onSlotFilter(
+                    slotFilter == Slot.evening ? null : Slot.evening),
+              ),
+              const Spacer(),
+              if (selectedCount > 0)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryFixed,
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_rounded,
+                          size: 12, color: AppColors.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$selectedCount',
+                        style: AppTypography.labelSm.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SlotChip extends StatelessWidget {
+  final String label;
+  final IconData? icon;
+  final bool isSelected;
+  final Color activeColor;
+  final Color activeTextColor;
+  final VoidCallback onTap;
+
+  const _SlotChip({
+    required this.label,
+    this.icon,
+    this.activeColor = AppColors.primaryFixed,
+    this.activeTextColor = AppColors.primary,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor : AppColors.surfaceLow,
+          borderRadius: BorderRadius.circular(9999),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : AppColors.outlineVariant,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 14,
+                color: isSelected ? activeTextColor : AppColors.onSurfaceVariant,
+              ),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: AppTypography.labelSm.copyWith(
+                color: isSelected ? activeTextColor : AppColors.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Category section (browse view) ────────────────────────────────────────────
+
+class _CategorySection extends StatelessWidget {
+  final Category cat;
+  final List<MasterProduct> products;
+  final Map<String, Set<Slot>> selMap;
+  final int selectedInCat;
+  final String catUsage;
+  final Future<void> Function(MasterProduct) onToggle;
+  final Future<void> Function(MasterProduct, Slot, bool) onTimingChange;
+  final void Function(MasterProduct) onEdit;
+  final AppLocalizations l;
+  final String locale;
+
+  const _CategorySection({
+    super.key,
+    required this.cat,
+    required this.products,
+    required this.selMap,
+    required this.selectedInCat,
+    required this.catUsage,
+    required this.onToggle,
+    required this.onTimingChange,
+    required this.onEdit,
+    required this.l,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Category header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+          child: Row(
+            children: [
+              _CategoryGlyph(categoryId: cat.id, size: 32, active: false),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  cat.localizedName(locale),
+                  style: AppTypography.labelMd.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              if (selectedInCat > 0)
+                Text(
+                  l.productSelCategorySelected(selectedInCat),
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        // Products
+        for (int i = 0; i < products.length; i++)
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+                20, 0, 20, i < products.length - 1 ? 10 : 0),
+            child: _SelectRow(
+              key: Key('browse_row_${products[i].id}'),
+              product: products[i],
+              selectedSlots: selMap[products[i].id] ?? {},
+              categoryUsage: catUsage,
+              onToggle: () => onToggle(products[i]),
+              onTimingChange: (slot, enabled) =>
+                  onTimingChange(products[i], slot, enabled),
+              onEdit: () => onEdit(products[i]),
+              l: l,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// ── Barcode FAB ───────────────────────────────────────────────────────────────
+
+class _BarcodeFAB extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _BarcodeFAB({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton.extended(
+      onPressed: onTap,
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+      icon: const Icon(Icons.qr_code_scanner_rounded, size: 22),
+      label: Text(
+        AppLocalizations.of(context)!.barcodeScan,
+        style: AppTypography.labelMd.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+        ),
+      ),
+    );
+  }
+}
+
 // ── Progress bar ───────────────────────────────────────────────────────────────
 
 class _ProgressBar extends StatelessWidget {
@@ -495,7 +950,7 @@ class _CategoryGlyph extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: active ? AppColors.primary : AppColors.primaryFixed.withAlpha(128),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(size >= 48 ? 16 : 10),
       ),
       child: Icon(icon,
           size: iconSize, color: active ? Colors.white : AppColors.primary),
@@ -967,4 +1422,3 @@ class _AddCustomProductCTA extends StatelessWidget {
     );
   }
 }
-

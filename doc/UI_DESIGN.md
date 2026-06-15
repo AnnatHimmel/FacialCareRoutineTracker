@@ -46,6 +46,15 @@ All wireframes are designed for the phone breakpoint (375–430px wide).
 - Product names and category names are always rendered with Unicode BiDi — they are LTR islands within RTL lines.
 - Media (product images, skin photos) are never mirrored.
 
+### 1.5 Bottom Navigation (actual implementation)
+
+```
+Bottom Navigation (RTL read order — 4 tabs):
+  [הגדרות / Settings S11] | [יומן / Calendar S6] | [המוצרים שלי / My Products S1b] | [היום / Today S4]
+```
+
+> **Note on wireframes below:** Wireframes show `יומן עור` as a bottom-nav tab — that label is outdated. The actual second tab is **המוצרים שלי** (My Products, `/products`). The Skin Journal (S9) is reachable from Calendar (S6) and from the skin-log icon on S4, but is **not** a bottom-nav tab.
+
 ---
 
 ## 2. Screen Inventory
@@ -54,7 +63,9 @@ All wireframes are designed for the phone breakpoint (375–430px wide).
 
 | # | Screen | Purpose | Entry Points | Exit Points |
 |---|--------|---------|--------------|-------------|
-| S1 | Product Selection | Select owned products per slot | First launch (setup); Settings → "ערוך בחירה" | S2 (if any occasional), S4 (if all daily) |
+| S1 | Product Selection (setup wizard) | Step-by-step product selection by category | First launch (setup); Settings → "ערוך בחירה" | S2 (if any occasional), S4 (if all daily) |
+| S1b | My Products tab (browse mode) | Flat searchable product browse; same `ProductSelectionScreen` with `isTabDestination: true` | Bottom nav "המוצרים שלי" | Stays in tab; optional barcode scan modal |
+| S1c | Barcode Scan Sheet | Camera barcode scanner modal for finding a product | S1b FAB (Android only) | Returns to S1b; optionally opens AddCustomProduct |
 | S2 | Schedule Setup | Weekday schedule for occasional products | After S1 (setup); Settings → "ערוך לוח זמנים" | S3 (order) or S4 |
 | S3 | Order Customization | Reorder selected products per slot | After S2 (setup); Settings → "ערוך סדר" | S4 |
 | S4 | Daily Home | Today's routine; record done | App launch (main screen); bottom nav "היום" | S7 (tap date), S5 (expand row), S8 (skin log) |
@@ -245,6 +256,105 @@ Expanded deprecated: shows banner "מוצר זה אינו מומלץ עוד — 
 | Daily↔daily conflict detected | Inline `SoftWarningBanner` below conflicting products; "השתק" = mute that pair |
 | Long list | Category grouping provides scannable sections; no pagination needed for ≤100 products |
 | Deprecated product | Not shown in the selectable list at all |
+
+---
+
+### S1b — My Products Tab (Browse Mode)
+
+**Purpose:** Persistent bottom-nav tab (`/products`). User browses, searches, and filters all products; toggles selection without leaving the tab. Same `ProductSelectionScreen` widget with `isTabDestination: true`.
+
+**Wireframe (RTL):**
+```
+┌─────────────────────────────────────────────┐
+│              GlowAppBar (no title)           │
+├─────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────┐│  ← Sticky filter bar
+│  │  🔍  [חיפוש מוצרים...]               ✕ ││    search field (pill, outline)
+│  ├─────────────────────────────────────────┤│
+│  │  [הכל]  [☀ בוקר]  [🌙 ערב]   ✓ 12    ││    slot chips + selected-count badge
+│  └─────────────────────────────────────────┘│
+│                                             │
+│  ── ניקוי (שלב 1) ─────────────────── 2 ── │  ← Category header + selected count
+│  ┌──────────────────────────────────────┐  │
+│  │ [thumb] CeraVe Foaming  [☀ בוקר] [▼]│  │  ← SelectRow (same component as S1)
+│  └──────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────┐  │
+│  │ [thumb] La Roche-Posay         [▼]  │  │
+│  └──────────────────────────────────────┘  │
+│                                             │
+│  ── סרום / אקטיב ─────────────────── 1 ── │
+│  ┌──────────────────────────────────────┐  │
+│  │ [thumb] The Ordinary Niacin…  [▼]  │  │
+│  └──────────────────────────────────────┘  │
+│       …all categories scrollable…           │
+│                                             │
+│  ┌─────────────────────────────────────────┐│  ← Add custom product CTA (bottom of list)
+│  │  [+]  הוסיפי מוצר אישי               ││
+│  └─────────────────────────────────────────┘│
+├─────────────────────────────────────────────┤
+│   הגדרות  | יומן | המוצרים שלי ● |  היום   │
+│                         [📷 סריקת ברקוד]    │  ← FAB (Android only)
+└─────────────────────────────────────────────┘
+```
+
+**Filter chip behavior:**
+- "הכל" — show all non-deprecated products across both slots.
+- "☀ בוקר" — show only products that have a morning config.
+- "🌙 ערב" — show only products that have an evening config.
+- Chips are mutually exclusive; tapping an active chip toggles it off (returns to "הכל").
+- Selected-count badge (✓ N) reflects total currently-selected products regardless of filter.
+
+**States:**
+| State | Description |
+|-------|-------------|
+| Search returns no results | Warm empty state with search-off icon; "לא נמצאו מוצרים" |
+| Category fully selected | "N נבחרו" badge turns primary-colored in the category header |
+| All products unselected | No badge; gentle "בחרי את המוצרים שלך" subtitle |
+
+---
+
+### S1c — Barcode Scan Sheet
+
+**Purpose:** Modal bottom sheet. User aims camera at a product barcode; app detects it. Product lookup is deferred (TBD); for now, detected barcode leads directly to Add Custom Product flow. **Android only** — FAB is hidden on Web.
+
+**Wireframe (dark camera UI):**
+```
+┌─────────────────────────────────────────────┐
+│  ━━━━ (drag handle)                         │
+│  [📷] סריקת ברקוד                      [✕] │
+├─────────────────────────────────────────────┤
+│                                             │
+│  ┌─────────────────────────────────────────┐│
+│  │          [Live camera viewfinder]       ││
+│  │                                         ││
+│  │         ┌──────────────┐               ││  ← Aiming frame (peach glow border)
+│  │         │  [barcode]   │               ││    Corner accent brackets (white)
+│  │         └──────────────┘               ││
+│  │                                         ││
+│  └─────────────────────────────────────────┘│
+│                                             │
+│  ┌─────────────────────────────────────────┐│
+│  │  כוונו את המצלמה לברקוד שעל האריזה    ││  ← Hint pill (dark bg)
+│  └─────────────────────────────────────────┘│
+└─────────────────────────────────────────────┘
+```
+
+**Found state (after barcode detected):**
+```
+│  ✓  ברקוד זוהה                             │
+│  ┌──── [barcode value chip] ─────┐          │
+│  ℹ חיפוש אוטומטי יתווסף בעדכון הבא         │  ← TBD info card
+│                                             │
+│  [הוסיפי ידנית →]                           │  ← Opens AddCustomProductSheet
+│  [סריקה חוזרת]                              │  ← Reset
+```
+
+**States:**
+| State | Description |
+|-------|-------------|
+| Scanning | Live viewfinder; aiming frame + corner brackets; hint text |
+| Found | Checkmark + barcode chip + TBD info + "Add manually" CTA + "Scan again" |
+| Permission denied | Camera-blocked icon + localized message |
 
 ---
 

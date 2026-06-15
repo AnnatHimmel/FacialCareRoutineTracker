@@ -1089,4 +1089,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addCustomProductCtaSub => 'Your product not in the list?';
+
+  @override
+  String get myProductsSearchHint => 'Search products...';
+
+  @override
+  String get barcodeScan => 'Scan Barcode';
+
+  @override
+  String get barcodeScanHint =>
+      'Aim camera at the barcode on the product packaging';
+
+  @override
+  String get barcodeScanFound => 'Barcode detected';
+
+  @override
+  String get barcodeScanLookingUp =>
+      'Automatic product lookup is coming in a future update — add manually for now';
+
+  @override
+  String get barcodeScanAddManually => 'Add Manually';
+
+  @override
+  String get barcodeScanRetry => 'Scan Again';
+
+  @override
+  String get barcodeScanPermissionDenied =>
+      'Camera permission is required to scan barcodes';
 }

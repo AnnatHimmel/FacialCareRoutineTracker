@@ -303,5 +303,13 @@
   "continueActionNeutral": "המשך",
   "addCustomProductCtaTitle": "הוסף מוצר חדש",
   "addCustomProductCtaSub": "המוצר שלך לא ברשימה?",
-  "productSelListHint": "לחץ על מוצר כדי להוסיף לרשימה או הוסף מוצר חדש"
+  "productSelListHint": "לחץ על מוצר כדי להוסיף לרשימה או הוסף מוצר חדש",
+  "myProductsSearchHint": "חיפוש מוצרים...",
+  "barcodeScan": "סריקת ברקוד",
+  "barcodeScanHint": "כוון את המצלמה לברקוד שעל האריזה",
+  "barcodeScanFound": "ברקוד זוהה",
+  "barcodeScanLookingUp": "חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסף ידנית לעת עתה",
+  "barcodeScanAddManually": "הוסף ידנית",
+  "barcodeScanRetry": "סריקה חוזרת",
+  "barcodeScanPermissionDenied": "נדרשת הרשאת מצלמה לסריקת ברקודים"
 }

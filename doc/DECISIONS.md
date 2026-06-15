@@ -144,3 +144,21 @@ Persists architectural and implementation decisions across task contexts. Each a
 **Decision**: The master `products` JSON never removes a product entry. Products get `isDeprecated: true`. UserDataRepository never breaks on orphaned product IDs (old DayRecords may reference IDs not in the current master list — these render with a fallback "unknown product" display).
 **Rationale**: Historical accuracy in Day Detail (S7) depends on stable IDs. Deletions would corrupt history.
 **Affects Tasks**: TASK-009, TASK-028, TASK-032.
+
+---
+
+### UI / Navigation
+
+#### DEC-014: My Products as a Persistent Bottom-Nav Tab
+**Date**: 2026-06-15
+**Context**: The app needed a way to browse and change product selections post-setup without going through the full guided wizard. The existing `ProductSelectionScreen` already had a `fromSetup` parameter; the browse mode was the natural addition.
+**Decision**: The second bottom-nav tab (`/products`) renders `ProductSelectionScreen(isTabDestination: true)` — a browse view with a search bar, slot filter chips (All / Morning / Evening), and a full product list grouped by category. The guided step-by-step wizard (S1) is a separate route (`/setup/selection`) used only during onboarding and from Settings.
+**Rationale**: A persistent tab gives users immediate access to product management without re-entering the setup flow. The same `_SelectRow` component works in both modes, keeping the implementation DRY.
+**Alternatives Rejected**: Single wizard-only entry from Settings (poor discoverability); separate screen with duplicate widget code (unnecessary duplication).
+
+#### DEC-015: Barcode Scanning — Product Lookup Deferred
+**Date**: 2026-06-15
+**Context**: Admin requested barcode scanning so users can scan a product packaging barcode instead of typing the name. Actual product lookup (querying external databases like Open Food Facts, OliveYoung, etc.) requires API integration work not yet scoped.
+**Decision**: Ship the camera UI (`BarcodeScanSheet`) now: captures the barcode value, displays it, but falls through to the manual Add Custom Product flow. Product lookup is a TBD stub — the "looking up…" info card explicitly tells the user it's coming in a future update. `mobile_scanner ^5.2.3` is used for camera access. The FAB is hidden on Web (`kIsWeb` guard); requires `CAMERA` permission on Android.
+**Rationale**: Delivering the UI now reduces the future diff to wiring a lookup API call into `_onDetect`. The permission and package are already in place. Not shipping a half-working lookup avoids confusing users.
+**Alternatives Rejected**: Waiting until lookup is implemented (delays the UI; harder to test the camera flow in isolation); implementing a lookup immediately (scope creep; external API dependencies not yet evaluated).

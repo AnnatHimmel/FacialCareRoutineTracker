@@ -533,5 +533,13 @@
   "onboardingStartNeutral": "Let's Begin",
   "continueActionNeutral": "Continue",
   "addCustomProductCtaTitle": "Add New Product",
-  "addCustomProductCtaSub": "Your product not in the list?"
+  "addCustomProductCtaSub": "Your product not in the list?",
+  "myProductsSearchHint": "Search products...",
+  "barcodeScan": "Scan Barcode",
+  "barcodeScanHint": "Aim camera at the barcode on the product packaging",
+  "barcodeScanFound": "Barcode detected",
+  "barcodeScanLookingUp": "Automatic product lookup is coming in a future update — add manually for now",
+  "barcodeScanAddManually": "Add Manually",
+  "barcodeScanRetry": "Scan Again",
+  "barcodeScanPermissionDenied": "Camera permission is required to scan barcodes"
 }
