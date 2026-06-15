@@ -8,6 +8,15 @@ Persists architectural and implementation decisions across task contexts. Each a
 
 ## Decisions
 
+### MOD-DEC-BAR-001: Barcode Product Lookup via Open Beauty Facts + UPC Item DB
+**Date**: 2026-06-15
+**Request**: Wire live product lookups into the barcode scanning stub. Query Open Beauty Facts and UPC Item DB in parallel, merge results, and pre-fill AddCustomProductSheet with the retrieved name/brand/image/ingredients.
+**Decision**: New `BarcodeProductLookupService` (injectable `http.Client`) queries both APIs concurrently via `Future.wait`. Merge: OBF values preferred, UPC Item DB used as fallback per field. Result mapped to `ScannedProductInfo` value object. `BarcodeScanSheet` converts to `ConsumerStatefulWidget` and gains three new states: `lookingUp`, `productFound`, `productNotFound`. `AddCustomProductSheet` gains optional `prefillFromScan: ScannedProductInfo?` param that pre-fills name (brand+name concatenated), comment (ingredients), and shows a network image preview.
+**Rationale**: Both APIs are free and require no API key, making the feature zero-config. Parallel queries minimize latency. Per-field merge maximises data completeness. Pre-filling reduces user effort without locking any field.
+**Alternatives Rejected**: Sequential API calls (higher latency); storing network image URL as photoKey (photoKey is for local storage, not remote URLs); auto-selecting category (categories are admin-curated IDs with no reliable mapping from external taxonomy).
+**Future APIs**: EAN-Search.org, Go-UPC.com (require keys), Barcode Monster (free, limited) — service is designed for extension.
+**Affects Files**: `pubspec.yaml`, `scanned_product_info.dart` (new), `barcode_lookup_service.dart` (new), `barcode_scan_sheet.dart`, `add_custom_product_sheet.dart`, `root_providers.dart`, ARB l10n files.
+
 ### MOD-DEC-SUP-001: Supabase Remote Product Database
 **Date**: 2026-06-15
 **Request**: Replace bundled JSON master product list with live Supabase (PostgreSQL + Storage) data source, fetched on S1 entry and cached locally. Product `name` field split into `brand` + `name`.

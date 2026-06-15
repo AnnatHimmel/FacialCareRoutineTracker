@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product_selection.dart';
+import '../../domain/entities/scanned_product_info.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/user_data_repository.dart';
@@ -18,8 +20,13 @@ const _uuid = Uuid();
 
 class AddCustomProductSheet extends ConsumerStatefulWidget {
   final UserCustomProduct? initialProduct;
+  final ScannedProductInfo? prefillFromScan;
 
-  const AddCustomProductSheet({super.key, this.initialProduct});
+  const AddCustomProductSheet({
+    super.key,
+    this.initialProduct,
+    this.prefillFromScan,
+  });
 
   @override
   ConsumerState<AddCustomProductSheet> createState() =>
@@ -39,6 +46,7 @@ class _AddCustomProductSheetState
   bool _isDaily = true;
   int _timesPerWeek = 3;
   bool _saving = false;
+  String? _prefillImageUrl;
 
   bool get _isEditing => widget.initialProduct != null;
 
@@ -55,6 +63,15 @@ class _AddCustomProductSheetState
       _isDaily = p.isDaily;
       _timesPerWeek = p.timesPerWeek ?? 3;
       if (p.photoKey != null) _loadInitialPhoto(p.photoKey!);
+    } else if (widget.prefillFromScan != null) {
+      final scan = widget.prefillFromScan!;
+      final brandPrefix =
+          (scan.brand?.isNotEmpty == true) ? '${scan.brand} ' : '';
+      _nameController.text = '$brandPrefix${scan.name ?? ''}'.trim();
+      if (scan.ingredients?.isNotEmpty == true) {
+        _commentController.text = scan.ingredients!;
+      }
+      _prefillImageUrl = scan.imageUrl;
     }
   }
 
@@ -345,23 +362,44 @@ class _AddCustomProductSheetState
                                   width: double.infinity,
                                 ),
                               )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.add_a_photo_outlined,
-                                    color: AppColors.onSurfaceVariant,
-                                    size: 32,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    l.customProductPhotoLabel,
-                                    style: AppTypography.labelMd.copyWith(
-                                      color: AppColors.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            : _prefillImageUrl != null
+                                ? Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(19),
+                                        child: CachedNetworkImage(
+                                          imageUrl: _prefillImageUrl!,
+                                          fit: BoxFit.cover,
+                                          errorWidget: (_, _, _) =>
+                                              const _PhotoPlaceholder(),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        bottom: 6,
+                                        right: 8,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black54,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            l.barcodeScanFromScanLabel,
+                                            style:
+                                                AppTypography.labelMd.copyWith(
+                                              color: Colors.white70,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const _PhotoPlaceholder(),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -817,6 +855,32 @@ class _SaveButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.add_a_photo_outlined,
+          color: AppColors.onSurfaceVariant,
+          size: 32,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l.customProductPhotoLabel,
+          style: AppTypography.labelMd.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1104,11 +1104,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get barcodeScanFound => 'Barcode detected';
 
   @override
-  String get barcodeScanLookingUp =>
-      'Automatic product lookup is coming in a future update — add manually for now';
+  String get barcodeScanLookingUp => 'Searching product databases…';
+
+  @override
+  String get barcodeScanProductFound => 'Product found';
+
+  @override
+  String get barcodeScanProductNotFound => 'Product not found in databases';
 
   @override
   String get barcodeScanAddManually => 'Add Manually';
+
+  @override
+  String get barcodeScanAddProduct => 'Add Product';
 
   @override
   String get barcodeScanRetry => 'Scan Again';
@@ -1116,4 +1124,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get barcodeScanPermissionDenied =>
       'Camera permission is required to scan barcodes';
+
+  @override
+  String get barcodeScanIngredients => 'Ingredients';
+
+  @override
+  String get barcodeScanCategoryHint => 'Category suggestion';
+
+  @override
+  String get barcodeScanFromScanLabel => 'Info from barcode scan';
 }

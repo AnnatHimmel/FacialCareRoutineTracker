@@ -2058,14 +2058,32 @@ abstract class AppLocalizations {
   /// No description provided for @barcodeScanLookingUp.
   ///
   /// In he, this message translates to:
-  /// **'חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסיפי ידנית לעת עתה'**
+  /// **'מחפש במאגרי מוצרים…'**
   String get barcodeScanLookingUp;
+
+  /// No description provided for @barcodeScanProductFound.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצר נמצא'**
+  String get barcodeScanProductFound;
+
+  /// No description provided for @barcodeScanProductNotFound.
+  ///
+  /// In he, this message translates to:
+  /// **'המוצר לא נמצא במאגרים'**
+  String get barcodeScanProductNotFound;
 
   /// No description provided for @barcodeScanAddManually.
   ///
   /// In he, this message translates to:
   /// **'הוסיפי ידנית'**
   String get barcodeScanAddManually;
+
+  /// No description provided for @barcodeScanAddProduct.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסיפי מוצר'**
+  String get barcodeScanAddProduct;
 
   /// No description provided for @barcodeScanRetry.
   ///
@@ -2078,6 +2096,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'נדרשת הרשאת מצלמה לסריקת ברקודים'**
   String get barcodeScanPermissionDenied;
+
+  /// No description provided for @barcodeScanIngredients.
+  ///
+  /// In he, this message translates to:
+  /// **'רכיבים'**
+  String get barcodeScanIngredients;
+
+  /// No description provided for @barcodeScanCategoryHint.
+  ///
+  /// In he, this message translates to:
+  /// **'הצעת קטגוריה'**
+  String get barcodeScanCategoryHint;
+
+  /// No description provided for @barcodeScanFromScanLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'מידע מהסריקה'**
+  String get barcodeScanFromScanLabel;
 }
 
 class _AppLocalizationsDelegate

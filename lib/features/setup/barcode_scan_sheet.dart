@@ -1,24 +1,29 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../domain/entities/scanned_product_info.dart';
+import '../../shared/providers/root_providers.dart';
 import 'add_custom_product_sheet.dart';
 
-enum _ScanState { scanning, found, permissionDenied }
+enum _ScanState { scanning, lookingUp, productFound, productNotFound, permissionDenied }
 
-class BarcodeScanSheet extends StatefulWidget {
+class BarcodeScanSheet extends ConsumerStatefulWidget {
   const BarcodeScanSheet({super.key});
 
   @override
-  State<BarcodeScanSheet> createState() => _BarcodeScanSheetState();
+  ConsumerState<BarcodeScanSheet> createState() => _BarcodeScanSheetState();
 }
 
-class _BarcodeScanSheetState extends State<BarcodeScanSheet> {
+class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
   late final MobileScannerController _controller;
   _ScanState _state = _ScanState.scanning;
   String? _scannedBarcode;
+  ScannedProductInfo? _lookupResult;
 
   @override
   void initState() {
@@ -42,10 +47,35 @@ class _BarcodeScanSheetState extends State<BarcodeScanSheet> {
     final barcode = capture.barcodes.firstOrNull;
     if (barcode?.rawValue == null) return;
     _controller.stop();
+    final code = barcode!.rawValue!;
     setState(() {
-      _state = _ScanState.found;
-      _scannedBarcode = barcode!.rawValue;
+      _state = _ScanState.lookingUp;
+      _scannedBarcode = code;
+      _lookupResult = null;
     });
+    _performLookup(code);
+  }
+
+  Future<void> _performLookup(String barcode) async {
+    final service = ref.read(barcodeProductLookupServiceProvider);
+    final result = await service.lookup(barcode);
+    if (!mounted) return;
+    setState(() {
+      _lookupResult = result;
+      _state = (result != null && result.hasUsefulData)
+          ? _ScanState.productFound
+          : _ScanState.productNotFound;
+    });
+  }
+
+  void _addProduct(BuildContext context) {
+    Navigator.of(context).pop();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AddCustomProductSheet(prefillFromScan: _lookupResult),
+    );
   }
 
   void _addManually(BuildContext context) {
@@ -59,7 +89,10 @@ class _BarcodeScanSheetState extends State<BarcodeScanSheet> {
   }
 
   void _scanAgain() {
-    setState(() => _state = _ScanState.scanning);
+    setState(() {
+      _state = _ScanState.scanning;
+      _lookupResult = null;
+    });
     _controller.start();
   }
 
@@ -114,7 +147,19 @@ class _BarcodeScanSheetState extends State<BarcodeScanSheet> {
             ),
             Expanded(
               child: switch (_state) {
-                _ScanState.found => _FoundState(
+                _ScanState.lookingUp => _LookingUpState(
+                    barcode: _scannedBarcode ?? '',
+                    l: l,
+                  ),
+                _ScanState.productFound => _ProductFoundState(
+                    barcode: _scannedBarcode ?? '',
+                    info: _lookupResult!,
+                    l: l,
+                    onAddProduct: () => _addProduct(context),
+                    onAddManually: () => _addManually(context),
+                    onScanAgain: _scanAgain,
+                  ),
+                _ScanState.productNotFound => _ProductNotFoundState(
                     barcode: _scannedBarcode ?? '',
                     l: l,
                     onAddManually: () => _addManually(context),
@@ -273,15 +318,289 @@ class _CornerPainter extends CustomPainter {
   bool shouldRepaint(_CornerPainter old) => false;
 }
 
-// ── Found state ────────────────────────────────────────────────────────────────
+// ── Looking-up state ──────────────────────────────────────────────────────────
 
-class _FoundState extends StatelessWidget {
+class _LookingUpState extends StatelessWidget {
+  final String barcode;
+  final AppLocalizations l;
+
+  const _LookingUpState({required this.barcode, required this.l});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          const SizedBox(
+            width: 60,
+            height: 60,
+            child: CircularProgressIndicator(
+              color: AppColors.primaryContainer,
+              strokeWidth: 3,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            l.barcodeScanLookingUp,
+            style: AppTypography.bodyMd.copyWith(
+              color: Colors.white70,
+              fontSize: 15,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 20),
+          _BarcodeChip(barcode: barcode),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Product-found state ───────────────────────────────────────────────────────
+
+class _ProductFoundState extends StatelessWidget {
+  final String barcode;
+  final ScannedProductInfo info;
+  final AppLocalizations l;
+  final VoidCallback onAddProduct;
+  final VoidCallback onAddManually;
+  final VoidCallback onScanAgain;
+
+  const _ProductFoundState({
+    required this.barcode,
+    required this.info,
+    required this.l,
+    required this.onAddProduct,
+    required this.onAddManually,
+    required this.onScanAgain,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.check_circle_rounded,
+                  color: AppColors.primaryContainer, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                l.barcodeScanProductFound,
+                style: AppTypography.labelMd.copyWith(
+                  color: AppColors.primaryContainer,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Product card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withAlpha(25)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (info.imageUrl != null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(
+                      imageUrl: info.imageUrl!,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.white10,
+                        child: const Icon(Icons.image_outlined,
+                            color: Colors.white24, size: 28),
+                      ),
+                      errorWidget: (_, _, _) => Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.white10,
+                        child: const Icon(Icons.broken_image_outlined,
+                            color: Colors.white24, size: 28),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (info.brand != null)
+                        Text(
+                          info.brand!,
+                          style: AppTypography.labelMd.copyWith(
+                            color: Colors.white54,
+                            fontSize: 12,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      if (info.name != null)
+                        Text(
+                          info.name!,
+                          style: AppTypography.headlineMd.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      if (info.categoryHint != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.label_outline_rounded,
+                                size: 13, color: Colors.white38),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                '${l.barcodeScanCategoryHint}: ${info.categoryHint}',
+                                style: AppTypography.labelMd.copyWith(
+                                  color: Colors.white38,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (info.quantity != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          info.quantity!,
+                          style: AppTypography.labelMd.copyWith(
+                            color: Colors.white38,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (info.ingredients != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(7),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.barcodeScanIngredients,
+                    style: AppTypography.labelMd.copyWith(
+                      color: Colors.white54,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _truncate(info.ingredients!, 180),
+                    style: AppTypography.bodyMd.copyWith(
+                      color: Colors.white38,
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          _BarcodeChip(barcode: barcode),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton.icon(
+              onPressed: onAddProduct,
+              icon: const Icon(Icons.add_rounded, size: 20),
+              label: Text(
+                l.barcodeScanAddProduct,
+                style: AppTypography.labelMd.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(9999),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: TextButton(
+              onPressed: onAddManually,
+              child: Text(
+                l.barcodeScanAddManually,
+                style: AppTypography.labelMd.copyWith(
+                  color: Colors.white54,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+          Center(
+            child: TextButton(
+              onPressed: onScanAgain,
+              child: Text(
+                l.barcodeScanRetry,
+                style: AppTypography.labelMd.copyWith(
+                  color: Colors.white38,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _truncate(String text, int maxChars) {
+    if (text.length <= maxChars) return text;
+    return '${text.substring(0, maxChars)}…';
+  }
+}
+
+// ── Product-not-found state ───────────────────────────────────────────────────
+
+class _ProductNotFoundState extends StatelessWidget {
   final String barcode;
   final AppLocalizations l;
   final VoidCallback onAddManually;
   final VoidCallback onScanAgain;
 
-  const _FoundState({
+  const _ProductNotFoundState({
     required this.barcode,
     required this.l,
     required this.onAddManually,
@@ -294,90 +613,34 @@ class _FoundState extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
         children: [
-          const SizedBox(height: 12),
-          // Success icon
+          const SizedBox(height: 20),
           Container(
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.primaryContainer.withAlpha(30),
+              color: Colors.white.withAlpha(10),
               shape: BoxShape.circle,
-              border: Border.all(
-                  color: AppColors.primaryContainer.withAlpha(80), width: 1.5),
+              border: Border.all(color: Colors.white24, width: 1.5),
             ),
             child: const Icon(
-              Icons.check_circle_outline_rounded,
-              color: AppColors.primaryContainer,
-              size: 40,
+              Icons.search_off_rounded,
+              color: Colors.white38,
+              size: 38,
             ),
           ),
           const SizedBox(height: 20),
           Text(
-            l.barcodeScanFound,
+            l.barcodeScanProductNotFound,
             style: AppTypography.headlineMd.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w700,
-              fontSize: 22,
+              fontSize: 20,
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
-          // Barcode chip
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white10,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white24),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.qr_code_rounded,
-                    color: Colors.white54, size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  barcode,
-                  style: AppTypography.labelMd.copyWith(
-                    color: Colors.white70,
-                    fontFamily: 'monospace',
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          // TBD lookup info card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(12),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withAlpha(25)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.info_outline_rounded,
-                    color: Colors.white38, size: 18),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    l.barcodeScanLookingUp,
-                    style: AppTypography.bodyMd.copyWith(
-                      color: Colors.white60,
-                      fontSize: 13,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 28),
-          // Add manually CTA
+          _BarcodeChip(barcode: barcode),
+          const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             height: 54,
@@ -410,6 +673,42 @@ class _FoundState extends StatelessWidget {
                 color: Colors.white38,
                 fontSize: 14,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Shared barcode chip ───────────────────────────────────────────────────────
+
+class _BarcodeChip extends StatelessWidget {
+  final String barcode;
+
+  const _BarcodeChip({required this.barcode});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.qr_code_rounded, color: Colors.white54, size: 15),
+          const SizedBox(width: 8),
+          Text(
+            barcode,
+            style: AppTypography.labelMd.copyWith(
+              color: Colors.white70,
+              fontFamily: 'monospace',
+              letterSpacing: 1.2,
+              fontSize: 13,
             ),
           ),
         ],

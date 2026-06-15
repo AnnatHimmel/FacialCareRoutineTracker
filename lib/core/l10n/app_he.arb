@@ -538,8 +538,14 @@
   "barcodeScan": "סריקת ברקוד",
   "barcodeScanHint": "כוונו את המצלמה לברקוד שעל האריזה",
   "barcodeScanFound": "ברקוד זוהה",
-  "barcodeScanLookingUp": "חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסיפי ידנית לעת עתה",
+  "barcodeScanLookingUp": "מחפש במאגרי מוצרים…",
+  "barcodeScanProductFound": "מוצר נמצא",
+  "barcodeScanProductNotFound": "המוצר לא נמצא במאגרים",
   "barcodeScanAddManually": "הוסיפי ידנית",
+  "barcodeScanAddProduct": "הוסיפי מוצר",
   "barcodeScanRetry": "סריקה חוזרת",
-  "barcodeScanPermissionDenied": "נדרשת הרשאת מצלמה לסריקת ברקודים"
+  "barcodeScanPermissionDenied": "נדרשת הרשאת מצלמה לסריקת ברקודים",
+  "barcodeScanIngredients": "רכיבים",
+  "barcodeScanCategoryHint": "הצעת קטגוריה",
+  "barcodeScanFromScanLabel": "מידע מהסריקה"
 }

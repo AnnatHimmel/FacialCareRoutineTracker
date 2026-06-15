@@ -1090,17 +1090,34 @@ class AppLocalizationsHe extends AppLocalizations {
   String get barcodeScanFound => 'ברקוד זוהה';
 
   @override
-  String get barcodeScanLookingUp =>
-      'חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסיפי ידנית לעת עתה';
+  String get barcodeScanLookingUp => 'מחפש במאגרי מוצרים…';
+
+  @override
+  String get barcodeScanProductFound => 'מוצר נמצא';
+
+  @override
+  String get barcodeScanProductNotFound => 'המוצר לא נמצא במאגרים';
 
   @override
   String get barcodeScanAddManually => 'הוסיפי ידנית';
+
+  @override
+  String get barcodeScanAddProduct => 'הוסיפי מוצר';
 
   @override
   String get barcodeScanRetry => 'סריקה חוזרת';
 
   @override
   String get barcodeScanPermissionDenied => 'נדרשת הרשאת מצלמה לסריקת ברקודים';
+
+  @override
+  String get barcodeScanIngredients => 'רכיבים';
+
+  @override
+  String get barcodeScanCategoryHint => 'הצעת קטגוריה';
+
+  @override
+  String get barcodeScanFromScanLabel => 'מידע מהסריקה';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).

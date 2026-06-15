@@ -538,8 +538,14 @@
   "barcodeScan": "Scan Barcode",
   "barcodeScanHint": "Aim camera at the barcode on the product packaging",
   "barcodeScanFound": "Barcode detected",
-  "barcodeScanLookingUp": "Automatic product lookup is coming in a future update — add manually for now",
+  "barcodeScanLookingUp": "Searching product databases…",
+  "barcodeScanProductFound": "Product found",
+  "barcodeScanProductNotFound": "Product not found in databases",
   "barcodeScanAddManually": "Add Manually",
+  "barcodeScanAddProduct": "Add Product",
   "barcodeScanRetry": "Scan Again",
-  "barcodeScanPermissionDenied": "Camera permission is required to scan barcodes"
+  "barcodeScanPermissionDenied": "Camera permission is required to scan barcodes",
+  "barcodeScanIngredients": "Ingredients",
+  "barcodeScanCategoryHint": "Category suggestion",
+  "barcodeScanFromScanLabel": "Info from barcode scan"
 }

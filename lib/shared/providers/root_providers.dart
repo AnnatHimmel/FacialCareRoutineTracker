@@ -22,6 +22,7 @@ import '../../domain/repositories/photo_repository.dart';
 import '../../domain/repositories/refreshable_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/repositories/user_data_repository.dart';
+import '../../data/remote/barcode_lookup_service.dart';
 import '../../domain/services/day_boundary_service.dart';
 import '../../domain/services/export_import_service.dart';
 import '../../domain/services/incompatibility_checker.dart';
@@ -176,6 +177,12 @@ final allDayRecordsProvider = StreamProvider(
 
 final customProductsProvider = StreamProvider<List<UserCustomProduct>>(
   (ref) => ref.watch(userDataRepositoryProvider).watchCustomProducts(),
+);
+
+// ── Barcode lookup ────────────────────────────────────────────────────────────
+
+final barcodeProductLookupServiceProvider = Provider<BarcodeProductLookupService>(
+  (ref) => BarcodeProductLookupService(),
 );
 
 final userNameProvider = FutureProvider<String?>(
