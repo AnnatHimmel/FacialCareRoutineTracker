@@ -102,7 +102,7 @@ abstract class AppLocalizations {
   /// No description provided for @navToday.
   ///
   /// In he, this message translates to:
-  /// **'היום'**
+  /// **'היום שלי'**
   String get navToday;
 
   /// No description provided for @navCalendar.

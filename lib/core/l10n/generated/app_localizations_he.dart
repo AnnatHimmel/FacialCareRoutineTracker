@@ -9,7 +9,7 @@ class AppLocalizationsHe extends AppLocalizations {
   AppLocalizationsHe([String locale = 'he']) : super(locale);
 
   @override
-  String get navToday => 'היום';
+  String get navToday => 'היום שלי';
 
   @override
   String get navCalendar => 'יומן';

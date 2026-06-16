@@ -67,7 +67,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
       product.name,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      textAlign: TextAlign.start,
+      textAlign: _isLikelyLatin(product.name) ? TextAlign.end : TextAlign.start,
       textDirection:
           _isLikelyLatin(product.name) ? TextDirection.ltr : TextDirection.rtl,
       style: AppTypography.bodyMd.copyWith(

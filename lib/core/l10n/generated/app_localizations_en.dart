@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get navToday => 'Today';
+  String get navToday => 'My Day';
 
   @override
   String get navCalendar => 'Journal';

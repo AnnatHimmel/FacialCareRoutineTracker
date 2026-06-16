@@ -960,7 +960,7 @@ class _AttentionRow extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final hasWarnings = count > 0;
     return GestureDetector(
-      onTap: () => context.push('/collection'),
+      onTap: () => context.go('/collection'),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -995,7 +995,12 @@ class _AttentionRow extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(Icons.chevron_left, size: 18, color: AppColors.outline),
+            const Icon(
+              Icons.chevron_left,
+              size: 18,
+              color: AppColors.outline,
+              textDirection: TextDirection.ltr,
+            ),
           ],
         ),
       ),

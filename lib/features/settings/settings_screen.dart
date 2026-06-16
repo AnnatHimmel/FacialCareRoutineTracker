@@ -97,7 +97,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ),
                     const Icon(
-                      Icons.chevron_left_rounded,
+                      Icons.chevron_right_rounded,
                       color: Colors.white,
                       size: 22,
                     ),
@@ -857,7 +857,7 @@ class _SettingsTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             const Icon(
-              Icons.chevron_left,
+              Icons.chevron_right,
               color: AppColors.onSurfaceVariant,
               size: 20,
             ),
