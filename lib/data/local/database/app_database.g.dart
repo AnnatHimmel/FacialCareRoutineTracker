@@ -2899,6 +2899,488 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
   }
 }
 
+class $CollectionItemsTable extends CollectionItems
+    with TableInfo<$CollectionItemsTable, CollectionItemRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CollectionItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productIdMeta = const VerificationMeta(
+    'productId',
+  );
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+    'product_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _openedDateMsMeta = const VerificationMeta(
+    'openedDateMs',
+  );
+  @override
+  late final GeneratedColumn<int> openedDateMs = GeneratedColumn<int>(
+    'opened_date_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paoMonthsMeta = const VerificationMeta(
+    'paoMonths',
+  );
+  @override
+  late final GeneratedColumn<int> paoMonths = GeneratedColumn<int>(
+    'pao_months',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notificationsEnabledMeta =
+      const VerificationMeta('notificationsEnabled');
+  @override
+  late final GeneratedColumn<bool> notificationsEnabled = GeneratedColumn<bool>(
+    'notifications_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("notifications_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _lastModifiedMsMeta = const VerificationMeta(
+    'lastModifiedMs',
+  );
+  @override
+  late final GeneratedColumn<int> lastModifiedMs = GeneratedColumn<int>(
+    'last_modified_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    productId,
+    status,
+    openedDateMs,
+    paoMonths,
+    notificationsEnabled,
+    lastModifiedMs,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'collection_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CollectionItemRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(
+        _productIdMeta,
+        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('opened_date_ms')) {
+      context.handle(
+        _openedDateMsMeta,
+        openedDateMs.isAcceptableOrUnknown(
+          data['opened_date_ms']!,
+          _openedDateMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pao_months')) {
+      context.handle(
+        _paoMonthsMeta,
+        paoMonths.isAcceptableOrUnknown(data['pao_months']!, _paoMonthsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_paoMonthsMeta);
+    }
+    if (data.containsKey('notifications_enabled')) {
+      context.handle(
+        _notificationsEnabledMeta,
+        notificationsEnabled.isAcceptableOrUnknown(
+          data['notifications_enabled']!,
+          _notificationsEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_modified_ms')) {
+      context.handle(
+        _lastModifiedMsMeta,
+        lastModifiedMs.isAcceptableOrUnknown(
+          data['last_modified_ms']!,
+          _lastModifiedMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastModifiedMsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CollectionItemRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CollectionItemRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      productId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_id'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      openedDateMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}opened_date_ms'],
+      ),
+      paoMonths: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pao_months'],
+      )!,
+      notificationsEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}notifications_enabled'],
+      )!,
+      lastModifiedMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_modified_ms'],
+      )!,
+    );
+  }
+
+  @override
+  $CollectionItemsTable createAlias(String alias) {
+    return $CollectionItemsTable(attachedDatabase, alias);
+  }
+}
+
+class CollectionItemRow extends DataClass
+    implements Insertable<CollectionItemRow> {
+  final String id;
+  final String productId;
+  final String status;
+  final int? openedDateMs;
+  final int paoMonths;
+  final bool notificationsEnabled;
+  final int lastModifiedMs;
+  const CollectionItemRow({
+    required this.id,
+    required this.productId,
+    required this.status,
+    this.openedDateMs,
+    required this.paoMonths,
+    required this.notificationsEnabled,
+    required this.lastModifiedMs,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['product_id'] = Variable<String>(productId);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || openedDateMs != null) {
+      map['opened_date_ms'] = Variable<int>(openedDateMs);
+    }
+    map['pao_months'] = Variable<int>(paoMonths);
+    map['notifications_enabled'] = Variable<bool>(notificationsEnabled);
+    map['last_modified_ms'] = Variable<int>(lastModifiedMs);
+    return map;
+  }
+
+  CollectionItemsCompanion toCompanion(bool nullToAbsent) {
+    return CollectionItemsCompanion(
+      id: Value(id),
+      productId: Value(productId),
+      status: Value(status),
+      openedDateMs: openedDateMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(openedDateMs),
+      paoMonths: Value(paoMonths),
+      notificationsEnabled: Value(notificationsEnabled),
+      lastModifiedMs: Value(lastModifiedMs),
+    );
+  }
+
+  factory CollectionItemRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CollectionItemRow(
+      id: serializer.fromJson<String>(json['id']),
+      productId: serializer.fromJson<String>(json['productId']),
+      status: serializer.fromJson<String>(json['status']),
+      openedDateMs: serializer.fromJson<int?>(json['openedDateMs']),
+      paoMonths: serializer.fromJson<int>(json['paoMonths']),
+      notificationsEnabled: serializer.fromJson<bool>(
+        json['notificationsEnabled'],
+      ),
+      lastModifiedMs: serializer.fromJson<int>(json['lastModifiedMs']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'productId': serializer.toJson<String>(productId),
+      'status': serializer.toJson<String>(status),
+      'openedDateMs': serializer.toJson<int?>(openedDateMs),
+      'paoMonths': serializer.toJson<int>(paoMonths),
+      'notificationsEnabled': serializer.toJson<bool>(notificationsEnabled),
+      'lastModifiedMs': serializer.toJson<int>(lastModifiedMs),
+    };
+  }
+
+  CollectionItemRow copyWith({
+    String? id,
+    String? productId,
+    String? status,
+    Value<int?> openedDateMs = const Value.absent(),
+    int? paoMonths,
+    bool? notificationsEnabled,
+    int? lastModifiedMs,
+  }) => CollectionItemRow(
+    id: id ?? this.id,
+    productId: productId ?? this.productId,
+    status: status ?? this.status,
+    openedDateMs: openedDateMs.present ? openedDateMs.value : this.openedDateMs,
+    paoMonths: paoMonths ?? this.paoMonths,
+    notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+    lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
+  );
+  CollectionItemRow copyWithCompanion(CollectionItemsCompanion data) {
+    return CollectionItemRow(
+      id: data.id.present ? data.id.value : this.id,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      status: data.status.present ? data.status.value : this.status,
+      openedDateMs: data.openedDateMs.present
+          ? data.openedDateMs.value
+          : this.openedDateMs,
+      paoMonths: data.paoMonths.present ? data.paoMonths.value : this.paoMonths,
+      notificationsEnabled: data.notificationsEnabled.present
+          ? data.notificationsEnabled.value
+          : this.notificationsEnabled,
+      lastModifiedMs: data.lastModifiedMs.present
+          ? data.lastModifiedMs.value
+          : this.lastModifiedMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CollectionItemRow(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('status: $status, ')
+          ..write('openedDateMs: $openedDateMs, ')
+          ..write('paoMonths: $paoMonths, ')
+          ..write('notificationsEnabled: $notificationsEnabled, ')
+          ..write('lastModifiedMs: $lastModifiedMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    productId,
+    status,
+    openedDateMs,
+    paoMonths,
+    notificationsEnabled,
+    lastModifiedMs,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CollectionItemRow &&
+          other.id == this.id &&
+          other.productId == this.productId &&
+          other.status == this.status &&
+          other.openedDateMs == this.openedDateMs &&
+          other.paoMonths == this.paoMonths &&
+          other.notificationsEnabled == this.notificationsEnabled &&
+          other.lastModifiedMs == this.lastModifiedMs);
+}
+
+class CollectionItemsCompanion extends UpdateCompanion<CollectionItemRow> {
+  final Value<String> id;
+  final Value<String> productId;
+  final Value<String> status;
+  final Value<int?> openedDateMs;
+  final Value<int> paoMonths;
+  final Value<bool> notificationsEnabled;
+  final Value<int> lastModifiedMs;
+  final Value<int> rowid;
+  const CollectionItemsCompanion({
+    this.id = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.openedDateMs = const Value.absent(),
+    this.paoMonths = const Value.absent(),
+    this.notificationsEnabled = const Value.absent(),
+    this.lastModifiedMs = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CollectionItemsCompanion.insert({
+    required String id,
+    required String productId,
+    required String status,
+    this.openedDateMs = const Value.absent(),
+    required int paoMonths,
+    this.notificationsEnabled = const Value.absent(),
+    required int lastModifiedMs,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       productId = Value(productId),
+       status = Value(status),
+       paoMonths = Value(paoMonths),
+       lastModifiedMs = Value(lastModifiedMs);
+  static Insertable<CollectionItemRow> custom({
+    Expression<String>? id,
+    Expression<String>? productId,
+    Expression<String>? status,
+    Expression<int>? openedDateMs,
+    Expression<int>? paoMonths,
+    Expression<bool>? notificationsEnabled,
+    Expression<int>? lastModifiedMs,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (productId != null) 'product_id': productId,
+      if (status != null) 'status': status,
+      if (openedDateMs != null) 'opened_date_ms': openedDateMs,
+      if (paoMonths != null) 'pao_months': paoMonths,
+      if (notificationsEnabled != null)
+        'notifications_enabled': notificationsEnabled,
+      if (lastModifiedMs != null) 'last_modified_ms': lastModifiedMs,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CollectionItemsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? productId,
+    Value<String>? status,
+    Value<int?>? openedDateMs,
+    Value<int>? paoMonths,
+    Value<bool>? notificationsEnabled,
+    Value<int>? lastModifiedMs,
+    Value<int>? rowid,
+  }) {
+    return CollectionItemsCompanion(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      status: status ?? this.status,
+      openedDateMs: openedDateMs ?? this.openedDateMs,
+      paoMonths: paoMonths ?? this.paoMonths,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (openedDateMs.present) {
+      map['opened_date_ms'] = Variable<int>(openedDateMs.value);
+    }
+    if (paoMonths.present) {
+      map['pao_months'] = Variable<int>(paoMonths.value);
+    }
+    if (notificationsEnabled.present) {
+      map['notifications_enabled'] = Variable<bool>(notificationsEnabled.value);
+    }
+    if (lastModifiedMs.present) {
+      map['last_modified_ms'] = Variable<int>(lastModifiedMs.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CollectionItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('status: $status, ')
+          ..write('openedDateMs: $openedDateMs, ')
+          ..write('paoMonths: $paoMonths, ')
+          ..write('notificationsEnabled: $notificationsEnabled, ')
+          ..write('lastModifiedMs: $lastModifiedMs, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2913,6 +3395,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MutedConflictsTable mutedConflicts = $MutedConflictsTable(this);
   late final $UserCustomProductsTable userCustomProducts =
       $UserCustomProductsTable(this);
+  late final $CollectionItemsTable collectionItems = $CollectionItemsTable(
+    this,
+  );
   late final SelectionsDao selectionsDao = SelectionsDao(this as AppDatabase);
   late final SchedulesDao schedulesDao = SchedulesDao(this as AppDatabase);
   late final OrderOverridesDao orderOverridesDao = OrderOverridesDao(
@@ -2925,6 +3410,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final UserCustomProductsDao userCustomProductsDao =
       UserCustomProductsDao(this as AppDatabase);
+  late final CollectionItemsDao collectionItemsDao = CollectionItemsDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2937,6 +3425,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     skinLogEntries,
     mutedConflicts,
     userCustomProducts,
+    collectionItems,
   ];
 }
 
@@ -4505,6 +4994,256 @@ typedef $$UserCustomProductsTableProcessedTableManager =
       CustomProductRow,
       PrefetchHooks Function()
     >;
+typedef $$CollectionItemsTableCreateCompanionBuilder =
+    CollectionItemsCompanion Function({
+      required String id,
+      required String productId,
+      required String status,
+      Value<int?> openedDateMs,
+      required int paoMonths,
+      Value<bool> notificationsEnabled,
+      required int lastModifiedMs,
+      Value<int> rowid,
+    });
+typedef $$CollectionItemsTableUpdateCompanionBuilder =
+    CollectionItemsCompanion Function({
+      Value<String> id,
+      Value<String> productId,
+      Value<String> status,
+      Value<int?> openedDateMs,
+      Value<int> paoMonths,
+      Value<bool> notificationsEnabled,
+      Value<int> lastModifiedMs,
+      Value<int> rowid,
+    });
+
+class $$CollectionItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $CollectionItemsTable> {
+  $$CollectionItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get openedDateMs => $composableBuilder(
+    column: $table.openedDateMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get paoMonths => $composableBuilder(
+    column: $table.paoMonths,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get notificationsEnabled => $composableBuilder(
+    column: $table.notificationsEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastModifiedMs => $composableBuilder(
+    column: $table.lastModifiedMs,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CollectionItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CollectionItemsTable> {
+  $$CollectionItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get openedDateMs => $composableBuilder(
+    column: $table.openedDateMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get paoMonths => $composableBuilder(
+    column: $table.paoMonths,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get notificationsEnabled => $composableBuilder(
+    column: $table.notificationsEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastModifiedMs => $composableBuilder(
+    column: $table.lastModifiedMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CollectionItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CollectionItemsTable> {
+  $$CollectionItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get openedDateMs => $composableBuilder(
+    column: $table.openedDateMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get paoMonths =>
+      $composableBuilder(column: $table.paoMonths, builder: (column) => column);
+
+  GeneratedColumn<bool> get notificationsEnabled => $composableBuilder(
+    column: $table.notificationsEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastModifiedMs => $composableBuilder(
+    column: $table.lastModifiedMs,
+    builder: (column) => column,
+  );
+}
+
+class $$CollectionItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CollectionItemsTable,
+          CollectionItemRow,
+          $$CollectionItemsTableFilterComposer,
+          $$CollectionItemsTableOrderingComposer,
+          $$CollectionItemsTableAnnotationComposer,
+          $$CollectionItemsTableCreateCompanionBuilder,
+          $$CollectionItemsTableUpdateCompanionBuilder,
+          (
+            CollectionItemRow,
+            BaseReferences<
+              _$AppDatabase,
+              $CollectionItemsTable,
+              CollectionItemRow
+            >,
+          ),
+          CollectionItemRow,
+          PrefetchHooks Function()
+        > {
+  $$CollectionItemsTableTableManager(
+    _$AppDatabase db,
+    $CollectionItemsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CollectionItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CollectionItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CollectionItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> productId = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int?> openedDateMs = const Value.absent(),
+                Value<int> paoMonths = const Value.absent(),
+                Value<bool> notificationsEnabled = const Value.absent(),
+                Value<int> lastModifiedMs = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CollectionItemsCompanion(
+                id: id,
+                productId: productId,
+                status: status,
+                openedDateMs: openedDateMs,
+                paoMonths: paoMonths,
+                notificationsEnabled: notificationsEnabled,
+                lastModifiedMs: lastModifiedMs,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String productId,
+                required String status,
+                Value<int?> openedDateMs = const Value.absent(),
+                required int paoMonths,
+                Value<bool> notificationsEnabled = const Value.absent(),
+                required int lastModifiedMs,
+                Value<int> rowid = const Value.absent(),
+              }) => CollectionItemsCompanion.insert(
+                id: id,
+                productId: productId,
+                status: status,
+                openedDateMs: openedDateMs,
+                paoMonths: paoMonths,
+                notificationsEnabled: notificationsEnabled,
+                lastModifiedMs: lastModifiedMs,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CollectionItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CollectionItemsTable,
+      CollectionItemRow,
+      $$CollectionItemsTableFilterComposer,
+      $$CollectionItemsTableOrderingComposer,
+      $$CollectionItemsTableAnnotationComposer,
+      $$CollectionItemsTableCreateCompanionBuilder,
+      $$CollectionItemsTableUpdateCompanionBuilder,
+      (
+        CollectionItemRow,
+        BaseReferences<_$AppDatabase, $CollectionItemsTable, CollectionItemRow>,
+      ),
+      CollectionItemRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4523,4 +5262,6 @@ class $AppDatabaseManager {
       $$MutedConflictsTableTableManager(_db, _db.mutedConflicts);
   $$UserCustomProductsTableTableManager get userCustomProducts =>
       $$UserCustomProductsTableTableManager(_db, _db.userCustomProducts);
+  $$CollectionItemsTableTableManager get collectionItems =>
+      $$CollectionItemsTableTableManager(_db, _db.collectionItems);
 }

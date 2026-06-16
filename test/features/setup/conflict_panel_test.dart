@@ -11,6 +11,7 @@ import 'package:skincare_tracker/domain/entities/incompatibility_rule.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
 import 'package:skincare_tracker/domain/entities/skin_log_entry.dart';
+import 'package:skincare_tracker/domain/entities/collection_item.dart';
 import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
@@ -131,6 +132,9 @@ class _FakeUDR implements UserDataRepository {
   @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
   @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
   @override Future<void> deleteCustomProduct(String id) async {}
+  @override Stream<List<CollectionItem>> watchCollectionItems() => throw UnimplementedError();
+  @override Future<void> upsertCollectionItem(CollectionItem item) => throw UnimplementedError();
+  @override Future<void> deleteCollectionItem(String id) => throw UnimplementedError();
 }
 
 MasterContent _master(
@@ -221,7 +225,7 @@ void main() {
   // ── UI integration tests ─────────────────────────────────────────────────────
 
   group('IssuesPanel UI', () {
-    testWidgets('issues panel is visible and collapsed by default when there are conflicts', (tester) async {
+    testWidgets('issues panel is visible and expanded by default when there are conflicts', (tester) async {
       final pa = _daily('pa', 'מוצר א׳');
       final pb = _daily('pb', 'מוצר ב׳');
       final rule = _productRule('pa', 'pb', reason: 'סיבת ההתנגשות');
@@ -234,11 +238,13 @@ void main() {
 
       // Issues panel header is always visible — conflict count shown
       expect(find.textContaining('התראות'), findsWidgets);
-      // Expand/collapse chevron shows collapsed state by default
-      expect(find.byIcon(Icons.expand_more_rounded), findsWidgets);
+      // Panel starts expanded by default — shows collapse chevron
+      expect(find.byIcon(Icons.expand_less_rounded), findsWidgets);
+      // Content visible without needing to expand
+      expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
     });
 
-    testWidgets('issues panel shows product names after expanding', (tester) async {
+    testWidgets('issues panel shows product names by default', (tester) async {
       final pa = _daily('pa', 'מוצר א׳');
       final pb = _daily('pb', 'מוצר ב׳');
       final rule = _productRule('pa', 'pb', reason: 'סיבה');
@@ -249,16 +255,12 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Expand the panel first
-      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
-      await tester.pumpAndSettle();
-
-      // Product names visible in the issues panel after expanding
+      // Panel starts expanded — product names visible without needing to expand
       expect(find.text('מוצר א׳'), findsWidgets);
       expect(find.text('מוצר ב׳'), findsWidgets);
     });
 
-    testWidgets('issues panel shows reason text after expanding', (tester) async {
+    testWidgets('issues panel shows reason text by default', (tester) async {
       final pa = _daily('pa', 'A');
       final pb = _daily('pb', 'B');
       final rule = _productRule('pa', 'pb', reason: 'סיבת ההתנגשות');
@@ -269,15 +271,11 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Expand the panel first
-      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
-      await tester.pumpAndSettle();
-
-      // Reason visible after expanding (once per conflict day card)
+      // Panel starts expanded — reason visible without needing to expand
       expect(find.text('סיבת ההתנגשות'), findsWidgets);
     });
 
-    testWidgets('tapping panel header expands and collapses the content', (tester) async {
+    testWidgets('tapping panel header collapses and re-expands the content', (tester) async {
       final pa = _daily('pa', 'A');
       final pb = _daily('pb', 'B');
       final rule = _productRule('pa', 'pb', reason: 'סיבה');
@@ -288,24 +286,24 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Panel is collapsed by default: soft note not visible
-      expect(find.textContaining('כל ההתראות הן רכות'), findsNothing);
-      expect(find.byIcon(Icons.expand_more_rounded), findsWidgets);
-
-      // Tap header to expand
-      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
-      await tester.pumpAndSettle();
-
-      // Panel body now visible
+      // Panel is expanded by default: soft note visible
       expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
+      expect(find.byIcon(Icons.expand_less_rounded), findsWidgets);
 
-      // Tap again to collapse
+      // Tap header to collapse
       await tester.tap(find.byIcon(Icons.expand_less_rounded).first);
       await tester.pumpAndSettle();
 
-      // Panel body hidden again
+      // Panel body now hidden
       expect(find.textContaining('כל ההתראות הן רכות'), findsNothing);
       expect(find.byIcon(Icons.expand_more_rounded), findsWidgets);
+
+      // Tap again to re-expand
+      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
+      await tester.pumpAndSettle();
+
+      // Panel body visible again
+      expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
     });
 
     testWidgets('fix button removes weekly product from its conflict day', (tester) async {
@@ -320,11 +318,7 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Expand panel first
-      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
-      await tester.pumpAndSettle();
-
-      // Tap the first remove button (event_busy icon) directly in the issues panel
+      // Panel is already expanded by default — tap remove button directly
       final fixButtonIcon = find.byIcon(Icons.event_busy_rounded).first;
       final fixButton = find.ancestor(
         of: fixButtonIcon,
@@ -349,11 +343,7 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Expand panel first
-      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
-      await tester.pumpAndSettle();
-
-      // Tap the first remove button
+      // Panel is already expanded by default — tap remove button directly
       final fixButtonIcon = find.byIcon(Icons.event_busy_rounded).first;
       final fixButton = find.ancestor(
         of: fixButtonIcon,
@@ -368,7 +358,7 @@ void main() {
       expect(udr.lastUpserted!.weekdays.contains(0), isFalse);
     });
 
-    testWidgets('panel shows soft alerts footer note after expanding', (tester) async {
+    testWidgets('panel shows soft alerts footer note by default', (tester) async {
       final pa = _daily('pa', 'A');
       final pb = _daily('pb', 'B');
       final rule = _productRule('pa', 'pb');
@@ -379,15 +369,11 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Expand panel first
-      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
-      await tester.pumpAndSettle();
-
-      // Footer note visible in the expanded panel body
+      // Panel starts expanded — footer note visible without needing to expand
       expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
     });
 
-    testWidgets('category name shows inside the panel after expanding', (tester) async {
+    testWidgets('category name shows inside the panel by default', (tester) async {
       final pa = _daily('pa', 'A', catId: 'cat-moisturizer');
       final pb = _daily('pb', 'B', catId: 'cat-moisturizer');
       final rule = _productRule('pa', 'pb');
@@ -403,11 +389,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Expand panel first
-      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
-      await tester.pumpAndSettle();
-
-      // Category name visible in the issues panel after expanding
+      // Panel starts expanded — category name visible without needing to expand
       expect(find.text('לחות'), findsWidgets);
     });
   });

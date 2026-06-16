@@ -12,10 +12,12 @@ import '../../data/local/photo_storage/photo_repository_android.dart';
 import '../../data/local/photo_storage/photo_repository_web.dart';
 import '../../data/local/preferences/settings_repository_impl.dart';
 import '../../data/repositories_impl/user_data_repository_impl.dart';
+import '../../domain/entities/collection_item.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/muted_conflict.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/user_custom_product.dart';
+import '../../domain/services/pao_calculator.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../domain/repositories/photo_repository.dart';
@@ -132,6 +134,13 @@ final onboardingCompletedProvider = FutureProvider<bool>(
 /// Update by reading `.notifier` and setting `.state`.
 final appLocaleProvider = StateProvider<Locale>((ref) => const Locale('he'));
 
+// ── Demo-only PRO toggle (Settings → "תצוגת הדגמה") ──────────────────────────
+/// Toggles the Glow PRO experience across screens. In-memory: resets on restart.
+final isProDemoProvider = StateProvider<bool>((ref) => false);
+
+/// Forces the day-7 streak milestone / conversion banner on the Today screen.
+final milestoneDemoProvider = StateProvider<bool>((ref) => false);
+
 /// Reads saved language and gender from settings and syncs [appLocaleProvider].
 /// - English → Locale('en') regardless of gender
 /// - Hebrew + male → Locale('he', 'MA')
@@ -184,6 +193,14 @@ final customProductsProvider = StreamProvider<List<UserCustomProduct>>(
 final barcodeProductLookupServiceProvider = Provider<BarcodeProductLookupService>(
   (ref) => BarcodeProductLookupService(),
 );
+
+// ── Collection items (product lifecycle) ─────────────────────────────────────
+
+final collectionItemsProvider = StreamProvider<List<CollectionItem>>(
+  (ref) => ref.watch(userDataRepositoryProvider).watchCollectionItems(),
+);
+
+final paoCalculatorProvider = Provider((ref) => const PaoCalculator());
 
 final userNameProvider = FutureProvider<String?>(
   (ref) => ref.watch(settingsRepositoryProvider).getUserName(),

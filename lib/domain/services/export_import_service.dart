@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:archive/archive.dart';
+import '../entities/collection_item.dart';
 import '../entities/day_record.dart';
 import '../entities/muted_conflict.dart';
 import '../entities/order_override.dart';
@@ -118,6 +119,16 @@ class MergeSession {
       mergedMuted[m.id] = m;
     }
 
+    final Map<String, CollectionItem> mergedCollectionItems = {
+      for (final c in currentData.collectionItems) c.id: c,
+    };
+    for (final c in archiveData.collectionItems) {
+      if (_resolutions[c.id] == true ||
+          !mergedCollectionItems.containsKey(c.id)) {
+        mergedCollectionItems[c.id] = c;
+      }
+    }
+
     final merged = UserDataExport(
       schemaVersion: archiveData.schemaVersion,
       exportDate: archiveData.exportDate,
@@ -129,6 +140,7 @@ class MergeSession {
       dayRecords: mergedDayRecords.values.toList(),
       skinLogs: mergedSkinLogs.values.toList(),
       mutedConflicts: mergedMuted.values.toList(),
+      collectionItems: mergedCollectionItems.values.toList(),
     );
 
     await _userRepo.replaceAllData(merged);
@@ -263,6 +275,22 @@ class ExportImportService {
           recordId: e.id,
           recordType: 'skinLog',
           archiveRecord: e,
+          localRecord: local,
+        ));
+      }
+    }
+
+    // Find conflicting collection (lifecycle) items
+    final currentCiMap = {
+      for (final c in currentData.collectionItems) c.id: c,
+    };
+    for (final c in archiveData.collectionItems) {
+      final local = currentCiMap[c.id];
+      if (local != null && local.lastModified != c.lastModified) {
+        conflicts.add(MergeConflict(
+          recordId: c.id,
+          recordType: 'collectionItem',
+          archiveRecord: c,
           localRecord: local,
         ));
       }

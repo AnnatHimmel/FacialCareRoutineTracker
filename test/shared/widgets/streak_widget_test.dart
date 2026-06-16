@@ -26,12 +26,11 @@ void main() {
       expect(find.text('ימים ברצף'), findsOneWidget);
     });
 
-    testWidgets('trophy chip shows longestStreak', (tester) async {
+    testWidgets('fire icon is shown in left column', (tester) async {
       await tester.pumpWidget(_wrap(
-        const StreakWidget(currentStreak: 5, longestStreak: 21, gracesUsed: 0),
+        const StreakWidget(currentStreak: 5, longestStreak: 10, gracesUsed: 0),
       ));
-      expect(find.textContaining('21'), findsOneWidget);
-      expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.local_fire_department_rounded), findsOneWidget);
     });
 
     testWidgets('zero streak renders without error', (tester) async {

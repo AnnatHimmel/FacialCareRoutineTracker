@@ -11,6 +11,7 @@ import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
 import 'package:skincare_tracker/domain/entities/skin_log_entry.dart';
+import 'package:skincare_tracker/domain/entities/collection_item.dart';
 import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
@@ -83,6 +84,9 @@ class _FakeUDR implements UserDataRepository {
   @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
   @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
   @override Future<void> deleteCustomProduct(String id) async {}
+  @override Stream<List<CollectionItem>> watchCollectionItems() => throw UnimplementedError();
+  @override Future<void> upsertCollectionItem(CollectionItem item) => throw UnimplementedError();
+  @override Future<void> deleteCollectionItem(String id) => throw UnimplementedError();
 }
 
 class _FakeSR implements SettingsRepository {

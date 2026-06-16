@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,10 +9,13 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
 import '../../domain/entities/master_product.dart';
+import '../../domain/enums/collection_status.dart';
+import '../../domain/enums/pao_tone.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
+import '../../shared/widgets/pro_tag.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
@@ -160,6 +164,23 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     final mutedAsync = ref.watch(mutedConflictsProvider);
     final masterAsync = ref.watch(masterContentProvider);
 
+    final collectionItems = ref.watch(collectionItemsProvider).valueOrNull ?? [];
+    final pao = ref.watch(paoCalculatorProvider);
+    final now = DateTime.now();
+    final nearExpiryIds = <String>{};
+    for (final item in collectionItems) {
+      if (item.status == CollectionStatus.inUse && item.openedDate != null) {
+        final progress = pao.compute(
+          openedDate: item.openedDate,
+          paoMonths: item.paoMonths,
+          now: now,
+        );
+        if (progress.tone == PaoTone.warn || progress.tone == PaoTone.bad) {
+          nearExpiryIds.add(item.productId);
+        }
+      }
+    }
+
     final morningProducts = morningRoutineAsync.valueOrNull ?? [];
     final eveningProducts = eveningRoutineAsync.valueOrNull ?? [];
     final morningRecord = morningRecordAsync.valueOrNull;
@@ -204,6 +225,9 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     final eveningDone =
         eveningProducts.where((p) => eveningRecorded.contains(p.id)).length;
 
+    final isPro = ref.watch(isProDemoProvider);
+    final showMilestone = ref.watch(milestoneDemoProvider);
+
     final isLoading =
         morningRoutineAsync.isLoading && eveningRoutineAsync.isLoading;
 
@@ -233,6 +257,17 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                         currentStreak: streakResult.currentStreak,
                         longestStreak: streakResult.longestStreak,
                         gracesUsed: streakResult.missesThisWeek,
+                        showMilestonePitch: showMilestone,
+                      ),
+                    ),
+                  ),
+
+                if (isPro ? nearExpiryIds.isNotEmpty : true)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                      child: _AttentionRow(
+                        count: isPro ? nearExpiryIds.length : 0,
                       ),
                     ),
                   ),
@@ -253,16 +288,27 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          l.homeTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: AppTypography.bodyLg.copyWith(
-                            color: AppColors.onSurface,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 20,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                l.homeTitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: AppTypography.bodyLg.copyWith(
+                                  color: AppColors.onSurface,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                            if (isPro) ...[
+                              const SizedBox(width: 8),
+                              const ProTag(),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -294,6 +340,8 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     record: morningRecord,
                     conflictProductIds: conflictProductIds,
                     doneCount: morningDone,
+                    nearExpiryIds: nearExpiryIds,
+                    isPro: isPro,
                   ),
 
                 if (morningProducts.isNotEmpty && eveningProducts.isNotEmpty)
@@ -306,6 +354,8 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     record: eveningRecord,
                     conflictProductIds: conflictProductIds,
                     doneCount: eveningDone,
+                    nearExpiryIds: nearExpiryIds,
+                    isPro: isPro,
                   ),
 
                 if (morningProducts.isEmpty && eveningProducts.isEmpty)
@@ -356,6 +406,8 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     required DayRecord? record,
     required Set<String> conflictProductIds,
     required int doneCount,
+    required Set<String> nearExpiryIds,
+    required bool isPro,
   }) {
     final isExpanded = _sectionExpanded[slot] ?? true;
     final recorded = record?.recordedProductIds.toSet() ?? {};
@@ -396,6 +448,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                           stepNumber: index + 1,
                           isDone: isDone,
                           showName: _showNames,
+                          warn: isPro && nearExpiryIds.contains(product.id),
                           onTap: record != null
                               ? () => _toggleProduct(record, product.id)
                               : null,
@@ -443,7 +496,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
 // ── View mode control row ─────────────────────────────────────────────────────
 
 TextStyle get _controlLabel =>
-    GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, height: 1.0);
+    GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700, height: 1.0);
 
 class _ViewModeControl extends StatelessWidget {
   final _ViewMode viewMode;
@@ -494,7 +547,7 @@ class _ViewModeSegmentedPill extends StatelessWidget {
           ? l.homeViewListSemantics
           : l.homeViewImagesSemantics,
       child: Container(
-        height: 66,
+        height: 48,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: AppColors.surfaceHigh.withAlpha(179),
@@ -575,18 +628,22 @@ class _SegmentState extends State<_Segment> {
             children: [
               Icon(
                 widget.icon,
-                size: 20,
+                size: 18,
                 color: widget.isActive
                     ? AppColors.primary
                     : AppColors.onSurfaceVariant,
               ),
               const SizedBox(width: 6),
-              Text(
-                widget.label,
-                style: _controlLabel.copyWith(
-                  color: widget.isActive
-                      ? AppColors.primary
-                      : AppColors.onSurfaceVariant,
+              Flexible(
+                child: Text(
+                  widget.label,
+                  style: _controlLabel.copyWith(
+                    color: widget.isActive
+                        ? AppColors.primary
+                        : AppColors.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -631,7 +688,7 @@ class _NamesToggleChipState extends State<_NamesToggleChip> {
           duration: const Duration(milliseconds: 100),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            height: 66,
+            height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: widget.showNames
@@ -680,6 +737,7 @@ class _ProductGridTile extends ConsumerWidget {
   final int stepNumber;
   final bool isDone;
   final bool showName;
+  final bool warn;
   final VoidCallback? onTap;
 
   const _ProductGridTile({
@@ -688,6 +746,7 @@ class _ProductGridTile extends ConsumerWidget {
     required this.stepNumber,
     required this.isDone,
     required this.showName,
+    this.warn = false,
     this.onTap,
   });
 
@@ -707,15 +766,14 @@ class _ProductGridTile extends ConsumerWidget {
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
           decoration: BoxDecoration(
-            color: isDone
-                ? AppColors.primaryFixed.withAlpha(77)
-                : AppColors.surfaceContainerLowest,
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(28),
             boxShadow: isDone ? null : AppColors.glowSm,
             border: Border.all(
               color: isDone
-                  ? AppColors.primary.withAlpha(77)
-                  : Colors.transparent,
+                  ? AppColors.primary
+                  : AppColors.outlineVariant.withAlpha(77),
+              width: 3,
             ),
           ),
           clipBehavior: Clip.antiAlias,
@@ -728,13 +786,32 @@ class _ProductGridTile extends ConsumerWidget {
                   children: [
                     _buildPhoto(ref),
                     if (isDone)
-                      Container(
-                        color: AppColors.primary.withAlpha(130),
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.check_rounded,
-                          color: Colors.white,
-                          size: 52,
+                      ColorFiltered(
+                        colorFilter: const ColorFilter.matrix([
+                          0.4, 0.0, 0.0, 0.0, 0.0,
+                          0.0, 0.4, 0.0, 0.0, 0.0,
+                          0.0, 0.0, 0.4, 0.0, 0.0,
+                          0.0, 0.0, 0.0, 1.0, 0.0,
+                        ]),
+                        child: Container(color: AppColors.primary.withAlpha(77)),
+                      ),
+                    if (isDone)
+                      Center(
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 4),
+                            boxShadow: AppColors.glowLg,
+                          ),
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 44,
+                          ),
                         ),
                       ),
                     PositionedDirectional(
@@ -742,6 +819,27 @@ class _ProductGridTile extends ConsumerWidget {
                       start: 8,
                       child: _StepBadge(number: stepNumber, isDone: isDone),
                     ),
+                    if (warn)
+                      PositionedDirectional(
+                        top: 8,
+                        end: 8,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xfff7e8c8),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                            boxShadow: AppColors.soft,
+                          ),
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.schedule_rounded,
+                            size: 18,
+                            color: Color(0xff8a5a17),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -781,6 +879,20 @@ class _ProductGridTile extends ConsumerWidget {
         loading: _fallback,
         error: (_, _) => _fallback(),
       );
+    } else if (asset != null &&
+        (asset.startsWith('https://') || asset.startsWith('http://'))) {
+      final localFilename = asset.split('/').last;
+      final localAsset = 'assets/images/products/$localFilename';
+      return CachedNetworkImage(
+        imageUrl: asset,
+        fit: BoxFit.cover,
+        placeholder: (_, __) => Image.asset(
+          localAsset,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _fallback(),
+        ),
+        errorWidget: (_, __, ___) => _fallback(),
+      );
     } else if (asset != null) {
       return Image.asset(
         asset,
@@ -815,11 +927,12 @@ class _StepBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 32,
-      height: 32,
+      width: 48,
+      height: 48,
       decoration: BoxDecoration(
-        color: isDone ? AppColors.primary : Colors.white,
+        color: isDone ? AppColors.primary : Colors.white.withAlpha(242),
         shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
         boxShadow: AppColors.soft,
       ),
       alignment: Alignment.center,
@@ -828,6 +941,62 @@ class _StepBadge extends StatelessWidget {
         style: AppTypography.labelMd.copyWith(
           color: isDone ? Colors.white : AppColors.primary,
           fontWeight: FontWeight.w700,
+          fontSize: 22,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Attention row ─────────────────────────────────────────────────────────────
+
+class _AttentionRow extends StatelessWidget {
+  final int count;
+
+  const _AttentionRow({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final hasWarnings = count > 0;
+    return GestureDetector(
+      onTap: () => context.push('/collection'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.white, Color(0xfffdf6e3)],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xffeddfb8)),
+          boxShadow: AppColors.glowSm,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              hasWarnings
+                  ? Icons.schedule_outlined
+                  : Icons.lightbulb_outline_rounded,
+              size: 20,
+              color: const Color(0xff8a5a17),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                hasWarnings
+                    ? l.homeAttentionCount(count)
+                    : l.homeAttentionNone,
+                style: AppTypography.labelMd.copyWith(
+                  color: AppColors.onSurface,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            const Icon(Icons.chevron_left, size: 18, color: AppColors.outline),
+          ],
         ),
       ),
     );
@@ -914,4 +1083,7 @@ final _dayRecordProvider =
       .watch(userDataRepositoryProvider)
       .watchDayRecord(params.date, params.slot),
 );
+
+// ── Week button ───────────────────────────────────────────────────────────────
+
 

@@ -19,7 +19,6 @@ class CountChip extends StatelessWidget {
       ),
       child: Text(
         text,
-        textDirection: TextDirection.ltr,
         style: AppTypography.labelSm
             .copyWith(color: AppColors.onSecondaryContainer),
       ),

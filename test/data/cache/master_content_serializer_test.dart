@@ -137,6 +137,74 @@ void main() {
     });
   });
 
+  group('ingredients field', () {
+    test('parseProduct reads ingredients array into product.ingredients', () {
+      final json = {
+        'id': 'p2',
+        'brand': null,
+        'name': 'Serum',
+        'imageAsset': null,
+        'comment': {'he': null, 'en': null},
+        'categoryId': 'cat-1',
+        'isDeprecated': false,
+        'addedInVersion': '1.0.0',
+        'morningConfig': null,
+        'eveningConfig': null,
+        'ingredients': ['Niacinamide', 'Panthenol'],
+      };
+      final product = MasterContentSerializer.parseProduct(json);
+      expect(product.ingredients, equals(['Niacinamide', 'Panthenol']));
+    });
+
+    test('parseProduct without ingredients field parses to empty list', () {
+      final json = {
+        'id': 'p3',
+        'brand': null,
+        'name': 'Toner',
+        'imageAsset': null,
+        'comment': {'he': null, 'en': null},
+        'categoryId': 'cat-1',
+        'isDeprecated': false,
+        'addedInVersion': '1.0.0',
+        'morningConfig': null,
+        'eveningConfig': null,
+        // no 'ingredients' key
+      };
+      final product = MasterContentSerializer.parseProduct(json);
+      expect(product.ingredients, equals([]));
+      expect(product.ingredients, isA<List<String>>());
+    });
+
+    test('round-trips ingredients through toJson/fromCombinedJson', () {
+      final content = MasterContent(
+        products: [
+          const MasterProduct(
+            id: 'p4',
+            name: 'Moisturizer',
+            categoryId: 'cat-1',
+            isDeprecated: false,
+            addedInVersion: '1.0.0',
+            ingredients: ['Ceramide', 'Hyaluronic Acid'],
+          ),
+        ],
+        categories: [
+          const Category(
+              id: 'cat-1', name: 'לחות', nameEn: 'Moisturizer', order: 1),
+        ],
+        rules: [],
+        manifest: const MasterListManifest(
+          contentVersion: '1.0.0',
+          appVersion: '1.0.0',
+          changelog: [],
+        ),
+      );
+      final json = MasterContentSerializer.toJson(content);
+      final restored = MasterContentSerializer.fromCombinedJson(json);
+      expect(
+          restored.products.first.ingredients, equals(['Ceramide', 'Hyaluronic Acid']));
+    });
+  });
+
   group('MasterContent equality', () {
     test('two identical MasterContent instances are equal', () {
       final a = _makeContent(brand: 'X', morningFreq: const DailyRule());

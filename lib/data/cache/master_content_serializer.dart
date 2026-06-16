@@ -69,6 +69,7 @@ abstract final class MasterContentSerializer {
             p.morningConfig != null ? _slotConfigToJson(p.morningConfig!) : null,
         'eveningConfig':
             p.eveningConfig != null ? _slotConfigToJson(p.eveningConfig!) : null,
+        'ingredients': p.ingredients,
       };
 
   static Map<String, dynamic> _slotConfigToJson(SlotConfig c) => {
@@ -168,6 +169,8 @@ abstract final class MasterContentSerializer {
           : _parseSlotConfig(m['eveningConfig'] as Map<String, dynamic>),
       isDeprecated: m['isDeprecated'] as bool,
       addedInVersion: m['addedInVersion'] as String,
+      ingredients:
+          (m['ingredients'] as List<dynamic>?)?.cast<String>() ?? const [],
     );
   }
 

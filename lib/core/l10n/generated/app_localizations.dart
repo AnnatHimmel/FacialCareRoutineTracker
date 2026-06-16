@@ -123,6 +123,12 @@ abstract class AppLocalizations {
   /// **'המוצרים שלי'**
   String get navProducts;
 
+  /// No description provided for @navCollection.
+  ///
+  /// In he, this message translates to:
+  /// **'המדף שלי'**
+  String get navCollection;
+
   /// No description provided for @navSettings.
   ///
   /// In he, this message translates to:
@@ -342,7 +348,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeTitle.
   ///
   /// In he, this message translates to:
-  /// **'השגרה שלך היום'**
+  /// **'היום שלי'**
   String get homeTitle;
 
   /// No description provided for @homeTapImageToDone.
@@ -728,6 +734,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'התחילי לתעד'**
   String get journalStartDocumenting;
+
+  /// No description provided for @journalNewEntry.
+  ///
+  /// In he, this message translates to:
+  /// **'תיעוד חדש'**
+  String get journalNewEntry;
+
+  /// No description provided for @journalProgressTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מעקב התקדמות'**
+  String get journalProgressTitle;
 
   /// No description provided for @journalDateFormat.
   ///
@@ -2114,6 +2132,288 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'מידע מהסריקה'**
   String get barcodeScanFromScanLabel;
+
+  /// No description provided for @homeViewWeek.
+  ///
+  /// In he, this message translates to:
+  /// **'השבוע'**
+  String get homeViewWeek;
+
+  /// No description provided for @homeWeekGlanceTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השבוע שלי'**
+  String get homeWeekGlanceTitle;
+
+  /// No description provided for @collectionHealthCard.
+  ///
+  /// In he, this message translates to:
+  /// **'בריאות המדף'**
+  String get collectionHealthCard;
+
+  /// No description provided for @collectionAllProducts.
+  ///
+  /// In he, this message translates to:
+  /// **'כל המוצרים'**
+  String get collectionAllProducts;
+
+  /// No description provided for @collectionOnShelf.
+  ///
+  /// In he, this message translates to:
+  /// **'במדף'**
+  String get collectionOnShelf;
+
+  /// No description provided for @collectionInRoutines.
+  ///
+  /// In he, this message translates to:
+  /// **'בשגרות'**
+  String get collectionInRoutines;
+
+  /// No description provided for @collectionToCheck.
+  ///
+  /// In he, this message translates to:
+  /// **'לבדיקה'**
+  String get collectionToCheck;
+
+  /// No description provided for @collectionProBanner.
+  ///
+  /// In he, this message translates to:
+  /// **'נסי PRO כדי לעקוב אחרי חיי המדף'**
+  String get collectionProBanner;
+
+  /// No description provided for @collectionSortByCategory.
+  ///
+  /// In he, this message translates to:
+  /// **'לפי קטגוריה'**
+  String get collectionSortByCategory;
+
+  /// No description provided for @collectionCountSuffix.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצרים'**
+  String get collectionCountSuffix;
+
+  /// No description provided for @lifecycleTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מחזור חיים'**
+  String get lifecycleTitle;
+
+  /// No description provided for @lifecycleOpenedDate.
+  ///
+  /// In he, this message translates to:
+  /// **'נפתח בתאריך'**
+  String get lifecycleOpenedDate;
+
+  /// No description provided for @lifecycleNotOpened.
+  ///
+  /// In he, this message translates to:
+  /// **'טרם נפתח'**
+  String get lifecycleNotOpened;
+
+  /// No description provided for @lifecycleSetOpenedDate.
+  ///
+  /// In he, this message translates to:
+  /// **'הגדירי תאריך פתיחה'**
+  String get lifecycleSetOpenedDate;
+
+  /// No description provided for @lifecyclePao.
+  ///
+  /// In he, this message translates to:
+  /// **'PAO {months} חודשים'**
+  String lifecyclePao(Object months);
+
+  /// No description provided for @lifecycleMonthsLeft.
+  ///
+  /// In he, this message translates to:
+  /// **'נותרו {months} חודשים'**
+  String lifecycleMonthsLeft(Object months);
+
+  /// No description provided for @lifecycleExpired.
+  ///
+  /// In he, this message translates to:
+  /// **'פג תוקף'**
+  String get lifecycleExpired;
+
+  /// No description provided for @lifecycleNotify.
+  ///
+  /// In he, this message translates to:
+  /// **'התראה לקראת סיום'**
+  String get lifecycleNotify;
+
+  /// No description provided for @lifecycleInUse.
+  ///
+  /// In he, this message translates to:
+  /// **'בשימוש'**
+  String get lifecycleInUse;
+
+  /// No description provided for @lifecycleFinished.
+  ///
+  /// In he, this message translates to:
+  /// **'סיימתי אותו'**
+  String get lifecycleFinished;
+
+  /// No description provided for @lifecycleDiscarded.
+  ///
+  /// In he, this message translates to:
+  /// **'נזרק'**
+  String get lifecycleDiscarded;
+
+  /// No description provided for @detailIngredients.
+  ///
+  /// In he, this message translates to:
+  /// **'מרכיבים עיקריים'**
+  String get detailIngredients;
+
+  /// No description provided for @collectionTabInUse.
+  ///
+  /// In he, this message translates to:
+  /// **'בשימוש'**
+  String get collectionTabInUse;
+
+  /// No description provided for @collectionTabSealed.
+  ///
+  /// In he, this message translates to:
+  /// **'סגורים'**
+  String get collectionTabSealed;
+
+  /// No description provided for @collectionTabArchive.
+  ///
+  /// In he, this message translates to:
+  /// **'ארכיון'**
+  String get collectionTabArchive;
+
+  /// No description provided for @collectionAttentionCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} מוצרים לסיום בקרוב'**
+  String collectionAttentionCount(int count);
+
+  /// No description provided for @collectionHealthOk.
+  ///
+  /// In he, this message translates to:
+  /// **'המדף במצב טוב'**
+  String get collectionHealthOk;
+
+  /// No description provided for @collectionSealedBadge.
+  ///
+  /// In he, this message translates to:
+  /// **'סגור'**
+  String get collectionSealedBadge;
+
+  /// No description provided for @collectionArchiveBadge.
+  ///
+  /// In he, this message translates to:
+  /// **'בארכיון'**
+  String get collectionArchiveBadge;
+
+  /// No description provided for @collectionSealedEmpty.
+  ///
+  /// In he, this message translates to:
+  /// **'אין מוצרים סגורים'**
+  String get collectionSealedEmpty;
+
+  /// No description provided for @collectionArchiveEmpty.
+  ///
+  /// In he, this message translates to:
+  /// **'הארכיון ריק'**
+  String get collectionArchiveEmpty;
+
+  /// No description provided for @homeAttentionCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} מוצרים כדאי לסיים בקרוב'**
+  String homeAttentionCount(int count);
+
+  /// No description provided for @homeAttentionNone.
+  ///
+  /// In he, this message translates to:
+  /// **'ייתכן שיש במדף שלך דברים שכדאי לשים לב אליהם'**
+  String get homeAttentionNone;
+
+  /// No description provided for @settingsAccountFree.
+  ///
+  /// In he, this message translates to:
+  /// **'חשבון חינמי'**
+  String get settingsAccountFree;
+
+  /// No description provided for @settingsAccountPro.
+  ///
+  /// In he, this message translates to:
+  /// **'מנויית Glow PRO'**
+  String get settingsAccountPro;
+
+  /// No description provided for @settingsProTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שדרגי ל־Glow PRO'**
+  String get settingsProTitle;
+
+  /// No description provided for @settingsProSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מעקב התקדמות, ניהול מדף, תוקף ו־PAO'**
+  String get settingsProSubtitle;
+
+  /// No description provided for @settingsDemoTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'תצוגת הדגמה'**
+  String get settingsDemoTitle;
+
+  /// No description provided for @settingsDemoDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'החליפי בין חוויה חינמית למנויית PRO כדי לראות איך המסכים משתנים.'**
+  String get settingsDemoDesc;
+
+  /// No description provided for @settingsDemoFree.
+  ///
+  /// In he, this message translates to:
+  /// **'חינמי'**
+  String get settingsDemoFree;
+
+  /// No description provided for @settingsDemoMilestone.
+  ///
+  /// In he, this message translates to:
+  /// **'יום ציון דרך (יום 7)'**
+  String get settingsDemoMilestone;
+
+  /// No description provided for @settingsDemoMilestoneDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'מציג את רגע ההמרה בבאנר הרצף'**
+  String get settingsDemoMilestoneDesc;
+
+  /// No description provided for @streakMilestoneTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שבוע שלם של התמדה! 🎉'**
+  String get streakMilestoneTitle;
+
+  /// No description provided for @streakMilestoneSub.
+  ///
+  /// In he, this message translates to:
+  /// **'זה הזמן המושלם לתעד את נקודת ההתחלה'**
+  String get streakMilestoneSub;
+
+  /// No description provided for @streakPitchTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'רוצה לראות אם זה עובד?'**
+  String get streakPitchTitle;
+
+  /// No description provided for @streakPitchSub.
+  ///
+  /// In he, this message translates to:
+  /// **'צלמי תמונת ׳לפני׳ — ובעוד שבועיים תשווי'**
+  String get streakPitchSub;
+
+  /// No description provided for @streakPitchCta.
+  ///
+  /// In he, this message translates to:
+  /// **'נסי'**
+  String get streakPitchCta;
 }
 
 class _AppLocalizationsDelegate

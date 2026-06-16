@@ -7,6 +7,7 @@ import 'tables/day_records.dart';
 import 'tables/skin_log_entries.dart';
 import 'tables/muted_conflicts.dart';
 import 'tables/user_custom_products.dart';
+import 'tables/collection_items.dart';
 import 'daos/selections_dao.dart';
 import 'daos/schedules_dao.dart';
 import 'daos/order_overrides_dao.dart';
@@ -14,6 +15,7 @@ import 'daos/day_records_dao.dart';
 import 'daos/skin_log_dao.dart';
 import 'daos/muted_conflicts_dao.dart';
 import 'daos/user_custom_products_dao.dart';
+import 'daos/collection_items_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -26,6 +28,7 @@ part 'app_database.g.dart';
     SkinLogEntries,
     MutedConflicts,
     UserCustomProducts,
+    CollectionItems,
   ],
   daos: [
     SelectionsDao,
@@ -35,13 +38,14 @@ part 'app_database.g.dart';
     SkinLogDao,
     MutedConflictsDao,
     UserCustomProductsDao,
+    CollectionItemsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -71,6 +75,9 @@ class AppDatabase extends _$AppDatabase {
             await customStatement(
               'ALTER TABLE user_custom_products ADD COLUMN comment_json TEXT',
             );
+          }
+          if (from < 6) {
+            await m.createTable(collectionItems);
           }
         },
       );

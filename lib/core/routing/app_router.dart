@@ -14,9 +14,12 @@ import '../../features/settings/premium_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/settings/update_review_screen.dart';
 import '../../features/journal/skin_journal_screen.dart';
+import '../../features/collection/collection_screen.dart';
+import '../../features/collection/product_detail_screen.dart';
 import '../../features/journal/skin_log_entry_screen.dart';
 import '../../features/setup/order_customization_screen.dart';
 import '../../features/setup/schedule_setup_screen.dart';
+import '../../features/home/week_glance_screen.dart';
 
 // ── Shell with bottom nav ─────────────────────────────────────────────────────
 
@@ -70,26 +73,16 @@ final appRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/products',
-              builder: (context, state) =>
-                  const ProductSelectionScreen(isTabDestination: true),
-              routes: [
-                // Step 3 of the products flow — schedule setup.
-                // Nested inside the shell branch so the bottom nav stays visible.
-                GoRoute(
-                  path: 'schedule',
-                  builder: (context, state) =>
-                      const ScheduleSetupScreen(fromProducts: true),
-                ),
-              ],
+              path: '/collection',
+              builder: (context, state) => const CollectionScreen(),
             ),
           ],
         ),
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/calendar',
-              builder: (context, state) => const CalendarScreen(),
+              path: '/journal',
+              builder: (context, state) => const SkinJournalScreen(),
             ),
           ],
         ),
@@ -102,6 +95,25 @@ final appRouter = GoRouter(
           ],
         ),
       ],
+    ),
+
+    // Products — standalone (outside shell, no persistent nav)
+    GoRoute(
+      path: '/products',
+      builder: (context, state) => const ProductSelectionScreen(),
+      routes: [
+        GoRoute(
+          path: 'schedule',
+          builder: (context, state) =>
+              const ScheduleSetupScreen(fromProducts: true),
+        ),
+      ],
+    ),
+
+    // Calendar — standalone (outside shell)
+    GoRoute(
+      path: '/calendar',
+      builder: (context, state) => const CalendarScreen(),
     ),
 
     // Setup flow
@@ -127,10 +139,10 @@ final appRouter = GoRouter(
       },
     ),
 
-    // Skin journal (accessible from calendar)
+    // Week at a glance
     GoRoute(
-      path: '/journal',
-      builder: (context, state) => const SkinJournalScreen(),
+      path: '/week-glance',
+      builder: (context, state) => const WeekGlanceScreen(),
     ),
 
     // Detail routes
@@ -144,6 +156,12 @@ final appRouter = GoRouter(
       path: '/skin-log/:date',
       builder: (context, state) => SkinLogEntryScreen(
         date: state.pathParameters['date']!,
+      ),
+    ),
+    GoRoute(
+      path: '/collection/:productId',
+      builder: (context, state) => ProductDetailScreen(
+        productId: state.pathParameters['productId']!,
       ),
     ),
 

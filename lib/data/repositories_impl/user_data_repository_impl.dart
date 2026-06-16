@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:uuid/uuid.dart';
 import '../../core/utils/json_list.dart';
 import '../../data/local/database/app_database.dart';
+import '../../domain/entities/collection_item.dart';
 import '../../domain/entities/day_record.dart';
 import '../../domain/entities/muted_conflict.dart';
 import '../../domain/entities/order_override.dart';
@@ -10,6 +11,7 @@ import '../../domain/entities/skin_log_entry.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/entities/user_data_export.dart';
 import '../../domain/entities/weekday_schedule.dart';
+import '../../domain/enums/collection_status.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/user_data_repository.dart';
 
@@ -223,6 +225,32 @@ class UserDataRepositoryImpl implements UserDataRepository {
   Future<void> deleteCustomProduct(String id) =>
       _db.userCustomProductsDao.deleteById(id);
 
+  // ── Collection items (product lifecycle) ──────────────────────────────────
+
+  @override
+  Stream<List<CollectionItem>> watchCollectionItems() =>
+      _db.collectionItemsDao.watchAll().map(
+            (rows) => rows.map(_collectionItemFromRow).toList(),
+          );
+
+  @override
+  Future<void> upsertCollectionItem(CollectionItem item) =>
+      _db.collectionItemsDao.upsert(
+        CollectionItemsCompanion(
+          id: Value(item.id),
+          productId: Value(item.productId),
+          status: Value(item.status.name),
+          openedDateMs: Value(item.openedDate?.millisecondsSinceEpoch),
+          paoMonths: Value(item.paoMonths),
+          notificationsEnabled: Value(item.notificationsEnabled),
+          lastModifiedMs: Value(item.lastModified.millisecondsSinceEpoch),
+        ),
+      );
+
+  @override
+  Future<void> deleteCollectionItem(String id) =>
+      _db.collectionItemsDao.deleteById(id);
+
   // ── Export / Import ───────────────────────────────────────────────────────
 
   @override
@@ -233,6 +261,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
     final drRows = await _db.dayRecordsDao.watchAll().first;
     final slRows = await _db.skinLogDao.watchAll().first;
     final mcRows = await _db.mutedConflictsDao.watchAll().first;
+    final ciRows = await _db.collectionItemsDao.watchAll().first;
 
     return UserDataExport(
       schemaVersion: '1',
@@ -245,6 +274,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
       dayRecords: drRows.map(_dayRecordFromRow).toList(),
       skinLogs: slRows.map(_skinLogFromRow).toList(),
       mutedConflicts: mcRows.map(_mutedConflictFromRow).toList(),
+      collectionItems: ciRows.map(_collectionItemFromRow).toList(),
     );
   }
 
@@ -257,6 +287,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
       await _db.dayRecordsDao.deleteAll();
       await _db.skinLogDao.deleteAll();
       await _db.mutedConflictsDao.deleteAll();
+      await _db.collectionItemsDao.deleteAll();
 
       for (final s in export.selections) {
         await upsertSelection(s);
@@ -275,6 +306,9 @@ class UserDataRepositoryImpl implements UserDataRepository {
       }
       for (final m in export.mutedConflicts) {
         await muteConflict(m);
+      }
+      for (final c in export.collectionItems) {
+        await upsertCollectionItem(c);
       }
     });
   }
@@ -346,6 +380,18 @@ class UserDataRepositoryImpl implements UserDataRepository {
         timesPerWeek: r.timesPerWeek,
         lastModified: DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),
         comment: r.commentJson != null ? decodeComment(r.commentJson!) : null,
+      );
+
+  CollectionItem _collectionItemFromRow(CollectionItemRow r) => CollectionItem(
+        id: r.id,
+        productId: r.productId,
+        status: CollectionStatus.values.firstWhere((s) => s.name == r.status),
+        openedDate: r.openedDateMs == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(r.openedDateMs!),
+        paoMonths: r.paoMonths,
+        notificationsEnabled: r.notificationsEnabled,
+        lastModified: DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),
       );
 
   DayRecordsCompanion _dayRecordToCompanion(DayRecord r) =>

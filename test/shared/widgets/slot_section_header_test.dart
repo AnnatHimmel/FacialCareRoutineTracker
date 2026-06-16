@@ -19,7 +19,7 @@ void main() {
       ));
 
       expect(find.byIcon(Icons.wb_sunny_rounded), findsOneWidget);
-      expect(find.text('בוקר'), findsOneWidget);
+      expect(find.text('שגרת בוקר'), findsOneWidget);
     });
 
     testWidgets('evening slot shows moon icon and "ערב"', (tester) async {
@@ -28,7 +28,7 @@ void main() {
       ));
 
       expect(find.byIcon(Icons.dark_mode_rounded), findsOneWidget);
-      expect(find.text('ערב'), findsOneWidget);
+      expect(find.text('שגרת ערב'), findsOneWidget);
     });
 
     testWidgets('onToggle callback fires when tapped', (tester) async {
@@ -45,7 +45,7 @@ void main() {
       expect(fired, isTrue);
     });
 
-    testWidgets('count chip shows done/total when doneCount provided',
+    testWidgets('count is not shown even when doneCount provided',
         (tester) async {
       await tester.pumpWidget(_wrap(
         const SlotSectionHeader(
@@ -55,7 +55,9 @@ void main() {
         ),
       ));
 
-      expect(find.text('1/3'), findsOneWidget);
+      // Count chip intentionally removed — no "X/Y" text in the header
+      expect(find.text('1/3'), findsNothing);
+      expect(find.textContaining('/'), findsNothing);
     });
 
     testWidgets('no count chip when doneCount is null', (tester) async {

@@ -85,7 +85,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
 
   // Redesign state
   String? _openProductId; // which product row's day-editor is expanded
-  bool _issuesOpen = false; // is the issues panel expanded (starts collapsed)
+  bool _issuesOpen = true; // is the issues panel expanded (starts open)
   bool _showDaily = false; // is the "every day" group expanded
 
   final ScrollController _scrollController = ScrollController();
@@ -152,7 +152,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
       _activeSlot = slot;
       _visitedSlots = {..._visitedSlots, slot};
       _openProductId = null;
-      _issuesOpen = false;
+      _issuesOpen = true;
       _showDaily = false;
       _rowKeys.clear();
     });
@@ -518,6 +518,9 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                 nextSlotRoutine: nextSlotRoutine,
                 nextSlotIcon: nextSlotIcon,
                 l: l,
+                hasConflicts: pairCount > 0,
+                conflictCount: conflictDays.length,
+                activeSlotLabel: _activeSlot == Slot.morning ? l.slotMorning : l.slotEvening,
                 onTap: nextSlot != null
                     ? () => _switchSlot(nextSlot)
                     : () => _handleContinue(context),
@@ -662,19 +665,18 @@ class _IssuesPanel extends StatelessWidget {
                   // conflicts
                   if (pairCount > 0) ...[
                     const SizedBox(height: 12),
-                    if (overProds.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          l.scheduleConflictsSection,
-                          textAlign: TextAlign.start,
-                          style: AppTypography.labelSm.copyWith(
-                            color: AppColors.error.withValues(alpha: 0.8),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 10.5,
-                          ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        l.scheduleConflictsSection,
+                        textAlign: TextAlign.start,
+                        style: AppTypography.labelSm.copyWith(
+                          color: AppColors.error.withValues(alpha: 0.8),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10.5,
                         ),
                       ),
+                    ),
                     for (final d in conflictDays)
                       for (int i = 0; i < dayPairs[d]!.length; i++)
                         Padding(
@@ -1673,6 +1675,9 @@ class _BottomCta extends StatelessWidget {
   final AppLocalizations l;
   final VoidCallback onTap;
   final VoidCallback? onBack;
+  final bool hasConflicts;
+  final int conflictCount;
+  final String activeSlotLabel;
 
   const _BottomCta({
     required this.fromSetup,
@@ -1681,6 +1686,9 @@ class _BottomCta extends StatelessWidget {
     required this.nextSlotIcon,
     required this.l,
     required this.onTap,
+    required this.hasConflicts,
+    required this.conflictCount,
+    required this.activeSlotLabel,
     this.onBack,
   });
 
@@ -1740,6 +1748,17 @@ class _BottomCta extends StatelessWidget {
               ),
             ],
           ),
+          if (hasConflicts) ...[
+            const SizedBox(height: 6),
+            Text(
+              l.scheduleConflictWarningCount(conflictCount, activeSlotLabel),
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ],
       ),
     );

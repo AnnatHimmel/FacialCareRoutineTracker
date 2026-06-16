@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +8,8 @@ import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/backup_reminder_banner.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
+import '../../shared/widgets/pro_tag.dart';
+import '../../shared/widgets/upgrade_sheet.dart';
 
 final _userProfileProvider = FutureProvider<({String? name, String? gender})>(
   (ref) async {
@@ -27,10 +28,11 @@ class SettingsScreen extends ConsumerWidget {
     final l = AppLocalizations.of(context)!;
     final appVersion = ref.watch(appVersionProvider).valueOrNull ?? '—';
     final profileAsync = ref.watch(_userProfileProvider);
+    final isPro = ref.watch(isProDemoProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: const GlowAppBar(),
+      appBar: GlowAppBar(title: l.navSettings),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         children: [
@@ -39,55 +41,97 @@ class SettingsScreen extends ConsumerWidget {
             onEdit: () => _showEditProfileSheet(context, ref, l),
             onLogout: () => _confirmLogout(context, ref, l),
             l: l,
+            isPro: isPro,
           ),
 
           const SizedBox(height: 16),
+          const _DemoModeCard(),
+          const SizedBox(height: 16),
           const BackupReminderBanner(),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
 
-          _SectionLabel(label: l.settingsSectionRoutine),
-          const SizedBox(height: 8),
-
-          _SettingsRow(
-            icon: Icons.reorder,
-            label: l.settingsOrderProducts,
-            subtitle: l.settingsOrderSubtitle,
-            onTap: () => context.push('/setup/order'),
-          ),
-
-          const SizedBox(height: 24),
-          _SectionLabel(label: l.settingsSectionData),
-          const SizedBox(height: 8),
-
-          _LanguageRow(),
-          const SizedBox(height: 12),
-          _SettingsRow(
-            icon: Icons.cloud_download_outlined,
-            label: l.exportTitle,
-            subtitle: l.settingsExportSubtitle,
-            onTap: () => context.push('/export-import'),
-          ),
-
-          const SizedBox(height: 24),
-          _SectionLabel(label: l.settingsSectionInfo),
-          const SizedBox(height: 8),
-
-          _SettingsRow(
-            icon: Icons.info_outlined,
-            label: l.settingsAbout,
-            subtitle: l.settingsAboutSubtitle(appVersion),
-            onTap: () => context.push('/about'),
-          ),
-
-          if (kIsWeb) ...[
-            const SizedBox(height: 12),
-            _SettingsRow(
-              icon: Icons.workspace_premium_outlined,
-              label: l.settingsPremium,
-              subtitle: l.settingsPremiumSubtitle,
-              onTap: () => context.push('/premium'),
+          // ── Gold PRO upsell card (hidden when PRO demo is active) ───────────
+          if (!isPro) ...[
+            GestureDetector(
+              onTap: () => showUpgradeSheet(context),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xffb3892a), Color(0xff8f6a15)],
+                  ),
+                  borderRadius: BorderRadius.circular(26),
+                  boxShadow: AppColors.glowLg,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.workspace_premium_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l.settingsProTitle,
+                            style: AppTypography.labelMd.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            l.settingsProSubtitle,
+                            style: AppTypography.labelSm.copyWith(
+                              color: Colors.white.withAlpha(217),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_left_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ],
+                ),
+              ),
             ),
+            const SizedBox(height: 16),
           ],
+
+          // ── Standard settings group ─────────────────────────────────────────
+          _SettingsGroupCard(
+            children: [
+              _SettingsTile(
+                icon: Icons.reorder,
+                label: l.settingsOrderProducts,
+                subtitle: l.settingsOrderSubtitle,
+                onTap: () => context.push('/setup/order'),
+              ),
+              const _LanguageTile(),
+              _SettingsTile(
+                icon: Icons.cloud_download_outlined,
+                label: l.exportTitle,
+                subtitle: l.settingsExportSubtitle,
+                onTap: () => context.push('/export-import'),
+              ),
+              _SettingsTile(
+                icon: Icons.info_outlined,
+                label: l.settingsAbout,
+                subtitle: l.settingsAboutSubtitle(appVersion),
+                onTap: () => context.push('/about'),
+              ),
+            ],
+          ),
 
           const SizedBox(height: 32),
         ],
@@ -103,12 +147,14 @@ class _ProfileCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onLogout;
   final AppLocalizations l;
+  final bool isPro;
 
   const _ProfileCard({
     required this.profileAsync,
     required this.onEdit,
     required this.onLogout,
     required this.l,
+    required this.isPro,
   });
 
   @override
@@ -144,6 +190,29 @@ class _ProfileCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 2),
+                    if (isPro)
+                      Row(
+                        children: [
+                          Text(
+                            l.settingsAccountPro,
+                            style: AppTypography.labelSm.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          const ProTag(size: ProTagSize.small),
+                        ],
+                      )
+                    else
+                      Text(
+                        l.settingsAccountFree,
+                        style: AppTypography.labelSm.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                          fontSize: 12,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -207,7 +276,6 @@ class _AvatarCircle extends StatelessWidget {
     );
   }
 }
-
 
 class _ProfileActionButton extends StatelessWidget {
   final IconData icon;
@@ -518,83 +586,311 @@ Future<void> _confirmLogout(
   }
 }
 
-// ── Shared section helpers ─────────────────────────────────────────────────────
+// ── Demo Mode Card ─────────────────────────────────────────────────────────────
 
-class _SectionLabel extends StatelessWidget {
-  final String label;
-  const _SectionLabel({required this.label});
+class _DemoModeCard extends ConsumerWidget {
+  const _DemoModeCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final isPro = ref.watch(isProDemoProvider);
+    final isMilestone = ref.watch(milestoneDemoProvider);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xfffdf8ec)],
+        ),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: const Color(0xffeddfb8)),
+        boxShadow: AppColors.glow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: icon + title
+          Row(
+            children: [
+              const Icon(Icons.science_rounded, color: Color(0xff8f6a15), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                l.settingsDemoTitle,
+                style: AppTypography.labelMd.copyWith(
+                  color: const Color(0xff6b5413),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l.settingsDemoDesc,
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Segmented pill toggle
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(9999),
+              border: Border.all(
+                color: AppColors.outlineVariant.withAlpha(102),
+              ),
+            ),
+            child: Row(
+              children: [
+                // Free half
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () =>
+                        ref.read(isProDemoProvider.notifier).state = false,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(vertical: 9),
+                      decoration: BoxDecoration(
+                        color: !isPro ? AppColors.onSurface : Colors.transparent,
+                        borderRadius: BorderRadius.circular(9999),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        l.settingsDemoFree,
+                        style: AppTypography.labelMd.copyWith(
+                          color: !isPro
+                              ? Colors.white
+                              : AppColors.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // PRO half
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () =>
+                        ref.read(isProDemoProvider.notifier).state = true,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(vertical: 9),
+                      decoration: BoxDecoration(
+                        gradient: isPro
+                            ? const LinearGradient(
+                                colors: [Color(0xffb3892a), Color(0xff8f6a15)],
+                              )
+                            : null,
+                        borderRadius: BorderRadius.circular(9999),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'PRO',
+                            style: AppTypography.labelMd.copyWith(
+                              color: isPro
+                                  ? Colors.white
+                                  : AppColors.onSurfaceVariant,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.workspace_premium_rounded,
+                            size: 14,
+                            color: isPro
+                                ? Colors.white
+                                : AppColors.onSurfaceVariant,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 24, color: Color(0xffeddfb8)),
+          // Milestone row
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.settingsDemoMilestone,
+                      style: AppTypography.labelMd.copyWith(
+                        color: AppColors.onSurface,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l.settingsDemoMilestoneDesc,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: isMilestone,
+                onChanged: (v) =>
+                    ref.read(milestoneDemoProvider.notifier).state = v,
+                activeThumbColor: AppColors.primary,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Settings Group Card ────────────────────────────────────────────────────────
+
+class _SettingsGroupCard extends StatelessWidget {
+  final List<Widget> children;
+  const _SettingsGroupCard({required this.children});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(start: 4),
-      child: Text(
-        label,
-        textAlign: TextAlign.start,
-        style: AppTypography.labelMd.copyWith(
-          color: AppColors.onSurfaceVariant,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppColors.glow,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (int i = 0; i < children.length; i++) ...[
+            children[i],
+            if (i < children.length - 1)
+              Divider(
+                height: 1,
+                color: AppColors.outlineVariant.withAlpha(51),
+                indent: 68,
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Settings Tile ──────────────────────────────────────────────────────────────
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.label,
+    this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.primaryFixed.withAlpha(128),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: AppColors.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.labelMd.copyWith(
+                      color: AppColors.onSurface,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      subtitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.chevron_left,
+              color: AppColors.onSurfaceVariant,
+              size: 20,
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _LanguageRow extends ConsumerWidget {
+// ── Language Tile (ConsumerWidget — needs locale provider) ─────────────────────
+
+class _LanguageTile extends ConsumerWidget {
+  const _LanguageTile();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     final locale = ref.watch(appLocaleProvider);
     final isEnglish = locale.languageCode == 'en';
-    final currentLabel = isEnglish ? l.settingsLanguageEnglish : l.settingsLanguageHebrew;
+    final currentLabel =
+        isEnglish ? l.settingsLanguageEnglish : l.settingsLanguageHebrew;
 
-    return GlowCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      shadow: AppColors.glowSm,
+    return _SettingsTile(
+      icon: Icons.language,
+      label: l.settingsLanguage,
+      subtitle: currentLabel,
       onTap: () => _showLanguagePicker(context, ref, l, isEnglish),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: AppColors.primaryFixed,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.language, color: AppColors.primary, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l.settingsLanguage,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.bodyMd.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  currentLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant, size: 22),
-        ],
-      ),
     );
   }
 }
+
+// ── Language Picker Dialog ─────────────────────────────────────────────────────
 
 Future<void> _showLanguagePicker(
   BuildContext context,
@@ -643,82 +939,5 @@ Future<void> _showLanguagePicker(
     final gender = await settings.getUserGender();
     ref.read(appLocaleProvider.notifier).state =
         gender == 'male' ? const Locale('he', 'MA') : const Locale('he');
-  }
-}
-
-class _SettingsRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _SettingsRow({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GlowCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      shadow: AppColors.glowSm,
-      onTap: onTap,
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: AppColors.primaryFixed,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: AppColors.primary,
-              size: 22,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.start,
-                  style: AppTypography.bodyMd.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.start,
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 8),
-          const Icon(
-            Icons.chevron_right,
-            color: AppColors.onSurfaceVariant,
-            size: 22,
-          ),
-        ],
-      ),
-    );
   }
 }

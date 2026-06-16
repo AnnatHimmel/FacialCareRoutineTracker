@@ -121,13 +121,13 @@
     <p>
       האפליקציה שומרת על המכשיר שלך: שם המשתמש (אם הוזן), מוצרי הטיפוח שבחרת,
       לוח הזמנים האישי שלך, רישומי שגרה יומיים, תמונות יומן העור, והערות אישיות.
-      כל המידע הזה נשמר <strong>מקומית בלבד</strong> ואינו עובר לשום שרת.
+      כל המידע האישי הזה נשמר <strong>מקומית בלבד</strong> ואינו עובר לשום שרת.
     </p>
 
     <h2>אנחנו לא…</h2>
     <p>
-      איננו אוספים מידע אנונימי על שימוש, איננו שולחים נתונים לשרתים חיצוניים,
-      איננו מוכרים או משתפים מידע עם צדדים שלישיים, ואינו דורשים יצירת חשבון.
+      איננו אוספים מידע אנונימי על שימוש, איננו מוכרים או משתפים מידע אישי עם
+      צדדים שלישיים, ואיננו דורשים יצירת חשבון.
     </p>
 
     <h2>תמונות</h2>
@@ -137,11 +137,21 @@
       את הנתונים מדי פעם.
     </p>
 
+    <h2>תוכן האפליקציה</h2>
+    <p>
+      רשימת המוצרים הראשית מורדת מהשרת שלנו (Supabase) בעת הפעלת האפליקציה
+      או עדכונה. בקשה זו אינה מכילה מידע אישי — מדובר בהורדה של רשימת מוצרים
+      שנערכת על ידי מנהל האפליקציה בלבד.
+    </p>
+
     <h2>מצלמה וסריקת ברקוד (Android בלבד)</h2>
     <p>
       בגרסת ה-Android, האפליקציה מבקשת הרשאת מצלמה כדי לאפשר סריקת ברקוד של
       מוצרי טיפוח. המצלמה משמשת <strong>אך ורק</strong> לצילום הברקוד — לא
-      נשמרת תמונה, לא מועברת מידע לשרת חיצוני. הרשאת המצלמה נדרשת בעת הסריקה
+      נשמרת תמונה. בעת הסריקה, קוד הברקוד (מספר EAN/UPC) נשלח לשירותי חיפוש
+      מוצרים חיצוניים — <a href="https://world.openbeautyfacts.org">Open Beauty Facts</a>
+      ו-<a href="https://upcitemdb.com">UPC Item DB</a> — לזיהוי המוצר.
+      לא מועבר מידע אישי — רק מספר הברקוד. הרשאת המצלמה נדרשת בעת הסריקה
       ולא בזמן אחר.
     </p>
 
@@ -179,13 +189,13 @@
     <p>
       The app stores locally on your device: your name (if entered), selected skincare products,
       your personal schedule, daily routine records, skin journal photos, and personal notes.
-      None of this data is transmitted to any server.
+      None of this personal data is transmitted to any server.
     </p>
 
     <h2>We do not…</h2>
     <p>
-      We do not collect anonymous usage data, send data to external servers,
-      sell or share information with third parties, or require account creation.
+      We do not collect anonymous usage data, sell or share personal information
+      with third parties, or require account creation.
     </p>
 
     <h2>Photos</h2>
@@ -195,11 +205,21 @@
       Regular data exports are recommended.
     </p>
 
+    <h2>App content</h2>
+    <p>
+      The master product list is fetched from our server (Supabase) when the app starts or
+      updates. This request contains no personal data — it is a read-only download of product
+      information curated by the app's admin.
+    </p>
+
     <h2>Camera and barcode scanning (Android only)</h2>
     <p>
       On Android, the app requests camera permission to enable barcode scanning of skincare
       product packaging. The camera is used <strong>solely</strong> to read the barcode — no
-      image is saved, and no data is transmitted to any external server. Camera access is
+      image is saved. When you scan a barcode, the numeric barcode code (EAN/UPC) is sent to
+      <a href="https://world.openbeautyfacts.org">Open Beauty Facts</a> and
+      <a href="https://upcitemdb.com">UPC Item DB</a> to identify the product.
+      No personal information is sent — only the barcode number. Camera access is
       only active during a scanning session.
     </p>
 

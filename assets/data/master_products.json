@@ -23,6 +23,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Glycerin", "Cocamidopropyl Betaine", "Panthenol", "Allantoin", "Sodium Hyaluronate"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 0,
@@ -43,6 +44,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Rice Extract", "Lactobacillus Ferment", "Niacinamide", "Zinc Oxide", "Panthenol"],
       "morningConfig": {
         "order": 20,
         "frequency": {
@@ -64,6 +66,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Sunflower Seed Oil", "Shea Butter", "Vitamin E", "Glycerin", "Beeswax"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 0,
@@ -84,6 +87,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Glycerin", "Cocamidopropyl Betaine", "Green Tea Extract", "Panthenol", "Allantoin"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 1,
@@ -104,6 +108,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Marula Oil (Sclerocarya Birrea)", "Vitamin E (Tocopherol)", "Oleic Acid", "Squalane", "Omega-9 Fatty Acids"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 25,
@@ -124,6 +129,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Ceramide NP", "Panthenol", "Glycerin", "Shea Butter", "Madecassoside"],
       "morningConfig": {
         "order": 19,
         "frequency": {
@@ -149,6 +155,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Tinosorb S (Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine)", "Uvinul A Plus", "Niacinamide", "Glycerin", "Panthenol"],
       "morningConfig": {
         "order": 23,
         "frequency": {
@@ -169,6 +176,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Houttuynia Cordata (Heartleaf) Extract", "Centella Asiatica Extract", "Panthenol", "Glycerin", "Ceramide NP"],
       "morningConfig": {
         "order": 17,
         "frequency": {
@@ -194,6 +202,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Tea Tree Leaf Oil", "Centella Asiatica Extract", "Salicylic Acid", "Niacinamide", "Panthenol"],
       "morningConfig": {
         "order": 11,
         "frequency": {
@@ -219,6 +228,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Squalane", "Glycerin", "Hyaluronic Acid", "Panthenol", "Ceramide NP"],
       "morningConfig": {
         "order": 18,
         "frequency": {
@@ -244,6 +254,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Ascorbic Acid (Vitamin C)", "Centella Asiatica Extract", "Niacinamide", "Vitamin E (Tocopherol)", "Glycerin"],
       "morningConfig": {
         "order": 4,
         "frequency": {
@@ -264,6 +275,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Glycolic Acid (AHA)", "Salicylic Acid (BHA)", "Gluconolactone (PHA)", "Lactobionic Acid (LHA)", "Niacinamide"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 18,
@@ -285,6 +297,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Centella Asiatica Extract", "Madecassoside", "Panthenol", "Glycerin", "Ceramide NP"],
       "morningConfig": {
         "order": 14,
         "frequency": {
@@ -310,6 +323,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Rice Extract", "Panthenol (Vitamin B5)", "Niacinamide", "Zinc Oxide", "Glycerin"],
       "morningConfig": {
         "order": 21,
         "frequency": {
@@ -330,6 +344,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Azelaic Acid 20%", "Glycerin", "Panthenol", "Niacinamide", "Allantoin"],
       "morningConfig": {
         "order": 6,
         "frequency": {
@@ -355,6 +370,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Niacinamide 20%", "Zinc PCA", "Panthenol", "Glycerin", "Hyaluronic Acid"],
       "morningConfig": {
         "order": 9,
         "frequency": {
@@ -380,6 +396,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["L-Glutathione (Liposomal)", "Niacinamide", "Ascorbic Acid (Vitamin C)", "Glycerin", "Panthenol"],
       "morningConfig": {
         "order": 0,
         "frequency": {
@@ -405,6 +422,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Tranexamic Acid 15%", "Niacinamide", "Glycerin", "Panthenol", "Hyaluronic Acid"],
       "morningConfig": {
         "order": 8,
         "frequency": {
@@ -430,6 +448,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["PDRN (Polydeoxyribonucleotide) 3%", "Adenosine", "Hyaluronic Acid", "Panthenol", "Glycerin"],
       "morningConfig": {
         "order": 12,
         "frequency": {
@@ -455,6 +474,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Salicylic Acid", "Tea Tree Leaf Oil", "Niacinamide", "Willow Bark Extract", "Glycerin"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 17,
@@ -476,6 +496,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Azelaic Acid 15%", "Panthenol", "Niacinamide", "Glycerin", "Allantoin"],
       "morningConfig": {
         "order": 7,
         "frequency": {
@@ -501,6 +522,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Ectoin", "Panthenol", "Glycerin", "Ceramide NP", "Allantoin"],
       "morningConfig": {
         "order": 15,
         "frequency": {
@@ -526,6 +548,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Rice Extract", "Niacinamide", "Glycerin", "Inositol", "Ferulic Acid"],
       "morningConfig": {
         "order": 1,
         "frequency": {
@@ -551,6 +574,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Retinal (Retinaldehyde)", "Bakuchiol", "Squalane", "Vitamin E (Tocopherol)", "Panthenol"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 2,
@@ -571,6 +595,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Niacinamide 10%", "Tranexamic Acid 4%", "Panthenol", "Glycerin", "Hyaluronic Acid"],
       "morningConfig": {
         "order": 10,
         "frequency": {
@@ -596,6 +621,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Ginseng Extract", "Niacinamide", "Glycerin", "Honey Extract", "Adenosine"],
       "morningConfig": {
         "order": 16,
         "frequency": {
@@ -621,6 +647,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Retinol (Vitamin A)", "Squalane", "Vitamin E (Tocopherol)", "Panthenol", "Hyaluronic Acid"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 3,
@@ -641,6 +668,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Fermented Black Rice Extract", "Niacinamide", "Zinc Oxide", "Glycerin", "Panthenol"],
       "morningConfig": {
         "order": 22,
         "frequency": {
@@ -661,6 +689,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Rice Extract", "Niacinamide", "Glycerin", "Panthenol", "Beta-Glucan"],
       "morningConfig": {
         "order": 2,
         "frequency": {
@@ -686,6 +715,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Retinal (Retinaldehyde)", "Ginseng Extract", "Niacinamide", "Adenosine", "Panthenol"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 0,
@@ -706,6 +736,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Copper Tripeptide-1", "Hexapeptide-11", "Niacinamide", "Adenosine", "Glycerin"],
       "morningConfig": {
         "order": 3,
         "frequency": {
@@ -731,6 +762,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["PDRN (Polydeoxyribonucleotide)", "Copper Tripeptide-1", "Niacinamide", "Adenosine", "Panthenol"],
       "morningConfig": {
         "order": 13,
         "frequency": {
@@ -756,6 +788,7 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
+      "ingredients": ["Argireline (Acetyl Hexapeptide-3) 10%", "Leuphasyl", "Hyaluronic Acid", "Glycerin", "Panthenol"],
       "morningConfig": {
         "order": 5,
         "frequency": {

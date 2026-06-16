@@ -73,7 +73,7 @@ class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onDestinationSelected;
 
-  static const _routes = ['/today', '/products', '/calendar', '/settings'];
+  static const _routes = ['/today', '/collection', '/journal', '/settings'];
 
   const AppBottomNav({
     super.key,
@@ -105,12 +105,12 @@ class AppBottomNav extends StatelessWidget {
         GlassNavItem(
           icon: Icons.spa_outlined,
           selectedIcon: Icons.spa_rounded,
-          label: l.navProducts,
+          label: l.navCollection,
         ),
         GlassNavItem(
           icon: Icons.calendar_today_outlined,
           selectedIcon: Icons.calendar_today_rounded,
-          label: l.navCalendar,
+          label: l.navJournal,
         ),
         GlassNavItem(
           icon: Icons.settings_outlined,
@@ -148,7 +148,7 @@ class _NavButton extends StatelessWidget {
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
           decoration: BoxDecoration(
-            color: active ? AppColors.primaryFixed : Colors.transparent,
+            color: active ? AppColors.primaryFixed.withAlpha(153) : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(

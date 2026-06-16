@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import 'upgrade_sheet.dart';
 
 class StreakWidget extends StatelessWidget {
   final int currentStreak;
   final int longestStreak;
   final int gracesUsed;
   final int gracesTotal;
+  final bool showMilestonePitch;
 
   const StreakWidget({
     super.key,
@@ -15,116 +18,161 @@ class StreakWidget extends StatelessWidget {
     required this.longestStreak,
     required this.gracesUsed,
     this.gracesTotal = 3,
+    this.showMilestonePitch = false,
   });
 
   static const Color _white = Color(0xFFFFFFFF);
-  static const Color _whiteDim = Color(0xCCFFFFFF);
-
-  // Scale badge contents down for wide streak numbers so the badge never grows.
-  static _StreakScale _scaleFor(int streak) {
-    final digits = streak == 0 ? 1 : streak.toString().length;
-    if (digits >= 4) return const _StreakScale(fontSize: 36, iconSize: 18, iconTopPad: 2, spacing: 1, startPad: 12);
-    if (digits == 3) return const _StreakScale(fontSize: 44, iconSize: 22, iconTopPad: 3, spacing: 2, startPad: 8);
-    return const _StreakScale(fontSize: 64, iconSize: 28, iconTopPad: 5, spacing: 4, startPad: 20);
-  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final gracesLeft = (gracesTotal - gracesUsed).clamp(0, gracesTotal);
-    final subtitle = currentStreak > 0
-        ? l.streakOnTrack
-        : l.streakStartToday;
-    final scale = _scaleFor(currentStreak);
+
+    final headline = showMilestonePitch
+        ? l.streakMilestoneTitle
+        : (currentStreak > 0 ? l.streakOnTrack : l.streakStartToday);
+    final subtext = showMilestonePitch
+        ? l.streakMilestoneSub
+        : l.streakPersonalBest(longestStreak);
 
     return Container(
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         gradient: AppColors.streakGradient,
         borderRadius: BorderRadius.circular(28),
         boxShadow: AppColors.glowLg,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
         children: [
-          Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(scale.startPad, 20, 20, 16),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Semantics(
+          // Sparkle decorations
+          PositionedDirectional(
+            top: 12,
+            end: 16,
+            child: Text(
+              '✦',
+              style: TextStyle(
+                color: _white.withOpacity(0.6),
+                fontSize: 20,
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            bottom: 48,
+            end: 60,
+            child: Text(
+              '✧',
+              style: TextStyle(
+                color: _white.withOpacity(0.4),
+                fontSize: 16,
+              ),
+            ),
+          ),
+
+          // Main content
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 20, 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Left column — fixed 104px
+                    SizedBox(
+                      width: 104,
+                      child: Semantics(
                         label: l.streakSemanticDays(currentStreak),
                         excludeSemantics: true,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Padding(
-                              padding: EdgeInsets.only(top: scale.iconTopPad),
-                              child: Icon(
-                                Icons.local_fire_department_rounded,
-                                color: _white,
-                                size: scale.iconSize,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 8),
+                                    child: Icon(
+                                      Icons.local_fire_department_rounded,
+                                      color: _white,
+                                      size: 30,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '$currentStreak',
+                                    style: AppTypography.displayLg.copyWith(
+                                      color: _white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 60,
+                                      height: 0.85,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            SizedBox(width: scale.spacing),
+                            const SizedBox(height: 4),
                             Text(
-                              '$currentStreak',
-                              style: AppTypography.displayLg.copyWith(
+                              l.streakDaysInRow,
+                              style: AppTypography.labelSm.copyWith(
                                 color: _white,
                                 fontWeight: FontWeight.w700,
-                                fontSize: scale.fontSize,
-                                height: 1.0,
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        l.streakDaysInRow,
-                        style: AppTypography.labelSm.copyWith(
-                          color: _whiteDim,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          subtitle,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.labelSm.copyWith(
-                            color: _whiteDim,
-                            height: 1.3,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _BestStreakChip(bestStreak: longestStreak),
-                      ],
                     ),
-                  ),
-                ],
+
+                    const SizedBox(width: 12),
+
+                    // Right column — fills remaining width
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            headline,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.labelSm.copyWith(
+                              color: _white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            subtext,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.labelSm.copyWith(
+                              color: _white.withOpacity(0.85),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
 
-          Container(height: 1, color: Colors.white.withAlpha(51)),
-
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-            child: _GraceMeter(total: gracesTotal, left: gracesLeft),
+              if (showMilestonePitch)
+                _MilestonePitchCard(l: l)
+              else ...[
+                Container(height: 1, color: Colors.white.withAlpha(51)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                  child: _GraceMeter(total: gracesTotal, left: gracesLeft),
+                ),
+              ],
+            ],
           ),
         ],
       ),
@@ -132,38 +180,106 @@ class StreakWidget extends StatelessWidget {
   }
 }
 
-class _BestStreakChip extends StatelessWidget {
-  final int bestStreak;
-  const _BestStreakChip({required this.bestStreak});
+// ── Milestone pitch card ──────────────────────────────────────────────────────
 
-  static const Color _white = Color(0xFFFFFFFF);
+class _MilestonePitchCard extends StatelessWidget {
+  final AppLocalizations l;
+  const _MilestonePitchCard({required this.l});
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(38),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.emoji_events_rounded, color: _white, size: 14),
-          const SizedBox(width: 5),
-          Flexible(
-            child: Text(
-              l.streakPersonalBest(bestStreak),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTypography.labelSm.copyWith(
-                color: _white,
-                fontWeight: FontWeight.w700,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Circle icon
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0xfff7e8c8),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add_a_photo,
+                size: 20,
+                color: Color(0xff8f6a15),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 10),
+            // Text column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l.streakPitchTitle,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF251815),
+                    ),
+                  ),
+                  Text(
+                    l.streakPitchSub,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      color: const Color(0xFF56423E),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Gold gradient CTA button
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xffb3892a), Color(0xff8f6a15)],
+                ),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: TextButton.icon(
+                onPressed: () => showUpgradeSheet(context),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                icon: const Icon(
+                  Icons.workspace_premium,
+                  size: 14,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  l.streakPitchCta,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -247,20 +363,4 @@ class _GraceToken extends StatelessWidget {
       ),
     );
   }
-}
-
-class _StreakScale {
-  final double fontSize;
-  final double iconSize;
-  final double iconTopPad;
-  final double spacing;
-  final double startPad;
-
-  const _StreakScale({
-    required this.fontSize,
-    required this.iconSize,
-    required this.iconTopPad,
-    required this.spacing,
-    required this.startPad,
-  });
 }

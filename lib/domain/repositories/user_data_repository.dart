@@ -1,3 +1,4 @@
+import '../entities/collection_item.dart';
 import '../entities/product_selection.dart';
 import '../entities/weekday_schedule.dart';
 import '../entities/order_override.dart';
@@ -42,6 +43,10 @@ abstract class UserDataRepository {
   Stream<List<UserCustomProduct>> watchCustomProducts();
   Future<void> upsertCustomProduct(UserCustomProduct p);
   Future<void> deleteCustomProduct(String id);
+
+  Stream<List<CollectionItem>> watchCollectionItems();
+  Future<void> upsertCollectionItem(CollectionItem item);
+  Future<void> deleteCollectionItem(String id);
 
   Future<UserDataExport> exportAllData();
   Future<void> replaceAllData(UserDataExport export);

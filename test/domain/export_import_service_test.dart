@@ -5,6 +5,8 @@ import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
 import 'package:skincare_tracker/domain/entities/skin_log_entry.dart';
+import 'package:skincare_tracker/domain/entities/collection_item.dart';
+import 'package:skincare_tracker/domain/enums/collection_status.dart';
 import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
@@ -147,11 +149,18 @@ class _FakeUserDataRepo implements UserDataRepository {
   @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
   @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
   @override Future<void> deleteCustomProduct(String id) async {}
+  @override Stream<List<CollectionItem>> watchCollectionItems() => throw UnimplementedError();
+  @override Future<void> upsertCollectionItem(CollectionItem item) => throw UnimplementedError();
+  @override Future<void> deleteCollectionItem(String id) => throw UnimplementedError();
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-UserDataExport _makeExport({List<DayRecord> dayRecords = const [], List<SkinLogEntry> skinLogs = const []}) =>
+UserDataExport _makeExport({
+  List<DayRecord> dayRecords = const [],
+  List<SkinLogEntry> skinLogs = const [],
+  List<CollectionItem> collectionItems = const [],
+}) =>
     UserDataExport(
       schemaVersion: '2',
       exportDate: '2024-03-15T10:00:00.000Z',
@@ -163,6 +172,25 @@ UserDataExport _makeExport({List<DayRecord> dayRecords = const [], List<SkinLogE
       dayRecords: dayRecords,
       skinLogs: skinLogs,
       mutedConflicts: const [],
+      collectionItems: collectionItems,
+    );
+
+CollectionItem _makeCi(
+  String id, {
+  required DateTime modified,
+  CollectionStatus status = CollectionStatus.inUse,
+  DateTime? opened,
+  int paoMonths = 12,
+  bool notify = true,
+}) =>
+    CollectionItem(
+      id: id,
+      productId: 'prod-$id',
+      status: status,
+      openedDate: opened,
+      paoMonths: paoMonths,
+      notificationsEnabled: notify,
+      lastModified: modified,
     );
 
 DayRecord _makeDr(String id, {required DateTime modified}) => DayRecord(
@@ -347,6 +375,130 @@ void main() {
       final session = await svc.startMerge(validated);
 
       expect(session.conflicts.isEmpty, isTrue);
+    });
+  });
+
+  group('ExportImportService — collection items', () {
+    test('exportToArchive → validateArchive restores collection items',
+        () async {
+      final stored = _makeExport(collectionItems: [
+        _makeCi('ci1',
+            modified: DateTime.utc(2024, 1, 1),
+            status: CollectionStatus.inUse,
+            opened: DateTime.utc(2024, 2, 1),
+            paoMonths: 12,
+            notify: true),
+      ]);
+      final svc = ExportImportService(
+          _FakeUserDataRepo(stored), _FakePhotoRepo(), _FakeSettingsRepo());
+
+      final bytes = await svc.exportToArchive();
+      final result = svc.validateArchive(bytes);
+
+      expect(result.isValid, isTrue);
+      expect(result.data!.collectionItems.length, 1);
+      final ci = result.data!.collectionItems.first;
+      expect(ci.id, 'ci1');
+      expect(ci.productId, 'prod-ci1');
+      expect(ci.status, CollectionStatus.inUse);
+      expect(ci.openedDate, DateTime.utc(2024, 2, 1));
+      expect(ci.paoMonths, 12);
+      expect(ci.notificationsEnabled, isTrue);
+    });
+
+    test('collection item with null openedDate round-trips', () async {
+      final stored = _makeExport(collectionItems: [
+        _makeCi('ci2',
+            modified: DateTime.utc(2024, 1, 1),
+            status: CollectionStatus.sealed,
+            opened: null),
+      ]);
+      final svc = ExportImportService(
+          _FakeUserDataRepo(stored), _FakePhotoRepo(), _FakeSettingsRepo());
+
+      final bytes = await svc.exportToArchive();
+      final result = svc.validateArchive(bytes);
+
+      final ci = result.data!.collectionItems.first;
+      expect(ci.openedDate, isNull);
+      expect(ci.status, CollectionStatus.sealed);
+    });
+
+    test('old archive without collectionItems key parses to empty list', () {
+      final svc = ExportImportService(
+          _FakeUserDataRepo(), _FakePhotoRepo(), _FakeSettingsRepo());
+      final legacy = UserDataExport.fromJson(const {
+        'schemaVersion': '2',
+        'exportDate': '',
+        'appVersion': '1.0.0',
+        'masterContentVersion': '1.2.0',
+        'selections': [],
+        'schedules': [],
+        'overrides': [],
+        'dayRecords': [],
+        'skinLogs': [],
+        'mutedConflicts': [],
+      });
+      expect(legacy.collectionItems, isEmpty);
+      // Reference svc so the analyzer keeps the import meaningful.
+      expect(svc, isNotNull);
+    });
+
+    test('startMerge detects conflicting collection items', () async {
+      final local = _makeExport(
+          collectionItems: [_makeCi('ci1', modified: DateTime.utc(2024, 1, 1))]);
+      final archive = _makeExport(
+          collectionItems: [_makeCi('ci1', modified: DateTime.utc(2024, 1, 2))]);
+
+      final svc = ExportImportService(
+          _FakeUserDataRepo(local), _FakePhotoRepo(), _FakeSettingsRepo());
+      final session = await svc.startMerge(
+          ArchiveValidationResult(isValid: true, data: archive, photos: {}));
+
+      expect(session.conflicts.length, 1);
+      expect(session.conflicts.first.recordId, 'ci1');
+      expect(session.conflicts.first.recordType, 'collectionItem');
+    });
+
+    test('merge complete unions collection items from both sides', () async {
+      final local = _makeExport(
+          collectionItems: [_makeCi('ci1', modified: DateTime.utc(2024, 1, 1))]);
+      final archive = _makeExport(
+          collectionItems: [_makeCi('ci2', modified: DateTime.utc(2024, 1, 1))]);
+
+      final repo = _FakeUserDataRepo(local);
+      final svc =
+          ExportImportService(repo, _FakePhotoRepo(), _FakeSettingsRepo());
+      final session = await svc.startMerge(
+          ArchiveValidationResult(isValid: true, data: archive, photos: {}));
+      await session.complete();
+
+      final ids = repo.lastReplaced!.collectionItems.map((c) => c.id).toSet();
+      expect(ids, containsAll(<String>['ci1', 'ci2']));
+    });
+
+    test('merge keeps local collection item when conflict resolved to local',
+        () async {
+      final local = _makeExport(collectionItems: [
+        _makeCi('ci1',
+            modified: DateTime.utc(2024, 1, 1), paoMonths: 6),
+      ]);
+      final archive = _makeExport(collectionItems: [
+        _makeCi('ci1',
+            modified: DateTime.utc(2024, 1, 2), paoMonths: 18),
+      ]);
+
+      final repo = _FakeUserDataRepo(local);
+      final svc =
+          ExportImportService(repo, _FakePhotoRepo(), _FakeSettingsRepo());
+      final session = await svc.startMerge(
+          ArchiveValidationResult(isValid: true, data: archive, photos: {}));
+      session.resolveConflict(index: 0, useArchive: false);
+      await session.complete();
+
+      final ci = repo.lastReplaced!.collectionItems
+          .firstWhere((c) => c.id == 'ci1');
+      expect(ci.paoMonths, 6);
     });
   });
 }

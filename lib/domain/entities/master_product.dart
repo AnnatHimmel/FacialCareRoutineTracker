@@ -62,6 +62,7 @@ class MasterProduct {
   final SlotConfig? eveningConfig;
   final bool isDeprecated;
   final String addedInVersion;
+  final List<String> ingredients;
 
   const MasterProduct({
     required this.id,
@@ -75,25 +76,40 @@ class MasterProduct {
     this.eveningConfig,
     required this.isDeprecated,
     required this.addedInVersion,
+    this.ingredients = const [],
   });
 
   SlotConfig? configForSlot(Slot slot) =>
       slot == Slot.morning ? morningConfig : eveningConfig;
 
   @override
-  bool operator ==(Object other) =>
-      other is MasterProduct &&
-      other.id == id &&
-      other.brand == brand &&
-      other.name == name &&
-      other.imageAsset == imageAsset &&
-      other.comment == comment &&
-      other.commentEn == commentEn &&
-      other.categoryId == categoryId &&
-      other.morningConfig == morningConfig &&
-      other.eveningConfig == eveningConfig &&
-      other.isDeprecated == isDeprecated &&
-      other.addedInVersion == addedInVersion;
+  bool operator ==(Object other) {
+    if (other is! MasterProduct) {
+      return false;
+    }
+    if (other.id != id ||
+        other.brand != brand ||
+        other.name != name ||
+        other.imageAsset != imageAsset ||
+        other.comment != comment ||
+        other.commentEn != commentEn ||
+        other.categoryId != categoryId ||
+        other.morningConfig != morningConfig ||
+        other.eveningConfig != eveningConfig ||
+        other.isDeprecated != isDeprecated ||
+        other.addedInVersion != addedInVersion) {
+      return false;
+    }
+    if (other.ingredients.length != ingredients.length) {
+      return false;
+    }
+    for (var i = 0; i < ingredients.length; i++) {
+      if (other.ingredients[i] != ingredients[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   String localizedComment(String locale) =>
       locale == 'en' ? (commentEn ?? comment ?? '') : (comment ?? '');
@@ -111,6 +127,7 @@ class MasterProduct {
         eveningConfig,
         isDeprecated,
         addedInVersion,
+        Object.hashAll(ingredients),
       );
 
   MasterProduct copyWith({
@@ -125,6 +142,7 @@ class MasterProduct {
     SlotConfig? eveningConfig,
     bool? isDeprecated,
     String? addedInVersion,
+    List<String>? ingredients,
   }) =>
       MasterProduct(
         id: id ?? this.id,
@@ -138,6 +156,7 @@ class MasterProduct {
         eveningConfig: eveningConfig ?? this.eveningConfig,
         isDeprecated: isDeprecated ?? this.isDeprecated,
         addedInVersion: addedInVersion ?? this.addedInVersion,
+        ingredients: ingredients ?? this.ingredients,
       );
 }
 

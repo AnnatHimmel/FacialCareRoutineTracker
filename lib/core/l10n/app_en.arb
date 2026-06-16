@@ -4,6 +4,7 @@
   "navCalendar": "Journal",
   "navJournal": "Skin Log",
   "navProducts": "My Products",
+  "navCollection": "Shelf",
   "navSettings": "Settings",
   "slotMorning": "Morning",
   "slotEvening": "Evening",
@@ -51,7 +52,7 @@
       "error": {}
     }
   },
-  "homeTitle": "Your Routine Today",
+  "homeTitle": "My Day",
   "homeTapImageToDone": "Tap an image to mark as done",
   "homeTapProductToDone": "Tap a product to mark as done",
   "homeEmptyToday": "No products for today",
@@ -155,6 +156,8 @@
   "journalNoPhotos": "No photos yet",
   "journalEmptyInstruction": "Add photos in the daily skin log to track your progress",
   "journalStartDocumenting": "Start documenting",
+  "journalNewEntry": "New Entry",
+  "journalProgressTitle": "Progress Tracking",
   "journalDateFormat": "{month} {day}, {year}",
   "@journalDateFormat": {
     "placeholders": {
@@ -547,5 +550,72 @@
   "barcodeScanPermissionDenied": "Camera permission is required to scan barcodes",
   "barcodeScanIngredients": "Ingredients",
   "barcodeScanCategoryHint": "Category suggestion",
-  "barcodeScanFromScanLabel": "Info from barcode scan"
+  "barcodeScanFromScanLabel": "Info from barcode scan",
+  "homeViewWeek": "This Week",
+  "homeWeekGlanceTitle": "My Week",
+  "collectionHealthCard": "Shelf Health",
+  "collectionAllProducts": "All Products",
+  "collectionOnShelf": "On shelf",
+  "collectionInRoutines": "In routines",
+  "collectionToCheck": "To check",
+  "collectionProBanner": "Try PRO to track shelf life",
+  "collectionSortByCategory": "By category",
+  "collectionCountSuffix": "products",
+  "lifecycleTitle": "Lifecycle",
+  "lifecycleOpenedDate": "Opened on",
+  "lifecycleNotOpened": "Not opened yet",
+  "lifecycleSetOpenedDate": "Set opened date",
+  "lifecyclePao": "PAO {months} months",
+  "@lifecyclePao": {
+    "placeholders": {
+      "months": {}
+    }
+  },
+  "lifecycleMonthsLeft": "{months} months left",
+  "@lifecycleMonthsLeft": {
+    "placeholders": {
+      "months": {}
+    }
+  },
+  "lifecycleExpired": "Expired",
+  "lifecycleNotify": "Expiry reminder",
+  "lifecycleInUse": "In use",
+  "lifecycleFinished": "Finished it",
+  "lifecycleDiscarded": "Discarded",
+  "detailIngredients": "Key ingredients",
+  "collectionTabInUse": "In use",
+  "collectionTabSealed": "Sealed",
+  "collectionTabArchive": "Archive",
+  "collectionAttentionCount": "{count} products to finish soon",
+  "@collectionAttentionCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "collectionHealthOk": "Shelf in good shape",
+  "collectionSealedBadge": "Sealed",
+  "collectionArchiveBadge": "Archived",
+  "collectionSealedEmpty": "No sealed products",
+  "collectionArchiveEmpty": "Archive is empty",
+  "homeAttentionCount": "{count} products to finish soon",
+  "@homeAttentionCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "homeAttentionNone": "You may have a few things on your shelf worth checking on",
+  "settingsAccountFree": "Free account",
+  "settingsAccountPro": "Glow PRO subscriber",
+  "settingsProTitle": "Upgrade to Glow PRO",
+  "settingsProSubtitle": "Progress tracking, shelf management, expiry & PAO",
+  "settingsDemoTitle": "Demo mode",
+  "settingsDemoDesc": "Switch between the free and Glow PRO experience to see how the screens change.",
+  "settingsDemoFree": "Free",
+  "settingsDemoMilestone": "Milestone day (day 7)",
+  "settingsDemoMilestoneDesc": "Shows the conversion moment in the streak banner",
+  "streakMilestoneTitle": "A full week of consistency! 🎉",
+  "streakMilestoneSub": "The perfect time to capture your starting point",
+  "streakPitchTitle": "Want to see if it works?",
+  "streakPitchSub": "Take a 'before' photo — compare in two weeks",
+  "streakPitchCta": "Try"
 }

@@ -21,6 +21,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navProducts => 'My Products';
 
   @override
+  String get navCollection => 'Shelf';
+
+  @override
   String get navSettings => 'Settings';
 
   @override
@@ -134,7 +137,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homeTitle => 'Your Routine Today';
+  String get homeTitle => 'My Day';
 
   @override
   String get homeTapImageToDone => 'Tap an image to mark as done';
@@ -345,6 +348,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get journalStartDocumenting => 'Start documenting';
+
+  @override
+  String get journalNewEntry => 'New Entry';
+
+  @override
+  String get journalProgressTitle => 'Progress Tracking';
 
   @override
   String journalDateFormat(Object day, Object month, Object year) {
@@ -1133,4 +1142,158 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get barcodeScanFromScanLabel => 'Info from barcode scan';
+
+  @override
+  String get homeViewWeek => 'This Week';
+
+  @override
+  String get homeWeekGlanceTitle => 'My Week';
+
+  @override
+  String get collectionHealthCard => 'Shelf Health';
+
+  @override
+  String get collectionAllProducts => 'All Products';
+
+  @override
+  String get collectionOnShelf => 'On shelf';
+
+  @override
+  String get collectionInRoutines => 'In routines';
+
+  @override
+  String get collectionToCheck => 'To check';
+
+  @override
+  String get collectionProBanner => 'Try PRO to track shelf life';
+
+  @override
+  String get collectionSortByCategory => 'By category';
+
+  @override
+  String get collectionCountSuffix => 'products';
+
+  @override
+  String get lifecycleTitle => 'Lifecycle';
+
+  @override
+  String get lifecycleOpenedDate => 'Opened on';
+
+  @override
+  String get lifecycleNotOpened => 'Not opened yet';
+
+  @override
+  String get lifecycleSetOpenedDate => 'Set opened date';
+
+  @override
+  String lifecyclePao(Object months) {
+    return 'PAO $months months';
+  }
+
+  @override
+  String lifecycleMonthsLeft(Object months) {
+    return '$months months left';
+  }
+
+  @override
+  String get lifecycleExpired => 'Expired';
+
+  @override
+  String get lifecycleNotify => 'Expiry reminder';
+
+  @override
+  String get lifecycleInUse => 'In use';
+
+  @override
+  String get lifecycleFinished => 'Finished it';
+
+  @override
+  String get lifecycleDiscarded => 'Discarded';
+
+  @override
+  String get detailIngredients => 'Key ingredients';
+
+  @override
+  String get collectionTabInUse => 'In use';
+
+  @override
+  String get collectionTabSealed => 'Sealed';
+
+  @override
+  String get collectionTabArchive => 'Archive';
+
+  @override
+  String collectionAttentionCount(int count) {
+    return '$count products to finish soon';
+  }
+
+  @override
+  String get collectionHealthOk => 'Shelf in good shape';
+
+  @override
+  String get collectionSealedBadge => 'Sealed';
+
+  @override
+  String get collectionArchiveBadge => 'Archived';
+
+  @override
+  String get collectionSealedEmpty => 'No sealed products';
+
+  @override
+  String get collectionArchiveEmpty => 'Archive is empty';
+
+  @override
+  String homeAttentionCount(int count) {
+    return '$count products to finish soon';
+  }
+
+  @override
+  String get homeAttentionNone =>
+      'You may have a few things on your shelf worth checking on';
+
+  @override
+  String get settingsAccountFree => 'Free account';
+
+  @override
+  String get settingsAccountPro => 'Glow PRO subscriber';
+
+  @override
+  String get settingsProTitle => 'Upgrade to Glow PRO';
+
+  @override
+  String get settingsProSubtitle =>
+      'Progress tracking, shelf management, expiry & PAO';
+
+  @override
+  String get settingsDemoTitle => 'Demo mode';
+
+  @override
+  String get settingsDemoDesc =>
+      'Switch between the free and Glow PRO experience to see how the screens change.';
+
+  @override
+  String get settingsDemoFree => 'Free';
+
+  @override
+  String get settingsDemoMilestone => 'Milestone day (day 7)';
+
+  @override
+  String get settingsDemoMilestoneDesc =>
+      'Shows the conversion moment in the streak banner';
+
+  @override
+  String get streakMilestoneTitle => 'A full week of consistency! 🎉';
+
+  @override
+  String get streakMilestoneSub =>
+      'The perfect time to capture your starting point';
+
+  @override
+  String get streakPitchTitle => 'Want to see if it works?';
+
+  @override
+  String get streakPitchSub => 'Take a \'before\' photo — compare in two weeks';
+
+  @override
+  String get streakPitchCta => 'Try';
 }

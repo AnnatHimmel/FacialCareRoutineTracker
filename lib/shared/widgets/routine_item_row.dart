@@ -72,8 +72,15 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
           _isLikelyLatin(product.name) ? TextDirection.ltr : TextDirection.rtl,
       style: AppTypography.bodyMd.copyWith(
         fontWeight: FontWeight.w700,
-        fontSize: 14.5,
-        color: AppColors.onSurface,
+        fontSize: 15,
+        color: checkedDone
+            ? AppColors.onSurfaceVariant.withAlpha(178)
+            : AppColors.onSurface,
+        decoration: checkedDone ? TextDecoration.lineThrough : null,
+        decorationColor: checkedDone
+            ? AppColors.onSurfaceVariant.withAlpha(178)
+            : null,
+        decorationThickness: 1,
       ),
     );
 
@@ -110,7 +117,21 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                         ],
                       ],
                     ),
-                    if (_showSlotChip) ...[
+                    if (_isDoneVariant && product.brand != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        product.brand!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.start,
+                        style: AppTypography.labelSm.copyWith(
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0,
+                          fontSize: 11.5,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ] else if (_showSlotChip) ...[
                       const SizedBox(height: 4),
                       Align(
                         alignment: AlignmentDirectional.centerEnd,
@@ -157,14 +178,14 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           color: checkedDone
-              ? AppColors.primaryFixed.withAlpha(77)
+              ? AppColors.primaryFixed.withAlpha(115)
               : AppColors.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(_expanded ? 26 : 9999),
           boxShadow: checkedDone ? null : AppColors.glowSm,
           border: Border.all(
             color: checkedDone
-                ? AppColors.primary.withAlpha(77)
-                : Colors.transparent,
+                ? Colors.transparent
+                : AppColors.outlineVariant.withAlpha(51),
           ),
         ),
         child: Material(
@@ -306,9 +327,9 @@ class _ThumbnailWithBadge extends StatelessWidget {
       children: [
         ProductThumb(imageAsset: imageAsset, size: 52),
         if (isDone)
-          Positioned(
+          PositionedDirectional(
             bottom: -2,
-            left: -2,
+            start: -2,
             child: Container(
               width: 22,
               height: 22,

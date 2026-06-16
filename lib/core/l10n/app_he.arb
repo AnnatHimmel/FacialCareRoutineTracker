@@ -4,6 +4,7 @@
   "navCalendar": "יומן",
   "navJournal": "יומן עור",
   "navProducts": "המוצרים שלי",
+  "navCollection": "המדף שלי",
   "navSettings": "הגדרות",
   "slotMorning": "בוקר",
   "slotEvening": "ערב",
@@ -51,7 +52,7 @@
       "error": {}
     }
   },
-  "homeTitle": "השגרה שלך היום",
+  "homeTitle": "היום שלי",
   "homeTapImageToDone": "הקישי על התמונה לסימון בוצע",
   "homeTapProductToDone": "הקישי על מוצר לסימון בוצע",
   "homeEmptyToday": "אין מוצרים להיום",
@@ -155,6 +156,8 @@
   "journalNoPhotos": "אין תמונות עדיין",
   "journalEmptyInstruction": "הוסיפי תמונות ביומן העור היומי כדי לעקוב אחר ההתקדמות שלך",
   "journalStartDocumenting": "התחילי לתעד",
+  "journalNewEntry": "תיעוד חדש",
+  "journalProgressTitle": "מעקב התקדמות",
   "journalDateFormat": "{day} ב{month} {year}",
   "@journalDateFormat": {
     "placeholders": {
@@ -547,5 +550,72 @@
   "barcodeScanPermissionDenied": "נדרשת הרשאת מצלמה לסריקת ברקודים",
   "barcodeScanIngredients": "רכיבים",
   "barcodeScanCategoryHint": "הצעת קטגוריה",
-  "barcodeScanFromScanLabel": "מידע מהסריקה"
+  "barcodeScanFromScanLabel": "מידע מהסריקה",
+  "homeViewWeek": "השבוע",
+  "homeWeekGlanceTitle": "השבוע שלי",
+  "collectionHealthCard": "בריאות המדף",
+  "collectionAllProducts": "כל המוצרים",
+  "collectionOnShelf": "במדף",
+  "collectionInRoutines": "בשגרות",
+  "collectionToCheck": "לבדיקה",
+  "collectionProBanner": "נסי PRO כדי לעקוב אחרי חיי המדף",
+  "collectionSortByCategory": "לפי קטגוריה",
+  "collectionCountSuffix": "מוצרים",
+  "lifecycleTitle": "מחזור חיים",
+  "lifecycleOpenedDate": "נפתח בתאריך",
+  "lifecycleNotOpened": "טרם נפתח",
+  "lifecycleSetOpenedDate": "הגדירי תאריך פתיחה",
+  "lifecyclePao": "PAO {months} חודשים",
+  "@lifecyclePao": {
+    "placeholders": {
+      "months": {}
+    }
+  },
+  "lifecycleMonthsLeft": "נותרו {months} חודשים",
+  "@lifecycleMonthsLeft": {
+    "placeholders": {
+      "months": {}
+    }
+  },
+  "lifecycleExpired": "פג תוקף",
+  "lifecycleNotify": "התראה לקראת סיום",
+  "lifecycleInUse": "בשימוש",
+  "lifecycleFinished": "סיימתי אותו",
+  "lifecycleDiscarded": "נזרק",
+  "detailIngredients": "מרכיבים עיקריים",
+  "collectionTabInUse": "בשימוש",
+  "collectionTabSealed": "סגורים",
+  "collectionTabArchive": "ארכיון",
+  "collectionAttentionCount": "{count} מוצרים לסיום בקרוב",
+  "@collectionAttentionCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "collectionHealthOk": "המדף במצב טוב",
+  "collectionSealedBadge": "סגור",
+  "collectionArchiveBadge": "בארכיון",
+  "collectionSealedEmpty": "אין מוצרים סגורים",
+  "collectionArchiveEmpty": "הארכיון ריק",
+  "homeAttentionCount": "{count} מוצרים כדאי לסיים בקרוב",
+  "@homeAttentionCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "homeAttentionNone": "ייתכן שיש במדף שלך דברים שכדאי לשים לב אליהם",
+  "settingsAccountFree": "חשבון חינמי",
+  "settingsAccountPro": "מנויית Glow PRO",
+  "settingsProTitle": "שדרגי ל־Glow PRO",
+  "settingsProSubtitle": "מעקב התקדמות, ניהול מדף, תוקף ו־PAO",
+  "settingsDemoTitle": "תצוגת הדגמה",
+  "settingsDemoDesc": "החליפי בין חוויה חינמית למנויית PRO כדי לראות איך המסכים משתנים.",
+  "settingsDemoFree": "חינמי",
+  "settingsDemoMilestone": "יום ציון דרך (יום 7)",
+  "settingsDemoMilestoneDesc": "מציג את רגע ההמרה בבאנר הרצף",
+  "streakMilestoneTitle": "שבוע שלם של התמדה! 🎉",
+  "streakMilestoneSub": "זה הזמן המושלם לתעד את נקודת ההתחלה",
+  "streakPitchTitle": "רוצה לראות אם זה עובד?",
+  "streakPitchSub": "צלמי תמונת ׳לפני׳ — ובעוד שבועיים תשווי",
+  "streakPitchCta": "נסי"
 }

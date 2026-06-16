@@ -21,6 +21,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get navProducts => 'המוצרים שלי';
 
   @override
+  String get navCollection => 'המדף שלי';
+
+  @override
   String get navSettings => 'הגדרות';
 
   @override
@@ -133,7 +136,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get homeTitle => 'השגרה שלך היום';
+  String get homeTitle => 'היום שלי';
 
   @override
   String get homeTapImageToDone => 'הקישי על התמונה לסימון בוצע';
@@ -344,6 +347,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get journalStartDocumenting => 'התחילי לתעד';
+
+  @override
+  String get journalNewEntry => 'תיעוד חדש';
+
+  @override
+  String get journalProgressTitle => 'מעקב התקדמות';
 
   @override
   String journalDateFormat(Object day, Object month, Object year) {
@@ -1118,6 +1127,157 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get barcodeScanFromScanLabel => 'מידע מהסריקה';
+
+  @override
+  String get homeViewWeek => 'השבוע';
+
+  @override
+  String get homeWeekGlanceTitle => 'השבוע שלי';
+
+  @override
+  String get collectionHealthCard => 'בריאות המדף';
+
+  @override
+  String get collectionAllProducts => 'כל המוצרים';
+
+  @override
+  String get collectionOnShelf => 'במדף';
+
+  @override
+  String get collectionInRoutines => 'בשגרות';
+
+  @override
+  String get collectionToCheck => 'לבדיקה';
+
+  @override
+  String get collectionProBanner => 'נסי PRO כדי לעקוב אחרי חיי המדף';
+
+  @override
+  String get collectionSortByCategory => 'לפי קטגוריה';
+
+  @override
+  String get collectionCountSuffix => 'מוצרים';
+
+  @override
+  String get lifecycleTitle => 'מחזור חיים';
+
+  @override
+  String get lifecycleOpenedDate => 'נפתח בתאריך';
+
+  @override
+  String get lifecycleNotOpened => 'טרם נפתח';
+
+  @override
+  String get lifecycleSetOpenedDate => 'הגדירי תאריך פתיחה';
+
+  @override
+  String lifecyclePao(Object months) {
+    return 'PAO $months חודשים';
+  }
+
+  @override
+  String lifecycleMonthsLeft(Object months) {
+    return 'נותרו $months חודשים';
+  }
+
+  @override
+  String get lifecycleExpired => 'פג תוקף';
+
+  @override
+  String get lifecycleNotify => 'התראה לקראת סיום';
+
+  @override
+  String get lifecycleInUse => 'בשימוש';
+
+  @override
+  String get lifecycleFinished => 'סיימתי אותו';
+
+  @override
+  String get lifecycleDiscarded => 'נזרק';
+
+  @override
+  String get detailIngredients => 'מרכיבים עיקריים';
+
+  @override
+  String get collectionTabInUse => 'בשימוש';
+
+  @override
+  String get collectionTabSealed => 'סגורים';
+
+  @override
+  String get collectionTabArchive => 'ארכיון';
+
+  @override
+  String collectionAttentionCount(int count) {
+    return '$count מוצרים לסיום בקרוב';
+  }
+
+  @override
+  String get collectionHealthOk => 'המדף במצב טוב';
+
+  @override
+  String get collectionSealedBadge => 'סגור';
+
+  @override
+  String get collectionArchiveBadge => 'בארכיון';
+
+  @override
+  String get collectionSealedEmpty => 'אין מוצרים סגורים';
+
+  @override
+  String get collectionArchiveEmpty => 'הארכיון ריק';
+
+  @override
+  String homeAttentionCount(int count) {
+    return '$count מוצרים כדאי לסיים בקרוב';
+  }
+
+  @override
+  String get homeAttentionNone =>
+      'ייתכן שיש במדף שלך דברים שכדאי לשים לב אליהם';
+
+  @override
+  String get settingsAccountFree => 'חשבון חינמי';
+
+  @override
+  String get settingsAccountPro => 'מנויית Glow PRO';
+
+  @override
+  String get settingsProTitle => 'שדרגי ל־Glow PRO';
+
+  @override
+  String get settingsProSubtitle => 'מעקב התקדמות, ניהול מדף, תוקף ו־PAO';
+
+  @override
+  String get settingsDemoTitle => 'תצוגת הדגמה';
+
+  @override
+  String get settingsDemoDesc =>
+      'החליפי בין חוויה חינמית למנויית PRO כדי לראות איך המסכים משתנים.';
+
+  @override
+  String get settingsDemoFree => 'חינמי';
+
+  @override
+  String get settingsDemoMilestone => 'יום ציון דרך (יום 7)';
+
+  @override
+  String get settingsDemoMilestoneDesc => 'מציג את רגע ההמרה בבאנר הרצף';
+
+  @override
+  String get streakMilestoneTitle => 'שבוע שלם של התמדה! 🎉';
+
+  @override
+  String get streakMilestoneSub => 'זה הזמן המושלם לתעד את נקודת ההתחלה';
+
+  @override
+  String get streakPitchTitle => 'רוצה לראות אם זה עובד?';
+
+  @override
+  String get streakPitchSub => 'צלמי תמונת ׳לפני׳ — ובעוד שבועיים תשווי';
+
+  @override
+  String get streakPitchCta => 'נסי';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).

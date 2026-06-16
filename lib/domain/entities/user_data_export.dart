@@ -5,7 +5,9 @@ import 'order_override.dart';
 import 'day_record.dart';
 import 'skin_log_entry.dart';
 import 'muted_conflict.dart';
+import 'collection_item.dart';
 import '../enums/slot.dart';
+import '../enums/collection_status.dart';
 
 @immutable
 class UserDataExport {
@@ -19,6 +21,7 @@ class UserDataExport {
   final List<DayRecord> dayRecords;
   final List<SkinLogEntry> skinLogs;
   final List<MutedConflict> mutedConflicts;
+  final List<CollectionItem> collectionItems;
   final String? lastExportDate;
   final String? lastKnownMasterVersion;
 
@@ -33,6 +36,7 @@ class UserDataExport {
     required this.dayRecords,
     required this.skinLogs,
     required this.mutedConflicts,
+    this.collectionItems = const [],
     this.lastExportDate,
     this.lastKnownMasterVersion,
   });
@@ -50,6 +54,8 @@ class UserDataExport {
         'dayRecords': dayRecords.map(_dayRecordToJson).toList(),
         'skinLogs': skinLogs.map(_skinLogToJson).toList(),
         'mutedConflicts': mutedConflicts.map(_mutedConflictToJson).toList(),
+        'collectionItems':
+            collectionItems.map(_collectionItemToJson).toList(),
       };
 
   static UserDataExport fromJson(Map<String, dynamic> json) => UserDataExport(
@@ -76,6 +82,9 @@ class UserDataExport {
             .toList(),
         mutedConflicts: (json['mutedConflicts'] as List<dynamic>? ?? [])
             .map((e) => _mutedConflictFromJson(e as Map<String, dynamic>))
+            .toList(),
+        collectionItems: (json['collectionItems'] as List<dynamic>? ?? [])
+            .map((e) => _collectionItemFromJson(e as Map<String, dynamic>))
             .toList(),
       );
 
@@ -110,6 +119,7 @@ class UserDataExport {
     List<DayRecord>? dayRecords,
     List<SkinLogEntry>? skinLogs,
     List<MutedConflict>? mutedConflicts,
+    List<CollectionItem>? collectionItems,
     String? lastExportDate,
     String? lastKnownMasterVersion,
   }) =>
@@ -124,6 +134,7 @@ class UserDataExport {
         dayRecords: dayRecords ?? this.dayRecords,
         skinLogs: skinLogs ?? this.skinLogs,
         mutedConflicts: mutedConflicts ?? this.mutedConflicts,
+        collectionItems: collectionItems ?? this.collectionItems,
         lastExportDate: lastExportDate ?? this.lastExportDate,
         lastKnownMasterVersion:
             lastKnownMasterVersion ?? this.lastKnownMasterVersion,
@@ -232,5 +243,31 @@ class UserDataExport {
         id: m['id'] as String,
         ruleId: m['ruleId'] as String,
         mutedAt: DateTime.parse(m['mutedAt'] as String),
+      );
+
+  static Map<String, dynamic> _collectionItemToJson(CollectionItem c) => {
+        'id': c.id,
+        'productId': c.productId,
+        'status': c.status.name,
+        'openedDate': c.openedDate?.toIso8601String(),
+        'paoMonths': c.paoMonths,
+        'notificationsEnabled': c.notificationsEnabled,
+        'lastModified': c.lastModified.toIso8601String(),
+      };
+
+  static CollectionItem _collectionItemFromJson(Map<String, dynamic> m) =>
+      CollectionItem(
+        id: m['id'] as String,
+        productId: m['productId'] as String,
+        status: CollectionStatus.values.firstWhere(
+          (s) => s.name == m['status'],
+          orElse: () => CollectionStatus.inUse,
+        ),
+        openedDate: m['openedDate'] == null
+            ? null
+            : DateTime.parse(m['openedDate'] as String),
+        paoMonths: m['paoMonths'] as int,
+        notificationsEnabled: m['notificationsEnabled'] as bool? ?? true,
+        lastModified: DateTime.parse(m['lastModified'] as String),
       );
 }
