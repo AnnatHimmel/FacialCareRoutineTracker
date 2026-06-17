@@ -33,9 +33,18 @@ class _FakeMCR implements MasterContentRepository {
 }
 
 class _FakeUDR implements UserDataRepository {
+  final List<ProductSelection> _morning;
+  final List<ProductSelection> _evening;
+
+  _FakeUDR({
+    List<ProductSelection> morning = const [],
+    List<ProductSelection> evening = const [],
+  })  : _morning = morning,
+        _evening = evening;
+
   @override
   Stream<List<ProductSelection>> watchSelections(Slot slot) =>
-      Stream.value([]);
+      Stream.value(slot == Slot.morning ? _morning : _evening);
   @override
   Stream<List<MutedConflict>> watchMutedConflicts() => Stream.value([]);
   @override
@@ -55,20 +64,17 @@ class _FakeUDR implements UserDataRepository {
   @override Future<void> deleteCollectionItem(String id) => throw UnimplementedError();
   @override
   Stream<WeekdaySchedule?> watchSchedule(String p, Slot s) =>
-      throw UnimplementedError();
+      Stream.value(null);
   @override
-  Stream<List<WeekdaySchedule>> watchAllSchedules() =>
-      throw UnimplementedError();
+  Stream<List<WeekdaySchedule>> watchAllSchedules() => Stream.value([]);
   @override
-  Future<void> upsertSchedule(WeekdaySchedule s) => throw UnimplementedError();
+  Future<void> upsertSchedule(WeekdaySchedule s) async {}
   @override
-  Stream<OrderOverride?> watchOrderOverride(Slot s) =>
-      throw UnimplementedError();
+  Stream<OrderOverride?> watchOrderOverride(Slot s) => Stream.value(null);
   @override
-  Future<void> upsertOrderOverride(OrderOverride o) =>
-      throw UnimplementedError();
+  Future<void> upsertOrderOverride(OrderOverride o) async {}
   @override
-  Future<void> deleteOrderOverride(Slot s) => throw UnimplementedError();
+  Future<void> deleteOrderOverride(Slot s) async {}
   @override
   Stream<DayRecord?> watchDayRecord(String d, Slot s) =>
       throw UnimplementedError();
@@ -167,33 +173,12 @@ MasterContent _masterWith(List<MasterProduct> products, List<Category> cats) =>
       ),
     );
 
-// Stub route that immediately pops itself with `true` — mirroring the schedule
-// screen finishing — so that `await context.push(...)` in _continueToSchedule
-// resolves with a finished result and _handleFinish() is reached in tests.
-class _AutoPopScreen extends StatefulWidget {
-  const _AutoPopScreen();
-  @override
-  State<_AutoPopScreen> createState() => _AutoPopScreenState();
-}
-
-class _AutoPopScreenState extends State<_AutoPopScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.pop(true);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: SizedBox.shrink());
-}
-
 Widget _wrap({
   required MasterContent master,
   required VoidCallback onFinish,
   _FakeSettings? settings,
+  List<ProductSelection> morningSelections = const [],
+  List<ProductSelection> eveningSelections = const [],
 }) {
   final router = GoRouter(
     initialLocation: '/',
@@ -202,16 +187,14 @@ Widget _wrap({
         path: '/',
         builder: (_, __) => OnboardingScreen(onFinish: onFinish),
       ),
-      GoRoute(
-        path: '/setup/schedule',
-        builder: (_, __) => const _AutoPopScreen(),
-      ),
     ],
   );
   return ProviderScope(
     overrides: [
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
-      userDataRepositoryProvider.overrideWithValue(_FakeUDR()),
+      userDataRepositoryProvider.overrideWithValue(
+        _FakeUDR(morning: morningSelections, evening: eveningSelections),
+      ),
       settingsRepositoryProvider
           .overrideWithValue(settings ?? _FakeSettings()),
     ],
@@ -226,6 +209,18 @@ Widget _wrap({
 
 Future<void> _selectHebrew(WidgetTester tester) async {
   await tester.tap(find.text('עברית'));
+  await tester.pumpAndSettle();
+}
+
+/// Drives from Step 1 through to the product selection screen (Step 3).
+Future<void> _advanceToProductSelection(WidgetTester tester) async {
+  await tester.tap(find.text('נתחיל?'));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byType(TextField).first, 'שמי');
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('נקבה'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('המשך'));
   await tester.pumpAndSettle();
 }
 
@@ -457,9 +452,9 @@ void main() {
       expect(find.text('The Glow Protocol'), findsOneWidget);
     });
 
-    testWidgets('Step 3 shows the first category and its products',
+    testWidgets('Step 3 shows V3 product selection UI with all products',
         (tester) async {
-      // cat1 (order 1) is shown first in the guided view; cat2 comes after.
+      // V3: unified search+scan — all products visible in "popular" list by default.
       final master = _masterWith(
         [
           _product('p1', 'קרם לחות', 'cat1'),
@@ -473,25 +468,15 @@ void main() {
       await tester.pumpAndSettle();
 
       await _selectHebrew(tester);
+      await _advanceToProductSelection(tester);
 
-      await tester.tap(find.text('נתחיל?'));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextField).first, 'שמי');
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('נקבה'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('המשך'));
-      await tester.pumpAndSettle();
-
-      // Guided step 0 shows cat1 products; cat2 products are on a later step.
+      // V3: all products visible in the unified search list.
       expect(find.text('קרם לחות'), findsOneWidget);
+      expect(find.text('ג׳ל ניקוי'), findsOneWidget);
       expect(find.text('סרום'), findsOneWidget);
     });
 
-    testWidgets('Step 3 shows the "המשיכי לתזמון" CTA in summary view',
-        (tester) async {
+    testWidgets('Step 3 shows "סידור המדף שלי" CTA', (tester) async {
       final master = _masterWith(
         [_product('p1', 'קרם לחות', 'cat1')],
         [cat1],
@@ -501,56 +486,232 @@ void main() {
       await tester.pumpAndSettle();
 
       await _selectHebrew(tester);
+      await _advanceToProductSelection(tester);
 
-      await tester.tap(find.text('נתחיל?'));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextField).first, 'שמי');
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('נקבה'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('המשך'));
-      await tester.pumpAndSettle();
-
-      // Single category means we're on the last step; CTA is already "המשיכי לתזמון"
-      expect(find.text('המשיכי לתזמון'), findsOneWidget);
+      expect(find.text('סידור המדף שלי'), findsOneWidget);
     });
 
-    testWidgets('Tapping "המשיכי לתזמון" in Step 3 calls onFinish',
+    testWidgets(
+        'Tapping "סידור המדף שלי" (with product pre-selected) navigates to category review',
         (tester) async {
       final master = _masterWith(
         [_product('p1', 'קרם לחות', 'cat1')],
         [cat1],
       );
+      // Pre-populate p1 as selected so the CTA is enabled.
+      final preSel = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p1',
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
 
       bool onFinishCalled = false;
 
-      await tester.pumpWidget(
-          _wrap(master: master, onFinish: () => onFinishCalled = true));
+      await tester.pumpWidget(_wrap(
+        master: master,
+        onFinish: () => onFinishCalled = true,
+        morningSelections: preSel,
+      ));
       await tester.pumpAndSettle();
 
       await _selectHebrew(tester);
+      await _advanceToProductSelection(tester);
 
-      await tester.tap(find.text('נתחיל?'));
+      // "סידור המדף שלי" should be enabled (p1 is pre-selected).
+      await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'שמי');
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('נקבה'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('המשך'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('המשיכי לתזמון'));
-      await tester.pumpAndSettle();
-      await tester.pump(Duration.zero); // flush _handleFinish async continuation
-
-      expect(onFinishCalled, isTrue);
+      // Category review should appear.
+      expect(find.text('סידרנו את המוצרים לפי שלבים'), findsOneWidget);
+      expect(onFinishCalled, isFalse);
     });
 
-    testWidgets('Complete onboarding flow: Step 1 → Step 2 → Step 3 → onFinish',
+    testWidgets(
+        'Category review → amSchedule shows schedule header, morning context chip, scheduleContinueToOrder CTA',
+        (tester) async {
+      final master = _masterWith(
+        [_product('p1', 'קרם לחות', 'cat1')],
+        [cat1],
+      );
+      final preSel = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p1',
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
+
+      await tester.pumpWidget(_wrap(
+        master: master,
+        onFinish: () {},
+        morningSelections: preSel,
+      ));
+      await tester.pumpAndSettle();
+
+      await _selectHebrew(tester);
+      await _advanceToProductSelection(tester);
+      await tester.tap(find.text('סידור המדף שלי'));
+      await tester.pumpAndSettle();
+
+      // Now on category review — advance to amSchedule
+      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.pumpAndSettle();
+
+      // Schedule header should be visible
+      expect(find.text('תזמון שבועי'), findsOneWidget);
+      // Morning context chip
+      expect(find.text('שגרת בוקר'), findsOneWidget);
+      // CTA label for onboarding schedule
+      expect(find.text('המשך לסדר המריחה'), findsOneWidget);
+    });
+
+    testWidgets(
+        'amSchedule → amOrder shows morning order header',
+        (tester) async {
+      final master = _masterWith(
+        [_product('p1', 'קרם לחות', 'cat1')],
+        [cat1],
+      );
+      final preSel = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p1',
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
+
+      await tester.pumpWidget(_wrap(
+        master: master,
+        onFinish: () {},
+        morningSelections: preSel,
+      ));
+      await tester.pumpAndSettle();
+
+      await _selectHebrew(tester);
+      await _advanceToProductSelection(tester);
+      await tester.tap(find.text('סידור המדף שלי'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.pumpAndSettle();
+      // On amSchedule — tap "המשך לסדר המריחה"
+      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.pumpAndSettle();
+
+      // Morning order header should be visible
+      expect(find.text('סדר המריחה בבוקר'), findsOneWidget);
+    });
+
+    testWidgets(
+        'Evening transition appears when evening products exist after morning order',
+        (tester) async {
+      // Product with both morning and evening config
+      final masterProduct = MasterProduct(
+        id: 'p1',
+        name: 'קרם לחות',
+        categoryId: 'cat1',
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+      );
+      final master = _masterWith([masterProduct], [cat1]);
+      final morningPre = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p1',
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
+      final eveningPre = [
+        ProductSelection(
+          id: 's2',
+          productId: 'p1',
+          slot: Slot.evening,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
+
+      await tester.pumpWidget(_wrap(
+        master: master,
+        onFinish: () {},
+        morningSelections: morningPre,
+        eveningSelections: eveningPre,
+      ));
+      await tester.pumpAndSettle();
+
+      await _selectHebrew(tester);
+      await _advanceToProductSelection(tester);
+      await tester.tap(find.text('סידור המדף שלי'));
+      await tester.pumpAndSettle();
+      // Category review
+      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.pumpAndSettle();
+      // amSchedule
+      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.pumpAndSettle();
+      // amOrder — tap morning CTA
+      await tester.tap(find.text('אישור סדר הבוקר'));
+      await tester.pumpAndSettle();
+
+      // Evening transition screen should appear
+      expect(find.text('עכשיו נעבור לשגרת הערב'), findsOneWidget);
+    });
+
+    testWidgets(
+        'Evening-only selection skips morning steps and goes straight to pmSchedule',
+        (tester) async {
+      final eveningProduct = MasterProduct(
+        id: 'p2',
+        name: 'שמן ערב',
+        categoryId: 'cat1',
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+        eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+      );
+      final master = _masterWith([eveningProduct], [cat1]);
+      final eveningPre = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p2',
+          slot: Slot.evening,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
+
+      await tester.pumpWidget(_wrap(
+        master: master,
+        onFinish: () {},
+        eveningSelections: eveningPre,
+      ));
+      await tester.pumpAndSettle();
+
+      await _selectHebrew(tester);
+      await _advanceToProductSelection(tester);
+      await tester.tap(find.text('סידור המדף שלי'));
+      await tester.pumpAndSettle();
+      // Category review — tap "המשך לבחירת ימים" → should go to pmSchedule
+      // (no morning products, so morning steps are skipped)
+      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.pumpAndSettle();
+
+      // Should be on pmSchedule (evening schedule header)
+      expect(find.text('תזמון שבועי'), findsOneWidget);
+      expect(find.text('שגרת ערב'), findsOneWidget);
+    });
+
+    testWidgets('Complete onboarding flow (morning only): products → schedule → order → finish',
         (tester) async {
       final master = _masterWith(
         [
@@ -559,11 +720,23 @@ void main() {
         ],
         [cat1, cat2],
       );
+      final preSel = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p1',
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
 
       bool onFinishCalled = false;
 
-      await tester.pumpWidget(
-          _wrap(master: master, onFinish: () => onFinishCalled = true));
+      await tester.pumpWidget(_wrap(
+        master: master,
+        onFinish: () => onFinishCalled = true,
+        morningSelections: preSel,
+      ));
       await tester.pumpAndSettle();
 
       // Step 0: select language
@@ -583,19 +756,32 @@ void main() {
       await tester.tap(find.text('נקבה'));
       await tester.pumpAndSettle();
 
-      // Step 2 → Step 3
+      // Step 2 → Step 3 (V3 product selection)
       await tester.tap(find.text('המשך'));
       await tester.pumpAndSettle();
       expect(find.text('קרם לחות'), findsOneWidget);
 
-      // Step 3: advance past first category (nothing selected → skip), then finish from last category
-      await tester.tap(find.text('דלגי על השלב'));
+      // Step 3: p1 is pre-selected → "סידור המדף שלי" is enabled
+      await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשיכי לתזמון'));
+      // Category review
+      expect(find.text('סידרנו את המוצרים לפי שלבים'), findsOneWidget);
+      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.pumpAndSettle();
+
+      // amSchedule
+      expect(find.text('תזמון שבועי'), findsOneWidget);
+      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.pumpAndSettle();
+
+      // amOrder
+      expect(find.text('סדר המריחה בבוקר'), findsOneWidget);
+      await tester.tap(find.text('אישור סדר הבוקר'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _handleFinish async continuation
 
+      // No evening products → finish directly
       expect(onFinishCalled, isTrue);
     });
 
@@ -611,6 +797,15 @@ void main() {
         [_product('p1', 'קרם לחות', 'cat1')],
         [cat1],
       );
+      final preSel = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p1',
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
 
       final settings = _FakeSettings(failOnProfileSave: true);
       bool onFinishCalled = false;
@@ -619,23 +814,25 @@ void main() {
         master: master,
         onFinish: () => onFinishCalled = true,
         settings: settings,
+        morningSelections: preSel,
       ));
       await tester.pumpAndSettle();
 
       await _selectHebrew(tester);
-
-      await tester.tap(find.text('נתחיל?'));
+      await _advanceToProductSelection(tester);
+      await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'שמי');
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('נקבה'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('המשך'));
+      // Category review
+      await tester.tap(find.text('המשך לבחירת ימים'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשיכי לתזמון'));
+      // amSchedule
+      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.pumpAndSettle();
+
+      // amOrder — tap finish
+      await tester.tap(find.text('אישור סדר הבוקר'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _handleFinish async continuation
 

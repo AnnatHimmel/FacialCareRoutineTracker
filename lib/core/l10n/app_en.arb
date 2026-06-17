@@ -193,14 +193,14 @@
   "productSelFrequencyLabel": "Recommended frequency: ",
   "productSelTimingLabel": "When?",
   "productSelListHint": "Tap a product to add it to your list, or add a new product",
-  "catHintCleanser1": "Removes makeup and sunscreen — usually in the evening.",
+  "catHintCleanser1": "Removes makeup and sunscreen, usually in the evening.",
   "catHintCleanser2": "Gentle daily face cleanse.",
-  "catHintRetinoid": "Skin renewal — evening only, gradually.",
+  "catHintRetinoid": "Skin renewal. Evening only, gradually.",
   "catHintToner": "Balances skin and preps it for the next steps.",
   "catHintSerum": "Your active ingredients. Choose as many as you like.",
   "catHintMoisturizer": "Locks in moisture and soothes skin.",
   "catHintOil": "Final nourishing layer, usually in the evening.",
-  "catHintSpf": "Sun protection — the last morning step, essential.",
+  "catHintSpf": "Sun protection, the last morning step. Essential.",
   "catUsageCleanser1": "Massage onto dry skin to dissolve makeup and sunscreen, then rinse with lukewarm water.",
   "catUsageCleanser2": "Lather with a little water, gently massage in circular motions and rinse.",
   "catUsageRetinoid": "Pea-sized amount on dry skin, avoid the eye area. Evening only, gradually.",
@@ -208,16 +208,16 @@
   "catUsageSerum": "A few drops on clean skin. Wait for absorption before the next step.",
   "catUsageMoisturizer": "Apply an even layer to lock in moisture and soothe skin.",
   "catUsageOil": "Warm a few drops between your palms and press onto skin as the last step.",
-  "catUsageSpf": "Generous amount (a finger-length) as the last morning step — even on cloudy days.",
+  "catUsageSpf": "Generous amount (a finger-length) as the last morning step, even on cloudy days.",
   "scheduleNoProducts": "No products selected yet",
-  "scheduleConflictInMorning": "There is a conflict in the morning routine — tap to fix",
-  "scheduleConflictInEvening": "There is a conflict in the evening routine — tap to fix",
+  "scheduleConflictInMorning": "There is a conflict in the morning routine. Tap to fix.",
+  "scheduleConflictInEvening": "There is a conflict in the evening routine. Tap to fix.",
   "scheduleOccasional": "Not for daily use",
   "scheduleDaily": "Daily",
   "scheduleWeeklyView": "Weekly view",
   "scheduleTapConflictDay": "Tap a flagged day",
   "scheduleProductsPerDay": "Products per day",
-  "scheduleProductWillRemain": "The product will remain on all other days — we won't block this if you keep it.",
+  "scheduleProductWillRemain": "The product will remain on all other days. You can keep it this way.",
   "scheduleConflictHeader": "Not recommended combination on {day}",
   "@scheduleConflictHeader": {
     "placeholders": {
@@ -242,13 +242,13 @@
     }
   },
   "scheduleCountEveryDay": "Daily",
-  "scheduleOverCap": "Exceeds recommendation — consider reducing to {max} days per week",
+  "scheduleOverCap": "Exceeds recommendation. Consider reducing to {max} days per week.",
   "@scheduleOverCap": {
     "placeholders": {
       "max": {}
     }
   },
-  "scheduleNoDaySelected": "No day selected — product will not be scheduled",
+  "scheduleNoDaySelected": "No day selected. Product will not be scheduled.",
   "scheduleSaveFinish": "Finish & Save Routine",
   "scheduleAlertsOne": "1 alert",
   "scheduleAlertsCount": "{count} alerts",
@@ -270,7 +270,7 @@
   "@scheduleDayChip": {
     "placeholders": { "day": {} }
   },
-  "scheduleSoftAlertsNote": "All alerts are soft — you can exceed, we'll just remind you.",
+  "scheduleSoftAlertsNote": "All alerts are soft. You can exceed, we'll just remind you.",
   "orderInstruction": "Drag products to reorder your routine",
   "orderNoProducts": "No products selected",
   "orderResetToRecommended": "Reset to recommended order",
@@ -330,7 +330,7 @@
   "importInvalidFile": "Invalid file",
   "importDialogQuestion": "How should existing data be handled?",
   "importReplaceSuccess": "Data replaced successfully",
-  "importMergeNoConflicts": "Merge complete — no conflicts found",
+  "importMergeNoConflicts": "Merge complete. No conflicts found.",
   "updateAllUpToDate": "Everything is up to date",
   "updateGoBack": "Go back",
   "updateDataIntact": "Your data is saved and still exists",
@@ -342,7 +342,7 @@
       "count": {}
     }
   },
-  "updateNewProductsDesc": "These products haven't been selected yet — add them in product selection",
+  "updateNewProductsDesc": "These products haven't been selected yet. Add them in product selection.",
   "updateDeprecated": "Products no longer recommended ({count})",
   "@updateDeprecated": {
     "placeholders": {
@@ -376,7 +376,7 @@
   "mergeAllResolved": "All conflicts resolved",
   "mergeClickFinish": "Press \"Finish\" to apply the merge",
   "mergeSuccess": "Merge completed successfully",
-  "premiumTitle": "Cloud Backup — Coming Soon",
+  "premiumTitle": "Cloud Backup, Coming Soon",
   "premiumDescWeb": "Enter an activation key to enable automatic backup and restore across devices",
   "premiumDescAndroid": "This feature is available in the web version only",
   "premiumKeyLabel": "Activation key",
@@ -390,7 +390,7 @@
   "dayDetailJournalTooltip": "Skin log",
   "streakDaysInRow": "streak days",
   "streakOnTrack": "On track for a perfect glow!",
-  "streakStartToday": "Every day counts — let's start today ✨",
+  "streakStartToday": "Every day counts. Let's start today ✨",
   "streakPersonalBest": "Personal best · {days} days",
   "@streakPersonalBest": {
     "placeholders": {
@@ -423,7 +423,7 @@
   "skinStateCalm": "Calm",
   "skinStateMoist": "Moist",
   "skinStateOily": "Oily",
-  "weekdayOverCapWarning": "Over recommended — consider reducing",
+  "weekdayOverCapWarning": "Over recommended. Consider reducing.",
   "customProductTitle": "Add Your Own Product",
   "customProductPhotoLabel": "Add photo (optional)",
   "customProductNameLabel": "Product name",
@@ -469,7 +469,7 @@
       }
     }
   },
-  "scheduleGuidedBothSlots": "Schedule morning routine first, then we'll continue to the evening routine together. You can exceed the recommendation — we'll just remind you.",
+  "scheduleGuidedBothSlots": "Schedule morning routine first, then we'll continue to the evening routine together. You can exceed the recommendation, we'll just remind you.",
   "scheduleGuidedSingleSlot": "Which days to use each product in {routine}…",
   "@scheduleGuidedSingleSlot": {
     "placeholders": {
@@ -482,7 +482,7 @@
       "routine": {}
     }
   },
-  "scheduleNextStepPending": "One more step — {routine} is waiting to be scheduled",
+  "scheduleNextStepPending": "One more step. {routine} is waiting to be scheduled",
   "@scheduleNextStepPending": {
     "placeholders": {
       "routine": {}
@@ -619,6 +619,109 @@
   "streakMilestoneTitle": "A full week of consistency! 🎉",
   "streakMilestoneSub": "The perfect time to capture your starting point",
   "streakPitchTitle": "Want to see if it works?",
-  "streakPitchSub": "Take a 'before' photo — compare in two weeks",
-  "streakPitchCta": "Try"
+  "streakPitchSub": "Take a 'before' photo, compare in two weeks",
+  "streakPitchCta": "Try",
+  "productSelV3Title": "Which products do you have?",
+  "productSelV3Subtitle": "Add the products you have. We'll sort them into steps and build your routine.",
+  "productSelV3SearchTab": "Search",
+  "productSelV3ScanTab": "Scan",
+  "productSelV3SearchHint": "Search product or brand...",
+  "productSelV3Popular": "Popular products",
+  "productSelV3AddManual": "Not found? Add manually",
+  "productSelV3SelectedCount": "{count} products selected",
+  "@productSelV3SelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "productSelV3ShelfCTA": "Organize my shelf",
+  "categoryReviewTitle": "We sorted your products by steps",
+  "categoryReviewSubtitle": "Check the categories are correct. Tap to change.",
+  "categoryReviewChangeCategory": "Change category",
+  "categoryReviewRemove": "Remove",
+  "categoryReviewAddMore": "Add more products",
+  "categoryReviewCTA": "Continue to day selection",
+  "categoryReviewEmpty": "No products on your shelf yet",
+  "scheduleHeaderWeekly": "Weekly schedule",
+  "scheduleStepLabel": "Step 1 of 2 · {slot}",
+  "@scheduleStepLabel": {
+    "placeholders": { "slot": {} }
+  },
+  "scheduleSubtitleV3": "Choose which days to use each product. We'll only show notes when needed.",
+  "scheduleContextChipMorning": "Morning routine",
+  "scheduleContextChipEvening": "Evening routine",
+  "scheduleContinueToOrder": "Continue to application order",
+  "daySummaryNoteCount": "{count} notes for {day}",
+  "@daySummaryNoteCount": {
+    "placeholders": { "count": { "type": "int" }, "day": {} }
+  },
+  "daySummaryNoteSub": "There's a product combination or high usage worth checking",
+  "daySummaryAllGood": "{day} looks good, no notes.",
+  "@daySummaryAllGood": {
+    "placeholders": { "day": {} }
+  },
+  "issueSheetTitle": "Notes for {day}",
+  "@issueSheetTitle": {
+    "placeholders": { "day": {} }
+  },
+  "issueSheetSubtitle": "You can change just this day, or keep the routine as is.",
+  "issueSheetConflictSection": "Not recommended on the same day",
+  "issueSheetOveruseSection": "Higher usage than recommended",
+  "issueSheetOveruseBody": "The product is scheduled {count} times per week, and the recommendation is up to {cap}.",
+  "@issueSheetOveruseBody": {
+    "placeholders": { "count": { "type": "int" }, "cap": { "type": "int" } }
+  },
+  "issueActionRemoveFromDay": "Remove from this day",
+  "issueActionKeep": "Keep anyway",
+  "issueActionAutoFix": "Auto-adjust",
+  "issueActionReviewNotes": "Review notes",
+  "chipPossibleConflict": "Possible conflict",
+  "chipHighUsage": "High usage",
+  "orderHeaderMorning": "Morning application order",
+  "orderHeaderEvening": "Evening application order",
+  "orderStepLabel": "Step 2 of 2 · {slot}",
+  "@orderStepLabel": {
+    "placeholders": { "slot": {} }
+  },
+  "orderSubtitleV3": "We sorted your products by recommended usage order. Drag to change.",
+  "orderViewGeneral": "General order",
+  "orderAdvancedTitle": "Advanced options",
+  "orderAdvancedSub": "Change order per day, only if needed",
+  "orderPerDayTitle": "Change order per day",
+  "orderPerDayMicrocopy": "The default fits most people. Per-day order is only needed if some days have special products.",
+  "orderCtaMorning": "Confirm morning order",
+  "orderCtaFinish": "Finish and show my routine",
+  "eveningTransitionTitle": "Now for the evening routine",
+  "eveningTransitionBody": "We'll use the same products and suggest days and an order that suit the evening.",
+  "addProductTitle": "Add product",
+  "addProductConfirmCategory": "Which step does this product belong to?",
+  "addProductChooseSlot": "When is the product used?",
+  "addProductSlotMorning": "Morning",
+  "addProductSlotEvening": "Evening",
+  "addProductSlotBoth": "Both",
+  "addProductChooseDays": "On which days?",
+  "addProductPlacementTitle": "Suggested placement",
+  "addProductPlacement": "We'll place it after {before} and before {after}",
+  "@addProductPlacement": {
+    "placeholders": { "before": {}, "after": {} }
+  },
+  "addProductPlacementAfter": "We'll place it after {before}",
+  "@addProductPlacementAfter": {
+    "placeholders": { "before": {} }
+  },
+  "addProductPlacementGeneric": "We'll place it where it fits in the routine",
+  "addProductCta": "Add to routine",
+  "addProductSuccess": "Product added to routine",
+  "addProductSuccessSubMorning": "We added it to your morning routine on {days}.",
+  "@addProductSuccessSubMorning": {
+    "placeholders": { "days": {} }
+  },
+  "addProductSuccessSubEvening": "We added it to your evening routine on {days}.",
+  "@addProductSuccessSubEvening": {
+    "placeholders": { "days": {} }
+  },
+  "addProductSuccessSubBoth": "We added it to your morning and evening routine on {days}.",
+  "@addProductSuccessSubBoth": {
+    "placeholders": { "days": {} }
+  }
 }

@@ -223,9 +223,12 @@ void main() {
   });
 
   // ── UI integration tests ─────────────────────────────────────────────────────
+  // V3 design: conflicts are surfaced via _DaySummaryCard + _ConflictSheet (bottom sheet).
+  // DailyRule products with no explicit schedule get all 7 days → conflict exists on any selected day.
 
   group('IssuesPanel UI', () {
     testWidgets('issues panel is visible and expanded by default when there are conflicts', (tester) async {
+      // DailyRule → _effectiveDays returns all 7 days → conflict on today's selected day
       final pa = _daily('pa', 'מוצר א׳');
       final pb = _daily('pb', 'מוצר ב׳');
       final rule = _productRule('pa', 'pb', reason: 'סיבת ההתנגשות');
@@ -236,12 +239,10 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Issues panel header is always visible — conflict count shown
-      expect(find.textContaining('התראות'), findsWidgets);
-      // Panel starts expanded by default — shows collapse chevron
-      expect(find.byIcon(Icons.expand_less_rounded), findsWidgets);
-      // Content visible without needing to expand
-      expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
+      // V3: _DaySummaryCard shows conflict banner for the selected day
+      final l = AppLocalizations.of(tester.element(find.byType(ScheduleSetupScreen)))!;
+      expect(find.text(l.daySummaryNoteSub), findsOneWidget);
+      expect(find.text(l.issueActionReviewNotes), findsOneWidget);
     });
 
     testWidgets('issues panel shows product names by default', (tester) async {
@@ -255,7 +256,11 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Panel starts expanded — product names visible without needing to expand
+      // Open conflict sheet
+      await tester.tap(find.text('בדיקת ההערות'));
+      await tester.pumpAndSettle();
+
+      // Product names are shown inside _ConflictSheetCard via _SheetProductRow
       expect(find.text('מוצר א׳'), findsWidgets);
       expect(find.text('מוצר ב׳'), findsWidgets);
     });
@@ -271,11 +276,15 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Panel starts expanded — reason visible without needing to expand
+      // Open conflict sheet to see reason text
+      await tester.tap(find.text('בדיקת ההערות'));
+      await tester.pumpAndSettle();
+
       expect(find.text('סיבת ההתנגשות'), findsWidgets);
     });
 
     testWidgets('tapping panel header collapses and re-expands the content', (tester) async {
+      // V3 replacement: conflict sheet can be opened and dismissed
       final pa = _daily('pa', 'A');
       final pb = _daily('pb', 'B');
       final rule = _productRule('pa', 'pb', reason: 'סיבה');
@@ -286,53 +295,55 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Panel is expanded by default: soft note visible
-      expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
-      expect(find.byIcon(Icons.expand_less_rounded), findsWidgets);
-
-      // Tap header to collapse
-      await tester.tap(find.byIcon(Icons.expand_less_rounded).first);
+      // Open conflict sheet
+      await tester.tap(find.text('בדיקת ההערות'));
       await tester.pumpAndSettle();
 
-      // Panel body now hidden
-      expect(find.textContaining('כל ההתראות הן רכות'), findsNothing);
-      expect(find.byIcon(Icons.expand_more_rounded), findsWidgets);
+      // Sheet is now open — shows section header and/or product pair card header
+      expect(find.text('לא מומלץ לשלב באותו יום'), findsWidgets);
+      // Sheet subtitle is visible
+      expect(find.textContaining('אפשר לשנות רק את היום הזה'), findsOneWidget);
 
-      // Tap again to re-expand
-      await tester.tap(find.byIcon(Icons.expand_more_rounded).first);
+      // Dismiss via "להשאיר בכל זאת"
+      await tester.tap(find.text('להשאיר בכל זאת'));
       await tester.pumpAndSettle();
 
-      // Panel body visible again
-      expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
+      // Sheet closed — pair card header gone
+      expect(find.text('לא מומלץ לשלב באותו יום'), findsNothing);
     });
 
     testWidgets('fix button removes weekly product from its conflict day', (tester) async {
+      // Weekly products scheduled on all 7 days → conflict on today
       final pa = _weekly('pa', 'מוצר א׳');
       final pb = _weekly('pb', 'מוצר ב׳');
       final rule = _productRule('pa', 'pb', reason: 'סיבה');
       final udr = _FakeUDR(
         morningSelections: [_sel('pa', Slot.morning), _sel('pb', Slot.morning)],
-        schedules: [_sched('pa', {0, 1}), _sched('pb', {0, 1})],
+        schedules: [
+          _sched('pa', {0, 1, 2, 3, 4, 5, 6}),
+          _sched('pb', {0, 1, 2, 3, 4, 5, 6}),
+        ],
       );
 
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Panel is already expanded by default — tap remove button directly
-      final fixButtonIcon = find.byIcon(Icons.event_busy_rounded).first;
-      final fixButton = find.ancestor(
-        of: fixButtonIcon,
-        matching: find.byType(GestureDetector),
-      ).first;
-      await tester.tap(fixButton);
+      // Open conflict sheet
+      await tester.tap(find.text('בדיקת ההערות'));
+      await tester.pumpAndSettle();
+
+      // Tap the primary fix button (movable = productA for WeeklyMaxRule)
+      // Button text: "הסרת מוצר א׳ מהיום הזה"
+      await tester.tap(find.textContaining('הסרת מוצר א׳'));
       await tester.pumpAndSettle();
 
       expect(udr.lastUpserted, isNotNull);
-      // The upserted schedule must NOT include day 0 (Sunday)
-      expect(udr.lastUpserted!.weekdays.contains(0), isFalse);
+      // One day removed from the 7-day schedule
+      expect(udr.lastUpserted!.weekdays.length, equals(6));
     });
 
     testWidgets('fix button for daily product creates schedule excluding that day', (tester) async {
+      // DailyRule products with no explicit schedule → all 7 days by default
       final pa = _daily('pa', 'מוצר א׳');
       final pb = _daily('pb', 'מוצר ב׳');
       final rule = _productRule('pa', 'pb', reason: 'סיבה');
@@ -343,22 +354,21 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Panel is already expanded by default — tap remove button directly
-      final fixButtonIcon = find.byIcon(Icons.event_busy_rounded).first;
-      final fixButton = find.ancestor(
-        of: fixButtonIcon,
-        matching: find.byType(GestureDetector),
-      ).first;
-      await tester.tap(fixButton);
+      // Open conflict sheet
+      await tester.tap(find.text('בדיקת ההערות'));
+      await tester.pumpAndSettle();
+
+      // For DailyRule: movable = productB ('מוצר ב׳') since aIsMovable=false
+      await tester.tap(find.textContaining('הסרת מוצר ב׳'));
       await tester.pumpAndSettle();
 
       expect(udr.lastUpserted, isNotNull);
-      // Daily product has no schedule → all 7 days active → remove day 0 → 6 remain
+      // DailyRule gives all 7 days → remove today → 6 remain
       expect(udr.lastUpserted!.weekdays.length, equals(6));
-      expect(udr.lastUpserted!.weekdays.contains(0), isFalse);
     });
 
     testWidgets('panel shows soft alerts footer note by default', (tester) async {
+      // V3 replacement: day summary card shows "התאמה אוטומטית" auto-fix option
       final pa = _daily('pa', 'A');
       final pb = _daily('pb', 'B');
       final rule = _productRule('pa', 'pb');
@@ -369,11 +379,12 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([pa, pb], rules: [rule]), udr: udr));
       await tester.pumpAndSettle();
 
-      // Panel starts expanded — footer note visible without needing to expand
-      expect(find.textContaining('כל ההתראות הן רכות'), findsOneWidget);
+      // V3 summary card shows the auto-fix option alongside the manual review button
+      expect(find.text('התאמה אוטומטית'), findsOneWidget);
     });
 
     testWidgets('category name shows inside the panel by default', (tester) async {
+      // V3 replacement: category chip is shown in _DayProductCard
       final pa = _daily('pa', 'A', catId: 'cat-moisturizer');
       final pb = _daily('pb', 'B', catId: 'cat-moisturizer');
       final rule = _productRule('pa', 'pb');
@@ -389,8 +400,67 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Panel starts expanded — category name visible without needing to expand
+      // DailyRule products appear in _DayProductCard which shows category chip
       expect(find.text('לחות'), findsWidgets);
+    });
+
+    testWidgets(
+        'RoutineIssueSheet does not overflow with a very long movable product name',
+        (tester) async {
+      // Narrow phone-width viewport reproduces the original RenderFlex overflow
+      // in the conflict resolution pill (schedule_setup_screen.dart:1982).
+      tester.view.physicalSize = const Size(360, 760);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      // Weekly products → movable = productA; give it a long name so the
+      // "הסרת <name> מהיום הזה" pill is wider than the sheet.
+      final checker = IncompatibilityChecker();
+      final pa = _weekly(
+          'pa', 'קרם לחות מתקדם עם חומצה היאלורונית וויטמין סי לעור יבש מאוד');
+      final pb = _weekly('pb', 'מוצר ב׳');
+      final rule = _productRule('pa', 'pb', reason: 'סיבה');
+      final conflicts = checker.getConflictsForSelection(
+        activeSlot: Slot.morning,
+        slotProducts: [pa, pb],
+        otherSlotProducts: [],
+        rules: [rule],
+        categories: [],
+        mutedRuleIds: {},
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('he', 'MA'),
+          home: Builder(
+            builder: (context) {
+              final l = AppLocalizations.of(context)!;
+              return Scaffold(
+                body: RoutineIssueSheet(
+                  dayId: 0,
+                  dayName: 'ראשון',
+                  conflicts: conflicts,
+                  overusedProducts: const [],
+                  slot: Slot.morning,
+                  categories: const [],
+                  isEnglish: false,
+                  onRemoveFromDay: (_, __) async {},
+                  l: l,
+                ),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // No RenderFlex overflow should be thrown while laying out the sheet.
+      expect(tester.takeException(), isNull);
+      // The conflict sheet is scrollable so tall content is never cropped.
+      expect(find.byType(SingleChildScrollView), findsWidgets);
     });
   });
 }

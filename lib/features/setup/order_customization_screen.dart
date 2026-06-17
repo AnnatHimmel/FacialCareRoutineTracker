@@ -22,7 +22,19 @@ const _uuid = Uuid();
 class OrderCustomizationScreen extends ConsumerStatefulWidget {
   final bool fromSetup;
 
-  const OrderCustomizationScreen({super.key, this.fromSetup = false});
+  // Onboarding single-slot mode. When set, renders only the given slot with a
+  // custom header and a slot-specific CTA. The caller manages navigation.
+  final Slot? onboardingSlot;
+  final VoidCallback? onContinue;
+  final VoidCallback? onBack;
+
+  const OrderCustomizationScreen({
+    super.key,
+    this.fromSetup = false,
+    this.onboardingSlot,
+    this.onContinue,
+    this.onBack,
+  });
 
   @override
   ConsumerState<OrderCustomizationScreen> createState() =>
@@ -35,6 +47,11 @@ class _OrderCustomizationScreenState
     Slot.morning: true,
     Slot.evening: true,
   };
+
+  bool get _isOnboarding => widget.onboardingSlot != null;
+
+  // Advanced options panel is collapsed by default in onboarding mode
+  bool _advancedExpanded = false;
 
   final Map<Slot, List<String>?> _localOrder = {};
 
@@ -69,7 +86,10 @@ class _OrderCustomizationScreenState
   }
 
   Future<void> _save(BuildContext context) async {
-    if (widget.fromSetup) {
+    if (_isOnboarding) {
+      // Orchestrator manages navigation and completion; just call the callback.
+      widget.onContinue?.call();
+    } else if (widget.fromSetup) {
       await ref
           .read(settingsRepositoryProvider)
           .setOnboardingCompleted(true);
@@ -94,8 +114,9 @@ class _OrderCustomizationScreenState
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: GlowAppBar(showBack: !widget.fromSetup),
-      bottomNavigationBar: AppBottomNav.setup(context),
+      appBar: _isOnboarding ? null : GlowAppBar(showBack: !widget.fromSetup),
+      bottomNavigationBar:
+          _isOnboarding ? null : AppBottomNav.setup(context),
       body: masterAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
@@ -132,6 +153,114 @@ class _OrderCustomizationScreenState
             _localOrder[Slot.evening],
           );
 
+          if (_isOnboarding) {
+            // Onboarding mode: single slot, custom header, advanced options panel
+            final slot = widget.onboardingSlot!;
+            final products =
+                slot == Slot.morning ? morningProducts : eveningProducts;
+            final override =
+                slot == Slot.morning ? morningOverride : eveningOverride;
+            return SafeArea(
+              child: Column(
+                children: [
+                  _OnboardingOrderHeader(
+                    slot: slot,
+                    onBack: widget.onBack!,
+                    l: l,
+                  ),
+                  Expanded(
+                    child: ListView(
+                      padding:
+                          const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                      children: [
+                        // Static "general order" label
+                        Padding(
+                          padding:
+                              const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.format_list_bulleted_rounded,
+                                size: 14,
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                l.orderViewGeneral,
+                                style: AppTypography.labelMd.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Reorderable list for this slot
+                        GlowCard(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 0),
+                          child: ReorderableListView.builder(
+                            shrinkWrap: true,
+                            physics:
+                                const NeverScrollableScrollPhysics(),
+                            itemCount: products.length,
+                            onReorderItem: (oldIndex, newIndex) {
+                              final currentIds =
+                                  products.map((p) => p.id).toList();
+                              _reorder(
+                                  slot, currentIds, oldIndex, newIndex, override);
+                            },
+                            itemBuilder: (context, index) {
+                              final product = products[index];
+                              return RoutineItemRow(
+                                key: ValueKey(product.id),
+                                product: product,
+                                isToggled: false,
+                                onToggle: () {},
+                                isDraggable: true,
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Advanced options collapsible (collapsed by default)
+                        _AdvancedOptionsPanel(
+                          slot: slot,
+                          expanded: _advancedExpanded,
+                          hasCustomOrder: _localOrder[slot] != null ||
+                              override != null,
+                          onToggle: () => setState(
+                              () => _advancedExpanded = !_advancedExpanded),
+                          onReset: () => _resetOrder(slot),
+                          l: l,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Bottom CTA
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: AppColors.surface,
+                      boxShadow: AppColors.navGlow,
+                    ),
+                    padding:
+                        const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                    child: PrimaryButton(
+                      label: slot == Slot.morning
+                          ? l.orderCtaMorning
+                          : l.orderCtaFinish,
+                      onTap: () => _save(context),
+                      trailingIcon: Icons.arrow_forward,
+                      height: 56,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Standard (non-onboarding) mode
           return Stack(
             children: [
               ListView(
@@ -332,3 +461,226 @@ final _orderOverrideProvider =
   (ref, slot) =>
       ref.watch(userDataRepositoryProvider).watchOrderOverride(slot),
 );
+
+// ── Onboarding single-slot header ────────────────────────────────────────────
+// Matches the _Header style from CategoryReviewScreen: back arrow + title +
+// step label + subtitle.
+
+class _OnboardingOrderHeader extends StatelessWidget {
+  final Slot slot;
+  final VoidCallback onBack;
+  final AppLocalizations l;
+
+  const _OnboardingOrderHeader({
+    required this.slot,
+    required this.onBack,
+    required this.l,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isMorning = slot == Slot.morning;
+    final slotText = isMorning ? l.slotMorning : l.slotEvening;
+    final title =
+        isMorning ? l.orderHeaderMorning : l.orderHeaderEvening;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: onBack,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLow,
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                  child: const Icon(Icons.arrow_back,
+                      color: AppColors.onSurface, size: 20),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTypography.headlineMd.copyWith(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.onSurface,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l.orderStepLabel(slotText),
+            style: AppTypography.labelMd.copyWith(
+              color: AppColors.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l.orderSubtitleV3,
+            style: AppTypography.bodyMd.copyWith(
+              color: AppColors.onSurfaceVariant,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Advanced options collapsible (onboarding order screen) ───────────────────
+// Collapsed by default. Shows orderAdvancedTitle + sub as a tappable row;
+// when expanded shows orderPerDayTitle + microcopy + reset-to-recommended
+// action. Per-day reordering is NOT implemented in v1 — only the microcopy.
+
+class _AdvancedOptionsPanel extends StatelessWidget {
+  final Slot slot;
+  final bool expanded;
+  final bool hasCustomOrder;
+  final VoidCallback onToggle;
+  final VoidCallback onReset;
+  final AppLocalizations l;
+
+  const _AdvancedOptionsPanel({
+    required this.slot,
+    required this.expanded,
+    required this.hasCustomOrder,
+    required this.onToggle,
+    required this.onReset,
+    required this.l,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.glowSm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onToggle,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l.orderAdvancedTitle,
+                          style: AppTypography.labelMd.copyWith(
+                            color: AppColors.onSurface,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          l.orderAdvancedSub,
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    expanded
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
+                    size: 18,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (expanded) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(
+                    height: 1,
+                    color: AppColors.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    l.orderPerDayTitle,
+                    style: AppTypography.labelMd.copyWith(
+                      color: AppColors.onSurface,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l.orderPerDayMicrocopy,
+                    style: AppTypography.labelSm.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      fontSize: 11,
+                      height: 1.4,
+                    ),
+                  ),
+                  if (hasCustomOrder) ...[
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: OutlinedButton.icon(
+                        onPressed: onReset,
+                        icon: const Icon(Icons.restart_alt_rounded, size: 16),
+                        label: Text(l.orderResetToRecommended,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(
+                            color: AppColors.primaryFixed,
+                            width: 1.5,
+                          ),
+                          textStyle: AppTypography.labelMd
+                              .copyWith(fontWeight: FontWeight.w700),
+                          backgroundColor: AppColors.surfaceLow,
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}

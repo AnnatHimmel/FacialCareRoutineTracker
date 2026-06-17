@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_typography.dart';
+import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../setup/category_review_screen.dart';
+import '../setup/order_customization_screen.dart';
 import '../setup/product_selection_screen.dart';
+import '../setup/schedule_setup_screen.dart';
+
+// Wizard sub-stages within Step 3 (product setup)
+enum _SetupStage {
+  products,
+  categoryReview,
+  amSchedule,
+  amOrder,
+  eveningTransition,
+  pmSchedule,
+  pmOrder,
+}
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   final VoidCallback onFinish;
@@ -20,8 +35,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // Step 0 = language selection (before any locale-dependent text)
   // Step 1 = welcome
   // Step 2 = personal info
-  // Step 3 = product selection
+  // Step 3 = product/schedule setup wizard
   int _step = 0;
+  _SetupStage _stage = _SetupStage.products;
+  // When entering pmSchedule from amOrder (via evening transition), back goes
+  // to eveningTransition. When entering pmSchedule directly (no morning), back
+  // goes to categoryReview.
+  bool _pmScheduleFromTransition = false;
   String _name = '';
   String? _gender;
 
@@ -339,19 +359,194 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildStep3() {
-    return ProductSelectionScreen(onDone: () => _continueToSchedule());
+  // ── Step 3 helpers ──────────────────────────────────────────────────────────
+
+  bool _hasMorning() {
+    final sels = ref.read(selectionsProvider(Slot.morning)).valueOrNull ?? [];
+    return sels.any((s) => s.isSelected);
   }
 
-  Future<void> _continueToSchedule() async {
-    // Use /setup/schedule (no fromProducts flag) so _handleContinue pops with
-    // true instead of calling context.go('/today'), which would silently drop
-    // the push result and prevent _handleFinish from ever running.
-    final finished = await context.push<bool>('/setup/schedule');
-    if (!mounted) return;
-    if (finished == true) {
-      await _handleFinish();
+  bool _hasEvening() {
+    final sels = ref.read(selectionsProvider(Slot.evening)).valueOrNull ?? [];
+    return sels.any((s) => s.isSelected);
+  }
+
+  // Called from categoryReview → determine next stage based on slot selections
+  void _afterCategoryReview() {
+    if (_hasMorning()) {
+      setState(() => _stage = _SetupStage.amSchedule);
+    } else if (_hasEvening()) {
+      // No morning slot; go straight to pmSchedule (back target = categoryReview)
+      setState(() {
+        _pmScheduleFromTransition = false;
+        _stage = _SetupStage.pmSchedule;
+      });
+    } else {
+      _handleFinish();
     }
+  }
+
+  // Called from amOrder → determine next stage
+  void _afterMorningOrder() {
+    if (_hasEvening()) {
+      setState(() => _stage = _SetupStage.eveningTransition);
+    } else {
+      _handleFinish();
+    }
+  }
+
+  Widget _buildStep3() {
+    switch (_stage) {
+      case _SetupStage.products:
+        return ProductSelectionScreen(
+          onDone: () => setState(() => _stage = _SetupStage.categoryReview),
+        );
+      case _SetupStage.categoryReview:
+        return CategoryReviewScreen(
+          onBack: () => setState(() => _stage = _SetupStage.products),
+          onNext: _afterCategoryReview,
+        );
+      case _SetupStage.amSchedule:
+        return ScheduleSetupScreen(
+          onboardingSlot: Slot.morning,
+          onBack: () => setState(() => _stage = _SetupStage.categoryReview),
+          onContinue: () => setState(() => _stage = _SetupStage.amOrder),
+        );
+      case _SetupStage.amOrder:
+        return OrderCustomizationScreen(
+          onboardingSlot: Slot.morning,
+          onBack: () => setState(() => _stage = _SetupStage.amSchedule),
+          onContinue: _afterMorningOrder,
+        );
+      case _SetupStage.eveningTransition:
+        return _EveningTransitionStep(
+          onBack: () => setState(() => _stage = _SetupStage.amOrder),
+          onContinue: () => setState(() {
+            _pmScheduleFromTransition = true;
+            _stage = _SetupStage.pmSchedule;
+          }),
+        );
+      case _SetupStage.pmSchedule:
+        return ScheduleSetupScreen(
+          onboardingSlot: Slot.evening,
+          onBack: () => setState(() {
+            _stage = _pmScheduleFromTransition
+                ? _SetupStage.eveningTransition
+                : _SetupStage.categoryReview;
+          }),
+          onContinue: () => setState(() => _stage = _SetupStage.pmOrder),
+        );
+      case _SetupStage.pmOrder:
+        return OrderCustomizationScreen(
+          onboardingSlot: Slot.evening,
+          onBack: () => setState(() => _stage = _SetupStage.pmSchedule),
+          onContinue: _handleFinish,
+        );
+    }
+  }
+}
+
+// ── Evening Transition Step ───────────────────────────────────────────────────
+// Shown after morning order is confirmed, before evening schedule setup.
+// Calm visual: back arrow, icon, title, body, and a continue button.
+
+class _EveningTransitionStep extends StatelessWidget {
+  final VoidCallback onBack;
+  final VoidCallback onContinue;
+
+  const _EveningTransitionStep({
+    required this.onBack,
+    required this.onContinue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 80),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: AppColors.tertiary.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.dark_mode_rounded,
+                        size: 40,
+                        color: AppColors.tertiary,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      l.eveningTransitionTitle,
+                      style: AppTypography.headlineMd.copyWith(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.onSurface,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l.eveningTransitionBody,
+                      style: AppTypography.bodyMd.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 15,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.outline),
+                      borderRadius: BorderRadius.circular(9999),
+                    ),
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: InkWell(
+                        onTap: onBack,
+                        borderRadius: BorderRadius.circular(9999),
+                        child: const Icon(Icons.arrow_back,
+                            color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: PrimaryButton(
+                      label: l.continueActionNeutral,
+                      trailingIcon: Icons.arrow_forward,
+                      onTap: onContinue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

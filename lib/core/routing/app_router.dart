@@ -17,6 +17,7 @@ import '../../features/journal/skin_journal_screen.dart';
 import '../../features/collection/collection_screen.dart';
 import '../../features/collection/product_detail_screen.dart';
 import '../../features/journal/skin_log_entry_screen.dart';
+import '../../features/setup/add_product_flow_screen.dart';
 import '../../features/setup/order_customization_screen.dart';
 import '../../features/setup/schedule_setup_screen.dart';
 import '../../features/home/week_glance_screen.dart';
@@ -137,6 +138,12 @@ final appRouter = GoRouter(
         final fromSetup = state.uri.queryParameters['from'] == 'setup';
         return OrderCustomizationScreen(fromSetup: fromSetup);
       },
+    ),
+
+    // Add product wizard (returning users)
+    GoRoute(
+      path: '/add-product',
+      builder: (context, state) => const AddProductFlowScreen(),
     ),
 
     // Week at a glance

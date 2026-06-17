@@ -402,13 +402,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get catHintCleanser1 =>
-      'Removes makeup and sunscreen — usually in the evening.';
+      'Removes makeup and sunscreen, usually in the evening.';
 
   @override
   String get catHintCleanser2 => 'Gentle daily face cleanse.';
 
   @override
-  String get catHintRetinoid => 'Skin renewal — evening only, gradually.';
+  String get catHintRetinoid => 'Skin renewal. Evening only, gradually.';
 
   @override
   String get catHintToner => 'Balances skin and preps it for the next steps.';
@@ -424,7 +424,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get catHintOil => 'Final nourishing layer, usually in the evening.';
 
   @override
-  String get catHintSpf => 'Sun protection — the last morning step, essential.';
+  String get catHintSpf => 'Sun protection, the last morning step. Essential.';
 
   @override
   String get catUsageCleanser1 =>
@@ -456,18 +456,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get catUsageSpf =>
-      'Generous amount (a finger-length) as the last morning step — even on cloudy days.';
+      'Generous amount (a finger-length) as the last morning step, even on cloudy days.';
 
   @override
   String get scheduleNoProducts => 'No products selected yet';
 
   @override
   String get scheduleConflictInMorning =>
-      'There is a conflict in the morning routine — tap to fix';
+      'There is a conflict in the morning routine. Tap to fix.';
 
   @override
   String get scheduleConflictInEvening =>
-      'There is a conflict in the evening routine — tap to fix';
+      'There is a conflict in the evening routine. Tap to fix.';
 
   @override
   String get scheduleOccasional => 'Not for daily use';
@@ -486,7 +486,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleProductWillRemain =>
-      'The product will remain on all other days — we won\'t block this if you keep it.';
+      'The product will remain on all other days. You can keep it this way.';
 
   @override
   String scheduleConflictHeader(Object day) {
@@ -524,12 +524,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String scheduleOverCap(Object max) {
-    return 'Exceeds recommendation — consider reducing to $max days per week';
+    return 'Exceeds recommendation. Consider reducing to $max days per week.';
   }
 
   @override
   String get scheduleNoDaySelected =>
-      'No day selected — product will not be scheduled';
+      'No day selected. Product will not be scheduled.';
 
   @override
   String get scheduleSaveFinish => 'Finish & Save Routine';
@@ -568,7 +568,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleSoftAlertsNote =>
-      'All alerts are soft — you can exceed, we\'ll just remind you.';
+      'All alerts are soft. You can exceed, we\'ll just remind you.';
 
   @override
   String get orderInstruction => 'Drag products to reorder your routine';
@@ -699,7 +699,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importReplaceSuccess => 'Data replaced successfully';
 
   @override
-  String get importMergeNoConflicts => 'Merge complete — no conflicts found';
+  String get importMergeNoConflicts => 'Merge complete. No conflicts found.';
 
   @override
   String get updateAllUpToDate => 'Everything is up to date';
@@ -723,7 +723,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateNewProductsDesc =>
-      'These products haven\'t been selected yet — add them in product selection';
+      'These products haven\'t been selected yet. Add them in product selection.';
 
   @override
   String updateDeprecated(Object count) {
@@ -782,7 +782,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mergeSuccess => 'Merge completed successfully';
 
   @override
-  String get premiumTitle => 'Cloud Backup — Coming Soon';
+  String get premiumTitle => 'Cloud Backup, Coming Soon';
 
   @override
   String get premiumDescWeb =>
@@ -827,7 +827,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get streakOnTrack => 'On track for a perfect glow!';
 
   @override
-  String get streakStartToday => 'Every day counts — let\'s start today ✨';
+  String get streakStartToday => 'Every day counts. Let\'s start today ✨';
 
   @override
   String streakPersonalBest(Object days) {
@@ -888,7 +888,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skinStateOily => 'Oily';
 
   @override
-  String get weekdayOverCapWarning => 'Over recommended — consider reducing';
+  String get weekdayOverCapWarning => 'Over recommended. Consider reducing.';
 
   @override
   String get customProductTitle => 'Add Your Own Product';
@@ -975,7 +975,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleGuidedBothSlots =>
-      'Schedule morning routine first, then we\'ll continue to the evening routine together. You can exceed the recommendation — we\'ll just remind you.';
+      'Schedule morning routine first, then we\'ll continue to the evening routine together. You can exceed the recommendation, we\'ll just remind you.';
 
   @override
   String scheduleGuidedSingleSlot(Object routine) {
@@ -989,7 +989,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String scheduleNextStepPending(Object routine) {
-    return 'One more step — $routine is waiting to be scheduled';
+    return 'One more step. $routine is waiting to be scheduled';
   }
 
   @override
@@ -1301,8 +1301,237 @@ class AppLocalizationsEn extends AppLocalizations {
   String get streakPitchTitle => 'Want to see if it works?';
 
   @override
-  String get streakPitchSub => 'Take a \'before\' photo — compare in two weeks';
+  String get streakPitchSub => 'Take a \'before\' photo, compare in two weeks';
 
   @override
   String get streakPitchCta => 'Try';
+
+  @override
+  String get productSelV3Title => 'Which products do you have?';
+
+  @override
+  String get productSelV3Subtitle =>
+      'Add the products you have. We\'ll sort them into steps and build your routine.';
+
+  @override
+  String get productSelV3SearchTab => 'Search';
+
+  @override
+  String get productSelV3ScanTab => 'Scan';
+
+  @override
+  String get productSelV3SearchHint => 'Search product or brand...';
+
+  @override
+  String get productSelV3Popular => 'Popular products';
+
+  @override
+  String get productSelV3AddManual => 'Not found? Add manually';
+
+  @override
+  String productSelV3SelectedCount(int count) {
+    return '$count products selected';
+  }
+
+  @override
+  String get productSelV3ShelfCTA => 'Organize my shelf';
+
+  @override
+  String get categoryReviewTitle => 'We sorted your products by steps';
+
+  @override
+  String get categoryReviewSubtitle =>
+      'Check the categories are correct. Tap to change.';
+
+  @override
+  String get categoryReviewChangeCategory => 'Change category';
+
+  @override
+  String get categoryReviewRemove => 'Remove';
+
+  @override
+  String get categoryReviewAddMore => 'Add more products';
+
+  @override
+  String get categoryReviewCTA => 'Continue to day selection';
+
+  @override
+  String get categoryReviewEmpty => 'No products on your shelf yet';
+
+  @override
+  String get scheduleHeaderWeekly => 'Weekly schedule';
+
+  @override
+  String scheduleStepLabel(Object slot) {
+    return 'Step 1 of 2 · $slot';
+  }
+
+  @override
+  String get scheduleSubtitleV3 =>
+      'Choose which days to use each product. We\'ll only show notes when needed.';
+
+  @override
+  String get scheduleContextChipMorning => 'Morning routine';
+
+  @override
+  String get scheduleContextChipEvening => 'Evening routine';
+
+  @override
+  String get scheduleContinueToOrder => 'Continue to application order';
+
+  @override
+  String daySummaryNoteCount(int count, Object day) {
+    return '$count notes for $day';
+  }
+
+  @override
+  String get daySummaryNoteSub =>
+      'There\'s a product combination or high usage worth checking';
+
+  @override
+  String daySummaryAllGood(Object day) {
+    return '$day looks good, no notes.';
+  }
+
+  @override
+  String issueSheetTitle(Object day) {
+    return 'Notes for $day';
+  }
+
+  @override
+  String get issueSheetSubtitle =>
+      'You can change just this day, or keep the routine as is.';
+
+  @override
+  String get issueSheetConflictSection => 'Not recommended on the same day';
+
+  @override
+  String get issueSheetOveruseSection => 'Higher usage than recommended';
+
+  @override
+  String issueSheetOveruseBody(int count, int cap) {
+    return 'The product is scheduled $count times per week, and the recommendation is up to $cap.';
+  }
+
+  @override
+  String get issueActionRemoveFromDay => 'Remove from this day';
+
+  @override
+  String get issueActionKeep => 'Keep anyway';
+
+  @override
+  String get issueActionAutoFix => 'Auto-adjust';
+
+  @override
+  String get issueActionReviewNotes => 'Review notes';
+
+  @override
+  String get chipPossibleConflict => 'Possible conflict';
+
+  @override
+  String get chipHighUsage => 'High usage';
+
+  @override
+  String get orderHeaderMorning => 'Morning application order';
+
+  @override
+  String get orderHeaderEvening => 'Evening application order';
+
+  @override
+  String orderStepLabel(Object slot) {
+    return 'Step 2 of 2 · $slot';
+  }
+
+  @override
+  String get orderSubtitleV3 =>
+      'We sorted your products by recommended usage order. Drag to change.';
+
+  @override
+  String get orderViewGeneral => 'General order';
+
+  @override
+  String get orderAdvancedTitle => 'Advanced options';
+
+  @override
+  String get orderAdvancedSub => 'Change order per day, only if needed';
+
+  @override
+  String get orderPerDayTitle => 'Change order per day';
+
+  @override
+  String get orderPerDayMicrocopy =>
+      'The default fits most people. Per-day order is only needed if some days have special products.';
+
+  @override
+  String get orderCtaMorning => 'Confirm morning order';
+
+  @override
+  String get orderCtaFinish => 'Finish and show my routine';
+
+  @override
+  String get eveningTransitionTitle => 'Now for the evening routine';
+
+  @override
+  String get eveningTransitionBody =>
+      'We\'ll use the same products and suggest days and an order that suit the evening.';
+
+  @override
+  String get addProductTitle => 'Add product';
+
+  @override
+  String get addProductConfirmCategory =>
+      'Which step does this product belong to?';
+
+  @override
+  String get addProductChooseSlot => 'When is the product used?';
+
+  @override
+  String get addProductSlotMorning => 'Morning';
+
+  @override
+  String get addProductSlotEvening => 'Evening';
+
+  @override
+  String get addProductSlotBoth => 'Both';
+
+  @override
+  String get addProductChooseDays => 'On which days?';
+
+  @override
+  String get addProductPlacementTitle => 'Suggested placement';
+
+  @override
+  String addProductPlacement(Object before, Object after) {
+    return 'We\'ll place it after $before and before $after';
+  }
+
+  @override
+  String addProductPlacementAfter(Object before) {
+    return 'We\'ll place it after $before';
+  }
+
+  @override
+  String get addProductPlacementGeneric =>
+      'We\'ll place it where it fits in the routine';
+
+  @override
+  String get addProductCta => 'Add to routine';
+
+  @override
+  String get addProductSuccess => 'Product added to routine';
+
+  @override
+  String addProductSuccessSubMorning(Object days) {
+    return 'We added it to your morning routine on $days.';
+  }
+
+  @override
+  String addProductSuccessSubEvening(Object days) {
+    return 'We added it to your evening routine on $days.';
+  }
+
+  @override
+  String addProductSuccessSubBoth(Object days) {
+    return 'We added it to your morning and evening routine on $days.';
+  }
 }

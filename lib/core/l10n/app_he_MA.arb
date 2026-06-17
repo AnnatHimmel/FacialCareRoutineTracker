@@ -20,17 +20,17 @@
   "catUsageSerum": "כמה טיפות על עור נקי. המתן לספיגה לפני השלב הבא.",
   "catUsageMoisturizer": "מרח שכבה אחידה לנעילת הלחות והרגעת העור.",
   "catUsageOil": "חמם כמה טיפות בין כפות הידיים ולחץ על העור כשלב אחרון.",
-  "scheduleConflictInMorning": "יש התנגשות בשגרת בוקר — הקש לתיקון",
-  "scheduleConflictInEvening": "יש התנגשות בשגרת ערב — הקש לתיקון",
+  "scheduleConflictInMorning": "יש התנגשות בשגרת בוקר. אפשר לתקן בלחיצה.",
+  "scheduleConflictInEvening": "יש התנגשות בשגרת ערב. אפשר לתקן בלחיצה.",
   "scheduleTapConflictDay": "הקש על יום מסומן",
-  "scheduleProductWillRemain": "המוצר יישאר בכל שאר הימים — לא נחסום אם תשאיר כך.",
+  "scheduleProductWillRemain": "המוצר יישאר בכל שאר הימים. אפשר להשאיר כך.",
   "scheduleConflictInstruction": "הקש «הסר» על אחד מהם כדי לפתור",
-  "scheduleOverCap": "מעבר למומלץ — שקול להפחית ל־{max} ימים",
+  "scheduleOverCap": "מעבר למומלץ. כדאי להפחית עד {max} ימים.",
   "settingsWelcome": "ברוך הבא ל־The Glow Protocol",
   "settingsOrderSubtitle": "גרור לסידור אישי",
   "settingsLogoutConfirmBtn": "התנתק",
   "streakOnTrack": "אתה בדרך הנכונה לזוהר מושלם!",
-  "weekdayOverCapWarning": "מעבר למומלץ — שקול להפחית",
+  "weekdayOverCapWarning": "מעבר למומלץ. כדאי להפחית.",
   "mergeChooseVersion": "בחר איזו גרסה לשמור:",
   "mergeClickFinish": "לחץ על \"סיים\" להחלת המיזוג",
   "backupNowAction": "גבה",
@@ -43,7 +43,7 @@
   "journalCtaButton": "תעד עכשיו",
   "calendarEdit": "ערוך",
   "productSelContinueToSchedule": "המשך לתזמון",
-  "updateNewProductsDesc": "מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים",
+  "updateNewProductsDesc": "מוצרים אלה לא נבחרו עדיין. הוסף אותם בבחירת המוצרים",
   "mergeUseArchive": "השתמש בגרסת הגיבוי",
   "skinLogAddPhotoLabel": "הוסף תמונה",
   "skinLogTakePhoto": "צלם תמונה",
@@ -100,13 +100,13 @@
     }
   },
   "journalCtaTitle": "איך העור שלך?",
-  "catHintCleanser1": "הסרת איפור ומסנני הגנה — לרוב בערב.",
+  "catHintCleanser1": "הסרת איפור ומסנני הגנה, לרוב בערב.",
   "catHintCleanser2": "ניקוי פנים יומיומי ועדין.",
-  "catHintRetinoid": "חידוש העור — ערב בלבד, בהדרגה.",
+  "catHintRetinoid": "חידוש העור. ערב בלבד, בהדרגה.",
   "catHintToner": "איזון העור והכנה לספיגת השלבים הבאים.",
   "catHintMoisturizer": "נעילת הלחות והרגעת העור.",
   "catHintOil": "שכבת הזנה אחרונה, לרוב בערב.",
-  "catHintSpf": "הגנה מהשמש — שלב הבוקר האחרון, חובה.",
+  "catHintSpf": "הגנה מהשמש, שלב הבוקר האחרון. חובה.",
   "scheduleConflictHeader": "שילוב לא מומלץ ביום {day}",
   "@scheduleConflictHeader": {
     "placeholders": {
@@ -152,7 +152,7 @@
   "mergeUseArchiveDesc": "החלף עם הנתונים מקובץ הגיבוי",
   "mergeAllResolved": "כל ההתנגשויות נפתרו",
   "mergeSuccess": "המיזוג הושלם בהצלחה",
-  "premiumTitle": "גיבוי לענן — בקרוב",
+  "premiumTitle": "גיבוי לענן, בקרוב",
   "premiumDescWeb": "הזן מפתח הפעלה כדי לאפשר גיבוי ושחזור אוטומטי בין מכשירים",
   "premiumDescAndroid": "תכונה זו זמינה בגרסת הווב בלבד",
   "premiumKeyLabel": "מפתח הפעלה",
@@ -237,7 +237,7 @@
       }
     }
   },
-  "scheduleGuidedBothSlots": "תזמן קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.",
+  "scheduleGuidedBothSlots": "תזמן קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ, רק נזכיר.",
   "scheduleGuidedSingleSlot": "באילו ימים להשתמש בכל מוצר ב{routine}…",
   "@scheduleGuidedSingleSlot": {
     "placeholders": {
@@ -250,7 +250,7 @@
       "routine": {}
     }
   },
-  "scheduleNextStepPending": "נשאר עוד שלב — {routine} מחכה לתזמון",
+  "scheduleNextStepPending": "נשאר עוד שלב. {routine} מחכה לתזמון",
   "@scheduleNextStepPending": {
     "placeholders": {
       "routine": {}
@@ -308,10 +308,11 @@
   "barcodeScan": "סריקת ברקוד",
   "barcodeScanHint": "כוון את המצלמה לברקוד שעל האריזה",
   "barcodeScanFound": "ברקוד זוהה",
-  "barcodeScanLookingUp": "חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסף ידנית לעת עתה",
+  "barcodeScanLookingUp": "חיפוש מוצר אוטומטי יגיע בעדכון עתידי. הוסף ידנית לעת עתה",
   "barcodeScanAddManually": "הוסף ידנית",
   "barcodeScanRetry": "סריקה חוזרת",
   "barcodeScanPermissionDenied": "נדרשת הרשאת מצלמה לסריקת ברקודים",
   "barcodeScanAddToRoutine": "הוסף לשגרה",
-  "barcodeScanAlreadyInRoutine": "כבר בשגרה שלך"
+  "barcodeScanAlreadyInRoutine": "כבר בשגרה שלך",
+  "categoryReviewCTA": "המשך לבחירת ימים"
 }

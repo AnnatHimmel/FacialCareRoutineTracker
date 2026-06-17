@@ -193,14 +193,14 @@
   "productSelFrequencyLabel": "תדירות מומלצת: ",
   "productSelTimingLabel": "מתי?",
   "productSelListHint": "לחצי על מוצר כדי להוסיף לרשימה או הוסיפי מוצר חדש",
-  "catHintCleanser1": "הסרת איפור ומסנני הגנה — לרוב בערב.",
+  "catHintCleanser1": "הסרת איפור ומסנני הגנה, לרוב בערב.",
   "catHintCleanser2": "ניקוי פנים יומיומי ועדין.",
-  "catHintRetinoid": "חידוש העור — ערב בלבד, בהדרגה.",
+  "catHintRetinoid": "חידוש העור. ערב בלבד, בהדרגה.",
   "catHintToner": "איזון העור והכנה לספיגת השלבים הבאים.",
   "catHintSerum": "החומרים הפעילים שלך. אפשר לבחור כמה שתרצי.",
   "catHintMoisturizer": "נעילת הלחות והרגעת העור.",
   "catHintOil": "שכבת הזנה אחרונה, לרוב בערב.",
-  "catHintSpf": "הגנה מהשמש — שלב הבוקר האחרון, חובה.",
+  "catHintSpf": "הגנה מהשמש, שלב הבוקר האחרון. חובה.",
   "catUsageCleanser1": "עסי על עור יבש להמסת איפור ומסנני הגנה, ושטפי במים פושרים.",
   "catUsageCleanser2": "הקציפי עם מעט מים, עסי בעדינות בתנועות מעגליות ושטפי.",
   "catUsageRetinoid": "כמות בגודל אפונה על עור יבש, הימנעי מאזור העיניים. ערב בלבד, בהדרגה.",
@@ -208,16 +208,16 @@
   "catUsageSerum": "כמה טיפות על עור נקי. המתיני לספיגה לפני השלב הבא.",
   "catUsageMoisturizer": "מרחי שכבה אחידה לנעילת הלחות והרגעת העור.",
   "catUsageOil": "חממי כמה טיפות בין כפות הידיים ולחצי על העור כשלב אחרון.",
-  "catUsageSpf": "כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר — גם ביום מעונן.",
+  "catUsageSpf": "כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר, גם ביום מעונן.",
   "scheduleNoProducts": "לא נבחרו מוצרים עדיין",
-  "scheduleConflictInMorning": "יש התנגשות בשגרת בוקר — הקישי לתיקון",
-  "scheduleConflictInEvening": "יש התנגשות בשגרת ערב — הקישי לתיקון",
+  "scheduleConflictInMorning": "יש התנגשות בשגרת בוקר. אפשר לתקן בלחיצה.",
+  "scheduleConflictInEvening": "יש התנגשות בשגרת ערב. אפשר לתקן בלחיצה.",
   "scheduleOccasional": "לא לשימוש יומי",
   "scheduleDaily": "יומיים",
   "scheduleWeeklyView": "מבט שבועי",
   "scheduleTapConflictDay": "הקישי על יום מסומן",
   "scheduleProductsPerDay": "מספר מוצרים ביום",
-  "scheduleProductWillRemain": "המוצר יישאר בכל שאר הימים — לא נחסום אם תשאירי כך.",
+  "scheduleProductWillRemain": "המוצר יישאר בכל שאר הימים. אפשר להשאיר כך.",
   "scheduleConflictHeader": "שילוב לא מומלץ ביום {day}",
   "@scheduleConflictHeader": {
     "placeholders": {
@@ -242,13 +242,13 @@
     }
   },
   "scheduleCountEveryDay": "כל יום",
-  "scheduleOverCap": "מעבר למומלץ — שקלי להפחית ל־{max} ימים",
+  "scheduleOverCap": "מעבר למומלץ. כדאי להפחית עד {max} ימים.",
   "@scheduleOverCap": {
     "placeholders": {
       "max": {}
     }
   },
-  "scheduleNoDaySelected": "לא נבחר יום — המוצר לא ישובץ",
+  "scheduleNoDaySelected": "לא נבחר יום. המוצר לא ישובץ.",
   "scheduleSaveFinish": "סיום ושמירת השגרה",
   "scheduleAlertsOne": "התראה אחת",
   "scheduleAlertsCount": "{count} התראות",
@@ -270,7 +270,7 @@
   "@scheduleDayChip": {
     "placeholders": { "day": {} }
   },
-  "scheduleSoftAlertsNote": "כל ההתראות הן רכות — מותר לחרוג, רק מזכירים.",
+  "scheduleSoftAlertsNote": "כל ההתראות הן רכות. מותר לחרוג, רק מזכירים.",
   "orderInstruction": "גררו את המוצרים כדי לסדר את השגרה שלכם",
   "orderNoProducts": "לא נבחרו מוצרים",
   "orderResetToRecommended": "איפוס לסדר המומלץ",
@@ -330,7 +330,7 @@
   "importInvalidFile": "קובץ לא תקין",
   "importDialogQuestion": "כיצד לטפל בנתונים הקיימים?",
   "importReplaceSuccess": "הנתונים הוחלפו בהצלחה",
-  "importMergeNoConflicts": "המיזוג הושלם — לא נמצאו התנגשויות",
+  "importMergeNoConflicts": "המיזוג הושלם. לא נמצאו התנגשויות.",
   "updateAllUpToDate": "הכל מעודכן",
   "updateGoBack": "חזור",
   "updateDataIntact": "הנתונים שלך שמורים ועדיין קיימים",
@@ -342,7 +342,7 @@
       "count": {}
     }
   },
-  "updateNewProductsDesc": "מוצרים אלה לא נבחרו עדיין — הוסיפי אותם בבחירת המוצרים",
+  "updateNewProductsDesc": "מוצרים אלה לא נבחרו עדיין. הוסיפי אותם בבחירת המוצרים",
   "updateDeprecated": "מוצרים שאינם מומלצים עוד ({count})",
   "@updateDeprecated": {
     "placeholders": {
@@ -376,7 +376,7 @@
   "mergeAllResolved": "כל ההתנגשויות נפתרו",
   "mergeClickFinish": "לחצי על \"סיים\" להחלת המיזוג",
   "mergeSuccess": "המיזוג הושלם בהצלחה",
-  "premiumTitle": "גיבוי לענן — בקרוב",
+  "premiumTitle": "גיבוי לענן, בקרוב",
   "premiumDescWeb": "הזן מפתח הפעלה כדי לאפשר גיבוי ושחזור אוטומטי בין מכשירים",
   "premiumDescAndroid": "תכונה זו זמינה בגרסת הווב בלבד",
   "premiumKeyLabel": "מפתח הפעלה",
@@ -390,7 +390,7 @@
   "dayDetailJournalTooltip": "יומן עור",
   "streakDaysInRow": "ימים ברצף",
   "streakOnTrack": "את בדרך הנכונה לזוהר מושלם!",
-  "streakStartToday": "כל יום נחשב — נתחיל היום ✨",
+  "streakStartToday": "כל יום נחשב. נתחיל היום ✨",
   "streakPersonalBest": "שיא אישי · {days} ימים",
   "@streakPersonalBest": {
     "placeholders": {
@@ -423,7 +423,7 @@
   "skinStateCalm": "רגוע",
   "skinStateMoist": "לח",
   "skinStateOily": "שומני",
-  "weekdayOverCapWarning": "מעבר למומלץ — שקלי להפחית",
+  "weekdayOverCapWarning": "מעבר למומלץ. כדאי להפחית.",
   "customProductTitle": "הוספת מוצר משלי",
   "customProductPhotoLabel": "הוספת תמונה (לא חובה)",
   "customProductNameLabel": "שם המוצר",
@@ -469,20 +469,20 @@
       }
     }
   },
-  "scheduleGuidedBothSlots": "תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.",
+  "scheduleGuidedBothSlots": "תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ, רק נזכיר.",
   "scheduleGuidedSingleSlot": "באילו ימים להשתמש בכל מוצר ב{routine}…",
   "@scheduleGuidedSingleSlot": {
     "placeholders": {
       "routine": {}
     }
   },
-  "scheduleContinueTo": "המשיכי ל{routine}",
+  "scheduleContinueTo": "המשך ל{routine}",
   "@scheduleContinueTo": {
     "placeholders": {
       "routine": {}
     }
   },
-  "scheduleNextStepPending": "נשאר עוד שלב — {routine} מחכה לתזמון",
+  "scheduleNextStepPending": "נשאר עוד שלב. {routine} מחכה לתזמון",
   "@scheduleNextStepPending": {
     "placeholders": {
       "routine": {}
@@ -619,6 +619,109 @@
   "streakMilestoneTitle": "שבוע שלם של התמדה! 🎉",
   "streakMilestoneSub": "זה הזמן המושלם לתעד את נקודת ההתחלה",
   "streakPitchTitle": "רוצה לראות אם זה עובד?",
-  "streakPitchSub": "צלמי תמונת ׳לפני׳ — ובעוד שבועיים תשווי",
-  "streakPitchCta": "נסי"
+  "streakPitchSub": "צלמי תמונת ׳לפני׳, ובעוד שבועיים תשווי",
+  "streakPitchCta": "נסי",
+  "productSelV3Title": "אילו מוצרים יש לכם?",
+  "productSelV3Subtitle": "הוסיפו את המוצרים שיש לכם. אנחנו נסדר אותם לפי שלבים ונבנה מהם שגרה.",
+  "productSelV3SearchTab": "חיפוש",
+  "productSelV3ScanTab": "סריקה",
+  "productSelV3SearchHint": "חפשו מוצר או מותג...",
+  "productSelV3Popular": "מוצרים נפוצים",
+  "productSelV3AddManual": "לא מצאתם? הוסיפו ידנית",
+  "productSelV3SelectedCount": "{count} מוצרים נבחרו",
+  "@productSelV3SelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "productSelV3ShelfCTA": "סידור המדף שלי",
+  "categoryReviewTitle": "סידרנו את המוצרים לפי שלבים",
+  "categoryReviewSubtitle": "בדקו שהקטגוריות נכונות. אפשר לשנות בלחיצה.",
+  "categoryReviewChangeCategory": "שינוי קטגוריה",
+  "categoryReviewRemove": "הסרה",
+  "categoryReviewAddMore": "הוספת מוצרים נוספים",
+  "categoryReviewCTA": "המשך לבחירת ימים",
+  "categoryReviewEmpty": "אין מוצרים במדף עדיין",
+  "scheduleHeaderWeekly": "תזמון שבועי",
+  "scheduleStepLabel": "שלב 1 מתוך 2 · {slot}",
+  "@scheduleStepLabel": {
+    "placeholders": { "slot": {} }
+  },
+  "scheduleSubtitleV3": "בחרו באילו ימים להשתמש בכל מוצר. נציג הערות רק כשצריך.",
+  "scheduleContextChipMorning": "שגרת בוקר",
+  "scheduleContextChipEvening": "שגרת ערב",
+  "scheduleContinueToOrder": "המשך לסדר המריחה",
+  "daySummaryNoteCount": "{count} הערות ליום {day}",
+  "@daySummaryNoteCount": {
+    "placeholders": { "count": { "type": "int" }, "day": {} }
+  },
+  "daySummaryNoteSub": "יש שילוב מוצרים או שימוש גבוה שכדאי לבדוק",
+  "daySummaryAllGood": "יום {day} נראה טוב, אין הערות.",
+  "@daySummaryAllGood": {
+    "placeholders": { "day": {} }
+  },
+  "issueSheetTitle": "הערות ליום {day}",
+  "@issueSheetTitle": {
+    "placeholders": { "day": {} }
+  },
+  "issueSheetSubtitle": "אפשר לשנות רק את היום הזה, או להשאיר את השגרה כמו שהיא.",
+  "issueSheetConflictSection": "לא מומלץ לשלב באותו יום",
+  "issueSheetOveruseSection": "שימוש גבוה מההמלצה",
+  "issueSheetOveruseBody": "המוצר מתוכנן ל־{count} פעמים בשבוע, וההמלצה היא עד {cap}.",
+  "@issueSheetOveruseBody": {
+    "placeholders": { "count": { "type": "int" }, "cap": { "type": "int" } }
+  },
+  "issueActionRemoveFromDay": "הסרה מהיום הזה",
+  "issueActionKeep": "להשאיר בכל זאת",
+  "issueActionAutoFix": "התאמה אוטומטית",
+  "issueActionReviewNotes": "בדיקת ההערות",
+  "chipPossibleConflict": "התנגשות אפשרית",
+  "chipHighUsage": "שימוש גבוה",
+  "orderHeaderMorning": "סדר המריחה בבוקר",
+  "orderHeaderEvening": "סדר המריחה בערב",
+  "orderStepLabel": "שלב 2 מתוך 2 · {slot}",
+  "@orderStepLabel": {
+    "placeholders": { "slot": {} }
+  },
+  "orderSubtitleV3": "סידרנו את המוצרים לפי סדר שימוש מומלץ. אפשר לגרור כדי לשנות.",
+  "orderViewGeneral": "סדר כללי",
+  "orderAdvancedTitle": "אפשרויות מתקדמות",
+  "orderAdvancedSub": "שינוי סדר לפי יום, רק אם צריך",
+  "orderPerDayTitle": "שינוי סדר לפי יום",
+  "orderPerDayMicrocopy": "ברירת המחדל מתאימה לרוב המשתמשים. שינוי לפי יום נדרש רק אם יש ימים עם מוצרים מיוחדים.",
+  "orderCtaMorning": "אישור סדר הבוקר",
+  "orderCtaFinish": "סיום והצגת השגרה שלי",
+  "eveningTransitionTitle": "עכשיו נעבור לשגרת הערב",
+  "eveningTransitionBody": "נשתמש באותם מוצרים ונציע ימים וסדר שמתאימים לערב.",
+  "addProductTitle": "הוספת מוצר",
+  "addProductConfirmCategory": "לאיזה שלב המוצר שייך?",
+  "addProductChooseSlot": "מתי משתמשים במוצר?",
+  "addProductSlotMorning": "בוקר",
+  "addProductSlotEvening": "ערב",
+  "addProductSlotBoth": "שניהם",
+  "addProductChooseDays": "באילו ימים?",
+  "addProductPlacementTitle": "המיקום המוצע",
+  "addProductPlacement": "נמקם אותו אחרי {before} ולפני {after}",
+  "@addProductPlacement": {
+    "placeholders": { "before": {}, "after": {} }
+  },
+  "addProductPlacementAfter": "נמקם אותו אחרי {before}",
+  "@addProductPlacementAfter": {
+    "placeholders": { "before": {} }
+  },
+  "addProductPlacementGeneric": "נמקם אותו במקום המתאים בשגרה",
+  "addProductCta": "הוספה לשגרה",
+  "addProductSuccess": "המוצר נוסף לשגרה",
+  "addProductSuccessSubMorning": "הוספנו אותו לשגרת הבוקר בימים {days}.",
+  "@addProductSuccessSubMorning": {
+    "placeholders": { "days": {} }
+  },
+  "addProductSuccessSubEvening": "הוספנו אותו לשגרת הערב בימים {days}.",
+  "@addProductSuccessSubEvening": {
+    "placeholders": { "days": {} }
+  },
+  "addProductSuccessSubBoth": "הוספנו אותו לשגרת הבוקר והערב בימים {days}.",
+  "@addProductSuccessSubBoth": {
+    "placeholders": { "days": {} }
+  }
 }

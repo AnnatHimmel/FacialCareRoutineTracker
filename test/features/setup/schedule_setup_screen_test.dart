@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
+import 'package:skincare_tracker/core/theme/app_colors.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
 import 'package:skincare_tracker/domain/entities/incompatibility_rule.dart';
@@ -258,6 +259,10 @@ void main() {
       await tester.pumpWidget(_wrapDirect(master: _master([product]), udr: udr));
       await tester.pumpAndSettle();
 
+      // V3 default mode is "days". Switch to products mode where _ListRow + WeekdayPicker live.
+      await tester.tap(find.text('לפי מוצרים'));
+      await tester.pumpAndSettle();
+
       // Weekly product is in the "לפי תדירות" list as a collapsed _ListRow.
       // Tap the row to expand it and reveal the WeekdayPicker.
       await tester.tap(find.text('סרום'));
@@ -274,9 +279,10 @@ void main() {
       expect(udr.upsertScheduleCalled, isTrue);
     });
 
-    testWidgets('issues panel is expanded by default when conflicts exist',
+    testWidgets('V3 day summary card shows conflict info when products conflict on the same day',
         (tester) async {
-      /// Given: Two morning products with a conflict rule, both scheduled on Sunday
+      /// Given: Two morning products with a conflict rule, both scheduled on EVERY day
+      /// (scheduling on all days ensures conflict is visible for whatever _selectedDay defaults to)
       final product1 = _dailyProduct('p1', 'סרום ויטמין C');
       final product2 = _dailyProduct('p2', 'נייר רך');
 
@@ -292,6 +298,7 @@ void main() {
         products: [product1, product2],
         categories: [const Category(id: 'cat1', name: 'לחות', order: 1)],
         rules: [conflictRule],
+
         manifest: const MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
@@ -305,47 +312,38 @@ void main() {
           _sel('p2', Slot.morning),
         ],
         schedules: [
-          // Both products scheduled on Sunday (day 0)
+          // Both products scheduled on ALL days — conflict visible regardless of today
           WeekdaySchedule(
             id: 's1',
             productId: 'p1',
             slot: Slot.morning,
-            weekdays: {0},
+            weekdays: {0, 1, 2, 3, 4, 5, 6},
             lastModified: DateTime(2024, 1, 1),
           ),
           WeekdaySchedule(
             id: 's2',
             productId: 'p2',
             slot: Slot.morning,
-            weekdays: {0},
+            weekdays: {0, 1, 2, 3, 4, 5, 6},
             lastModified: DateTime(2024, 1, 1),
           ),
         ],
       );
 
-      /// When: The screen loads with conflicting products
+      /// When: The screen loads (V3 days mode by default)
       await tester.pumpWidget(_wrapDirect(master: master, udr: udr));
       await tester.pumpAndSettle();
 
-      /// Then: The issues panel should be VISIBLE (expanded) by default
-      // The issues panel header shows "התראה אחת" (one alert) when there's 1 issue
+      /// Then: The day summary card shows conflict info for the currently selected day
       final l = AppLocalizations.of(tester.element(find.byType(ScheduleSetupScreen)))!;
-      expect(find.text(l.scheduleAlertsOne), findsOneWidget);
-
-      // When expanded, the conflict section header should be visible
-      expect(find.text(l.scheduleConflictsSection), findsOneWidget);
+      expect(find.text(l.daySummaryNoteSub), findsOneWidget);
+      expect(find.text(l.issueActionReviewNotes), findsOneWidget);
     });
 
-    testWidgets('issues panel re-opens after switching slot',
+    testWidgets('V3 day summary card updates after switching slot',
         (tester) async {
-      /// Given: Morning products with a conflict, and evening products with a
-      /// different conflict, both scheduled
-      final morningProduct1 = _dailyProduct('pm1', 'סרום ויטמין C');
-      final morningProduct2 = _dailyProduct('pm2', 'נייר רך');
-      final eveningProduct1 = _dailyProduct('pe1', 'קרם לילה');
-      final eveningProduct2 = _dailyProduct('pe2', 'שמן');
+      /// Given: Morning AND evening products each with a conflict rule, all scheduled every day
 
-      // Setup morning products with morning config
       final morningProd1 = MasterProduct(
         id: 'pm1',
         name: 'סרום ויטמין C',
@@ -362,8 +360,6 @@ void main() {
         addedInVersion: '1.0.0',
         morningConfig: const SlotConfig(order: 2, frequencyRule: DailyRule()),
       );
-
-      // Setup evening products with evening config
       final eveningProd1 = MasterProduct(
         id: 'pe1',
         name: 'קרם לילה',
@@ -381,26 +377,25 @@ void main() {
         eveningConfig: const SlotConfig(order: 2, frequencyRule: DailyRule()),
       );
 
-      final morningConflict = IncompatibilityRule(
-        id: 'rule_morning',
-        entityA: RuleTarget(type: RuleTargetType.product, id: 'pm1'),
-        entityB: RuleTarget(type: RuleTargetType.product, id: 'pm2'),
-        scope: RuleScope.withinSlot,
-        reason: 'conflict in morning',
-      );
-
-      final eveningConflict = IncompatibilityRule(
-        id: 'rule_evening',
-        entityA: RuleTarget(type: RuleTargetType.product, id: 'pe1'),
-        entityB: RuleTarget(type: RuleTargetType.product, id: 'pe2'),
-        scope: RuleScope.withinSlot,
-        reason: 'conflict in evening',
-      );
-
       final master = MasterContent(
         products: [morningProd1, morningProd2, eveningProd1, eveningProd2],
         categories: [const Category(id: 'cat1', name: 'לחות', order: 1)],
-        rules: [morningConflict, eveningConflict],
+        rules: [
+          IncompatibilityRule(
+            id: 'rule_morning',
+            entityA: RuleTarget(type: RuleTargetType.product, id: 'pm1'),
+            entityB: RuleTarget(type: RuleTargetType.product, id: 'pm2'),
+            scope: RuleScope.withinSlot,
+            reason: 'conflict in morning',
+          ),
+          IncompatibilityRule(
+            id: 'rule_evening',
+            entityA: RuleTarget(type: RuleTargetType.product, id: 'pe1'),
+            entityB: RuleTarget(type: RuleTargetType.product, id: 'pe2'),
+            scope: RuleScope.withinSlot,
+            reason: 'conflict in evening',
+          ),
+        ],
         manifest: const MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
@@ -418,58 +413,150 @@ void main() {
           _sel('pe2', Slot.evening),
         ],
         schedules: [
-          // Morning products both on Sunday
+          // All products on every day so conflict is visible regardless of today
+          WeekdaySchedule(id: 'spm1', productId: 'pm1', slot: Slot.morning,
+              weekdays: {0, 1, 2, 3, 4, 5, 6}, lastModified: DateTime(2024)),
+          WeekdaySchedule(id: 'spm2', productId: 'pm2', slot: Slot.morning,
+              weekdays: {0, 1, 2, 3, 4, 5, 6}, lastModified: DateTime(2024)),
+          WeekdaySchedule(id: 'spe1', productId: 'pe1', slot: Slot.evening,
+              weekdays: {0, 1, 2, 3, 4, 5, 6}, lastModified: DateTime(2024)),
+          WeekdaySchedule(id: 'spe2', productId: 'pe2', slot: Slot.evening,
+              weekdays: {0, 1, 2, 3, 4, 5, 6}, lastModified: DateTime(2024)),
+        ],
+      );
+
+      /// When: screen loads (morning slot, V3 days mode)
+      await tester.pumpWidget(_wrapDirect(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      // Morning conflict visible in day summary card
+      final l = AppLocalizations.of(tester.element(find.byType(ScheduleSetupScreen)))!;
+      expect(find.text(l.daySummaryNoteSub), findsOneWidget);
+
+      // Switch to evening slot
+      await tester.tap(find.text(l.slotEvening));
+      await tester.pumpAndSettle();
+
+      /// Then: evening conflict info is now shown (card re-evaluates per slot)
+      expect(find.text(l.daySummaryNoteSub), findsOneWidget);
+    });
+
+    testWidgets('day with overused product shows issue badge in day strip',
+        (tester) async {
+      /// Given: One weekly product (cap=2) scheduled on all 7 days (overuse).
+      /// No conflicts. The overuse day should show a badge in the strip.
+      final product = MasterProduct(
+        id: 'p_over',
+        name: 'סרום רטינול',
+        categoryId: 'cat1',
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+        morningConfig: const SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(2)),
+      );
+
+      final udr = _FakeUDR(
+        morningSelections: [_sel('p_over', Slot.morning)],
+        schedules: [
           WeekdaySchedule(
-            id: 'sched_pm1',
-            productId: 'pm1',
+            id: 's_over',
+            productId: 'p_over',
             slot: Slot.morning,
-            weekdays: {0},
-            lastModified: DateTime(2024, 1, 1),
-          ),
-          WeekdaySchedule(
-            id: 'sched_pm2',
-            productId: 'pm2',
-            slot: Slot.morning,
-            weekdays: {0},
-            lastModified: DateTime(2024, 1, 1),
-          ),
-          // Evening products both on Sunday
-          WeekdaySchedule(
-            id: 'sched_pe1',
-            productId: 'pe1',
-            slot: Slot.evening,
-            weekdays: {0},
-            lastModified: DateTime(2024, 1, 1),
-          ),
-          WeekdaySchedule(
-            id: 'sched_pe2',
-            productId: 'pe2',
-            slot: Slot.evening,
-            weekdays: {0},
+            weekdays: {0, 1, 2, 3, 4, 5, 6}, // 7 days > cap of 2
             lastModified: DateTime(2024, 1, 1),
           ),
         ],
       );
 
-      /// When: The screen loads (starts on morning with conflict)
-      await tester.pumpWidget(_wrapDirect(master: master, udr: udr));
+      await tester.pumpWidget(_wrapDirect(master: _master([product]), udr: udr));
       await tester.pumpAndSettle();
 
-      // First, verify morning issues panel is visible/open initially
+      /// Then: the day strip should have a red issue badge (Container with error color)
+      // The issue badge is a red circle with priority_high icon — find it
+      final errorContainers = tester.widgetList<Container>(find.byType(Container)).where((c) {
+        final d = c.decoration;
+        if (d is BoxDecoration) {
+          return d.color == AppColors.error && d.shape == BoxShape.circle;
+        }
+        return false;
+      });
+      expect(errorContainers, isNotEmpty);
+    });
+
+    testWidgets('RoutineIssueSheet shows overuse section when product is overused',
+        (tester) async {
+      /// Given: One weekly product (cap=2) scheduled on all 7 days.
+      /// No conflict rule. Day summary should show the combined note count.
+      final product = MasterProduct(
+        id: 'p_over2',
+        name: 'סרום רטינול 2',
+        categoryId: 'cat1',
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+        morningConfig: const SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(2)),
+      );
+
+      final udr = _FakeUDR(
+        morningSelections: [_sel('p_over2', Slot.morning)],
+        schedules: [
+          WeekdaySchedule(
+            id: 's_over2',
+            productId: 'p_over2',
+            slot: Slot.morning,
+            weekdays: {0, 1, 2, 3, 4, 5, 6},
+            lastModified: DateTime(2024, 1, 1),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(_wrapDirect(master: _master([product]), udr: udr));
+      await tester.pumpAndSettle();
+
       final l = AppLocalizations.of(tester.element(find.byType(ScheduleSetupScreen)))!;
-      expect(find.text(l.scheduleAlertsOne), findsOneWidget);
 
-      // Tap the evening slot tab to switch to evening
-      // The tab switcher should have buttons for morning and evening
-      await tester.tap(find.text(l.slotEvening));
+      // Open the issue sheet
+      await tester.tap(find.text(l.issueActionReviewNotes));
       await tester.pumpAndSettle();
 
-      /// Then: The issues panel should re-open (be visible) after switching to evening
-      // After switching, the evening issues should be visible (same structure)
-      expect(find.text(l.scheduleAlertsOne), findsOneWidget);
+      // The overuse section header should appear
+      expect(find.text(l.issueSheetOveruseSection), findsOneWidget);
+      // The overuse body text (7 times, cap 2)
+      expect(find.text(l.issueSheetOveruseBody(7, 2)), findsOneWidget);
+    });
 
-      // When expanded, the conflict section header should be visible in evening
-      expect(find.text(l.scheduleConflictsSection), findsOneWidget);
+    testWidgets('default selected day is the first issue day when one exists',
+        (tester) async {
+      /// Given: One weekly product (cap=1) scheduled on days 3 and 4 only (count=2 > cap=1).
+      /// Today (0=Sun) has no product scheduled. Day 3 is the first issue day.
+      final product = MasterProduct(
+        id: 'p_def',
+        name: 'פילינג',
+        categoryId: 'cat1',
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+        morningConfig: const SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(1)),
+      );
+
+      final udr = _FakeUDR(
+        morningSelections: [_sel('p_def', Slot.morning)],
+        schedules: [
+          WeekdaySchedule(
+            id: 's_def',
+            productId: 'p_def',
+            slot: Slot.morning,
+            weekdays: {3, 4}, // 2 days > cap of 1 → overuse on days 3 and 4
+            lastModified: DateTime(2024, 1, 1),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(_wrapDirect(master: _master([product]), udr: udr));
+      await tester.pumpAndSettle();
+
+      final l = AppLocalizations.of(tester.element(find.byType(ScheduleSetupScreen)))!;
+
+      // Day 3 is Wednesday. The day summary card should show issue note count
+      // for Wednesday (the first issue day), not today (Sunday with no products).
+      expect(find.text(l.daySummaryNoteSub), findsOneWidget);
     });
   });
 }

@@ -20,7 +20,6 @@ import 'package:skincare_tracker/domain/repositories/master_content_repository.d
 import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
 import 'package:skincare_tracker/features/onboarding/onboarding_screen.dart';
-import 'package:skincare_tracker/features/setup/schedule_setup_screen.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
 
 // ── Fakes ─────────────────────────────────────────────────────────────────────
@@ -34,9 +33,18 @@ class _FakeMCR implements MasterContentRepository {
 }
 
 class _FakeUDR implements UserDataRepository {
+  final List<ProductSelection> _morning;
+  final List<ProductSelection> _evening;
+
+  _FakeUDR({
+    List<ProductSelection> morning = const [],
+    List<ProductSelection> evening = const [],
+  })  : _morning = morning,
+        _evening = evening;
+
   @override
   Stream<List<ProductSelection>> watchSelections(Slot slot) =>
-      Stream.value([]);
+      Stream.value(slot == Slot.morning ? _morning : _evening);
   @override
   Stream<List<MutedConflict>> watchMutedConflicts() => Stream.value([]);
   @override
@@ -145,13 +153,12 @@ MasterContent _masterWith(List<MasterProduct> products, List<Category> cats) =>
       ),
     );
 
-/// Router that mirrors the real app structure: `/onboarding` embeds the
-/// product-selection step, whose summary CTA pushes the top-level
-/// `/setup/schedule` route — exactly as in [appRouter] (see
-/// `_continueToSchedule` in [OnboardingScreen], which pushes `/setup/schedule`).
+// All navigation is now in-widget state (no route pushes). The router only
+// needs the root onboarding route.
 Widget _wrap({
   required MasterContent master,
   required VoidCallback onFinish,
+  List<ProductSelection> morningSelections = const [],
 }) {
   final router = GoRouter(
     initialLocation: '/onboarding',
@@ -165,19 +172,14 @@ Widget _wrap({
         builder: (_, __) =>
             const Scaffold(body: Center(child: Text('TODAY_SCREEN'))),
       ),
-      // Onboarding pushes `/setup/schedule` (bare, no query) so that the
-      // schedule screen pops with `true` on finish and its back button pops
-      // back to the product-selection step.
-      GoRoute(
-        path: '/setup/schedule',
-        builder: (_, __) => const ScheduleSetupScreen(),
-      ),
     ],
   );
   return ProviderScope(
     overrides: [
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
-      userDataRepositoryProvider.overrideWithValue(_FakeUDR()),
+      userDataRepositoryProvider.overrideWithValue(
+        _FakeUDR(morning: morningSelections),
+      ),
       settingsRepositoryProvider.overrideWithValue(_FakeSettings()),
     ],
     child: MaterialApp.router(
@@ -189,65 +191,209 @@ Widget _wrap({
   );
 }
 
-/// Drives the onboarding flow up to the schedule screen.
-/// Assumes language (step 0) was already selected before calling this.
-Future<void> _advanceToSchedule(WidgetTester tester) async {
+/// Drives the onboarding flow up to the schedule screen (amSchedule stage).
+/// Requires at least one morning product to be pre-selected in the UDR.
+Future<void> _advanceToAmSchedule(WidgetTester tester) async {
+  // Step 0: language
+  await tester.tap(find.text('עברית'));
+  await tester.pumpAndSettle();
   // Step 1 → Step 2
   await tester.tap(find.text('נתחיל?'));
   await tester.pumpAndSettle();
-  // Step 2 → Step 3 (product selection)
+  // Step 2: fill form
   await tester.enterText(find.byType(TextField).first, 'שמי');
   await tester.pumpAndSettle();
   await tester.tap(find.text('נקבה'));
   await tester.pumpAndSettle();
+  // Step 2 → Step 3 (V3 product selection)
   await tester.tap(find.text('המשך'));
   await tester.pumpAndSettle();
-  // Step 3: single category means we're on the last step; CTA is already "המשיכי לתזמון"
-  await tester.tap(find.text('המשיכי לתזמון'));
+  // Step 3: product is pre-selected — tap "סידור המדף שלי"
+  await tester.tap(find.text('סידור המדף שלי'));
+  await tester.pumpAndSettle();
+  // Category review → tap "המשך לבחירת ימים" to proceed to amSchedule
+  await tester.tap(find.text('המשך לבחירת ימים'));
   await tester.pumpAndSettle();
 }
 
 void main() {
   const cat1 = Category(id: 'cat1', name: 'לחות', order: 1);
 
-  group('Onboarding back navigation from schedule', () {
+  group('Onboarding back navigation', () {
     testWidgets(
-        'Back from schedule returns to product selection, not onboarding step 1',
+        'Back from amSchedule returns to category review, not onboarding step 1',
         (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
       bool onFinishCalled = false;
 
-      await tester.pumpWidget(
-          _wrap(master: master, onFinish: () => onFinishCalled = true));
+      // Pre-select p1 so "סידור המדף שלי" is enabled.
+      final preSel = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p1',
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
+
+      await tester.pumpWidget(_wrap(
+        master: master,
+        onFinish: () => onFinishCalled = true,
+        morningSelections: preSel,
+      ));
       await tester.pumpAndSettle();
 
-      // Step 0: select language (added when language selection step was introduced)
-      await tester.tap(find.text('עברית'));
-      await tester.pumpAndSettle();
+      await _advanceToAmSchedule(tester);
 
-      await _advanceToSchedule(tester);
+      // We should now be on the amSchedule screen.
+      expect(find.text('תזמון שבועי'), findsOneWidget,
+          reason: 'Should be on schedule screen (amSchedule stage)');
 
-      // We should now be on the schedule screen with a back button.
+      // The custom header back button calls onBack → goes to categoryReview.
       final backButton = find.byIcon(Icons.arrow_back);
       expect(backButton, findsOneWidget,
-          reason: 'Schedule screen should show a back button');
+          reason: 'Schedule screen should show a back button in onboarding mode');
 
-      // Press back.
       await tester.tap(backButton);
       await tester.pumpAndSettle();
 
-      // Should land on product selection (its CTA), NOT the onboarding
-      // welcome screen, and onboarding must NOT have been finished.
-      // Note: "The Glow Protocol" is the app-wide GlowAppBar wordmark shown on
-      // the product-selection screen too, so it is NOT a reliable step-1 marker.
-      // The start button 'נתחיל?' is unique to the onboarding welcome step.
+      // Should land back on the category review screen, NOT onboarding step 1.
       expect(find.text('נתחיל?'), findsNothing,
           reason: 'Back must not return to onboarding step 1 (welcome)');
       expect(onFinishCalled, isFalse,
           reason: 'Pressing back must not complete onboarding');
-      expect(find.text('המשיכי לתזמון'), findsOneWidget,
-          reason: 'Back should return to the product selection screen');
+      expect(find.text('המשך לבחירת ימים'), findsOneWidget,
+          reason: 'Back should return to the category review screen');
+    });
+
+    testWidgets(
+        'Back from amOrder returns to amSchedule',
+        (tester) async {
+      final master =
+          _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
+
+      final preSel = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p1',
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
+
+      await tester.pumpWidget(_wrap(
+        master: master,
+        onFinish: () {},
+        morningSelections: preSel,
+      ));
+      await tester.pumpAndSettle();
+
+      await _advanceToAmSchedule(tester);
+      // Advance to amOrder
+      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('סדר המריחה בבוקר'), findsOneWidget,
+          reason: 'Should be on morning order screen');
+
+      // Press back
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      // Should return to amSchedule
+      expect(find.text('תזמון שבועי'), findsOneWidget,
+          reason: 'Back from amOrder should return to amSchedule');
+      expect(find.text('שגרת בוקר'), findsOneWidget,
+          reason: 'Should show morning context chip on amSchedule');
+    });
+
+    testWidgets(
+        'Back from pmSchedule (entered via eveningTransition) returns to eveningTransition',
+        (tester) async {
+      final masterProduct = MasterProduct(
+        id: 'p1',
+        name: 'קרם לחות',
+        categoryId: 'cat1',
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+      );
+      final master = _masterWith([masterProduct], [cat1]);
+      final morningPre = [
+        ProductSelection(
+          id: 's1',
+          productId: 'p1',
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
+      final eveningPre = [
+        ProductSelection(
+          id: 's2',
+          productId: 'p1',
+          slot: Slot.evening,
+          isSelected: true,
+          lastModified: DateTime(2024),
+        ),
+      ];
+
+      final router = GoRouter(
+        initialLocation: '/onboarding',
+        routes: [
+          GoRoute(
+            path: '/onboarding',
+            builder: (_, __) => OnboardingScreen(onFinish: () {}),
+          ),
+        ],
+      );
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          masterContentRepositoryProvider
+              .overrideWithValue(_FakeMCR(master)),
+          userDataRepositoryProvider.overrideWithValue(
+            _FakeUDR(morning: morningPre, evening: eveningPre),
+          ),
+          settingsRepositoryProvider.overrideWithValue(_FakeSettings()),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('he'),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await _advanceToAmSchedule(tester);
+      // amSchedule → amOrder
+      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.pumpAndSettle();
+      // amOrder → eveningTransition
+      await tester.tap(find.text('אישור סדר הבוקר'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('עכשיו נעבור לשגרת הערב'), findsOneWidget,
+          reason: 'Should be on evening transition screen');
+
+      // Advance to pmSchedule
+      await tester.tap(find.text('המשך'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('שגרת ערב'), findsOneWidget,
+          reason: 'Should be on pmSchedule with evening context chip');
+
+      // Press back → should return to eveningTransition, not amOrder
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      expect(find.text('עכשיו נעבור לשגרת הערב'), findsOneWidget,
+          reason:
+              'Back from pmSchedule (via transition) should return to eveningTransition');
     });
   });
 }

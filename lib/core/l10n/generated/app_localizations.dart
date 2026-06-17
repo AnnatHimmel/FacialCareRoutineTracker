@@ -822,7 +822,7 @@ abstract class AppLocalizations {
   /// No description provided for @catHintCleanser1.
   ///
   /// In he, this message translates to:
-  /// **'הסרת איפור ומסנני הגנה — לרוב בערב.'**
+  /// **'הסרת איפור ומסנני הגנה, לרוב בערב.'**
   String get catHintCleanser1;
 
   /// No description provided for @catHintCleanser2.
@@ -834,7 +834,7 @@ abstract class AppLocalizations {
   /// No description provided for @catHintRetinoid.
   ///
   /// In he, this message translates to:
-  /// **'חידוש העור — ערב בלבד, בהדרגה.'**
+  /// **'חידוש העור. ערב בלבד, בהדרגה.'**
   String get catHintRetinoid;
 
   /// No description provided for @catHintToner.
@@ -864,7 +864,7 @@ abstract class AppLocalizations {
   /// No description provided for @catHintSpf.
   ///
   /// In he, this message translates to:
-  /// **'הגנה מהשמש — שלב הבוקר האחרון, חובה.'**
+  /// **'הגנה מהשמש, שלב הבוקר האחרון. חובה.'**
   String get catHintSpf;
 
   /// No description provided for @catUsageCleanser1.
@@ -912,7 +912,7 @@ abstract class AppLocalizations {
   /// No description provided for @catUsageSpf.
   ///
   /// In he, this message translates to:
-  /// **'כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר — גם ביום מעונן.'**
+  /// **'כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר, גם ביום מעונן.'**
   String get catUsageSpf;
 
   /// No description provided for @scheduleNoProducts.
@@ -924,13 +924,13 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleConflictInMorning.
   ///
   /// In he, this message translates to:
-  /// **'יש התנגשות בשגרת בוקר — הקישי לתיקון'**
+  /// **'יש התנגשות בשגרת בוקר. אפשר לתקן בלחיצה.'**
   String get scheduleConflictInMorning;
 
   /// No description provided for @scheduleConflictInEvening.
   ///
   /// In he, this message translates to:
-  /// **'יש התנגשות בשגרת ערב — הקישי לתיקון'**
+  /// **'יש התנגשות בשגרת ערב. אפשר לתקן בלחיצה.'**
   String get scheduleConflictInEvening;
 
   /// No description provided for @scheduleOccasional.
@@ -966,7 +966,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleProductWillRemain.
   ///
   /// In he, this message translates to:
-  /// **'המוצר יישאר בכל שאר הימים — לא נחסום אם תשאירי כך.'**
+  /// **'המוצר יישאר בכל שאר הימים. אפשר להשאיר כך.'**
   String get scheduleProductWillRemain;
 
   /// No description provided for @scheduleConflictHeader.
@@ -1026,13 +1026,13 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleOverCap.
   ///
   /// In he, this message translates to:
-  /// **'מעבר למומלץ — שקלי להפחית ל־{max} ימים'**
+  /// **'מעבר למומלץ. כדאי להפחית עד {max} ימים.'**
   String scheduleOverCap(Object max);
 
   /// No description provided for @scheduleNoDaySelected.
   ///
   /// In he, this message translates to:
-  /// **'לא נבחר יום — המוצר לא ישובץ'**
+  /// **'לא נבחר יום. המוצר לא ישובץ.'**
   String get scheduleNoDaySelected;
 
   /// No description provided for @scheduleSaveFinish.
@@ -1092,7 +1092,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleSoftAlertsNote.
   ///
   /// In he, this message translates to:
-  /// **'כל ההתראות הן רכות — מותר לחרוג, רק מזכירים.'**
+  /// **'כל ההתראות הן רכות. מותר לחרוג, רק מזכירים.'**
   String get scheduleSoftAlertsNote;
 
   /// No description provided for @orderInstruction.
@@ -1332,7 +1332,7 @@ abstract class AppLocalizations {
   /// No description provided for @importMergeNoConflicts.
   ///
   /// In he, this message translates to:
-  /// **'המיזוג הושלם — לא נמצאו התנגשויות'**
+  /// **'המיזוג הושלם. לא נמצאו התנגשויות.'**
   String get importMergeNoConflicts;
 
   /// No description provided for @updateAllUpToDate.
@@ -1374,7 +1374,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateNewProductsDesc.
   ///
   /// In he, this message translates to:
-  /// **'מוצרים אלה לא נבחרו עדיין — הוסיפי אותם בבחירת המוצרים'**
+  /// **'מוצרים אלה לא נבחרו עדיין. הוסיפי אותם בבחירת המוצרים'**
   String get updateNewProductsDesc;
 
   /// No description provided for @updateDeprecated.
@@ -1476,7 +1476,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumTitle.
   ///
   /// In he, this message translates to:
-  /// **'גיבוי לענן — בקרוב'**
+  /// **'גיבוי לענן, בקרוב'**
   String get premiumTitle;
 
   /// No description provided for @premiumDescWeb.
@@ -1560,7 +1560,7 @@ abstract class AppLocalizations {
   /// No description provided for @streakStartToday.
   ///
   /// In he, this message translates to:
-  /// **'כל יום נחשב — נתחיל היום ✨'**
+  /// **'כל יום נחשב. נתחיל היום ✨'**
   String get streakStartToday;
 
   /// No description provided for @streakPersonalBest.
@@ -1668,7 +1668,7 @@ abstract class AppLocalizations {
   /// No description provided for @weekdayOverCapWarning.
   ///
   /// In he, this message translates to:
-  /// **'מעבר למומלץ — שקלי להפחית'**
+  /// **'מעבר למומלץ. כדאי להפחית.'**
   String get weekdayOverCapWarning;
 
   /// No description provided for @customProductTitle.
@@ -1824,7 +1824,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleGuidedBothSlots.
   ///
   /// In he, this message translates to:
-  /// **'תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.'**
+  /// **'תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ, רק נזכיר.'**
   String get scheduleGuidedBothSlots;
 
   /// No description provided for @scheduleGuidedSingleSlot.
@@ -1836,13 +1836,13 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleContinueTo.
   ///
   /// In he, this message translates to:
-  /// **'המשיכי ל{routine}'**
+  /// **'המשך ל{routine}'**
   String scheduleContinueTo(Object routine);
 
   /// No description provided for @scheduleNextStepPending.
   ///
   /// In he, this message translates to:
-  /// **'נשאר עוד שלב — {routine} מחכה לתזמון'**
+  /// **'נשאר עוד שלב. {routine} מחכה לתזמון'**
   String scheduleNextStepPending(Object routine);
 
   /// No description provided for @scheduleConflictWarningCount.
@@ -2424,7 +2424,7 @@ abstract class AppLocalizations {
   /// No description provided for @streakPitchSub.
   ///
   /// In he, this message translates to:
-  /// **'צלמי תמונת ׳לפני׳ — ובעוד שבועיים תשווי'**
+  /// **'צלמי תמונת ׳לפני׳, ובעוד שבועיים תשווי'**
   String get streakPitchSub;
 
   /// No description provided for @streakPitchCta.
@@ -2432,6 +2432,396 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'נסי'**
   String get streakPitchCta;
+
+  /// No description provided for @productSelV3Title.
+  ///
+  /// In he, this message translates to:
+  /// **'אילו מוצרים יש לכם?'**
+  String get productSelV3Title;
+
+  /// No description provided for @productSelV3Subtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסיפו את המוצרים שיש לכם. אנחנו נסדר אותם לפי שלבים ונבנה מהם שגרה.'**
+  String get productSelV3Subtitle;
+
+  /// No description provided for @productSelV3SearchTab.
+  ///
+  /// In he, this message translates to:
+  /// **'חיפוש'**
+  String get productSelV3SearchTab;
+
+  /// No description provided for @productSelV3ScanTab.
+  ///
+  /// In he, this message translates to:
+  /// **'סריקה'**
+  String get productSelV3ScanTab;
+
+  /// No description provided for @productSelV3SearchHint.
+  ///
+  /// In he, this message translates to:
+  /// **'חפשו מוצר או מותג...'**
+  String get productSelV3SearchHint;
+
+  /// No description provided for @productSelV3Popular.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצרים נפוצים'**
+  String get productSelV3Popular;
+
+  /// No description provided for @productSelV3AddManual.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מצאתם? הוסיפו ידנית'**
+  String get productSelV3AddManual;
+
+  /// No description provided for @productSelV3SelectedCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} מוצרים נבחרו'**
+  String productSelV3SelectedCount(int count);
+
+  /// No description provided for @productSelV3ShelfCTA.
+  ///
+  /// In he, this message translates to:
+  /// **'סידור המדף שלי'**
+  String get productSelV3ShelfCTA;
+
+  /// No description provided for @categoryReviewTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'סידרנו את המוצרים לפי שלבים'**
+  String get categoryReviewTitle;
+
+  /// No description provided for @categoryReviewSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'בדקו שהקטגוריות נכונות. אפשר לשנות בלחיצה.'**
+  String get categoryReviewSubtitle;
+
+  /// No description provided for @categoryReviewChangeCategory.
+  ///
+  /// In he, this message translates to:
+  /// **'שינוי קטגוריה'**
+  String get categoryReviewChangeCategory;
+
+  /// No description provided for @categoryReviewRemove.
+  ///
+  /// In he, this message translates to:
+  /// **'הסרה'**
+  String get categoryReviewRemove;
+
+  /// No description provided for @categoryReviewAddMore.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספת מוצרים נוספים'**
+  String get categoryReviewAddMore;
+
+  /// No description provided for @categoryReviewCTA.
+  ///
+  /// In he, this message translates to:
+  /// **'המשך לבחירת ימים'**
+  String get categoryReviewCTA;
+
+  /// No description provided for @categoryReviewEmpty.
+  ///
+  /// In he, this message translates to:
+  /// **'אין מוצרים במדף עדיין'**
+  String get categoryReviewEmpty;
+
+  /// No description provided for @scheduleHeaderWeekly.
+  ///
+  /// In he, this message translates to:
+  /// **'תזמון שבועי'**
+  String get scheduleHeaderWeekly;
+
+  /// No description provided for @scheduleStepLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'שלב 1 מתוך 2 · {slot}'**
+  String scheduleStepLabel(Object slot);
+
+  /// No description provided for @scheduleSubtitleV3.
+  ///
+  /// In he, this message translates to:
+  /// **'בחרו באילו ימים להשתמש בכל מוצר. נציג הערות רק כשצריך.'**
+  String get scheduleSubtitleV3;
+
+  /// No description provided for @scheduleContextChipMorning.
+  ///
+  /// In he, this message translates to:
+  /// **'שגרת בוקר'**
+  String get scheduleContextChipMorning;
+
+  /// No description provided for @scheduleContextChipEvening.
+  ///
+  /// In he, this message translates to:
+  /// **'שגרת ערב'**
+  String get scheduleContextChipEvening;
+
+  /// No description provided for @scheduleContinueToOrder.
+  ///
+  /// In he, this message translates to:
+  /// **'המשך לסדר המריחה'**
+  String get scheduleContinueToOrder;
+
+  /// No description provided for @daySummaryNoteCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} הערות ליום {day}'**
+  String daySummaryNoteCount(int count, Object day);
+
+  /// No description provided for @daySummaryNoteSub.
+  ///
+  /// In he, this message translates to:
+  /// **'יש שילוב מוצרים או שימוש גבוה שכדאי לבדוק'**
+  String get daySummaryNoteSub;
+
+  /// No description provided for @daySummaryAllGood.
+  ///
+  /// In he, this message translates to:
+  /// **'יום {day} נראה טוב, אין הערות.'**
+  String daySummaryAllGood(Object day);
+
+  /// No description provided for @issueSheetTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הערות ליום {day}'**
+  String issueSheetTitle(Object day);
+
+  /// No description provided for @issueSheetSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר לשנות רק את היום הזה, או להשאיר את השגרה כמו שהיא.'**
+  String get issueSheetSubtitle;
+
+  /// No description provided for @issueSheetConflictSection.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מומלץ לשלב באותו יום'**
+  String get issueSheetConflictSection;
+
+  /// No description provided for @issueSheetOveruseSection.
+  ///
+  /// In he, this message translates to:
+  /// **'שימוש גבוה מההמלצה'**
+  String get issueSheetOveruseSection;
+
+  /// No description provided for @issueSheetOveruseBody.
+  ///
+  /// In he, this message translates to:
+  /// **'המוצר מתוכנן ל־{count} פעמים בשבוע, וההמלצה היא עד {cap}.'**
+  String issueSheetOveruseBody(int count, int cap);
+
+  /// No description provided for @issueActionRemoveFromDay.
+  ///
+  /// In he, this message translates to:
+  /// **'הסרה מהיום הזה'**
+  String get issueActionRemoveFromDay;
+
+  /// No description provided for @issueActionKeep.
+  ///
+  /// In he, this message translates to:
+  /// **'להשאיר בכל זאת'**
+  String get issueActionKeep;
+
+  /// No description provided for @issueActionAutoFix.
+  ///
+  /// In he, this message translates to:
+  /// **'התאמה אוטומטית'**
+  String get issueActionAutoFix;
+
+  /// No description provided for @issueActionReviewNotes.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקת ההערות'**
+  String get issueActionReviewNotes;
+
+  /// No description provided for @chipPossibleConflict.
+  ///
+  /// In he, this message translates to:
+  /// **'התנגשות אפשרית'**
+  String get chipPossibleConflict;
+
+  /// No description provided for @chipHighUsage.
+  ///
+  /// In he, this message translates to:
+  /// **'שימוש גבוה'**
+  String get chipHighUsage;
+
+  /// No description provided for @orderHeaderMorning.
+  ///
+  /// In he, this message translates to:
+  /// **'סדר המריחה בבוקר'**
+  String get orderHeaderMorning;
+
+  /// No description provided for @orderHeaderEvening.
+  ///
+  /// In he, this message translates to:
+  /// **'סדר המריחה בערב'**
+  String get orderHeaderEvening;
+
+  /// No description provided for @orderStepLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'שלב 2 מתוך 2 · {slot}'**
+  String orderStepLabel(Object slot);
+
+  /// No description provided for @orderSubtitleV3.
+  ///
+  /// In he, this message translates to:
+  /// **'סידרנו את המוצרים לפי סדר שימוש מומלץ. אפשר לגרור כדי לשנות.'**
+  String get orderSubtitleV3;
+
+  /// No description provided for @orderViewGeneral.
+  ///
+  /// In he, this message translates to:
+  /// **'סדר כללי'**
+  String get orderViewGeneral;
+
+  /// No description provided for @orderAdvancedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשרויות מתקדמות'**
+  String get orderAdvancedTitle;
+
+  /// No description provided for @orderAdvancedSub.
+  ///
+  /// In he, this message translates to:
+  /// **'שינוי סדר לפי יום, רק אם צריך'**
+  String get orderAdvancedSub;
+
+  /// No description provided for @orderPerDayTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שינוי סדר לפי יום'**
+  String get orderPerDayTitle;
+
+  /// No description provided for @orderPerDayMicrocopy.
+  ///
+  /// In he, this message translates to:
+  /// **'ברירת המחדל מתאימה לרוב המשתמשים. שינוי לפי יום נדרש רק אם יש ימים עם מוצרים מיוחדים.'**
+  String get orderPerDayMicrocopy;
+
+  /// No description provided for @orderCtaMorning.
+  ///
+  /// In he, this message translates to:
+  /// **'אישור סדר הבוקר'**
+  String get orderCtaMorning;
+
+  /// No description provided for @orderCtaFinish.
+  ///
+  /// In he, this message translates to:
+  /// **'סיום והצגת השגרה שלי'**
+  String get orderCtaFinish;
+
+  /// No description provided for @eveningTransitionTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'עכשיו נעבור לשגרת הערב'**
+  String get eveningTransitionTitle;
+
+  /// No description provided for @eveningTransitionBody.
+  ///
+  /// In he, this message translates to:
+  /// **'נשתמש באותם מוצרים ונציע ימים וסדר שמתאימים לערב.'**
+  String get eveningTransitionBody;
+
+  /// No description provided for @addProductTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספת מוצר'**
+  String get addProductTitle;
+
+  /// No description provided for @addProductConfirmCategory.
+  ///
+  /// In he, this message translates to:
+  /// **'לאיזה שלב המוצר שייך?'**
+  String get addProductConfirmCategory;
+
+  /// No description provided for @addProductChooseSlot.
+  ///
+  /// In he, this message translates to:
+  /// **'מתי משתמשים במוצר?'**
+  String get addProductChooseSlot;
+
+  /// No description provided for @addProductSlotMorning.
+  ///
+  /// In he, this message translates to:
+  /// **'בוקר'**
+  String get addProductSlotMorning;
+
+  /// No description provided for @addProductSlotEvening.
+  ///
+  /// In he, this message translates to:
+  /// **'ערב'**
+  String get addProductSlotEvening;
+
+  /// No description provided for @addProductSlotBoth.
+  ///
+  /// In he, this message translates to:
+  /// **'שניהם'**
+  String get addProductSlotBoth;
+
+  /// No description provided for @addProductChooseDays.
+  ///
+  /// In he, this message translates to:
+  /// **'באילו ימים?'**
+  String get addProductChooseDays;
+
+  /// No description provided for @addProductPlacementTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'המיקום המוצע'**
+  String get addProductPlacementTitle;
+
+  /// No description provided for @addProductPlacement.
+  ///
+  /// In he, this message translates to:
+  /// **'נמקם אותו אחרי {before} ולפני {after}'**
+  String addProductPlacement(Object before, Object after);
+
+  /// No description provided for @addProductPlacementAfter.
+  ///
+  /// In he, this message translates to:
+  /// **'נמקם אותו אחרי {before}'**
+  String addProductPlacementAfter(Object before);
+
+  /// No description provided for @addProductPlacementGeneric.
+  ///
+  /// In he, this message translates to:
+  /// **'נמקם אותו במקום המתאים בשגרה'**
+  String get addProductPlacementGeneric;
+
+  /// No description provided for @addProductCta.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספה לשגרה'**
+  String get addProductCta;
+
+  /// No description provided for @addProductSuccess.
+  ///
+  /// In he, this message translates to:
+  /// **'המוצר נוסף לשגרה'**
+  String get addProductSuccess;
+
+  /// No description provided for @addProductSuccessSubMorning.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספנו אותו לשגרת הבוקר בימים {days}.'**
+  String addProductSuccessSubMorning(Object days);
+
+  /// No description provided for @addProductSuccessSubEvening.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספנו אותו לשגרת הערב בימים {days}.'**
+  String addProductSuccessSubEvening(Object days);
+
+  /// No description provided for @addProductSuccessSubBoth.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספנו אותו לשגרת הבוקר והערב בימים {days}.'**
+  String addProductSuccessSubBoth(Object days);
 }
 
 class _AppLocalizationsDelegate

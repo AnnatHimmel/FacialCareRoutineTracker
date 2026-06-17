@@ -78,10 +78,10 @@ class ProductSelectionScreen extends ConsumerStatefulWidget {
 
 class _ProductSelectionScreenState
     extends ConsumerState<ProductSelectionScreen> {
-  // Guided flow state
-  int _catStep = 0;
+  // V3 guided flow state
+  String _v3Tab = 'search'; // 'search' | 'scan'
 
-  // Browse view state
+  // Browse view state (also reused by V3 search pane)
   final _searchController = TextEditingController();
   String _searchQuery = '';
   Slot? _slotFilter;
@@ -373,7 +373,7 @@ class _ProductSelectionScreenState
     );
   }
 
-  // ── Guided flow (setup) ─────────────────────────────────────────────────────
+  // ── Guided flow V3 (setup) ─────────────────────────────────────────────────
 
   Widget _buildGuided(
     BuildContext context,
@@ -384,219 +384,736 @@ class _ProductSelectionScreenState
     List<ProductSelection> evening,
     AppLocalizations l,
   ) {
-    if (categories.isEmpty) {
-      return Center(
-        child: Text(l.productSelNoCategories,
-            style: AppTypography.bodyMd
-                .copyWith(color: AppColors.onSurfaceVariant)),
-      );
-    }
+    final selectedCount = selMap.length;
+    final selectedPids = selMap.keys.toList();
 
-    final step = _catStep.clamp(0, categories.length - 1);
-    final cat = categories[step];
-    final total = categories.length;
-    final isLast = step == total - 1;
-
-    final catProducts = allProducts
-        .where((p) => !p.isDeprecated && p.categoryId == cat.id)
+    // Popular products: all non-deprecated, sorted by category order then slot order
+    final catOrder = {for (final c in categories) c.id: c.order};
+    final popularProducts = allProducts
+        .where((p) => !p.isDeprecated)
         .toList()
       ..sort((a, b) {
-        final ao = a.morningConfig?.order ?? a.eveningConfig?.order ?? 9999;
-        final bo = b.morningConfig?.order ?? b.eveningConfig?.order ?? 9999;
+        final ao = (catOrder[a.categoryId] ?? 99) * 1000 +
+            (a.morningConfig?.order ?? a.eveningConfig?.order ?? 999);
+        final bo = (catOrder[b.categoryId] ?? 99) * 1000 +
+            (b.morningConfig?.order ?? b.eveningConfig?.order ?? 999);
         return ao.compareTo(bo);
       });
 
-    final catSel = catProducts.where((p) => selMap.containsKey(p.id)).length;
-    final ctaLabel = isLast
-        ? l.productSelContinueToSchedule
-        : catSel > 0
-            ? l.continueAction
-            : l.productSelSkipStep;
-    final hint = _getCatHint(cat.id, l);
+    // Search-filtered products (name OR brand)
+    final query = _searchQuery.toLowerCase().trim();
+    final searchResults = query.isNotEmpty
+        ? allProducts
+            .where((p) =>
+                !p.isDeprecated &&
+                (p.name.toLowerCase().contains(query) ||
+                    (p.brand?.toLowerCase().contains(query) ?? false)))
+            .toList()
+        : null;
 
-    return Stack(
+    return Column(
       children: [
-        CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _ProgressBar(step: step, total: total),
-                    const SizedBox(height: 16),
-
-                    Row(
-                      children: [
-                        _CategoryGlyph(
-                            categoryId: cat.id, size: 48, active: true),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                cat.localizedName(l.localeName).toUpperCase(),
-                                style: AppTypography.labelSm.copyWith(
-                                  color: AppColors.primary,
-                                  fontSize: 10,
-                                  letterSpacing: 0.12,
-                                ),
-                              ),
-                              Text(
-                                cat.localizedName(l.localeName),
-                                style: AppTypography.headlineMd.copyWith(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.onSurface,
-                                  height: 1.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    if (hint != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        hint,
-                        style: AppTypography.bodyMd.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                          fontSize: 13,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                  ],
+        // ── Header ────────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l.productSelV3Title,
+                style: AppTypography.headlineMd.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.onSurface,
                 ),
               ),
-            ),
-
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: Text(
-                  l.productSelListHint,
-                  style: AppTypography.bodyMd.copyWith(
-                    color: AppColors.primary,
-                    fontSize: 12,
-                    height: 1.5,
-                  ),
+              const SizedBox(height: 4),
+              Text(
+                l.productSelV3Subtitle,
+                style: AppTypography.bodyMd.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                  fontSize: 12.5,
+                  height: 1.4,
                 ),
               ),
-            ),
-
-            if (catProducts.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Text(
-                    l.productSelNoProducts,
-                    style: AppTypography.bodyMd
-                        .copyWith(color: AppColors.onSurfaceVariant),
-                  ),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, i) => Padding(
-                      padding: EdgeInsets.only(
-                          bottom: i < catProducts.length - 1 ? 10 : 0),
-                      child: _SelectRow(
-                        key: Key('select_row_${catProducts[i].id}'),
-                        product: catProducts[i],
-                        selectedSlots: selMap[catProducts[i].id] ?? {},
-                        categoryUsage: _getCatUsage(cat.id, l),
-                        onToggle: () => _toggleProduct(
-                            catProducts[i], selMap, morning, evening),
-                        onTimingChange: (slot, enabled) => _setTiming(
-                            catProducts[i], slot, enabled, morning, evening),
-                        onEdit: () => _editCustomProduct(context, catProducts[i]),
-                        l: l,
-                      ),
-                    ),
-                    childCount: catProducts.length,
-                  ),
-                ),
+              const SizedBox(height: 12),
+              // Tab toggle: חיפוש | סריקה
+              _V3TabToggle(
+                value: _v3Tab,
+                searchLabel: l.productSelV3SearchTab,
+                scanLabel: l.productSelV3ScanTab,
+                onChange: (t) {
+                  setState(() {
+                    _v3Tab = t;
+                    if (t == 'search') _searchController.clear();
+                  });
+                  if (t == 'scan') {
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) => _showBarcodeScan(context),
+                    );
+                  }
+                },
               ),
-
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                child: _AddCustomProductCTA(
-                  onTap: () => showModalBottomSheet<void>(
+            ],
+          ),
+        ),
+        // ── Scrollable content ────────────────────────────────────────────
+        Expanded(
+          child: _v3Tab == 'search'
+              ? _V3SearchPane(
+                  controller: _searchController,
+                  searchHint: l.productSelV3SearchHint,
+                  popularLabel: l.productSelV3Popular,
+                  addManualLabel: l.productSelV3AddManual,
+                  products:
+                      searchResults != null ? searchResults : popularProducts,
+                  isSearchResult: searchResults != null,
+                  selMap: selMap,
+                  onToggle: (p) =>
+                      _toggleProduct(p, selMap, morning, evening),
+                  onAddCustom: () => showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
                     builder: (_) => const AddCustomProductSheet(),
                   ),
+                )
+              : _V3ScanPane(
+                  onOpenScan: () => _showBarcodeScan(context),
+                ),
+        ),
+        // ── Bottom tray ───────────────────────────────────────────────────
+        _V3BottomTray(
+          selectedPids: selectedPids,
+          allProducts: allProducts,
+          selectedCountLabel: l.productSelV3SelectedCount(selectedCount),
+          ctaLabel: l.productSelV3ShelfCTA,
+          ctaEnabled: selectedCount > 0,
+          onRemove: (pid) {
+            final p = allProducts.firstWhere((x) => x.id == pid,
+                orElse: () => allProducts.first);
+            _toggleProduct(p, selMap, morning, evening);
+          },
+          onNext: () {
+            if (widget.onDone != null) {
+              widget.onDone!();
+            } else {
+              _goToSchedule(context);
+            }
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ── V3 Tab toggle ─────────────────────────────────────────────────────────────
+
+class _V3TabToggle extends StatelessWidget {
+  final String value;
+  final String searchLabel;
+  final String scanLabel;
+  final ValueChanged<String> onChange;
+
+  const _V3TabToggle({
+    required this.value,
+    required this.searchLabel,
+    required this.scanLabel,
+    required this.onChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLow,
+        borderRadius: BorderRadius.circular(9999),
+      ),
+      child: Row(
+        children: [
+          _Tab(
+            label: searchLabel,
+            icon: Icons.search_rounded,
+            isSelected: value == 'search',
+            onTap: () => onChange('search'),
+          ),
+          _Tab(
+            label: scanLabel,
+            icon: Icons.qr_code_scanner_rounded,
+            isSelected: value == 'scan',
+            onTap: () => onChange('scan'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Tab extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _Tab({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          height: 36,
+          margin: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(9999),
+            boxShadow: isSelected ? AppColors.glowSm : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 15,
+                color: isSelected
+                    ? AppColors.primary
+                    : AppColors.onSurfaceVariant,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: AppTypography.labelSm.copyWith(
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.onSurfaceVariant,
+                  fontWeight:
+                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 13,
                 ),
               ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 120)),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
 
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
+// ── V3 Search pane ────────────────────────────────────────────────────────────
+
+class _V3SearchPane extends StatelessWidget {
+  final TextEditingController controller;
+  final String searchHint;
+  final String popularLabel;
+  final String addManualLabel;
+  final List<MasterProduct> products;
+  final bool isSearchResult;
+  final Map<String, Set<Slot>> selMap;
+  final Future<void> Function(MasterProduct) onToggle;
+  final VoidCallback onAddCustom;
+
+  const _V3SearchPane({
+    required this.controller,
+    required this.searchHint,
+    required this.popularLabel,
+    required this.addManualLabel,
+    required this.products,
+    required this.isSearchResult,
+    required this.selMap,
+    required this.onToggle,
+    required this.onAddCustom,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Search field
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
           child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            height: 44,
             decoration: BoxDecoration(
-              color: AppColors.surface.withAlpha(242),
-              boxShadow: AppColors.navGlow,
-              border: const Border(
-                  top: BorderSide(color: AppColors.primaryFixed, width: 0.5)),
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(9999),
+              border: Border.all(color: AppColors.outlineVariant),
             ),
+            child: TextField(
+              controller: controller,
+              textAlignVertical: TextAlignVertical.center,
+              style: AppTypography.bodyMd
+                  .copyWith(color: AppColors.onSurface, fontSize: 14),
+              decoration: InputDecoration(
+                hintText: searchHint,
+                hintStyle: AppTypography.bodyMd.copyWith(
+                  color: AppColors.outline.withAlpha(153),
+                  fontSize: 14,
+                ),
+                prefixIcon: const Icon(Icons.search_rounded,
+                    color: AppColors.onSurfaceVariant, size: 20),
+                suffixIcon: controller.text.isNotEmpty
+                    ? GestureDetector(
+                        onTap: () => controller.clear(),
+                        child: const Icon(Icons.close_rounded,
+                            size: 18,
+                            color: AppColors.onSurfaceVariant),
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 4),
+                isDense: true,
+              ),
+            ),
+          ),
+        ),
+        // Section label
+        if (!isSearchResult)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
             child: Row(
               children: [
-                if (step > 0) ...[
-                  GestureDetector(
-                    onTap: () => setState(() => _catStep--),
-                    child: Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLow,
-                        borderRadius: BorderRadius.circular(9999),
-                      ),
-                      child: const Icon(Icons.arrow_back,
-                          color: AppColors.onSurface, size: 20),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
-                Expanded(
-                  child: PrimaryButton(
-                    label: ctaLabel,
-                    trailingIcon: Icons.arrow_forward,
-                    onTap: () {
-                      if (isLast) {
-                        if (widget.onDone != null) {
-                          widget.onDone!();
-                        } else {
-                          _goToSchedule(context);
-                        }
-                      } else {
-                        setState(() => _catStep++);
-                      }
-                    },
+                const Icon(Icons.trending_up_rounded,
+                    size: 14, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Text(
+                  popularLabel,
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11.5,
                   ),
                 ),
               ],
             ),
           ),
+        // Product list
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+            itemCount: products.length + 1,
+            itemBuilder: (context, i) {
+              if (i == products.length) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: _AddManualLink(
+                      label: addManualLabel, onTap: onAddCustom),
+                );
+              }
+              final p = products[i];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _V3FinderRow(
+                  key: Key('v3_row_${p.id}'),
+                  product: p,
+                  isSelected: selMap.containsKey(p.id),
+                  onTap: () => onToggle(p),
+                ),
+              );
+            },
+          ),
         ),
       ],
+    );
+  }
+}
+
+class _AddManualLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _AddManualLink({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 44,
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add_rounded, size: 16, color: AppColors.primary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: AppTypography.labelMd.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── V3 Finder row (simplified — name + brand, checkbox, no slot chips) ───────
+
+class _V3FinderRow extends StatelessWidget {
+  final MasterProduct product;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _V3FinderRow({
+    super.key,
+    required this.product,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryFixed.withAlpha(180)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: AppColors.glowSm,
+          border: isSelected
+              ? Border.all(
+                  color: AppColors.primary.withAlpha(80), width: 1)
+              : null,
+        ),
+        child: Row(
+          children: [
+            ProductThumb(imageAsset: product.imageAsset, size: 50),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.bodyMd.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13.5,
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                  if (product.brand != null &&
+                      product.brand!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      product.brand!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? AppColors.primary : Colors.transparent,
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.outline,
+                  width: 1.5,
+                ),
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check_rounded,
+                      size: 14, color: Colors.white)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── V3 Scan pane ──────────────────────────────────────────────────────────────
+
+class _V3ScanPane extends StatefulWidget {
+  final VoidCallback onOpenScan;
+
+  const _V3ScanPane({
+    required this.onOpenScan,
+  });
+
+  @override
+  State<_V3ScanPane> createState() => _V3ScanPaneState();
+}
+
+class _V3ScanPaneState extends State<_V3ScanPane>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _scanLine;
+
+  @override
+  void initState() {
+    super.initState();
+    _scanLine = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _scanLine.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: Column(
+        children: [
+          // Viewfinder
+          GestureDetector(
+            onTap: widget.onOpenScan,
+            child: Container(
+              height: 280,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFF241510),
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: Stack(
+                  children: [
+                    // Animated peach scan line
+                    AnimatedBuilder(
+                      animation: _scanLine,
+                      builder: (_, __) => Positioned(
+                        top: 32 + _scanLine.value * 188,
+                        left: 36,
+                        right: 36,
+                        child: Container(
+                          height: 2,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.transparent,
+                                Color(0xFFFF8B71),
+                                Color(0xFFFF8B71),
+                                Colors.transparent,
+                              ],
+                              stops: [0.0, 0.3, 0.7, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Corner brackets
+                    for (final pos in [
+                      Alignment.topRight,
+                      Alignment.topLeft,
+                      Alignment.bottomRight,
+                      Alignment.bottomLeft,
+                    ])
+                      Align(
+                        alignment: pos,
+                        child: Padding(
+                          padding: const EdgeInsets.all(28),
+                          child: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CustomPaint(
+                                painter: _CornerPainter(alignment: pos)),
+                          ),
+                        ),
+                      ),
+                    // Hint at bottom
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 18),
+                        child: Text(
+                          l.barcodeScanHint,
+                          style: AppTypography.labelSm.copyWith(
+                            color: Colors.white54,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CornerPainter extends CustomPainter {
+  final Alignment alignment;
+  const _CornerPainter({required this.alignment});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withAlpha(200)
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke;
+    const len = 18.0;
+    final r = Rect.fromLTWH(0, 0, size.width, size.height);
+    // Draw two lines forming a corner based on alignment
+    final isTop = alignment == Alignment.topLeft || alignment == Alignment.topRight;
+    final isLeft = alignment == Alignment.topLeft || alignment == Alignment.bottomLeft;
+    final x = isLeft ? r.left : r.right;
+    final y = isTop ? r.top : r.bottom;
+    final dx = isLeft ? len : -len;
+    final dy = isTop ? len : -len;
+    canvas.drawLine(Offset(x, y), Offset(x + dx, y), paint);
+    canvas.drawLine(Offset(x, y), Offset(x, y + dy), paint);
+  }
+
+  @override
+  bool shouldRepaint(_CornerPainter oldDelegate) => false;
+}
+
+// ── V3 Bottom tray ────────────────────────────────────────────────────────────
+
+class _V3BottomTray extends StatelessWidget {
+  final List<String> selectedPids;
+  final List<MasterProduct> allProducts;
+  final String selectedCountLabel;
+  final String ctaLabel;
+  final bool ctaEnabled;
+  final void Function(String pid) onRemove;
+  final VoidCallback onNext;
+
+  const _V3BottomTray({
+    required this.selectedPids,
+    required this.allProducts,
+    required this.selectedCountLabel,
+    required this.ctaLabel,
+    required this.ctaEnabled,
+    required this.onRemove,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final prodById = {for (final p in allProducts) p.id: p};
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withAlpha(242),
+        boxShadow: AppColors.navGlow,
+        border: const Border(
+            top: BorderSide(color: AppColors.primaryFixed, width: 0.5)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Thumbnails row or empty hint
+          if (selectedPids.isNotEmpty)
+            SizedBox(
+              height: 44,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                reverse: true, // RTL order
+                itemCount: selectedPids.length,
+                itemBuilder: (context, i) {
+                  final pid = selectedPids[i];
+                  final p = prodById[pid];
+                  if (p == null) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 6),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        ProductThumb(imageAsset: p.imageAsset, size: 38),
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: GestureDetector(
+                            onTap: () => onRemove(pid),
+                            child: Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: AppColors.onSurface,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: Colors.white, width: 1.5),
+                              ),
+                              child: const Icon(Icons.close_rounded,
+                                  color: Colors.white, size: 9),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Text(
+                'חפשו או סרקו כדי להוסיף את המוצרים שלכם.',
+                textAlign: TextAlign.center,
+                style: AppTypography.labelSm.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          const SizedBox(height: 4),
+          Text(
+            selectedCountLabel,
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Opacity(
+            opacity: ctaEnabled ? 1.0 : 0.45,
+            child: IgnorePointer(
+              ignoring: !ctaEnabled,
+              child: PrimaryButton(
+                label: ctaLabel,
+                trailingIcon: Icons.auto_awesome_rounded,
+                onTap: onNext,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

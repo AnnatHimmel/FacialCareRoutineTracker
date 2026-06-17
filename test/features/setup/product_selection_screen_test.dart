@@ -256,7 +256,8 @@ void main() {
   final cat2 = const Category(id: 'cat-spf', name: 'הגנה', order: 8);
 
   group('ProductSelectionScreen — guided step', () {
-    testWidgets('shows products for current category only', (tester) async {
+    testWidgets('shows all products in guided step (V3 unified view)',
+        (tester) async {
       final master = _masterWith([
         _amProduct('p1', 'קרם לחות', 'cat-serum'),
         _amProduct('p2', 'ג׳ל ניקוי', 'cat-spf'),
@@ -265,13 +266,13 @@ void main() {
       await tester.pumpWidget(_wrap(master: master));
       await tester.pumpAndSettle();
 
-      // Step 0 = cat-serum (order 5) shown first
+      // V3 shows all products in the unified popular list (not per-category)
       expect(find.text('קרם לחות'), findsOneWidget);
-      // cat-spf products are not shown yet (different step)
-      expect(find.text('ג׳ל ניקוי'), findsNothing);
+      expect(find.text('ג׳ל ניקוי'), findsOneWidget);
     });
 
-    testWidgets('"המשך" advances to next category', (tester) async {
+    testWidgets('search tab is active by default with tab toggle visible',
+        (tester) async {
       final master = _masterWith([
         _amProduct('p1', 'קרם', 'cat-serum'),
         _amProduct('p2', 'קרם הגנה', 'cat-spf'),
@@ -280,17 +281,12 @@ void main() {
       await tester.pumpWidget(_wrap(master: master));
       await tester.pumpAndSettle();
 
-      // Initially cat-serum step
+      // Both products visible in default popular list
       expect(find.text('קרם'), findsOneWidget);
-      expect(find.text('קרם הגנה'), findsNothing);
-
-      // "דלג על השלב" because no selection yet
-      await tester.tap(find.text('דלגי על השלב'));
-      await tester.pumpAndSettle();
-
-      // Now cat-spf step
       expect(find.text('קרם הגנה'), findsOneWidget);
-      expect(find.text('קרם'), findsNothing);
+      // Tab toggle is present
+      expect(find.text('חיפוש'), findsOneWidget);
+      expect(find.text('סריקה'), findsOneWidget);
     });
 
     testWidgets('tapping product row calls upsertSelection', (tester) async {
@@ -308,21 +304,23 @@ void main() {
       expect(udr.upsertCalled, isTrue);
     });
 
-    testWidgets('fixed AM product shows "בוקר בלבד" chip', (tester) async {
+    testWidgets('fixed AM product shows "בוקר בלבד" chip in browse mode',
+        (tester) async {
       final master =
           _masterWith([_amProduct('p1', 'VC סרום', 'cat-serum')], [cat1]);
 
-      await tester.pumpWidget(_wrap(master: master));
+      await tester.pumpWidget(_wrap(master: master, isTabDestination: true));
       await tester.pumpAndSettle();
 
       expect(find.text('בוקר בלבד'), findsOneWidget);
     });
 
-    testWidgets('fixed PM product shows "ערב בלבד" chip', (tester) async {
+    testWidgets('fixed PM product shows "ערב בלבד" chip in browse mode',
+        (tester) async {
       final master =
           _masterWith([_pmProduct('p1', 'שמן לילה', 'cat-serum')], [cat1]);
 
-      await tester.pumpWidget(_wrap(master: master));
+      await tester.pumpWidget(_wrap(master: master, isTabDestination: true));
       await tester.pumpAndSettle();
 
       expect(find.text('ערב בלבד'), findsOneWidget);
@@ -332,6 +330,7 @@ void main() {
       final master =
           _masterWith([_flexProduct('p1', 'קרם לחות', 'cat-serum')], [cat1]);
 
+      // V3 guided mode: no slot chips at all (simplified finder row)
       await tester.pumpWidget(_wrap(master: master));
       await tester.pumpAndSettle();
 
@@ -341,7 +340,7 @@ void main() {
   });
 
   group('ProductSelectionScreen — last step navigation', () {
-    testWidgets('"המשיכי לתזמון" is the CTA on the last guided step',
+    testWidgets('"סידור המדף שלי" is the CTA in guided step view',
         (tester) async {
       final master =
           _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
@@ -349,19 +348,28 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, fromSetup: true));
       await tester.pumpAndSettle();
 
-      expect(find.text('המשיכי לתזמון'), findsOneWidget);
+      expect(find.text('סידור המדף שלי'), findsOneWidget);
     });
 
     testWidgets(
-        'last step CTA with fromSetup navigates to /setup/schedule?from=setup',
+        'tapping "סידור המדף שלי" with fromSetup navigates to /setup/schedule?from=setup',
         (tester) async {
+      final t = DateTime(2025);
+      final preSel = ProductSelection(
+        id: 's1',
+        productId: 'p1',
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: t,
+      );
+      final udr = _CapturingUDR({Slot.morning: [preSel], Slot.evening: []});
       final master =
           _masterWith([_amProduct('p1', 'קרם', 'cat-serum')], [cat1]);
 
-      await tester.pumpWidget(_wrap(master: master, fromSetup: true));
+      await tester.pumpWidget(_wrap(master: master, udr: udr, fromSetup: true));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('המשיכי לתזמון'));
+      await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
 
       expect(find.text('schedule-from=setup'), findsOneWidget);
@@ -415,15 +423,14 @@ void main() {
   });
 
   group('ProductSelectionScreen — add custom product CTA', () {
-    testWidgets('CTA card is visible in guided step view', (tester) async {
+    testWidgets('add manual link is visible in guided step view', (tester) async {
       final master =
           _masterWith([_amProduct('p1', 'קרם לחות', 'cat-serum')], [cat1]);
 
       await tester.pumpWidget(_wrap(master: master));
       await tester.pumpAndSettle();
 
-      // New full-width CTA card should be visible
-      expect(find.text('הוסיפי מוצר חדש'), findsOneWidget);
+      expect(find.text('לא מצאתם? הוסיפו ידנית'), findsOneWidget);
     });
 
     testWidgets('old small icon-only add button is NOT in guided bottom bar',

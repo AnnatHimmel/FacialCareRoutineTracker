@@ -400,13 +400,13 @@ class AppLocalizationsHe extends AppLocalizations {
       'לחצי על מוצר כדי להוסיף לרשימה או הוסיפי מוצר חדש';
 
   @override
-  String get catHintCleanser1 => 'הסרת איפור ומסנני הגנה — לרוב בערב.';
+  String get catHintCleanser1 => 'הסרת איפור ומסנני הגנה, לרוב בערב.';
 
   @override
   String get catHintCleanser2 => 'ניקוי פנים יומיומי ועדין.';
 
   @override
-  String get catHintRetinoid => 'חידוש העור — ערב בלבד, בהדרגה.';
+  String get catHintRetinoid => 'חידוש העור. ערב בלבד, בהדרגה.';
 
   @override
   String get catHintToner => 'איזון העור והכנה לספיגת השלבים הבאים.';
@@ -421,7 +421,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get catHintOil => 'שכבת הזנה אחרונה, לרוב בערב.';
 
   @override
-  String get catHintSpf => 'הגנה מהשמש — שלב הבוקר האחרון, חובה.';
+  String get catHintSpf => 'הגנה מהשמש, שלב הבוקר האחרון. חובה.';
 
   @override
   String get catUsageCleanser1 =>
@@ -452,17 +452,18 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get catUsageSpf =>
-      'כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר — גם ביום מעונן.';
+      'כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר, גם ביום מעונן.';
 
   @override
   String get scheduleNoProducts => 'לא נבחרו מוצרים עדיין';
 
   @override
   String get scheduleConflictInMorning =>
-      'יש התנגשות בשגרת בוקר — הקישי לתיקון';
+      'יש התנגשות בשגרת בוקר. אפשר לתקן בלחיצה.';
 
   @override
-  String get scheduleConflictInEvening => 'יש התנגשות בשגרת ערב — הקישי לתיקון';
+  String get scheduleConflictInEvening =>
+      'יש התנגשות בשגרת ערב. אפשר לתקן בלחיצה.';
 
   @override
   String get scheduleOccasional => 'לא לשימוש יומי';
@@ -481,7 +482,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get scheduleProductWillRemain =>
-      'המוצר יישאר בכל שאר הימים — לא נחסום אם תשאירי כך.';
+      'המוצר יישאר בכל שאר הימים. אפשר להשאיר כך.';
 
   @override
   String scheduleConflictHeader(Object day) {
@@ -518,11 +519,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String scheduleOverCap(Object max) {
-    return 'מעבר למומלץ — שקלי להפחית ל־$max ימים';
+    return 'מעבר למומלץ. כדאי להפחית עד $max ימים.';
   }
 
   @override
-  String get scheduleNoDaySelected => 'לא נבחר יום — המוצר לא ישובץ';
+  String get scheduleNoDaySelected => 'לא נבחר יום. המוצר לא ישובץ.';
 
   @override
   String get scheduleSaveFinish => 'סיום ושמירת השגרה';
@@ -561,7 +562,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get scheduleSoftAlertsNote =>
-      'כל ההתראות הן רכות — מותר לחרוג, רק מזכירים.';
+      'כל ההתראות הן רכות. מותר לחרוג, רק מזכירים.';
 
   @override
   String get orderInstruction => 'גררו את המוצרים כדי לסדר את השגרה שלכם';
@@ -690,7 +691,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get importReplaceSuccess => 'הנתונים הוחלפו בהצלחה';
 
   @override
-  String get importMergeNoConflicts => 'המיזוג הושלם — לא נמצאו התנגשויות';
+  String get importMergeNoConflicts => 'המיזוג הושלם. לא נמצאו התנגשויות.';
 
   @override
   String get updateAllUpToDate => 'הכל מעודכן';
@@ -714,7 +715,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get updateNewProductsDesc =>
-      'מוצרים אלה לא נבחרו עדיין — הוסיפי אותם בבחירת המוצרים';
+      'מוצרים אלה לא נבחרו עדיין. הוסיפי אותם בבחירת המוצרים';
 
   @override
   String updateDeprecated(Object count) {
@@ -772,7 +773,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get mergeSuccess => 'המיזוג הושלם בהצלחה';
 
   @override
-  String get premiumTitle => 'גיבוי לענן — בקרוב';
+  String get premiumTitle => 'גיבוי לענן, בקרוב';
 
   @override
   String get premiumDescWeb =>
@@ -816,7 +817,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get streakOnTrack => 'את בדרך הנכונה לזוהר מושלם!';
 
   @override
-  String get streakStartToday => 'כל יום נחשב — נתחיל היום ✨';
+  String get streakStartToday => 'כל יום נחשב. נתחיל היום ✨';
 
   @override
   String streakPersonalBest(Object days) {
@@ -876,7 +877,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get skinStateOily => 'שומני';
 
   @override
-  String get weekdayOverCapWarning => 'מעבר למומלץ — שקלי להפחית';
+  String get weekdayOverCapWarning => 'מעבר למומלץ. כדאי להפחית.';
 
   @override
   String get customProductTitle => 'הוספת מוצר משלי';
@@ -962,7 +963,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get scheduleGuidedBothSlots =>
-      'תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.';
+      'תזמני קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ, רק נזכיר.';
 
   @override
   String scheduleGuidedSingleSlot(Object routine) {
@@ -971,12 +972,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String scheduleContinueTo(Object routine) {
-    return 'המשיכי ל$routine';
+    return 'המשך ל$routine';
   }
 
   @override
   String scheduleNextStepPending(Object routine) {
-    return 'נשאר עוד שלב — $routine מחכה לתזמון';
+    return 'נשאר עוד שלב. $routine מחכה לתזמון';
   }
 
   @override
@@ -1283,10 +1284,236 @@ class AppLocalizationsHe extends AppLocalizations {
   String get streakPitchTitle => 'רוצה לראות אם זה עובד?';
 
   @override
-  String get streakPitchSub => 'צלמי תמונת ׳לפני׳ — ובעוד שבועיים תשווי';
+  String get streakPitchSub => 'צלמי תמונת ׳לפני׳, ובעוד שבועיים תשווי';
 
   @override
   String get streakPitchCta => 'נסי';
+
+  @override
+  String get productSelV3Title => 'אילו מוצרים יש לכם?';
+
+  @override
+  String get productSelV3Subtitle =>
+      'הוסיפו את המוצרים שיש לכם. אנחנו נסדר אותם לפי שלבים ונבנה מהם שגרה.';
+
+  @override
+  String get productSelV3SearchTab => 'חיפוש';
+
+  @override
+  String get productSelV3ScanTab => 'סריקה';
+
+  @override
+  String get productSelV3SearchHint => 'חפשו מוצר או מותג...';
+
+  @override
+  String get productSelV3Popular => 'מוצרים נפוצים';
+
+  @override
+  String get productSelV3AddManual => 'לא מצאתם? הוסיפו ידנית';
+
+  @override
+  String productSelV3SelectedCount(int count) {
+    return '$count מוצרים נבחרו';
+  }
+
+  @override
+  String get productSelV3ShelfCTA => 'סידור המדף שלי';
+
+  @override
+  String get categoryReviewTitle => 'סידרנו את המוצרים לפי שלבים';
+
+  @override
+  String get categoryReviewSubtitle =>
+      'בדקו שהקטגוריות נכונות. אפשר לשנות בלחיצה.';
+
+  @override
+  String get categoryReviewChangeCategory => 'שינוי קטגוריה';
+
+  @override
+  String get categoryReviewRemove => 'הסרה';
+
+  @override
+  String get categoryReviewAddMore => 'הוספת מוצרים נוספים';
+
+  @override
+  String get categoryReviewCTA => 'המשך לבחירת ימים';
+
+  @override
+  String get categoryReviewEmpty => 'אין מוצרים במדף עדיין';
+
+  @override
+  String get scheduleHeaderWeekly => 'תזמון שבועי';
+
+  @override
+  String scheduleStepLabel(Object slot) {
+    return 'שלב 1 מתוך 2 · $slot';
+  }
+
+  @override
+  String get scheduleSubtitleV3 =>
+      'בחרו באילו ימים להשתמש בכל מוצר. נציג הערות רק כשצריך.';
+
+  @override
+  String get scheduleContextChipMorning => 'שגרת בוקר';
+
+  @override
+  String get scheduleContextChipEvening => 'שגרת ערב';
+
+  @override
+  String get scheduleContinueToOrder => 'המשך לסדר המריחה';
+
+  @override
+  String daySummaryNoteCount(int count, Object day) {
+    return '$count הערות ליום $day';
+  }
+
+  @override
+  String get daySummaryNoteSub => 'יש שילוב מוצרים או שימוש גבוה שכדאי לבדוק';
+
+  @override
+  String daySummaryAllGood(Object day) {
+    return 'יום $day נראה טוב, אין הערות.';
+  }
+
+  @override
+  String issueSheetTitle(Object day) {
+    return 'הערות ליום $day';
+  }
+
+  @override
+  String get issueSheetSubtitle =>
+      'אפשר לשנות רק את היום הזה, או להשאיר את השגרה כמו שהיא.';
+
+  @override
+  String get issueSheetConflictSection => 'לא מומלץ לשלב באותו יום';
+
+  @override
+  String get issueSheetOveruseSection => 'שימוש גבוה מההמלצה';
+
+  @override
+  String issueSheetOveruseBody(int count, int cap) {
+    return 'המוצר מתוכנן ל־$count פעמים בשבוע, וההמלצה היא עד $cap.';
+  }
+
+  @override
+  String get issueActionRemoveFromDay => 'הסרה מהיום הזה';
+
+  @override
+  String get issueActionKeep => 'להשאיר בכל זאת';
+
+  @override
+  String get issueActionAutoFix => 'התאמה אוטומטית';
+
+  @override
+  String get issueActionReviewNotes => 'בדיקת ההערות';
+
+  @override
+  String get chipPossibleConflict => 'התנגשות אפשרית';
+
+  @override
+  String get chipHighUsage => 'שימוש גבוה';
+
+  @override
+  String get orderHeaderMorning => 'סדר המריחה בבוקר';
+
+  @override
+  String get orderHeaderEvening => 'סדר המריחה בערב';
+
+  @override
+  String orderStepLabel(Object slot) {
+    return 'שלב 2 מתוך 2 · $slot';
+  }
+
+  @override
+  String get orderSubtitleV3 =>
+      'סידרנו את המוצרים לפי סדר שימוש מומלץ. אפשר לגרור כדי לשנות.';
+
+  @override
+  String get orderViewGeneral => 'סדר כללי';
+
+  @override
+  String get orderAdvancedTitle => 'אפשרויות מתקדמות';
+
+  @override
+  String get orderAdvancedSub => 'שינוי סדר לפי יום, רק אם צריך';
+
+  @override
+  String get orderPerDayTitle => 'שינוי סדר לפי יום';
+
+  @override
+  String get orderPerDayMicrocopy =>
+      'ברירת המחדל מתאימה לרוב המשתמשים. שינוי לפי יום נדרש רק אם יש ימים עם מוצרים מיוחדים.';
+
+  @override
+  String get orderCtaMorning => 'אישור סדר הבוקר';
+
+  @override
+  String get orderCtaFinish => 'סיום והצגת השגרה שלי';
+
+  @override
+  String get eveningTransitionTitle => 'עכשיו נעבור לשגרת הערב';
+
+  @override
+  String get eveningTransitionBody =>
+      'נשתמש באותם מוצרים ונציע ימים וסדר שמתאימים לערב.';
+
+  @override
+  String get addProductTitle => 'הוספת מוצר';
+
+  @override
+  String get addProductConfirmCategory => 'לאיזה שלב המוצר שייך?';
+
+  @override
+  String get addProductChooseSlot => 'מתי משתמשים במוצר?';
+
+  @override
+  String get addProductSlotMorning => 'בוקר';
+
+  @override
+  String get addProductSlotEvening => 'ערב';
+
+  @override
+  String get addProductSlotBoth => 'שניהם';
+
+  @override
+  String get addProductChooseDays => 'באילו ימים?';
+
+  @override
+  String get addProductPlacementTitle => 'המיקום המוצע';
+
+  @override
+  String addProductPlacement(Object before, Object after) {
+    return 'נמקם אותו אחרי $before ולפני $after';
+  }
+
+  @override
+  String addProductPlacementAfter(Object before) {
+    return 'נמקם אותו אחרי $before';
+  }
+
+  @override
+  String get addProductPlacementGeneric => 'נמקם אותו במקום המתאים בשגרה';
+
+  @override
+  String get addProductCta => 'הוספה לשגרה';
+
+  @override
+  String get addProductSuccess => 'המוצר נוסף לשגרה';
+
+  @override
+  String addProductSuccessSubMorning(Object days) {
+    return 'הוספנו אותו לשגרת הבוקר בימים $days.';
+  }
+
+  @override
+  String addProductSuccessSubEvening(Object days) {
+    return 'הוספנו אותו לשגרת הערב בימים $days.';
+  }
+
+  @override
+  String addProductSuccessSubBoth(Object days) {
+    return 'הוספנו אותו לשגרת הבוקר והערב בימים $days.';
+  }
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -1441,13 +1668,13 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
       'לחץ על מוצר כדי להוסיף לרשימה או הוסף מוצר חדש';
 
   @override
-  String get catHintCleanser1 => 'הסרת איפור ומסנני הגנה — לרוב בערב.';
+  String get catHintCleanser1 => 'הסרת איפור ומסנני הגנה, לרוב בערב.';
 
   @override
   String get catHintCleanser2 => 'ניקוי פנים יומיומי ועדין.';
 
   @override
-  String get catHintRetinoid => 'חידוש העור — ערב בלבד, בהדרגה.';
+  String get catHintRetinoid => 'חידוש העור. ערב בלבד, בהדרגה.';
 
   @override
   String get catHintToner => 'איזון העור והכנה לספיגת השלבים הבאים.';
@@ -1462,7 +1689,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get catHintOil => 'שכבת הזנה אחרונה, לרוב בערב.';
 
   @override
-  String get catHintSpf => 'הגנה מהשמש — שלב הבוקר האחרון, חובה.';
+  String get catHintSpf => 'הגנה מהשמש, שלב הבוקר האחרון. חובה.';
 
   @override
   String get catUsageCleanser1 =>
@@ -1492,17 +1719,19 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
       'חמם כמה טיפות בין כפות הידיים ולחץ על העור כשלב אחרון.';
 
   @override
-  String get scheduleConflictInMorning => 'יש התנגשות בשגרת בוקר — הקש לתיקון';
+  String get scheduleConflictInMorning =>
+      'יש התנגשות בשגרת בוקר. אפשר לתקן בלחיצה.';
 
   @override
-  String get scheduleConflictInEvening => 'יש התנגשות בשגרת ערב — הקש לתיקון';
+  String get scheduleConflictInEvening =>
+      'יש התנגשות בשגרת ערב. אפשר לתקן בלחיצה.';
 
   @override
   String get scheduleTapConflictDay => 'הקש על יום מסומן';
 
   @override
   String get scheduleProductWillRemain =>
-      'המוצר יישאר בכל שאר הימים — לא נחסום אם תשאיר כך.';
+      'המוצר יישאר בכל שאר הימים. אפשר להשאיר כך.';
 
   @override
   String scheduleConflictHeader(Object day) {
@@ -1524,7 +1753,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String scheduleOverCap(Object max) {
-    return 'מעבר למומלץ — שקול להפחית ל־$max ימים';
+    return 'מעבר למומלץ. כדאי להפחית עד $max ימים.';
   }
 
   @override
@@ -1577,7 +1806,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get updateNewProductsDesc =>
-      'מוצרים אלה לא נבחרו עדיין — הוסף אותם בבחירת המוצרים';
+      'מוצרים אלה לא נבחרו עדיין. הוסף אותם בבחירת המוצרים';
 
   @override
   String get mergeChooseVersion => 'בחר איזו גרסה לשמור:';
@@ -1604,7 +1833,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get mergeSuccess => 'המיזוג הושלם בהצלחה';
 
   @override
-  String get premiumTitle => 'גיבוי לענן — בקרוב';
+  String get premiumTitle => 'גיבוי לענן, בקרוב';
 
   @override
   String get premiumDescWeb =>
@@ -1705,7 +1934,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get skinStateOily => 'שומני';
 
   @override
-  String get weekdayOverCapWarning => 'מעבר למומלץ — שקול להפחית';
+  String get weekdayOverCapWarning => 'מעבר למומלץ. כדאי להפחית.';
 
   @override
   String get customProductTitle => 'הוספת מוצר משלי';
@@ -1791,7 +2020,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get scheduleGuidedBothSlots =>
-      'תזמן קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ — רק נזכיר.';
+      'תזמן קודם את שגרת הבוקר, וכך נמשיך יחד גם לשגרת הערב. אפשר לחרוג מהמומלץ, רק נזכיר.';
 
   @override
   String scheduleGuidedSingleSlot(Object routine) {
@@ -1805,7 +2034,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String scheduleNextStepPending(Object routine) {
-    return 'נשאר עוד שלב — $routine מחכה לתזמון';
+    return 'נשאר עוד שלב. $routine מחכה לתזמון';
   }
 
   @override
@@ -1926,7 +2155,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get barcodeScanLookingUp =>
-      'חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסף ידנית לעת עתה';
+      'חיפוש מוצר אוטומטי יגיע בעדכון עתידי. הוסף ידנית לעת עתה';
 
   @override
   String get barcodeScanAddManually => 'הוסף ידנית';
@@ -1942,4 +2171,7 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get barcodeScanAlreadyInRoutine => 'כבר בשגרה שלך';
+
+  @override
+  String get categoryReviewCTA => 'המשך לבחירת ימים';
 }
