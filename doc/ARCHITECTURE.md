@@ -25,6 +25,22 @@ A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusiv
               assets/data/master_products.json  ◄── Flutter app bundles at build time
 ```
 
+```
+                    ┌───────────────────────────────────────────┐
+                    │              Supabase (PostgreSQL)         │
+                    │  master_products table + storage bucket    │
+                    │  get_master_content() RPC                  │
+                    └──────────────────┬────────────────────────┘
+                                       │  background refresh (non-blocking)
+                                       ▼
+                    ┌───────────────────────────────────────────┐
+                    │    RemoteCachedMasterContentRepositoryImpl │
+                    │  1. in-memory (_inMemory)                  │
+                    │  2. SharedPrefs cache (contentVersion guard)│
+                    │  3. bundled JSON fallback (always works)   │
+                    └───────────────────────────────────────────┘
+```
+
 ### 1.1 Architecture Style
 
 **Layered Clean Architecture** with **Feature-First** organization inside the Presentation layer.
@@ -59,6 +75,7 @@ A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusiv
 | **Day boundary at 06:00** | Per PRD UC-8: late-night activity credits to prior calendar day; implemented in `DayBoundaryService` as a pure function | Midnight (simpler but breaks real usage patterns) |
 | **Stable string IDs** for all records | Enables merge-conflict resolution (UC-17) and post-update reconciliation (UC-18); premium-cloud-backup-ready (UC-21 NFR-M7) | Auto-increment integers (lose portability across devices) |
 | **Hebrew RTL at `MaterialApp` root** | RTL configured once globally; all screens mirror automatically via Flutter's built-in directionality | Per-screen RTL (error-prone, inconsistent) |
+| **Supabase for master content delivery** | `RemoteCachedMasterContentRepositoryImpl` composes bundled JSON + SharedPrefs cache + Supabase RPC. Three-tier load: in-memory → cache → bundled; Supabase refresh runs in background after first load. Cache is version-guarded: if cached `contentVersion` < bundled, cache is discarded. | Direct Supabase reads on every load (slow, network-dependent); CDN-hosted JSON (harder to update per-product images) |
 
 ---
 
@@ -136,7 +153,11 @@ A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusiv
 | **DayBoundaryService** | Pure function: maps a `DateTime` to the effective `LocalDate` (subtracts 1 day if before 06:00) | none |
 | **ReconciliationService** | Compares installed master-list content version to last-known version; identifies new, deprecated, and changed products; preserves user data | MasterContentRepo, UserDataRepository, SettingsRepository |
 | **ExportImportService** | Serializes full user dataset + photos into a ZIP archive; deserializes and drives Replace/Merge flow | UserDataRepository, PhotoRepository, SettingsRepository |
-| **MasterContentRepository** | Loads and parses bundled JSON assets; provides typed master-list and rules | Flutter asset bundle |
+| **MasterContentRepositoryImpl** | Loads and parses bundled JSON assets; in-memory cached after first load | Flutter asset bundle |
+| **RemoteCachedMasterContentRepositoryImpl** | Three-tier load: in-memory → SharedPrefs version-guarded cache → bundled fallback; background Supabase refresh | MasterContentRepositoryImpl, SupabaseMasterContentDataSource, SharedPrefsMasterContentCache |
+| **SupabaseMasterContentDataSource** | Fetches master content from Supabase via `get_master_content()` RPC; maps PostgreSQL rows to MasterContent | supabase_flutter |
+| **SharedPrefsMasterContentCache** | Persists MasterContent as JSON in SharedPreferences; version guard enforced by caller | shared_preferences |
+| **BarcodeProductLookupService** | Queries 5 external APIs in parallel (OpenBeautyFacts, OpenFoodFacts, UPCItemDB, InciBeauty, BarcodeSpider); merges results by priority | http package |
 | **UserDataRepository** | All CRUD for user data (selections, schedules, order overrides, day records, skin logs, muted conflicts) via Drift DAOs; reactive streams | Drift database |
 | **PhotoRepository** | Platform-abstracted photo storage: read, write, delete, list; used by export | Android: FilesDir adapter; Web: IndexedDB adapter |
 | **SettingsRepository** | Key-value store for app settings: last export date, last known master version, schema version | SharedPreferences |
@@ -199,15 +220,19 @@ replaceAllData(export: UserDataExport) → Future<void>
 
 ```dart
 class MasterProduct {
-  final String id;            // stable UUID, never changes across versions
-  final String name;          // verbatim; may be Latin brand name
-  final String? imageAsset;   // path within Flutter assets
-  final String? comment;      // admin's note; Hebrew + bidi
+  final String id;               // stable UUID, never changes across versions
+  final String? brand;           // NEW: extracted from admin content; may be null
+  final String name;             // verbatim; may be Latin brand name
+  final String? imageAsset;      // local path OR https:// URL (Supabase Storage)
+  final String? comment;         // Hebrew admin note
+  final String? commentEn;       // English admin note (optional)
   final String categoryId;
-  final SlotConfig? morning;  // null if not in this slot
-  final SlotConfig? evening;
+  final SlotConfig? morningConfig;
+  final SlotConfig? eveningConfig;
   final bool isDeprecated;
-  final String addedInVersion; // which content version introduced it
+  final String addedInVersion;   // which content version introduced it
+  final List<String> ingredients; // NEW: ingredient list from admin/external source
+  final List<String> barcodes;   // NEW: EAN/UPC barcodes for scanner matching
 }
 
 class SlotConfig {
@@ -418,6 +443,9 @@ User requests Export
 | Typography | `google_fonts` | Quicksand + Plus Jakarta Sans; both available on Google Fonts; offline-cached in build |
 | Preferences | `shared_preferences` | Key-value settings (last export date, schema version, master version) |
 | Barcode Scanning | `mobile_scanner ^5.2.3` | Camera-based barcode/QR scan for product lookup; Android only (guarded by `kIsWeb`); requires `CAMERA` permission in `AndroidManifest.xml` |
+| Remote content | supabase_flutter | Single-client Supabase SDK; `get_master_content()` RPC avoids 4 round-trips |
+| Network image cache | cached_network_image | Caches Supabase Storage URLs for product thumbnails |
+| HTTP client | http | Used by BarcodeProductLookupService for external API queries |
 | Testing | `flutter_test` + `mockito` + `drift` test utilities | Unit tests for domain services; widget tests for key screens |
 
 ---
@@ -439,8 +467,8 @@ User requests Export
 
 ## 6. Security Considerations
 
-- **No authentication required** — offline-first personal app; no accounts; no network.
-- **No data leaves the device** except via user-initiated export (UC-16) or the deferred premium backup (UC-21). This is enforced structurally: no network calls in v1.0 code paths.
+- **No authentication required** — network-optional personal app; no accounts; no sync of user data.
+- **No data leaves the device** except via user-initiated export (UC-16) or the deferred premium backup (UC-21). Network calls are opt-in: Supabase refresh runs in background and fails silently; barcode lookup is user-initiated. All user data remains on-device; no user data is sent to any external service. Supabase access is read-only for master content (no user data stored there in v1.0).
 - **Import validation:** archive bytes are parsed and validated against a known schema before any data is written; malformed input is rejected.
 - **No analytics or telemetry** — confirmed non-goal (PRD §10 Privacy).
 - **Premium license key (deferred):** v1.0 stub always returns `false`; the v1.0 codebase has no key validation logic to harden.
@@ -735,6 +763,8 @@ Dependencies flow from foundation to feature. Each step assumes prior steps are 
 | UC-19 Version + changelog (S13) | `AboutFeature`; `MasterListManifest`; `assets/data/changelog.json` |
 | UC-20 Backup reminder (S16) | `BackupReminderFeature`; `SettingsRepository.lastExportDate`; `SoftWarningBanner` |
 | UC-21 Premium backup (deferred) | `PremiumRepository` stub interface; `S15` placeholder screen; archive format (UC-16) is the natural seed |
+| UC-22 Barcode scanning | BarcodeScanSheet; BarcodeProductLookupService; MasterProduct.barcodes; barcode_scan_sheet.dart |
+| Supabase remote content | RemoteCachedMasterContentRepositoryImpl; SupabaseMasterContentDataSource; supabase/migrations/ |
 | NFR-L1–L4 Hebrew RTL, bidi | `AppRoot` (locale + `TextDirection.rtl`); `BidiTextHelper`; `RoutineItemRow` bidi-safe names |
 | NFR-M1–M7 Data durability | Stable UUID IDs on all records; `lastModified` on all rows; Drift schema migrations; `ReconciliationService`; export archive versioning |
 | Design system (Radiant Dew) | `RadiantDewTheme`; `AppColors`; `AppTypography`; all screens consume tokens |

@@ -1129,6 +1129,15 @@ class AppLocalizationsHe extends AppLocalizations {
   String get barcodeScanFromScanLabel => 'מידע מהסריקה';
 
   @override
+  String get barcodeScanMasterProductFound => 'מוצר מוכר';
+
+  @override
+  String get barcodeScanAddToRoutine => 'הוסיפי לשגרה';
+
+  @override
+  String get barcodeScanAlreadyInRoutine => 'כבר בשגרה שלך';
+
+  @override
   String get homeViewWeek => 'השבוע';
 
   @override
@@ -1927,4 +1936,10 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get barcodeScanPermissionDenied => 'נדרשת הרשאת מצלמה לסריקת ברקודים';
+
+  @override
+  String get barcodeScanAddToRoutine => 'הוסף לשגרה';
+
+  @override
+  String get barcodeScanAlreadyInRoutine => 'כבר בשגרה שלך';
 }

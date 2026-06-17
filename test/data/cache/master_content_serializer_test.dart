@@ -205,6 +205,74 @@ void main() {
     });
   });
 
+  group('barcodes field', () {
+    test('parseProduct reads barcodes array into product.barcodes', () {
+      final json = {
+        'id': 'p5',
+        'brand': null,
+        'name': 'Rice Toner',
+        'imageAsset': null,
+        'comment': {'he': null, 'en': null},
+        'categoryId': 'cat-1',
+        'isDeprecated': false,
+        'addedInVersion': '1.0.0',
+        'morningConfig': null,
+        'eveningConfig': null,
+        'barcodes': ['8809968130239', '1234567890123'],
+      };
+      final product = MasterContentSerializer.parseProduct(json);
+      expect(product.barcodes, equals(['8809968130239', '1234567890123']));
+    });
+
+    test('parseProduct without barcodes field parses to empty list — '
+        'simulates stale cache that pre-dates the barcodes migration', () {
+      final json = {
+        'id': 'p6',
+        'brand': null,
+        'name': 'Rice Toner',
+        'imageAsset': null,
+        'comment': {'he': null, 'en': null},
+        'categoryId': 'cat-1',
+        'isDeprecated': false,
+        'addedInVersion': '1.0.0',
+        'morningConfig': null,
+        'eveningConfig': null,
+        // no 'barcodes' key — mimics old cached JSON
+      };
+      final product = MasterContentSerializer.parseProduct(json);
+      expect(product.barcodes, equals([]));
+      expect(product.barcodes, isA<List<String>>());
+    });
+
+    test('round-trips barcodes through toJson/fromCombinedJson', () {
+      final content = MasterContent(
+        products: [
+          const MasterProduct(
+            id: 'p7',
+            name: 'Rice Toner',
+            categoryId: 'cat-1',
+            isDeprecated: false,
+            addedInVersion: '1.0.0',
+            barcodes: ['8809968130239'],
+          ),
+        ],
+        categories: [
+          const Category(
+              id: 'cat-1', name: 'טונר', nameEn: 'Toner', order: 1),
+        ],
+        rules: [],
+        manifest: const MasterListManifest(
+          contentVersion: '1.0.0',
+          appVersion: '1.0.0',
+          changelog: [],
+        ),
+      );
+      final json = MasterContentSerializer.toJson(content);
+      final restored = MasterContentSerializer.fromCombinedJson(json);
+      expect(restored.products.first.barcodes, equals(['8809968130239']));
+    });
+  });
+
   group('MasterContent equality', () {
     test('two identical MasterContent instances are equal', () {
       final a = _makeContent(brand: 'X', morningFreq: const DailyRule());

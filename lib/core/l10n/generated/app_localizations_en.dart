@@ -1144,6 +1144,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get barcodeScanFromScanLabel => 'Info from barcode scan';
 
   @override
+  String get barcodeScanMasterProductFound => 'Recognized product';
+
+  @override
+  String get barcodeScanAddToRoutine => 'Add to Routine';
+
+  @override
+  String get barcodeScanAlreadyInRoutine => 'Already in your routine';
+
+  @override
   String get homeViewWeek => 'This Week';
 
   @override

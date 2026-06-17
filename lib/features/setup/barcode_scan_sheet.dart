@@ -1,19 +1,38 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:uuid/uuid.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../domain/entities/master_product.dart';
+import '../../domain/repositories/master_content_repository.dart';
+import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/scanned_product_info.dart';
+import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
+import '../../shared/widgets/product_thumb.dart';
 import 'add_custom_product_sheet.dart';
 
-enum _ScanState { scanning, lookingUp, productFound, productNotFound, permissionDenied }
+enum _ScanState {
+  scanning,
+  lookingUp,
+  productFound,
+  productNotFound,
+  permissionDenied,
+  masterProductFound,
+}
 
 class BarcodeScanSheet extends ConsumerStatefulWidget {
-  const BarcodeScanSheet({super.key});
+  const BarcodeScanSheet({
+    super.key,
+    @visibleForTesting this.testBarcodeToScan,
+  });
+
+  @visibleForTesting
+  final String? testBarcodeToScan;
 
   @override
   ConsumerState<BarcodeScanSheet> createState() => _BarcodeScanSheetState();
@@ -24,11 +43,19 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
   _ScanState _state = _ScanState.scanning;
   String? _scannedBarcode;
   ScannedProductInfo? _lookupResult;
+  MasterProduct? _matchedMasterProduct;
+  bool _matchedProductAlreadyInRoutine = false;
 
   @override
   void initState() {
     super.initState();
-    if (!kIsWeb) {
+    if (widget.testBarcodeToScan != null) {
+      _state = _ScanState.lookingUp;
+      _scannedBarcode = widget.testBarcodeToScan;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _performLookup(widget.testBarcodeToScan!),
+      );
+    } else if (!kIsWeb) {
       _controller = MobileScannerController(
         facing: CameraFacing.back,
         detectionSpeed: DetectionSpeed.normal,
@@ -38,7 +65,7 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
 
   @override
   void dispose() {
-    if (!kIsWeb) _controller.dispose();
+    if (!kIsWeb && widget.testBarcodeToScan == null) _controller.dispose();
     super.dispose();
   }
 
@@ -46,17 +73,62 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
     if (_state != _ScanState.scanning) return;
     final barcode = capture.barcodes.firstOrNull;
     if (barcode?.rawValue == null) return;
-    _controller.stop();
+    if (widget.testBarcodeToScan == null) _controller.stop();
     final code = barcode!.rawValue!;
     setState(() {
       _state = _ScanState.lookingUp;
       _scannedBarcode = code;
       _lookupResult = null;
+      _matchedMasterProduct = null;
     });
     _performLookup(code);
   }
 
   Future<void> _performLookup(String barcode) async {
+    MasterContent? content;
+    try {
+      content = await ref.read(masterContentProvider.future);
+    } catch (_) {
+      // If master content fails to load, fall through to external APIs
+    }
+
+    if (kDebugMode) {
+      if (content == null) {
+        debugPrint('[Barcode:$barcode] master content unavailable, skipping master check');
+      } else {
+        final withBarcodes = content.products.where((p) => p.barcodes.isNotEmpty).length;
+        final match = content.products
+            .where((p) => !p.isDeprecated && p.barcodes.contains(barcode))
+            .firstOrNull;
+        debugPrint('[Barcode:$barcode] master check: '
+            '${match != null ? "✓ matched ${match.id}" : "no match"} '
+            '($withBarcodes/${content.products.length} products have barcodes)');
+      }
+    }
+
+    if (content != null) {
+      final match = content.products
+          .where((p) => !p.isDeprecated && p.barcodes.contains(barcode))
+          .firstOrNull;
+      if (match != null) {
+        final repo = ref.read(userDataRepositoryProvider);
+        final morningList = await repo.watchSelections(Slot.morning).first;
+        final eveningList = await repo.watchSelections(Slot.evening).first;
+        final alreadyMorning = match.morningConfig == null ||
+            morningList.any((s) => s.productId == match.id && s.isSelected);
+        final alreadyEvening = match.eveningConfig == null ||
+            eveningList.any((s) => s.productId == match.id && s.isSelected);
+
+        if (!mounted) return;
+        setState(() {
+          _matchedMasterProduct = match;
+          _matchedProductAlreadyInRoutine = alreadyMorning && alreadyEvening;
+          _state = _ScanState.masterProductFound;
+        });
+        return;
+      }
+    }
+
     final service = ref.read(barcodeProductLookupServiceProvider);
     final result = await service.lookup(barcode);
     if (!mounted) return;
@@ -66,6 +138,39 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
           ? _ScanState.productFound
           : _ScanState.productNotFound;
     });
+  }
+
+  Future<void> _addMasterProduct(MasterProduct product) async {
+    final repo = ref.read(userDataRepositoryProvider);
+    final morningList = await repo.watchSelections(Slot.morning).first;
+    final eveningList = await repo.watchSelections(Slot.evening).first;
+
+    final alreadyMorning =
+        morningList.any((s) => s.productId == product.id && s.isSelected);
+    final alreadyEvening =
+        eveningList.any((s) => s.productId == product.id && s.isSelected);
+
+    const uuid = Uuid();
+    if (product.morningConfig != null && !alreadyMorning) {
+      await repo.upsertSelection(ProductSelection(
+        id: uuid.v4(),
+        productId: product.id,
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: DateTime.now(),
+      ));
+    }
+    if (product.eveningConfig != null && !alreadyEvening) {
+      await repo.upsertSelection(ProductSelection(
+        id: uuid.v4(),
+        productId: product.id,
+        slot: Slot.evening,
+        isSelected: true,
+        lastModified: DateTime.now(),
+      ));
+    }
+
+    if (mounted) Navigator.of(context).pop();
   }
 
   void _addProduct(BuildContext context) {
@@ -92,8 +197,10 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
     setState(() {
       _state = _ScanState.scanning;
       _lookupResult = null;
+      _matchedMasterProduct = null;
+      _matchedProductAlreadyInRoutine = false;
     });
-    _controller.start();
+    if (widget.testBarcodeToScan == null) _controller.start();
   }
 
   @override
@@ -150,6 +257,14 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
                 _ScanState.lookingUp => _LookingUpState(
                     barcode: _scannedBarcode ?? '',
                     l: l,
+                  ),
+                _ScanState.masterProductFound => _MasterProductFoundState(
+                    product: _matchedMasterProduct!,
+                    isAlreadyInRoutine: _matchedProductAlreadyInRoutine,
+                    l: l,
+                    onAddToRoutine: () =>
+                        _addMasterProduct(_matchedMasterProduct!),
+                    onScanAgain: _scanAgain,
                   ),
                 _ScanState.productFound => _ProductFoundState(
                     barcode: _scannedBarcode ?? '',
@@ -353,6 +468,233 @@ class _LookingUpState extends StatelessWidget {
           const SizedBox(height: 20),
           _BarcodeChip(barcode: barcode),
         ],
+      ),
+    );
+  }
+}
+
+// ── Master-product-found state ────────────────────────────────────────────────
+
+class _MasterProductFoundState extends StatelessWidget {
+  final MasterProduct product;
+  final bool isAlreadyInRoutine;
+  final AppLocalizations l;
+  final VoidCallback onAddToRoutine;
+  final VoidCallback onScanAgain;
+
+  const _MasterProductFoundState({
+    required this.product,
+    required this.isAlreadyInRoutine,
+    required this.l,
+    required this.onAddToRoutine,
+    required this.onScanAgain,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasMorning = product.morningConfig != null;
+    final hasEvening = product.eveningConfig != null;
+    final comment = product.comment ?? product.commentEn ?? '';
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.verified_rounded,
+                  color: Color(0xFFEDE282), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                l.barcodeScanMasterProductFound,
+                style: AppTypography.labelMd.copyWith(
+                  color: Color(0xFFEDE282),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withAlpha(25)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ProductThumb(imageAsset: product.imageAsset, size: 80),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (product.brand != null)
+                        Text(
+                          product.brand!,
+                          style: AppTypography.labelMd.copyWith(
+                            color: Colors.white54,
+                            fontSize: 12,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      Text(
+                        product.name,
+                        style: AppTypography.headlineMd.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      if (hasMorning || hasEvening) ...[
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          children: [
+                            if (hasMorning)
+                              _SlotChip(
+                                label: l.slotMorning,
+                                color: const Color(0xFFEDE282),
+                              ),
+                            if (hasEvening)
+                              _SlotChip(
+                                label: l.slotEvening,
+                                color: const Color(0xFFDE99A4),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (comment.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(7),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Text(
+                _truncate(comment, 180),
+                style: AppTypography.bodyMd.copyWith(
+                  color: Colors.white38,
+                  fontSize: 12,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
+          if (isAlreadyInRoutine)
+            Container(
+              width: double.infinity,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1B2E1B),
+                borderRadius: BorderRadius.circular(9999),
+                border: Border.all(color: const Color(0xFF4CAF50).withAlpha(80)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.check_circle_rounded,
+                      color: Color(0xFF81C784), size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    l.barcodeScanAlreadyInRoutine,
+                    style: AppTypography.labelMd.copyWith(
+                      color: const Color(0xFF81C784),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onAddToRoutine,
+                icon: const Icon(Icons.add_rounded, size: 20),
+                label: Text(
+                  l.barcodeScanAddToRoutine,
+                  style: AppTypography.labelMd.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  minimumSize: const Size(double.infinity, 54),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 14, horizontal: 24),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(height: 10),
+          Center(
+            child: TextButton(
+              onPressed: onScanAgain,
+              child: Text(
+                l.barcodeScanRetry,
+                style: AppTypography.labelMd.copyWith(
+                  color: Colors.white38,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _truncate(String text, int maxChars) {
+    if (text.length <= maxChars) return text;
+    return '${text.substring(0, maxChars)}…';
+  }
+}
+
+class _SlotChip extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _SlotChip({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(30),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withAlpha(80)),
+      ),
+      child: Text(
+        label,
+        style: AppTypography.labelMd.copyWith(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

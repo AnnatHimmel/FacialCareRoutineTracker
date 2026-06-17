@@ -311,5 +311,7 @@
   "barcodeScanLookingUp": "חיפוש מוצר אוטומטי יגיע בעדכון עתידי — הוסף ידנית לעת עתה",
   "barcodeScanAddManually": "הוסף ידנית",
   "barcodeScanRetry": "סריקה חוזרת",
-  "barcodeScanPermissionDenied": "נדרשת הרשאת מצלמה לסריקת ברקודים"
+  "barcodeScanPermissionDenied": "נדרשת הרשאת מצלמה לסריקת ברקודים",
+  "barcodeScanAddToRoutine": "הוסף לשגרה",
+  "barcodeScanAlreadyInRoutine": "כבר בשגרה שלך"
 }

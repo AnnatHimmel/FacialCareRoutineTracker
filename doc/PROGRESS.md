@@ -1,6 +1,6 @@
 # Progress Tracker
 Project: Skincare Routine Tracker
-Last Updated: 2026-05-27
+Last Updated: 2026-06-17
 
 ---
 
@@ -10,7 +10,7 @@ Last Updated: 2026-05-27
 |--------|-------|
 | Pending | 0 |
 | In Progress | 0 |
-| Completed | 35 |
+| Completed | 35 (Phase 1) + 8 (Phase 2) |
 | Blocked | 0 |
 
 ---
@@ -57,6 +57,45 @@ Last Updated: 2026-05-27
 
 ---
 
+## Phase 2 — Supabase Integration, Barcode Scanning & UI Redesign
+
+### Summary
+
+| Area | Deliverable | Date |
+|------|-------------|------|
+| Data layer | Supabase master-content pipeline | 2026-06-15 |
+| Domain model | `MasterProduct` extended with `brand`, `ingredients`, `barcodes` | 2026-06-15 |
+| Admin tooling | Node.js admin portal (`admin/`) for Supabase product management | 2026-06-15 |
+| Feature | Barcode scanning sheet with 5-API parallel lookup | 2026-06-15 |
+| Feature | Barcode-to-master-product matching; "Recognized product" UI | 2026-06-17 |
+| Feature | "Already in routine" detection on scan result | 2026-06-17 |
+| Data layer | Cache version guard in `RemoteCachedMasterContentRepositoryImpl` | 2026-06-17 |
+| UI | Pro look-and-feel redesign iteration (commit bd2f834) | 2026-06-17 |
+
+### Phase 2 Detail
+
+| Item | Description | Date |
+|------|-------------|------|
+| P2-001 | **Supabase integration** — master products table moved to Supabase. `RemoteCachedMasterContentRepositoryImpl` composes bundled fallback + SharedPrefs cache + Supabase remote refresh. `SupabaseMasterContentDataSource` calls a single RPC `get_master_content()`. `SharedPrefsMasterContentCache` handles local persistence. | 2026-06-15 |
+| P2-002 | **Extended `MasterProduct` entity** — added `brand: String?`, `ingredients: List<String>`, `barcodes: List<String>` fields. `MasterContentSerializer` and Supabase SQL migrations updated accordingly. `barcodes` field populated for 24 of 33 products in `master_products.json`. | 2026-06-15 / 2026-06-17 |
+| P2-003 | **Admin portal** — Node.js project under `admin/`. Scrapes product pages from YesStyle, OliveYoung, and iHerb and writes results to Supabase. Provides a management interface for the master products database. | 2026-06-15 |
+| P2-004 | **Barcode scanning** — `BarcodeScanSheet` bottom sheet wired to 5 external lookup APIs (OpenBeautyFacts, OpenFoodFacts, UPCItemDB, InciBeauty, BarcodeSpider) running in parallel; results merged by priority. | 2026-06-15 |
+| P2-005 | **Barcode-to-master-product matching** — `_performLookup` checks master products first (by `barcodes` field) before calling external APIs. Matched products surface a "Recognized product" UI chip with a one-tap "Add to Routine" action. | 2026-06-17 |
+| P2-006 | **"Already in routine" detection** — when the scanned product is already assigned to all applicable slots, the scan result shows an "Already in your routine" badge in place of the add button. | 2026-06-17 |
+| P2-007 | **Cache version guard** — `RemoteCachedMasterContentRepositoryImpl.load()` compares `contentVersion` between the cached (SharedPrefs) copy and the bundled asset; discards stale cache when the bundled version is newer. `changelog.json` bumped to `1.0.1`. | 2026-06-17 |
+| P2-008 | **UI redesign** — "pro look and feel" iteration across app screens. Refines Radiant Dew design language for a more polished appearance. | 2026-06-17 |
+
+### Phase 2 Test Growth
+
+| Milestone | Test Count |
+|-----------|------------|
+| End of Phase 1 (2026-05-27) | 24 |
+| End of Phase 2 (2026-06-17) | 385 |
+
+New test suites added: serializer tests, barcode lookup service tests, `BarcodeScanSheet` widget tests, `RemoteCachedMasterContentRepositoryImpl` tests.
+
+---
+
 ## Current Blockers
 
 None.
@@ -66,12 +105,15 @@ None.
 ## Recent Activity
 
 - 2026-05-26: Work plan created. 35 tasks across 10 phases defined.
-- 2026-05-27: All 35 tasks completed. 0 flutter analyze issues. 24/24 tests passing.
+- 2026-05-27: All 35 Phase 1 tasks completed. 0 flutter analyze issues. 24/24 tests passing.
+- 2026-06-15: Phase 2 begun. Supabase integration, extended domain model, admin portal, barcode scanning.
+- 2026-06-17: Barcode-to-master-product matching, "Already in routine" detection, cache version guard, UI redesign. Test count grew from 24 to 385.
 
 ---
 
 ## Final Verification
 
 - `flutter analyze`: **0 issues**
-- `flutter test`: **24/24 passing**
-- All 35 WORKPLAN.md tasks: **Completed**
+- `flutter test`: **385/385 passing**
+- All 35 Phase 1 WORKPLAN.md tasks: **Completed**
+- All 8 Phase 2 items: **Completed**

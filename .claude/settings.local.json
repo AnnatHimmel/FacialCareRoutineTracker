@@ -23,5 +23,9 @@
     "additionalDirectories": [
       "C:\\Workspace\\FacialCareRoutineTracker\\.claude\\skills\\Debug"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enableAllProjectMcpServers": true
 }

@@ -23,14 +23,43 @@ class RemoteCachedMasterContentRepositoryImpl
   @override
   Future<MasterContent> load() async {
     if (_inMemory != null) return _inMemory!;
+
+    // Always load bundled first so we can compare contentVersions.
+    // MasterContentRepositoryImpl caches its result in-memory, so this is
+    // only expensive on the very first call.
+    final bundled = await _bundled.load();
+
     final cached = await _cache.read();
     if (cached != null) {
-      _inMemory = cached;
-      return cached;
+      if (_compareVersions(
+              cached.manifest.contentVersion,
+              bundled.manifest.contentVersion) >=
+          0) {
+        // Cache is at least as new as the bundled asset — use it.
+        _inMemory = cached;
+        return cached;
+      }
+      // Bundled asset is newer (e.g. a new app release added fields like
+      // barcodes). Discard the stale cache so next launch also uses bundled.
+      await _cache.clear();
     }
-    final bundled = await _bundled.load();
+
     _inMemory = bundled;
     return bundled;
+  }
+
+  /// Compares two semantic version strings (major.minor.patch).
+  /// Returns negative if [a] < [b], 0 if equal, positive if [a] > [b].
+  /// Non-numeric segments compare as 0 so arbitrary strings are treated equal.
+  static int _compareVersions(String a, String b) {
+    final aParts = a.split('.');
+    final bParts = b.split('.');
+    for (var i = 0; i < 3; i++) {
+      final av = int.tryParse(aParts.elementAtOrNull(i) ?? '') ?? 0;
+      final bv = int.tryParse(bParts.elementAtOrNull(i) ?? '') ?? 0;
+      if (av != bv) return av - bv;
+    }
+    return 0;
   }
 
   @override

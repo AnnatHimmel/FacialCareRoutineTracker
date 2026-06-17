@@ -10,42 +10,63 @@ Compound knowledge flywheel. Captures patterns, gotchas, and verified solutions 
 
 *(Populated during execution — add entries here as tasks complete.)*
 
-### Flutter / Drift
+### Flutter / Dart
 
-#### LEARN-001: Template — Drift DAO Reactive Pattern
-**Discovered**: [Date] during TASK-XXX
-**Pattern**: [What was learned]
+#### LEARN-001: Always `await ref.read(provider.future)` for FutureProviders — Never `.valueOrNull`
+**Discovered**: 2026-06-17 during barcode master-product matching
+**Pattern**: When reading a `FutureProvider<T>` inside an async method, use `await ref.read(provider.future)` — NOT `ref.read(provider).valueOrNull`. The `.valueOrNull` shorthand returns `null` if the provider hasn't resolved yet (it's in `AsyncLoading` state), which silently skips logic that depends on the data. `await ...future` correctly waits for resolution.
 **Example**:
 ```dart
-// Pattern to add here after TASK-008
+// ❌ WRONG — returns null if provider is still loading
+final content = ref.read(masterContentProvider).valueOrNull;
+
+// ✅ CORRECT — waits for the async provider to resolve
+MasterContent? content;
+try {
+  content = await ref.read(masterContentProvider.future);
+} catch (_) {}
 ```
-**Apply When**: Any time a screen needs live-updating data from a Drift table.
+**Apply When**: Any async method (e.g., `_performLookup`, `_addProduct`) that needs data from a `FutureProvider`. Use `.valueOrNull` ONLY for synchronous reads where null is the intended fallback.
+
+---
+
+#### LEARN-002: Cache Version Guard — Bundled Asset as Floor for Cached Content
+**Discovered**: 2026-06-17 during barcode field rollout
+**Pattern**: When a `SharedPreferences` cache exists for bundled content that evolves across releases, always compare the cached `contentVersion` with the bundled `contentVersion`. If the bundled version is newer, discard the stale cache. The bundled asset is the floor; a Supabase refresh can push above the floor.
+**Example**:
+```dart
+// In RemoteCachedMasterContentRepositoryImpl.load():
+final bundled = await _bundled.load();  // fast — MasterContentRepositoryImpl caches in-memory
+final cached = await _cache.read();
+if (cached != null && _compareVersions(cached.manifest.contentVersion,
+    bundled.manifest.contentVersion) >= 0) {
+  _inMemory = cached;
+  return cached;  // cache is at least as new as bundled — use it
+}
+await _cache.clear();  // stale cache — discard
+_inMemory = bundled;
+return bundled;
+```
+**Apply When**: Any time bundled content gains new fields across app releases and a cache may exist from a prior release. Version-guard the cache instead of assuming it is always current.
 
 ---
 
 ### RTL / BiDi
 
-#### LEARN-002: Template — BiDi Product Name Handling
-**Discovered**: [Date] during TASK-019
-**Pattern**: [What was learned about Hebrew+Latin bidi rendering]
-**Example**:
-```dart
-// Pattern to add here after TASK-019
-```
-**Apply When**: Rendering any product name or category name in a Flutter widget.
+#### LEARN-002b: Hot Restart vs. Bundled Asset Changes
+**Discovered**: 2026-06-17 during barcode field debugging
+**Pattern**: `flutter hot restart` reloads Dart code but does NOT rebundle assets (JSON files in `assets/`). If you update a JSON asset (e.g., add the `barcodes` field to `master_products.json`), you must do a full `flutter run` (cold start) for the asset change to take effect. Hot restart will continue loading the old asset bytes.
+**Symptoms**: Debug print shows `0/33 products have barcodes` after editing the JSON and hot restarting — the JSON was not re-read from disk.
+**Apply When**: Debugging any behavior that depends on bundled JSON asset content.
 
 ---
 
 ### Riverpod
 
-#### LEARN-003: Template — Family Provider with Drift Stream
-**Discovered**: [Date] during TASK-018
-**Pattern**: [How to combine Drift stream + master content + selections into a family StreamProvider]
-**Example**:
-```dart
-// Pattern to add here after TASK-018
-```
-**Apply When**: Any per-day or per-slot derived data stream.
+#### LEARN-003: RemoteCachedMasterContentRepositoryImpl Load Order
+**Discovered**: 2026-06-15 during Supabase integration
+**Pattern**: The three-tier content loading chain (in-memory → SharedPrefs cache → bundled JSON → Supabase background refresh) must be implemented so that the UI is never blocked waiting for network. Supabase refresh runs in background AFTER the first `load()` returns; it writes to cache and updates `_inMemory`. The next app launch will find the Supabase-fetched content in the cache. This means a cold launch on first install always uses bundled JSON; subsequent launches use cached (potentially Supabase-fresh) content.
+**Apply When**: Any feature that reads from `masterContentProvider` — understand that on first install, content comes from the bundle, not Supabase.
 
 ---
 
@@ -53,27 +74,27 @@ Compound knowledge flywheel. Captures patterns, gotchas, and verified solutions 
 
 *(Populated during execution — add entries here as issues are encountered.)*
 
-### GOTCHA-001: Template — sqlite3 WASM Initialization Timing
-**Discovered**: [Date] during TASK-007 or TASK-035
-**Problem**: [Description of any timing or WASM loading issue]
-**Solution**: [How it was resolved]
-**Symptoms**: [What error or behavior indicates this issue]
+### GOTCHA-001: SharedPreferences Cache Returns Stale Content After Field Migration
+**Discovered**: 2026-06-17 during barcode field rollout
+**Problem**: After adding `barcodes: List<String>` to `MasterProduct` and populating the bundled JSON, the debug output showed `0/33 products have barcodes`. The cache in SharedPreferences was written before the `barcodes` field existed, so all products deserialized with `barcodes: []`.
+**Solution**: Added a `contentVersion` comparison in `RemoteCachedMasterContentRepositoryImpl.load()`. Bumped `contentVersion` in `changelog.json` from `1.0.0` to `1.0.1`. On next cold start, the cache was detected as stale and cleared. See LEARN-002.
+**Symptoms**: Debug print `[Barcode:X] master check: no match (0/N products have barcodes)` despite the JSON having barcodes populated.
 
 ---
 
-### GOTCHA-002: Template — iOS Safari IndexedDB Quota
-**Discovered**: [Date] during TASK-034
-**Problem**: [Description of storage quota behavior]
-**Solution**: [Workaround or handling]
-**Symptoms**: [What error surfaces]
+### GOTCHA-002: `await ref.read(masterContentProvider.future)` Completes Before Camera Log Lines
+**Discovered**: 2026-06-17 during barcode scan debugging
+**Problem**: When debugging the master check, the `[Barcode:X] master check:` print was not visible in the log near the camera close events. It appeared to be missing. Conclusion was that the master check was being skipped.
+**Solution**: `masterContentProvider` is already loaded in memory after app start, so `await ...future` returns almost instantly (the future is already complete). The debug print fires BEFORE the camera close messages arrive in logcat (those are async Android system events). Scroll UP in the log past the camera messages to find the Flutter debug output. It was there all along.
+**Symptoms**: Searching for `master check:` near camera log lines fails — look earlier in the log.
 
 ---
 
-### GOTCHA-003: Template — RTL ReorderableListView Drag Handle Position
-**Discovered**: [Date] during TASK-023
-**Problem**: [Any drag handle rendering issues in RTL]
-**Solution**: [Fix applied]
-**Symptoms**: [What the symptom looks like]
+### GOTCHA-003: Barcode Scan `_onDetect` Fires Multiple Times
+**Discovered**: 2026-06-17
+**Problem**: `MobileScannerController` can fire `_onDetect` multiple times for the same barcode before the first call completes. Without a guard, `_performLookup` would be called multiple times concurrently.
+**Solution**: Check `if (_state != _ScanState.scanning) return;` at the top of `_onDetect` and call `_controller.stop()` immediately on the first detection. The state change gates subsequent calls.
+**Symptoms**: Multiple external API calls fired in logs for a single scan.
 
 ---
 

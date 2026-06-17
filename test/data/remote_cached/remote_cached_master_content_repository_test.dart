@@ -101,8 +101,10 @@ void main() {
         cache: cache,
       );
 
+      // bundled is always loaded once for the version comparison; the result
+      // still comes from the cache when versions are compatible.
       expect(await repo.load(), equals(cached));
-      expect(bundledRepo.loadCount, 0);
+      expect(bundledRepo.loadCount, 1);
     });
 
     test('second load call returns in-memory result without re-reading cache',
@@ -184,6 +186,63 @@ void main() {
       await (repo as RefreshableRepository).refresh();
 
       expect(await repo.load(), equals(fresh));
+    });
+
+    test(
+        'load with stale cache (older contentVersion than bundled) discards cache '
+        'and returns bundled — covers barcode/ingredient field additions between releases',
+        () async {
+      final bundled = _content('1.0.1'); // bundled has new barcodes field
+      final stale = _content('1.0.0'); // cache pre-dates barcodes
+      final cache = SharedPrefsMasterContentCache();
+      await cache.write(stale);
+
+      final repo = RemoteCachedMasterContentRepositoryImpl(
+        bundled: _FakeBundled(bundled),
+        remote: _FakeDataSource(response: _content('remote')),
+        cache: cache,
+      );
+
+      final result = await repo.load();
+      expect(result, equals(bundled),
+          reason: 'should use bundled when it is newer than the cache');
+      expect(await cache.read(), isNull,
+          reason: 'stale cache should be cleared so next launch also uses bundled');
+    });
+
+    test(
+        'load with cache at same version as bundled uses cache '
+        '(normal fast-path when nothing has changed)',
+        () async {
+      final bundled = _content('1.0.1');
+      final cached = _content('1.0.1'); // same version
+      final cache = SharedPrefsMasterContentCache();
+      await cache.write(cached);
+
+      final repo = RemoteCachedMasterContentRepositoryImpl(
+        bundled: _FakeBundled(bundled),
+        remote: _FakeDataSource(response: _content('remote')),
+        cache: cache,
+      );
+
+      expect(await repo.load(), equals(cached));
+    });
+
+    test(
+        'load with cache newer than bundled (Supabase-fetched) uses cache',
+        () async {
+      final bundled = _content('1.0.1');
+      final fromSupabase = _content('1.0.2'); // Supabase pushed a newer version
+      final cache = SharedPrefsMasterContentCache();
+      await cache.write(fromSupabase);
+
+      final repo = RemoteCachedMasterContentRepositoryImpl(
+        bundled: _FakeBundled(bundled),
+        remote: _FakeDataSource(response: _content('remote')),
+        cache: cache,
+      );
+
+      expect(await repo.load(), equals(fromSupabase));
     });
   });
 }

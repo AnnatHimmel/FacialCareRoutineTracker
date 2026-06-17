@@ -1,7 +1,11 @@
 {
   "appVersion": "1.0.0",
-  "contentVersion": "1.0.0",
+  "contentVersion": "1.0.1",
   "changelog": [
+    {
+      "contentVersion": "1.0.1",
+      "changes": ["Added barcode data for 24 products"]
+    },
     {
       "contentVersion": "1.0.0",
       "changes": ["First Version"]

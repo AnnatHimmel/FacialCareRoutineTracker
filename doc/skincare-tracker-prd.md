@@ -51,7 +51,7 @@ There is one shared master list for all users in v1.0. In the free product each 
 - Per-user tailored master lists (one shared master only).
 - User-authored products or user editing of master content.
 - Reminders or notifications.
-- Barcode scanning, ingredient analysis, product database lookup.
+- ~~Barcode scanning, ingredient analysis, product database lookup.~~ *(Implemented post-v1.0 — see UC-22)*
 - Product expiry / open-date tracking.
 - Hard enforcement of frequency limits (soft warnings only).
 - Multiple user profiles on a single device.
@@ -198,6 +198,20 @@ There is one shared master list for all users in v1.0. In the free product each 
 - **Alternate flows:**
   - *Conflicts re-evaluated:* any change re-runs incompatibility checking (UC-4b); newly created conflicts are surfaced, and a previously muted conflict that no longer exists is cleared.
 - **Postcondition:** Updated personalization applies to current and future days; past day records are unaffected.
+
+### UC-22 — Scan a barcode to identify a product *(post-v1.0)*
+- **Actor:** User (Android only)
+- **Goal:** Identify a product by scanning its packaging barcode instead of manually searching.
+- **Preconditions:** Camera permission granted; app running on Android.
+- **Main flow:**
+  1. User opens the barcode scanner from the product selection screen.
+  2. System captures the barcode value.
+  3. System checks the master product list for a matching barcode. If found: shows the recognized master product with its name, brand, slots, and admin comment; user taps "Add to Routine" to add it to all applicable slots in one tap. If the product is already in all applicable slots, shows "Already in your routine" — no action needed.
+  4. If no master match: System queries 5 external databases in parallel (OpenBeautyFacts, OpenFoodFacts, UPCItemDB, InciBeauty, BarcodeSpider), merges results, and pre-fills the Add Custom Product sheet with name, brand, and ingredients. User completes any remaining fields and saves.
+  5. If no match anywhere: user proceeds to manual entry via Add Custom Product.
+- **Alternate flows:**
+  - *Web:* barcode scanner is not available; FAB is hidden on the Web build.
+- **Postcondition:** Product is added to the user's routine (master product) or custom product list (external/unknown).
 
 ---
 
@@ -428,6 +442,7 @@ There is one shared master list for all users in v1.0. In the free product each 
 
 ## 13. Future Considerations (post-v1.0)
 
+- ~~**Barcode scanning** (UC-22)~~ — Implemented. Camera-based barcode scan; checks master product list first (by barcode field), then queries 5 external APIs in parallel (OpenBeautyFacts, OpenFoodFacts, UPCItemDB, InciBeauty, BarcodeSpider). Master matches show "Recognized product" UI with one-tap add; external matches pre-fill the Add Custom Product sheet.
 - **Premium cloud backup & restore for Web users (UC-21)** — the primary planned post-v1.0 capability. Live multi-device sync remains out of scope.
 - In-app or backend-fed master-list updates.
 - Per-user or per-skin-type tailored master lists.

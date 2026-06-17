@@ -17,6 +17,15 @@ Persists architectural and implementation decisions across task contexts. Each a
 **Future APIs**: EAN-Search.org, Go-UPC.com (require keys), Barcode Monster (free, limited) — service is designed for extension.
 **Affects Files**: `pubspec.yaml`, `scanned_product_info.dart` (new), `barcode_lookup_service.dart` (new), `barcode_scan_sheet.dart`, `add_custom_product_sheet.dart`, `root_providers.dart`, ARB l10n files.
 
+**Updated 2026-06-17:** Implementation was extended to 5 APIs total (OpenBeautyFacts, OpenFoodFacts, UPCItemDB, InciBeauty, BarcodeSpider). Master-product matching was also added — see DEC-015 for the full lookup strategy.
+
+### MOD-DEC-BAR-002: Cache Version Guard for Master Content
+**Date**: 2026-06-17
+**Request**: After adding `barcodes` to `master_products.json` and bumping `contentVersion` to `1.0.1`, existing devices still returned 0/33 products with barcodes because `RemoteCachedMasterContentRepositoryImpl.load()` always preferred the SharedPreferences cache over the bundled asset with no version check.
+**Decision**: `load()` always loads the bundled asset first (fast — `MasterContentRepositoryImpl` caches the result in-memory), then reads the cache. If the cached `contentVersion` is older than the bundled version (per semantic version comparison), the cache is cleared and the bundled content is used. If the cache is same or newer (Supabase may have pushed a newer version), the cache wins.
+**Rationale**: A new app release may add fields to master products (barcodes, ingredients). Without a version guard, users with a cached version from before the field was added would never see the new data until Supabase refreshed. The bundled asset is always the floor; Supabase refresh can push above the floor.
+**Affects Files**: `remote_cached_master_content_repository_impl.dart`, `assets/data/changelog.json` (contentVersion `1.0.0` → `1.0.1`), `remote_cached_master_content_repository_test.dart`.
+
 ### MOD-DEC-SUP-001: Supabase Remote Product Database
 **Date**: 2026-06-15
 **Request**: Replace bundled JSON master product list with live Supabase (PostgreSQL + Storage) data source, fetched on S1 entry and cached locally. Product `name` field split into `brand` + `name`.
@@ -173,9 +182,10 @@ Persists architectural and implementation decisions across task contexts. Each a
 **Rationale**: A persistent tab gives users immediate access to product management without re-entering the setup flow. The same `_SelectRow` component works in both modes, keeping the implementation DRY.
 **Alternatives Rejected**: Single wizard-only entry from Settings (poor discoverability); separate screen with duplicate widget code (unnecessary duplication).
 
-#### DEC-015: Barcode Scanning — Product Lookup Deferred
-**Date**: 2026-06-15
-**Context**: Admin requested barcode scanning so users can scan a product packaging barcode instead of typing the name. Actual product lookup (querying external databases like Open Food Facts, OliveYoung, etc.) requires API integration work not yet scoped.
-**Decision**: Ship the camera UI (`BarcodeScanSheet`) now: captures the barcode value, displays it, but falls through to the manual Add Custom Product flow. Product lookup is a TBD stub — the "looking up…" info card explicitly tells the user it's coming in a future update. `mobile_scanner ^5.2.3` is used for camera access. The FAB is hidden on Web (`kIsWeb` guard); requires `CAMERA` permission on Android.
-**Rationale**: Delivering the UI now reduces the future diff to wiring a lookup API call into `_onDetect`. The permission and package are already in place. Not shipping a half-working lookup avoids confusing users.
-**Alternatives Rejected**: Waiting until lookup is implemented (delays the UI; harder to test the camera flow in isolation); implementing a lookup immediately (scope creep; external API dependencies not yet evaluated).
+#### DEC-015: Barcode Scanning — Master-First Lookup with External API Fallback
+**Date**: 2026-06-17 (updated from original 2026-06-15)
+**Context**: Original decision deferred product lookup. Lookup has now been implemented.
+**Decision**: `_performLookup` in `BarcodeScanSheet` checks master products first (by the new `MasterProduct.barcodes` field), then falls through to 5 external APIs only if no master match. External APIs run in parallel via `Future.wait`; results merged by priority (OBF > OFF > UPC > InciBeauty > BarcodeSpider). `masterContentProvider` is awaited via `await ref.read(masterContentProvider.future)` (NOT `.valueOrNull`) to ensure the async provider resolves before the check runs. When a master product is matched: "Recognized product" UI shown with slot chips and one-tap "Add to Routine"; if the product is already in all applicable slots, "Already in your routine" badge is shown instead. When no master match: external API result pre-fills `AddCustomProductSheet`.
+**Rationale**: Master-first avoids unnecessary external API calls for known products and gives a higher-quality result (correct name, correct slots, admin-curated). External APIs remain as fallback for products not yet in the master list.
+**Key gotcha**: Using `.valueOrNull` instead of `await ...future` returns null when the FutureProvider hasn't resolved yet, causing the master check to be silently skipped. Always await the future.
+**Affects Files**: `barcode_scan_sheet.dart`, `master_product.dart`, `master_content_serializer.dart`, `assets/data/master_products.json`, l10n ARBs.

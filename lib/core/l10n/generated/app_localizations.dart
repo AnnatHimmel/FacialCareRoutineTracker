@@ -2133,6 +2133,24 @@ abstract class AppLocalizations {
   /// **'מידע מהסריקה'**
   String get barcodeScanFromScanLabel;
 
+  /// No description provided for @barcodeScanMasterProductFound.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצר מוכר'**
+  String get barcodeScanMasterProductFound;
+
+  /// No description provided for @barcodeScanAddToRoutine.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסיפי לשגרה'**
+  String get barcodeScanAddToRoutine;
+
+  /// No description provided for @barcodeScanAlreadyInRoutine.
+  ///
+  /// In he, this message translates to:
+  /// **'כבר בשגרה שלך'**
+  String get barcodeScanAlreadyInRoutine;
+
   /// No description provided for @homeViewWeek.
   ///
   /// In he, this message translates to:

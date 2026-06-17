@@ -63,6 +63,7 @@ class MasterProduct {
   final bool isDeprecated;
   final String addedInVersion;
   final List<String> ingredients;
+  final List<String> barcodes;
 
   const MasterProduct({
     required this.id,
@@ -77,6 +78,7 @@ class MasterProduct {
     required this.isDeprecated,
     required this.addedInVersion,
     this.ingredients = const [],
+    this.barcodes = const [],
   });
 
   SlotConfig? configForSlot(Slot slot) =>
@@ -108,6 +110,14 @@ class MasterProduct {
         return false;
       }
     }
+    if (other.barcodes.length != barcodes.length) {
+      return false;
+    }
+    for (var i = 0; i < barcodes.length; i++) {
+      if (other.barcodes[i] != barcodes[i]) {
+        return false;
+      }
+    }
     return true;
   }
 
@@ -128,6 +138,7 @@ class MasterProduct {
         isDeprecated,
         addedInVersion,
         Object.hashAll(ingredients),
+        Object.hashAll(barcodes),
       );
 
   MasterProduct copyWith({
@@ -143,6 +154,7 @@ class MasterProduct {
     bool? isDeprecated,
     String? addedInVersion,
     List<String>? ingredients,
+    List<String>? barcodes,
   }) =>
       MasterProduct(
         id: id ?? this.id,
@@ -157,6 +169,7 @@ class MasterProduct {
         isDeprecated: isDeprecated ?? this.isDeprecated,
         addedInVersion: addedInVersion ?? this.addedInVersion,
         ingredients: ingredients ?? this.ingredients,
+        barcodes: barcodes ?? this.barcodes,
       );
 }
 
