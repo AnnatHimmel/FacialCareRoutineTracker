@@ -74,7 +74,7 @@ class StreakWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 20, 16),
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 14, 20, 10),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -114,7 +114,7 @@ class StreakWidget extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(
                               l.streakDaysInRow,
                               style: AppTypography.labelSm.copyWith(
@@ -136,17 +136,20 @@ class StreakWidget extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            headline,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTypography.labelSm.copyWith(
-                              color: _white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text(
+                              headline,
+                              maxLines: 1,
+                              style: AppTypography.labelSm.copyWith(
+                                color: _white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           Text(
                             subtext,
                             maxLines: 1,
@@ -168,7 +171,7 @@ class StreakWidget extends StatelessWidget {
               else ...[
                 Container(height: 1, color: Colors.white.withAlpha(51)),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
                   child: _GraceMeter(total: gracesTotal, left: gracesLeft),
                 ),
               ],

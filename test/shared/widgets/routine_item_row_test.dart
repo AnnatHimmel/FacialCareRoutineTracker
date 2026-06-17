@@ -185,5 +185,50 @@ void main() {
 
       expect(find.text('בוקר בלבד'), findsOneWidget);
     });
+
+    testWidgets('isHintTarget: true + not done → shows touch_app hint badge',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        RoutineItemRow(
+          product: _product(),
+          isToggled: false,
+          onToggle: () {},
+          isHintTarget: true,
+        ),
+      ));
+      await tester.pump();
+
+      expect(find.byIcon(Icons.touch_app_rounded), findsOneWidget);
+    });
+
+    testWidgets(
+        'isHintTarget: true + done (isToggled: true) → no hint badge',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        RoutineItemRow(
+          product: _product(),
+          isToggled: true,
+          onToggle: () {},
+          isHintTarget: true,
+        ),
+      ));
+      await tester.pump();
+
+      expect(find.byIcon(Icons.touch_app_rounded), findsNothing);
+    });
+
+    testWidgets('isHintTarget: false → no hint badge', (tester) async {
+      await tester.pumpWidget(_wrap(
+        RoutineItemRow(
+          product: _product(),
+          isToggled: false,
+          onToggle: () {},
+          isHintTarget: false,
+        ),
+      ));
+      await tester.pump();
+
+      expect(find.byIcon(Icons.touch_app_rounded), findsNothing);
+    });
   });
 }

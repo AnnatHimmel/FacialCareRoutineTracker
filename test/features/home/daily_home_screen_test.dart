@@ -25,6 +25,9 @@ import 'package:skincare_tracker/shared/providers/root_providers.dart';
 // ── Fakes ─────────────────────────────────────────────────────────────────────
 
 class _FakeSettings implements SettingsRepository {
+  final bool tapHintSeen;
+  _FakeSettings({this.tapHintSeen = true});
+
   @override Future<String?> getLastExportDate() async => null;
   @override Future<void> setLastExportDate(String d) async {}
   @override Future<String?> getLastKnownMasterVersion() async => null;
@@ -46,6 +49,8 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setRoutineShowNames(bool v) async {}
   @override Future<String> getAppLanguage() async => 'he';
   @override Future<void> setAppLanguage(String code) async {}
+  @override Future<bool> getTapHintSeen() async => tapHintSeen;
+  @override Future<void> setTapHintSeen(bool value) async {}
 }
 
 class _FakeMCR implements MasterContentRepository {
@@ -330,23 +335,6 @@ void main() {
         expect(find.text('שמות'), findsOneWidget);
       });
 
-      testWidgets('helper text changes in images mode', (tester) async {
-        final udr = _FakeUDR(
-          morningSelections: [_sel('pm1', Slot.morning)],
-          morningRecord: _dayRecord(recorded: []),
-        );
-        await tester.pumpWidget(_wrap(master: _master, udr: udr));
-        await tester.pumpAndSettle();
-
-        expect(find.text('הקש על מוצר לסימון בוצע'), findsOneWidget);
-
-        await tester.tap(find.text('תמונות'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('הקש על התמונה לסימון בוצע'), findsOneWidget);
-        expect(find.text('הקש על מוצר לסימון בוצע'), findsNothing);
-      });
-
       testWidgets('tapping grid tile in images mode calls updateDayRecord',
           (tester) async {
         final udr = _FakeUDR(
@@ -384,6 +372,84 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('קרם בוקר'), findsOneWidget);
+      });
+    });
+
+    group('tap-hint', () {
+      testWidgets('hint icon visible on first undone morning item when hintSeen=false',
+          (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+        );
+        await tester.pumpWidget(_wrap(
+          master: _master,
+          udr: udr,
+          settings: _FakeSettings(tapHintSeen: false),
+        ));
+        // pumpAndSettle cannot be used here — _PingOverlay runs an infinite
+        // AnimationController.repeat(). Two pumps suffice: the first lets
+        // _loadViewPrefs complete (all awaits are on already-completed fakes),
+        // the second processes the setState rebuild.
+        await tester.pump();
+        await tester.pump();
+
+        expect(find.byIcon(Icons.touch_app_rounded), findsOneWidget);
+      });
+
+      testWidgets('no hint icon when hintSeen=true', (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+        );
+        await tester.pumpWidget(_wrap(
+          master: _master,
+          udr: udr,
+          settings: _FakeSettings(tapHintSeen: true),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.touch_app_rounded), findsNothing);
+      });
+
+      testWidgets('no hint icon when morning item is already done',
+          (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: ['pm1']),
+        );
+        await tester.pumpWidget(_wrap(
+          master: _master,
+          udr: udr,
+          settings: _FakeSettings(tapHintSeen: false),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.touch_app_rounded), findsNothing);
+      });
+
+      testWidgets('hint dismisses after tapping any item', (tester) async {
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+        );
+        await tester.pumpWidget(_wrap(
+          master: _master,
+          udr: udr,
+          settings: _FakeSettings(tapHintSeen: false),
+        ));
+        // Two pumps: first lets _loadViewPrefs complete, second processes rebuild.
+        await tester.pump();
+        await tester.pump();
+
+        // Hint is visible before tap
+        expect(find.byIcon(Icons.touch_app_rounded), findsOneWidget);
+
+        await tester.tap(find.text('קרם בוקר').first);
+        await tester.pump();
+        await tester.pump();
+
+        expect(find.byIcon(Icons.touch_app_rounded), findsNothing);
       });
     });
   });

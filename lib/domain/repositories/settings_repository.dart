@@ -29,4 +29,7 @@ abstract class SettingsRepository {
 
   Future<String> getAppLanguage();
   Future<void> setAppLanguage(String languageCode);
+
+  Future<bool> getTapHintSeen();
+  Future<void> setTapHintSeen(bool value);
 }

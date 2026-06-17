@@ -12,6 +12,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyRoutineViewMode = 'routine_view_mode';
   static const _keyRoutineShowNames = 'routine_show_names';
   static const _keyAppLanguage = 'app_language';
+  static const _keyTapHintSeen = 'hp_tapHintSeen';
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
@@ -102,4 +103,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<void> setAppLanguage(String languageCode) async =>
       (await _prefs).setString(_keyAppLanguage, languageCode);
+
+  @override
+  Future<bool> getTapHintSeen() async =>
+      (await _prefs).getBool(_keyTapHintSeen) ?? false;
+
+  @override
+  Future<void> setTapHintSeen(bool value) async =>
+      (await _prefs).setBool(_keyTapHintSeen, value);
 }

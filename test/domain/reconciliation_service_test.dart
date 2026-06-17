@@ -49,6 +49,8 @@ class FakeSettingsRepo implements SettingsRepository {
   @override Future<void> setRoutineShowNames(bool v) async {}
   @override Future<String> getAppLanguage() async => 'he';
   @override Future<void> setAppLanguage(String code) async {}
+  @override Future<bool> getTapHintSeen() async => false;
+  @override Future<void> setTapHintSeen(bool value) async {}
 }
 
 class FakeUserRepo implements UserDataRepository {

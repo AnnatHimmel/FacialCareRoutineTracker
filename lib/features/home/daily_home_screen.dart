@@ -39,6 +39,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
 
   _ViewMode _viewMode = _ViewMode.list;
   bool _showNames = false;
+  bool _tapHintSeen = true; // default true to avoid flash before prefs load
 
   final Set<String> _snapshotted = {};
   String _lastDateStr = '';
@@ -78,10 +79,12 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     final settings = ref.read(settingsRepositoryProvider);
     final mode = await settings.getRoutineViewMode();
     final names = await settings.getRoutineShowNames();
+    final hintSeen = await settings.getTapHintSeen();
     if (mounted) {
       setState(() {
         _viewMode = mode == 'images' ? _ViewMode.images : _ViewMode.list;
         _showNames = names;
+        _tapHintSeen = hintSeen;
       });
     }
   }
@@ -127,6 +130,10 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
   }
 
   Future<void> _toggleProduct(DayRecord record, String productId) async {
+    if (!_tapHintSeen) {
+      setState(() => _tapHintSeen = true);
+      ref.read(settingsRepositoryProvider).setTapHintSeen(true);
+    }
     final repo = ref.read(userDataRepositoryProvider);
     final recorded = List<String>.from(record.recordedProductIds);
     if (recorded.contains(productId)) {
@@ -237,10 +244,10 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     final isEn = l.localeName == 'en';
     final dayName = isEn
         ? EnglishDateStrings.weekdays[effectiveDate.weekday - 1]
-        : HebrewDateStrings.weekdays[effectiveDate.weekday - 1];
-    final dayLabel = (userName != null && userName.trim().isNotEmpty)
-        ? l.homeDayLabelGreeting(dayName, userName.trim().split(' ').first)
-        : l.homeDayLabel(dayName);
+        : 'יום ${HebrewDateStrings.weekdays[effectiveDate.weekday - 1]}';
+    final firstName = (userName != null && userName.trim().isNotEmpty)
+        ? userName.trim().split(' ').first
+        : null;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -249,10 +256,49 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
               slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          if (firstName != null) ...[
+                            TextSpan(
+                              text: '${isEn ? "Hi" : "שלום"} $firstName',
+                              style: AppTypography.labelSm.copyWith(
+                                color: AppColors.onSurface,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' · $dayName',
+                              style: AppTypography.labelSm.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ] else
+                            TextSpan(
+                              text: dayName,
+                              style: AppTypography.labelSm.copyWith(
+                                color: AppColors.onSurface,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                              ),
+                            ),
+                        ],
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ),
+
                 if (allRecords.isNotEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                       child: StreakWidget(
                         currentStreak: streakResult.currentStreak,
                         longestStreak: streakResult.longestStreak,
@@ -278,49 +324,13 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          dayLabel,
-                          textAlign: TextAlign.center,
-                          style: AppTypography.labelSm.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 10,
+                        if (isPro) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [ProTag()],
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                l.homeTitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: AppTypography.bodyLg.copyWith(
-                                  color: AppColors.onSurface,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
-                            if (isPro) ...[
-                              const SizedBox(width: 8),
-                              const ProTag(),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _viewMode == _ViewMode.images
-                              ? l.homeTapImageToDone
-                              : l.homeTapProductToDone,
-                          textAlign: TextAlign.center,
-                          style: AppTypography.labelSm.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                            fontSize: 10,
-                          ),
-                        ),
+                        ],
                         const SizedBox(height: 18),
                         _ViewModeControl(
                           viewMode: _viewMode,
@@ -412,6 +422,17 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     final isExpanded = _sectionExpanded[slot] ?? true;
     final recorded = record?.recordedProductIds.toSet() ?? {};
 
+    // Find first undone morning product to show one-time tap hint.
+    String? hintTargetId;
+    if (!_tapHintSeen && slot == Slot.morning) {
+      for (final p in products) {
+        if (!recorded.contains(p.id)) {
+          hintTargetId = p.id;
+          break;
+        }
+      }
+    }
+
     return SliverMainAxisGroup(
       slivers: [
         SliverToBoxAdapter(
@@ -481,6 +502,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                               }
                             },
                             hasConflict: hasConflict,
+                            isHintTarget: product.id == hintTargetId,
                           ),
                         );
                       },

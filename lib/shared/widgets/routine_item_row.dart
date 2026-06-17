@@ -16,6 +16,7 @@ class RoutineItemRow extends StatefulWidget {
   final bool hasConflict;
   final VoidCallback? onConflictTap;
   final String? subtitle;
+  final bool isHintTarget;
 
   const RoutineItemRow({
     super.key,
@@ -27,6 +28,7 @@ class RoutineItemRow extends StatefulWidget {
     this.hasConflict = false,
     this.onConflictTap,
     this.subtitle,
+    this.isHintTarget = false,
   });
 
   @override
@@ -97,10 +99,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                       color: AppColors.outline, size: 22),
                 ),
 
-              _ThumbnailWithBadge(
-                imageAsset: product.imageAsset,
-                isDone: checkedDone,
-              ),
+              _buildThumbnail(product.imageAsset, checkedDone),
               const SizedBox(width: 12),
 
               Expanded(
@@ -183,9 +182,12 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
           borderRadius: BorderRadius.circular(_expanded ? 26 : 9999),
           boxShadow: checkedDone ? null : AppColors.glowSm,
           border: Border.all(
-            color: checkedDone
-                ? Colors.transparent
-                : AppColors.outlineVariant.withAlpha(51),
+            color: (widget.isHintTarget && !checkedDone)
+                ? AppColors.primary.withOpacity(0.4)
+                : (checkedDone
+                    ? Colors.transparent
+                    : AppColors.outlineVariant.withAlpha(51)),
+            width: (widget.isHintTarget && !checkedDone) ? 2.0 : 1.0,
           ),
         ),
         child: Material(
@@ -200,6 +202,43 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
               : rowContent,
         ),
       ),
+    );
+  }
+
+  Widget _buildThumbnail(String? imageAsset, bool checkedDone) {
+    final base = _ThumbnailWithBadge(imageAsset: imageAsset, isDone: checkedDone);
+    if (!widget.isHintTarget || checkedDone) return base;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        base,
+        const Positioned(
+          top: -8,
+          left: -8,
+          right: -8,
+          bottom: -8,
+          child: IgnorePointer(child: _PingOverlay()),
+        ),
+        PositionedDirectional(
+          bottom: -2,
+          start: -2,
+          child: Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: AppColors.soft,
+            ),
+            child: const Icon(
+              Icons.touch_app_rounded,
+              color: Colors.white,
+              size: 12,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -349,4 +388,71 @@ class _ThumbnailWithBadge extends StatelessWidget {
       ],
     );
   }
+}
+
+// Self-contained animated ping ring. Mounted only while the hint is active;
+// disposal stops the ticker cleanly.
+class _PingOverlay extends StatefulWidget {
+  const _PingOverlay();
+
+  @override
+  State<_PingOverlay> createState() => _PingOverlayState();
+}
+
+class _PingOverlayState extends State<_PingOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, __) => CustomPaint(
+        painter: _PingRingPainter(progress: _ctrl.value, color: AppColors.primary),
+      ),
+    );
+  }
+}
+
+class _PingRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+
+  const _PingRingPainter({required this.progress, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Canvas is ~68×68 (thumbnail 52px + 8px bleed on each side).
+    // Thumbnail edge sits at radius 26 from center; ring expands outward from there.
+    final center = Offset(size.width / 2, size.height / 2);
+    final t = Curves.easeOut.transform(progress);
+    final radius = 26.0 + 16.0 * t;
+    final opacity = (1.0 - t) * 0.5;
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = color.withOpacity(opacity.clamp(0.0, 1.0))
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_PingRingPainter old) => old.progress != progress;
 }

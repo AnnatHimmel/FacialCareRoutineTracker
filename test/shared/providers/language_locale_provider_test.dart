@@ -32,6 +32,8 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setRoutineViewMode(String m) async {}
   @override Future<bool> getRoutineShowNames() async => false;
   @override Future<void> setRoutineShowNames(bool v) async {}
+  @override Future<bool> getTapHintSeen() async => false;
+  @override Future<void> setTapHintSeen(bool value) async {}
 }
 
 ProviderContainer _container(_FakeSettings settings) => ProviderContainer(
