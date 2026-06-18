@@ -2,6 +2,7 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/incompatibility_rule.dart';
 import '../../domain/entities/master_list_manifest.dart';
 import '../../domain/entities/master_product.dart';
+import '../../domain/entities/sub_category.dart';
 import '../../domain/enums/rule_scope.dart';
 import '../../domain/repositories/master_content_repository.dart';
 
@@ -10,6 +11,11 @@ abstract final class MasterContentSerializer {
     final categories = (json['categories'] as List<dynamic>)
         .map((c) => _parseCategory(c as Map<String, dynamic>))
         .toList();
+
+    final subcategories =
+        ((json['subcategories'] as List<dynamic>?) ?? const [])
+            .map((s) => _parseSubCategory(s as Map<String, dynamic>))
+            .toList();
 
     final products = (json['products'] as List<dynamic>)
         .map((p) => _parseProduct(p as Map<String, dynamic>))
@@ -30,6 +36,7 @@ abstract final class MasterContentSerializer {
     return MasterContent(
       products: products,
       categories: categories,
+      subcategories: subcategories,
       rules: rules,
       manifest: manifest,
     );
@@ -52,6 +59,8 @@ abstract final class MasterContentSerializer {
                   'icon': c.icon,
                 })
             .toList(),
+        'subcategories':
+            content.subcategories.map(_subCategoryToJson).toList(),
         'products': content.products.map(_productToJson).toList(),
         'rules': content.rules.map(_ruleToJson).toList(),
       };
@@ -63,6 +72,7 @@ abstract final class MasterContentSerializer {
         'imageAsset': p.imageAsset,
         'comment': {'he': p.comment, 'en': p.commentEn},
         'categoryId': p.categoryId,
+        'subCategoryId': p.subCategoryId,
         'isDeprecated': p.isDeprecated,
         'addedInVersion': p.addedInVersion,
         'morningConfig':
@@ -71,6 +81,13 @@ abstract final class MasterContentSerializer {
             p.eveningConfig != null ? _slotConfigToJson(p.eveningConfig!) : null,
         'ingredients': p.ingredients,
         'barcodes': p.barcodes,
+      };
+
+  static Map<String, dynamic> _subCategoryToJson(SubCategory s) => {
+        'id': s.id,
+        'name': {'he': s.name, 'en': s.nameEn},
+        'categoryId': s.categoryId,
+        'order': s.order,
       };
 
   static Map<String, dynamic> _slotConfigToJson(SlotConfig c) => {
@@ -105,6 +122,9 @@ abstract final class MasterContentSerializer {
 
   static Category parseCategory(Map<String, dynamic> m) =>
       _parseCategory(m);
+
+  static SubCategory parseSubCategory(Map<String, dynamic> m) =>
+      _parseSubCategory(m);
 
   static MasterProduct parseProduct(Map<String, dynamic> m) =>
       _parseProduct(m);
@@ -143,6 +163,26 @@ abstract final class MasterContentSerializer {
     );
   }
 
+  static SubCategory _parseSubCategory(Map<String, dynamic> m) {
+    final nameRaw = m['name'];
+    final String nameHe;
+    final String? nameEn;
+    if (nameRaw is Map) {
+      nameHe = nameRaw['he'] as String? ?? '';
+      nameEn = nameRaw['en'] as String?;
+    } else {
+      nameHe = nameRaw as String? ?? '';
+      nameEn = m['nameEn'] as String?;
+    }
+    return SubCategory(
+      id: m['id'] as String,
+      name: nameHe,
+      nameEn: nameEn,
+      categoryId: m['categoryId'] as String,
+      order: m['order'] as int,
+    );
+  }
+
   static MasterProduct _parseProduct(Map<String, dynamic> m) {
     final commentRaw = m['comment'];
     final String? commentHe;
@@ -162,6 +202,7 @@ abstract final class MasterContentSerializer {
       comment: commentHe,
       commentEn: commentEn,
       categoryId: m['categoryId'] as String,
+      subCategoryId: m['subCategoryId'] as String?,
       morningConfig: m['morningConfig'] == null
           ? null
           : _parseSlotConfig(m['morningConfig'] as Map<String, dynamic>),

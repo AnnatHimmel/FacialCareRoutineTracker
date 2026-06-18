@@ -4,6 +4,7 @@ import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/incompatibility_rule.dart';
 import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
 import 'package:skincare_tracker/domain/entities/master_product.dart';
+import 'package:skincare_tracker/domain/entities/sub_category.dart';
 import 'package:skincare_tracker/domain/enums/rule_scope.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 
@@ -270,6 +271,102 @@ void main() {
       final json = MasterContentSerializer.toJson(content);
       final restored = MasterContentSerializer.fromCombinedJson(json);
       expect(restored.products.first.barcodes, equals(['8809968130239']));
+    });
+  });
+
+  group('subCategoryId field', () {
+    Map<String, dynamic> baseProductJson() => {
+          'id': 'p9',
+          'brand': null,
+          'name': 'Niacinamide Serum',
+          'imageAsset': null,
+          'comment': {'he': null, 'en': null},
+          'categoryId': 'cat-serum',
+          'isDeprecated': false,
+          'addedInVersion': '1.0.0',
+          'morningConfig': null,
+          'eveningConfig': null,
+        };
+
+    test('parseProduct reads subCategoryId', () {
+      final json = baseProductJson()..['subCategoryId'] = 'sub-niacinamide';
+      final product = MasterContentSerializer.parseProduct(json);
+      expect(product.subCategoryId, 'sub-niacinamide');
+    });
+
+    test('parseProduct without subCategoryId parses to null', () {
+      final product = MasterContentSerializer.parseProduct(baseProductJson());
+      expect(product.subCategoryId, isNull);
+    });
+
+    test('round-trips subCategoryId through toJson/fromCombinedJson', () {
+      final content = MasterContent(
+        products: [
+          const MasterProduct(
+            id: 'p10',
+            name: 'Niacinamide Serum',
+            categoryId: 'cat-serum',
+            subCategoryId: 'sub-niacinamide',
+            isDeprecated: false,
+            addedInVersion: '1.0.0',
+          ),
+        ],
+        categories: [
+          const Category(id: 'cat-serum', name: 'סרום', nameEn: 'Serum', order: 5),
+        ],
+        rules: [],
+        manifest: const MasterListManifest(
+          contentVersion: '1.0.0',
+          appVersion: '1.0.0',
+          changelog: [],
+        ),
+      );
+      final json = MasterContentSerializer.toJson(content);
+      final restored = MasterContentSerializer.fromCombinedJson(json);
+      expect(restored.products.first.subCategoryId, 'sub-niacinamide');
+    });
+  });
+
+  group('subcategories field', () {
+    test('round-trips subcategories through toJson/fromCombinedJson', () {
+      final content = MasterContent(
+        products: [],
+        categories: [
+          const Category(id: 'cat-serum', name: 'סרום', nameEn: 'Serum', order: 5),
+        ],
+        subcategories: [
+          const SubCategory(
+            id: 'sub-niacinamide',
+            name: 'ניאצינמיד',
+            nameEn: 'Niacinamide',
+            categoryId: 'cat-serum',
+            order: 14,
+          ),
+        ],
+        rules: [],
+        manifest: const MasterListManifest(
+          contentVersion: '1.0.0',
+          appVersion: '1.0.0',
+          changelog: [],
+        ),
+      );
+      final json = MasterContentSerializer.toJson(content);
+      final restored = MasterContentSerializer.fromCombinedJson(json);
+      expect(restored.subcategories, equals(content.subcategories));
+    });
+
+    test('fromCombinedJson without subcategories key parses to empty list', () {
+      final json = {
+        'contentVersion': '1.0.0',
+        'appVersion': '1.0.0',
+        'changelog': <dynamic>[],
+        'categories': <dynamic>[],
+        'products': <dynamic>[],
+        'rules': <dynamic>[],
+        // no 'subcategories' key — mimics old cached JSON
+      };
+      final restored = MasterContentSerializer.fromCombinedJson(json);
+      expect(restored.subcategories, isEmpty);
     });
   });
 

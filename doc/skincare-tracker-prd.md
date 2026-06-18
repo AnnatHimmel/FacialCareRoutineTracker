@@ -156,7 +156,7 @@ There is one shared master list for all users in v1.0. In the free product each 
 - **Goal:** Decide which weekdays to use products that have a "max N times per week" rule.
 - **Preconditions:** At least one selected product has a "max N/week" frequency rule.
 - **Main flow:**
-  1. For each such product, user chooses the specific weekdays to use it.
+  1. For each such product, user chooses the specific weekdays to use it. *(v-next: a "max N/week" product is seeded with a default of **N evenly-spread weekdays** when added, rather than left unscheduled — see §15.5.)*
   2. System records the schedule. Daily products implicitly apply every day and need no scheduling.
 - **Alternate flows:**
   - *Over the cap:* if the user schedules more weekdays than N within a calendar week (Sunday–Saturday), the System presents a soft, non-blocking warning indicating the recommended maximum, but allows the choice.
@@ -178,6 +178,7 @@ There is one shared master list for all users in v1.0. In the free product each 
   - *Always-on (two daily products) — mutable warning:* because this clash recurs every day, the warning is shown at selection and persists as a quiet marker on the daily view; the user may **mute that specific conflict warning**, after which it is no longer surfaced for that pair/scope. Muting is per-conflict and local to the user.
   - *Never blocking:* in all cases the user retains the conflicting selection/schedule if they choose.
 - **Postcondition:** The user is informed of conflicts; no choice is prevented; muted conflicts stay silent.
+- **Note (v-next):** Conflicts are now **auto-resolved by default and reversible** — warn → resolve → undo — per §15.7, superseding the warn-only / per-day-removal behavior.
 
 ### UC-6 — Personalize routine order
 - **Actor:** User
@@ -189,6 +190,7 @@ There is one shared master list for all users in v1.0. In the free product each 
 - **Alternate flows:**
   - *Reset:* user restores the admin's recommended order, discarding the override.
 - **Postcondition:** The slot's effective order reflects the user's override; the change is local and affects no one else.
+- **Note (v-next):** The baseline order beneath any override is **Phase → Sub-category** (see §15.1), replacing the prior manual per-product order.
 
 ### UC-7 — Revise setup at any time
 - **Actor:** User
@@ -437,6 +439,10 @@ There is one shared master list for all users in v1.0. In the free product each 
 11. **Premium capability** — optional Web-only cloud backup & on-demand restore (not sync), invitation-only via admin-issued license key, no in-app purchasing; deferred to post-v1.0 but designed-for now. (UC-21, NFR-M7)
 12. **Two-step setup** — step 1 select all owned products; step 2 schedule weekdays for non-daily products. (UC-4, UC-5)
 13. **Incompatibility rules** — admin authors advisory (soft-warning) rules between two products or two categories, each scoped to within-Morning, within-Evening, or same-day-across-both. Daily↔daily clashes warn at selection and are user-mutable; day-dependent clashes warn at scheduling and on the daily view. Category is therefore a functional attribute. (UC-1b, UC-4b)
+14. **Two-tier routine order** — effective order is **Phase → Sub-category → user override**; phase (the application/layering step) is the existing Category, and sub-category (active-ingredient class) orders products within a phase. Replaces hand-assigned per-product order. (§15.1)
+15. **Automatic classification** — each product's phase and sub-category are derived locally (no network) from product name, INCI ingredients, and brand-line, keyed on the hero active; an unmatched product falls back to a defined position and never requires the user to know the answer. (§15.4)
+16. **Default scheduling** — a "max N/week" product is seeded with N evenly-spread days on add; the cap is soft (over-cap allowed with a warning) in normal use and hard only during automatic conflict resolution. (§15.5–§15.6)
+17. **Conflict auto-resolution** — conflicts are resolved by default and reversibly (warn → resolve → undo): slot-separation moving the more flexible product, else day-separation anchoring the capped product. Rules may target a sub-category. (§15.7)
 
 ---
 
@@ -465,3 +471,90 @@ The UI is built as a **native Flutter implementation** that reproduces the look 
 - **Hebrew RTL at the app root.** Right-to-left layout and Hebrew locale are configured globally (app-level directionality/locale), so screens mirror automatically, rather than being handled per screen. Bidirectional text — Latin-script product and category names embedded in Hebrew (NFR-L2) — must render correctly; verify this early on routine rows and lists, where it is most visible.
 - **One codebase, both platforms.** The same Flutter widgets render on Android and on the Web build (for iPhone and other browsers), so a native Flutter reconstruction — rather than reusing the HTML for the web target — keeps a single implementation across both platforms (see Compatibility, §10).
 - **Reference precedence.** If a design reference and this PRD disagree on behavior, the PRD governs; the reference governs only appearance, and only where this PRD is silent on visual detail.
+
+---
+
+## 15. Routine Ordering, Sub-Category Classification & Conflict Resolution
+
+> **Added in v-next.** Specifies how a product's position in a routine is determined, how products are classified, how occasional products are scheduled by default, and how incompatibilities are resolved. **Supersedes** three earlier behaviors: ad-hoc per-product ordering, the empty default schedule for occasional products, and the per-day "remove from day" conflict auto-fix.
+
+### 15.1 Two-tier ordering model
+
+A resolved routine (UC-8) is ordered by two keys, in priority, with the user's personal override layered on top:
+
+1. **Phase** *(coarse — application / layering order)* — the existing **Category** plays this role. Canonical phase order:
+   **Cleanse → Exfoliate → Tone → Treat → Moisturize → Seal**, where **Seal = SPF in the Morning, Face Oil in the Evening** (slot-exclusive).
+2. **Sub-category** *(fine — within-phase order)* — an active-ingredient class (Vitamin C, Retinoid, Glutathione, Niacinamide, Galactomyces, AHA, BHA, PHA, …). Within a phase, products order by their sub-category's position in the **slot-specific sub-category sequence**.
+3. **User Order Override** (UC-6) — unchanged: overridden products take their explicit positions; all others fall back to phase → sub-category.
+
+**Effective order = Phase → Sub-category → user Order Override.** This replaces the prior "category.order → manual per-product order."
+
+**Treat-phase sub-category sequence** (slot membership in parentheses):
+Lead — **Vitamin C** (AM) / **Retinoid** (PM), counterpart leads that never co-occur → Glutathione → Argireline → Azelaic → Tranexamic → Tea-tree → Peptides (PM) → Licorice → Galactomyces-serum (PM) → Bifida → Bakuchiol → NAD⁺ / "No.9" → PDRN → Centella → Niacinamide.
+**Exfoliate sub-order:** Glycolic → Lactic → Mandelic → Malic (AHA) → Salicylic (BHA) → PHA.
+
+### 15.2 Phases
+
+Phases are the application-order tier, represented by **Category**. Refining the category set is permitted, but **every product must be assignable to exactly one phase automatically** (§15.4). Relative to the prior taxonomy:
+
+- **Exfoliate is a new phase** placed **after Cleanse**, for **rinse-off** chemical exfoliants (AHA/BHA/PHA) — distinct from leave-on treatment acids (azelaic, tranexamic), which remain in **Treat**. (The prior "Serum / חומצות" category conflated these.)
+- **Seal** is the terminal phase: **SPF** (Morning only) and **Face Oil** (Evening only) are slot-exclusive members, mirroring the Vitamin C ↔ Retinoid lead pair.
+
+### 15.3 Sub-categories
+
+- **Sub-category is a real, stored attribute** on every product (master and user-custom) and is the within-phase ordering key. It is **auto-assigned** (§15.4).
+- A sub-category is an **active-ingredient class**, not a brand or product name. "NAD⁺ / No.9" is a sub-category whose detection includes a brand-line alias (numbuzin No.9) because its hero active (NAD⁺) is the defining attribute.
+- **Active + form:** the same active in a different product form may belong to a different phase — e.g. **Galactomyces** is a **Tone** product as a toner and a **Treat** product as a serum. Classification therefore considers both the active and the product form.
+
+### 15.4 Automatic classification (no network)
+
+When a product is added — admin master product, user-custom product, or a scan/barcode result — the System derives its **phase** and **sub-category** **locally, with no API call**, using a **bundled keyword / alias map** in priority order:
+
+1. **Product name** — hero active or brand-line tokens (e.g. "Niacinamide", "Galactomyces", numbuzin "No.9" → NAD⁺).
+2. **INCI ingredients** — the product's stored ingredient list.
+3. **Brand / line aliases.**
+
+Rules:
+- Classification targets the **hero / primary active**, not merely any ingredient present — numbuzin No.9 classifies as **NAD⁺** despite also containing niacinamide and peptides.
+- **Fallback:** with no confident match, the System assigns a defined fallback (**phase = Treat, sub-category = "Unclassified"**) sorted at a fixed position (end of Treat). Classification **must never block** and **must never require the user to know the answer**.
+- The user or admin **may correct** a classification; corrections persist and survive re-classification.
+- Classification may be **re-run on a master-list update** (UC-18) and is **best-effort** — automatic success is not guaranteed for every product.
+
+### 15.5 Default scheduling for capped products
+
+- When a product with a **"max N/week"** rule is added or selected, the System seeds a **default schedule of N evenly-spread weekdays** (maximum spacing between uses). This **replaces the prior empty default** (occasional products previously appeared on no days until the user picked).
+- **Daily** products implicitly apply every day. **Exfoliating-acid** products default to **≤ 3/week, Evening only**.
+- **Selection guard:** selecting a product **auto-assigns its slot(s)** (§15.4) and seeds its default schedule; the System **verifies that no selected product is ever left with no slot and no days**.
+
+### 15.6 Frequency caps — soft vs hard
+
+- In **normal use** the cap is **advisory (soft)**: the user may schedule beyond N and receives the soft over-cap warning (UC-5); never blocked.
+- During **automatic conflict resolution** (§15.7) the cap is treated as a **hard** constraint.
+
+### 15.7 Conflict resolution
+
+Incompatibility rules (UC-1b) remain advisory, but conflicts are now **actively resolved**.
+
+- **Rule targets:** a rule may target a **product**, a **category**, or a **sub-category** (new `RuleTargetType.subCategory`). **Sub-category targeting is preferred** for maintainability: a single rule (e.g. *Retinoid × Exfoliating-acids*) automatically covers every product classified into those families, and newly-added products inherit it via §15.4 with no per-rule upkeep. Scope is unchanged (`withinSlot` / `sameDayAcrossBoth`).
+- **Behavior (replaces the per-day "remove from day" auto-fix):** on a detected conflict the System **resolves it by default (opt-out)** and **shows what it changed**; the user may **change or revert** it (reverting keeps the products together with the soft advisory warning). It **never blocks**.
+- **Resolution algorithm**, in order:
+  1. **Slot separation** — move the **more flexible** product (one valid in both slots) to the non-clashing slot; the slot-locked product stays. No frequency loss.
+  2. **Day separation** — assign non-overlapping weekdays: the **frequency-capped** product (cap now **hard**) **anchors** its N spread days; the **daily / uncapped** product fills the remaining days. If they cannot fully fit, apply the **best partial separation** and inform the user.
+  3. **Apply → show the change → allow undo.**
+- **Yield priority:** the more flexible (bi-slot) product yields in slot-separation; when both are equally flexible, the **newly-added** product yields. (There is no "core / mandatory" notion — those source labels are opinion, not function.)
+- **Worked examples:**
+  - **Argireline × Vitamin C** (within Morning): Vitamin C is AM-locked, Argireline is bi-slot → **move Argireline to Evening**. Zero frequency loss.
+  - **Retinoid × Exfoliating-acids** (both Evening-locked): neither can move → **acids anchor 3 nights, retinoid fills the other 4.**
+
+### 15.8 Supersedes
+
+- Manual per-product `order` as the sole within-phase key → **replaced** by sub-category (§15.1).
+- Empty default schedule for occasional products → **replaced** by the N-spread default (§15.5).
+- Per-day "remove the capped product from the day" auto-fix → **replaced** by the slot/day-separation resolver (§15.7).
+
+### 15.9 Data-model requirements
+
+- New **`subCategory`** attribute on master and custom products (stable id), plus the bundled **classification map** (keyword / alias → phase + sub-category).
+- New **`RuleTargetType.subCategory`** for incompatibility rules.
+- Classification metadata (auto vs. user-corrected) stored so corrections persist and re-classification is safe.
+- Implementation follows the project's TDD workflow; this section is the specification only.

@@ -58,6 +58,7 @@ class MasterProduct {
   final String? comment;
   final String? commentEn;
   final String categoryId;
+  final String? subCategoryId;
   final SlotConfig? morningConfig;
   final SlotConfig? eveningConfig;
   final bool isDeprecated;
@@ -73,6 +74,7 @@ class MasterProduct {
     this.comment,
     this.commentEn,
     required this.categoryId,
+    this.subCategoryId,
     this.morningConfig,
     this.eveningConfig,
     required this.isDeprecated,
@@ -96,6 +98,7 @@ class MasterProduct {
         other.comment != comment ||
         other.commentEn != commentEn ||
         other.categoryId != categoryId ||
+        other.subCategoryId != subCategoryId ||
         other.morningConfig != morningConfig ||
         other.eveningConfig != eveningConfig ||
         other.isDeprecated != isDeprecated ||
@@ -133,6 +136,7 @@ class MasterProduct {
         comment,
         commentEn,
         categoryId,
+        subCategoryId,
         morningConfig,
         eveningConfig,
         isDeprecated,
@@ -149,6 +153,7 @@ class MasterProduct {
     String? comment,
     String? commentEn,
     String? categoryId,
+    String? subCategoryId,
     SlotConfig? morningConfig,
     SlotConfig? eveningConfig,
     bool? isDeprecated,
@@ -164,6 +169,7 @@ class MasterProduct {
         comment: comment ?? this.comment,
         commentEn: commentEn ?? this.commentEn,
         categoryId: categoryId ?? this.categoryId,
+        subCategoryId: subCategoryId ?? this.subCategoryId,
         morningConfig: morningConfig ?? this.morningConfig,
         eveningConfig: eveningConfig ?? this.eveningConfig,
         isDeprecated: isDeprecated ?? this.isDeprecated,

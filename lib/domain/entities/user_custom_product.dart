@@ -7,6 +7,7 @@ class UserCustomProduct {
   final String name;
   final String? photoKey;
   final String categoryId;
+  final String? subCategoryId;
   final bool inMorning;
   final bool inEvening;
   final bool isDaily;
@@ -20,6 +21,7 @@ class UserCustomProduct {
     required this.name,
     this.photoKey,
     required this.categoryId,
+    this.subCategoryId,
     required this.inMorning,
     required this.inEvening,
     required this.isDaily,
@@ -51,6 +53,7 @@ class UserCustomProduct {
       name: name,
       imageAsset: photoKey != null ? 'user_photo:$photoKey' : null,
       categoryId: categoryId,
+      subCategoryId: subCategoryId,
       morningConfig: inMorning ? SlotConfig(order: 999, frequencyRule: rule) : null,
       eveningConfig: inEvening ? SlotConfig(order: 999, frequencyRule: rule) : null,
       isDeprecated: false,
@@ -63,6 +66,7 @@ class UserCustomProduct {
     String? name,
     String? photoKey,
     String? categoryId,
+    String? subCategoryId,
     bool? inMorning,
     bool? inEvening,
     bool? isDaily,
@@ -75,6 +79,7 @@ class UserCustomProduct {
         name: name ?? this.name,
         photoKey: photoKey ?? this.photoKey,
         categoryId: categoryId ?? this.categoryId,
+        subCategoryId: subCategoryId ?? this.subCategoryId,
         inMorning: inMorning ?? this.inMorning,
         inEvening: inEvening ?? this.inEvening,
         isDaily: isDaily ?? this.isDaily,
