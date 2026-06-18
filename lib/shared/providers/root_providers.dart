@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/material.dart' show Locale;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +21,7 @@ import '../../domain/entities/muted_conflict.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/services/pao_calculator.dart';
+import '../../domain/services/product_classifier.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../domain/repositories/photo_repository.dart';
@@ -206,6 +209,19 @@ final categoryOverridesProvider = StreamProvider<List<CategoryOverride>>(
 );
 
 final paoCalculatorProvider = Provider((ref) => const PaoCalculator());
+
+/// Builds a [ProductClassifier] from the RAW bundled subcategories (which carry
+/// the `keywords` / `brandLines` the classifier matches on — these are stripped
+/// from [MasterContent.subcategories]). Used by the add-product flow to
+/// auto-assign a sub-category from a typed/scanned product name.
+/// Override in tests with a classifier built from a fixed subcategory list.
+final productClassifierProvider = FutureProvider<ProductClassifier>((ref) async {
+  final raw = await rootBundle.loadString('assets/data/master_products.json');
+  final data = jsonDecode(raw) as Map<String, dynamic>;
+  final subs = ((data['subcategories'] as List<dynamic>?) ?? const [])
+      .cast<Map<String, dynamic>>();
+  return ProductClassifier.fromSubcategories(subs);
+});
 
 final userNameProvider = FutureProvider<String?>(
   (ref) => ref.watch(settingsRepositoryProvider).getUserName(),

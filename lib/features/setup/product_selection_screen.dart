@@ -11,7 +11,10 @@ import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/sub_category.dart';
 import '../../domain/entities/user_custom_product.dart';
+import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
+import '../../domain/repositories/user_data_repository.dart';
+import '../../domain/services/default_schedule.dart';
 import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/fixed_slot_chip.dart';
@@ -190,6 +193,43 @@ class _ProductSelectionScreenState
         ),
       );
     }
+
+    // Guard: a capped (weekly-max) product must never end up selected with a
+    // slot but no scheduled days. Seed an evenly-spread default for the slot
+    // when it has no schedule yet (PRD §15.5).
+    if (isSelected) {
+      await _ensureCappedSchedule(repo, product, slot);
+    }
+  }
+
+  /// Seeds a spread [WeekdaySchedule] for a newly-selected capped product when
+  /// the given slot has no schedule. No-op for daily products or when a schedule
+  /// already exists.
+  Future<void> _ensureCappedSchedule(
+    UserDataRepository repo,
+    MasterProduct product,
+    Slot slot,
+  ) async {
+    final config =
+        slot == Slot.morning ? product.morningConfig : product.eveningConfig;
+    final rule = config?.frequencyRule;
+    if (rule is! WeeklyMaxRule) return;
+
+    final schedules = ref.read(allSchedulesProvider).valueOrNull ?? const [];
+    final hasSchedule =
+        schedules.any((s) => s.productId == product.id && s.slot == slot);
+    if (hasSchedule) return;
+
+    final days = spreadWeekdays(rule.maxPerWeek);
+    if (days.isEmpty) return;
+
+    await repo.upsertSchedule(WeekdaySchedule(
+      id: _uuid.v4(),
+      productId: product.id,
+      slot: slot,
+      weekdays: days.toSet(),
+      lastModified: DateTime.now(),
+    ));
   }
 
   void _editCustomProduct(BuildContext context, MasterProduct product) {
