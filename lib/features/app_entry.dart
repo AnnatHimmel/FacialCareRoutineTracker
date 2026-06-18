@@ -11,10 +11,12 @@ class AppEntryPoint extends ConsumerWidget {
     final setupAsync = ref.watch(onboardingCompletedProvider);
     final startupAsync = ref.watch(silentStartupProvider);
     final localeSyncAsync = ref.watch(localeSyncProvider);
+    final conflictFixAsync = ref.watch(conflictAutoFixProvider);
 
     if (setupAsync.isLoading ||
         startupAsync.isLoading ||
-        localeSyncAsync.isLoading) {
+        localeSyncAsync.isLoading ||
+        conflictFixAsync.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 

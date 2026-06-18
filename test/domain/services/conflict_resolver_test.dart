@@ -104,6 +104,43 @@ void main() {
       expect(_daysFor(restored, 'argireline', Slot.evening), equals(_allDays));
       expect(_daysFor(restored, 'vitC', Slot.morning), equals(_allDays));
     });
+
+    test(
+        'undo for daily product with no prior schedule restores to all-days '
+        '(so RoutineResolver sees it as daily again)', () {
+      // Real-world case: Argireline was selected but never given an explicit
+      // schedule row (daily products don't need one). After conflict-resolver
+      // slot-sep writes an empty schedule, the undo must restore to all-days,
+      // not an empty set — otherwise the product stays suppressed forever.
+      final argireline = _product('argireline', morning: _daily, evening: _daily);
+      final vitC = _product('vitC', morning: _daily);
+
+      // No pre-existing schedule row for argireline in morning.
+      final schedules = [
+        _sched('argireline', Slot.evening, _allDays),
+        _sched('vitC', Slot.morning, _allDays),
+      ];
+
+      final result = resolver.resolve(
+        productA: argireline,
+        productB: vitC,
+        slot: Slot.morning,
+        schedules: schedules,
+      );
+
+      // Forward: argireline must be removed from morning.
+      final after = applyMutations(schedules, result.mutations);
+      expect(_daysFor(after, 'argireline', Slot.morning), isEmpty);
+
+      // Undo: argireline must come back to morning — not left as empty.
+      final restored = applyMutations(after, result.inverse);
+      expect(
+        _daysFor(restored, 'argireline', Slot.morning),
+        equals(_allDays),
+        reason: 'Undo must restore a daily product to all-days, '
+            'not an empty schedule that would keep it suppressed',
+      );
+    });
   });
 
   group('ConflictResolver — day separation', () {

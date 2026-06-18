@@ -29,6 +29,8 @@ import '../../domain/repositories/refreshable_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/repositories/user_data_repository.dart';
 import '../../data/remote/barcode_lookup_service.dart';
+import '../../domain/entities/weekday_schedule.dart';
+import '../../domain/services/conflict_resolver.dart';
 import '../../domain/services/day_boundary_service.dart';
 import '../../domain/services/export_import_service.dart';
 import '../../domain/services/incompatibility_checker.dart';
@@ -112,6 +114,100 @@ final silentStartupProvider = FutureProvider<void>((ref) async {
   final svc = ref.read(reconciliationServiceProvider);
   final result = await svc.reconcile();
   await svc.acknowledgeUpdate(result.currentContentVersion);
+});
+
+/// Silently resolves any product conflicts that exist in the user's selections
+/// on cold start, before the home screen renders.
+///
+/// Uses the same [ConflictResolver] as the manual auto-fix in the schedule
+/// screen, but without an undo affordance — this corrects conflicts that were
+/// missed at selection time (e.g. when sub-category data was first added).
+/// Returns the number of conflicting pairs that were resolved.
+final conflictAutoFixProvider = FutureProvider<int>((ref) async {
+  final master = await ref.read(masterContentProvider.future);
+  final userRepo = ref.read(userDataRepositoryProvider);
+
+  final morningSelections = await userRepo.watchSelections(Slot.morning).first;
+  final eveningSelections = await userRepo.watchSelections(Slot.evening).first;
+  var schedules = await userRepo.watchAllSchedules().first;
+  final customProds = await userRepo.watchCustomProducts().first;
+  final mutedConflicts = await userRepo.watchMutedConflicts().first;
+
+  final allProducts = [
+    ...master.products,
+    ...customProds.map((p) => p.toMasterProduct()),
+  ];
+
+  Set<String> _selectedIds(List<ProductSelection> sels) =>
+      sels.where((s) => s.isSelected).map((s) => s.productId).toSet();
+
+  List<MasterProduct> _productsForSlot(Slot slot, Set<String> ids) =>
+      allProducts
+          .where((p) =>
+              ids.contains(p.id) &&
+              (slot == Slot.morning
+                  ? p.morningConfig != null
+                  : p.eveningConfig != null))
+          .toList();
+
+  final morningProds =
+      _productsForSlot(Slot.morning, _selectedIds(morningSelections));
+  final eveningProds =
+      _productsForSlot(Slot.evening, _selectedIds(eveningSelections));
+  final mutedRuleIds = mutedConflicts.map((m) => m.ruleId).toSet();
+
+  final checker = IncompatibilityChecker();
+  final conflicts = checker.getConflictsForDay(
+    morningProducts: morningProds,
+    eveningProducts: eveningProds,
+    rules: master.rules,
+    categories: master.categories,
+    mutedRuleIds: mutedRuleIds,
+  );
+
+  final active = conflicts.where((c) => !c.isMuted).toList();
+  if (active.isEmpty) return 0;
+
+  const resolver = ConflictResolver();
+  int fixCount = 0;
+
+  for (final conflict in active) {
+    final inMorning = morningProds.any((p) => p.id == conflict.productA.id) &&
+        morningProds.any((p) => p.id == conflict.productB.id);
+    final conflictSlot = inMorning ? Slot.morning : Slot.evening;
+
+    final resolution = resolver.resolve(
+      productA: conflict.productA,
+      productB: conflict.productB,
+      slot: conflictSlot,
+      schedules: schedules,
+    );
+
+    for (final m in resolution.mutations) {
+      final existing = schedules
+          .where((s) => s.productId == m.productId && s.slot == m.slot)
+          .firstOrNull;
+      final updated = WeekdaySchedule(
+        id: existing?.id ?? 'autofix-${m.productId}-${m.slot.name}',
+        productId: m.productId,
+        slot: m.slot,
+        weekdays: m.days,
+        lastModified: DateTime.now(),
+      );
+      await userRepo.upsertSchedule(updated);
+      // Update local snapshot so later iterations see the new state.
+      final idx = schedules.indexWhere(
+          (s) => s.productId == m.productId && s.slot == m.slot);
+      if (idx >= 0) {
+        schedules = [...schedules]..[idx] = updated;
+      } else {
+        schedules = [...schedules, updated];
+      }
+    }
+    fixCount++;
+  }
+
+  return fixCount;
 });
 
 final exportImportServiceProvider = Provider(

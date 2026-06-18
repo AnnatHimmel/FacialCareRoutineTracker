@@ -115,10 +115,19 @@ class ConflictResolver {
       slot: slot,
       days: const <int>{},
     );
+
+    // Inverse: restore to the prior state.
+    // If the mover is a daily product (no weekly cap) and had no explicit
+    // schedule row before, restoring to {} would leave it permanently
+    // suppressed (RoutineResolver treats an empty row as "excluded").
+    // Use _allDays so the resolver sees it as "daily default" again.
+    final isDailyMover = _weeklyCap(mover, slot) == null;
+    final inverseDays =
+        (currentInSlot.isEmpty && isDailyMover) ? _allDays : currentInSlot;
     final inverse = ScheduleMutation(
       productId: mover.id,
       slot: slot,
-      days: currentInSlot,
+      days: inverseDays,
     );
 
     final slotName = _slotNameHe(otherSlot);

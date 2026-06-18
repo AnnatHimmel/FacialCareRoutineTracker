@@ -45,7 +45,12 @@ class RoutineResolver {
       final config =
           slot == Slot.morning ? p.morningConfig! : p.eveningConfig!;
       return switch (config.frequencyRule) {
-        DailyRule() => true,
+        DailyRule() => schedules
+                .where((s) => s.productId == p.id && s.slot == slot)
+                .firstOrNull
+                ?.weekdays
+                .isNotEmpty ??
+            true,
         WeeklyMaxRule() => schedules.any(
             (s) =>
                 s.productId == p.id &&

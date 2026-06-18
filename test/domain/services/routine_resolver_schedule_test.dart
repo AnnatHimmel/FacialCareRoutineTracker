@@ -1,0 +1,131 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:skincare_tracker/domain/entities/category.dart';
+import 'package:skincare_tracker/domain/entities/master_product.dart';
+import 'package:skincare_tracker/domain/entities/product_selection.dart';
+import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
+import 'package:skincare_tracker/domain/enums/slot.dart';
+import 'package:skincare_tracker/domain/services/day_boundary_service.dart';
+import 'package:skincare_tracker/domain/services/routine_resolver.dart';
+
+// Monday 2024-06-10 noon — dayOfWeek = 1 (Mon=1…Sun=7 → Mon%7=1)
+const _date = '2024-06-10';
+final _monday = DateTime(2024, 6, 10, 12);
+final _boundary = DayBoundaryService();
+final _resolver = RoutineResolver();
+
+Category _cat(String id) => Category(id: id, name: id, order: 1);
+
+MasterProduct _dailyBiSlot(String id) => MasterProduct(
+      id: id,
+      name: id,
+      categoryId: 'cat-serum',
+      isDeprecated: false,
+      addedInVersion: '1.0.0',
+      morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+      eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+    );
+
+MasterProduct _dailyMorningOnly(String id) => MasterProduct(
+      id: id,
+      name: id,
+      categoryId: 'cat-serum',
+      isDeprecated: false,
+      addedInVersion: '1.0.0',
+      morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+      eveningConfig: null,
+    );
+
+ProductSelection _morningSelection(String productId) => ProductSelection(
+      id: 'sel-$productId',
+      productId: productId,
+      slot: Slot.morning,
+      isSelected: true,
+      lastModified: DateTime.utc(2024, 1, 1),
+    );
+
+WeekdaySchedule _scheduleWithDays(
+  String productId,
+  Slot slot,
+  Set<int> days,
+) =>
+    WeekdaySchedule(
+      id: 'sched-$productId',
+      productId: productId,
+      slot: slot,
+      weekdays: days,
+      lastModified: DateTime.utc(2024, 1, 1),
+    );
+
+const _cats = <Category>[];
+
+void main() {
+  group('RoutineResolver — daily product + explicit schedule', () {
+    test(
+        'daily product with empty schedule row is excluded (conflict-resolver suppression)',
+        () {
+      // This is the key fix: when the ConflictResolver runs slot-separation on
+      // a daily product it writes WeekdaySchedule{weekdays: {}}. The
+      // RoutineResolver must honour this as "excluded from this slot".
+      final argireline = _dailyBiSlot('argireline');
+
+      final result = _resolver.resolve(
+        date: _monday,
+        slot: Slot.morning,
+        allProducts: [argireline],
+        categories: _cats,
+        selections: [_morningSelection('argireline')],
+        schedules: [
+          _scheduleWithDays('argireline', Slot.morning, const <int>{}), // empty!
+        ],
+        orderOverride: null,
+        boundary: _boundary,
+      );
+
+      expect(result, isEmpty,
+          reason: 'Daily product with an explicit empty schedule must not '
+              'appear — this is how the conflict resolver suppresses it');
+    });
+
+    test(
+        'daily product with NO schedule row still appears every day (unchanged default)',
+        () {
+      final argireline = _dailyBiSlot('argireline');
+
+      final result = _resolver.resolve(
+        date: _monday,
+        slot: Slot.morning,
+        allProducts: [argireline],
+        categories: _cats,
+        selections: [_morningSelection('argireline')],
+        schedules: const [], // no schedule row at all
+        orderOverride: null,
+        boundary: _boundary,
+      );
+
+      expect(result, hasLength(1),
+          reason: 'Daily product with no schedule row must still appear');
+    });
+
+    test(
+        'daily product with non-empty schedule row still appears (schedule not suppressed)',
+        () {
+      final argireline = _dailyBiSlot('argireline');
+
+      final result = _resolver.resolve(
+        date: _monday,
+        slot: Slot.morning,
+        allProducts: [argireline],
+        categories: _cats,
+        selections: [_morningSelection('argireline')],
+        schedules: [
+          _scheduleWithDays('argireline', Slot.morning, {0, 1, 2, 3, 4, 5, 6}),
+        ],
+        orderOverride: null,
+        boundary: _boundary,
+      );
+
+      expect(result, hasLength(1),
+          reason: 'Daily product with all-days schedule must still appear');
+    });
+  });
+}
