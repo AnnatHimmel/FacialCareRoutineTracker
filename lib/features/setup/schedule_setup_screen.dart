@@ -9,6 +9,8 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
+import '../../domain/repositories/user_data_repository.dart';
+import '../../domain/services/conflict_resolver.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
@@ -170,6 +172,108 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
       updated.add(dayId);
     }
     await _updateSchedule(p.id, _activeSlot, updated, existing);
+  }
+
+  /// Opt-out conflict resolution for [dayId] in the active slot.
+  ///
+  /// Builds a reversible [ConflictResolution] per conflicting pair (slot
+  /// separation, else day separation), applies all mutations by default, then
+  /// surfaces a "what changed" snackbar with an Undo that re-applies the
+  /// inverses. Overused products on the day are also pruned (reversibly).
+  Future<void> _autoFix(
+    List<ConflictInfo> conflicts,
+    List<({MasterProduct product, int count, int cap})> overused,
+    int dayId,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l = AppLocalizations.of(context)!;
+    final repo = ref.read(userDataRepositoryProvider);
+    final schedules =
+        List<WeekdaySchedule>.from(ref.read(allSchedulesProvider).valueOrNull ?? []);
+
+    final resolver = const ConflictResolver();
+    final mutations = <ScheduleMutation>[];
+    final inverse = <ScheduleMutation>[];
+    final descriptions = <String>[];
+    final isEnglish = l.localeName == 'en';
+
+    // 1 · Resolve each conflicting pair into reversible mutations.
+    for (final c in conflicts) {
+      final res = resolver.resolve(
+        productA: c.productA,
+        productB: c.productB,
+        slot: _activeSlot,
+        schedules: schedules,
+      );
+      mutations.addAll(res.mutations);
+      inverse.addAll(res.inverse);
+      descriptions.add(res.localizedDescription(isEnglish ? 'en' : 'he'));
+    }
+
+    // 2 · Overused products: drop them from this day (reversible).
+    for (final entry in overused) {
+      final current = _effectiveDays(entry.product, _activeSlot, schedules);
+      if (!current.contains(dayId)) continue;
+      mutations.add(ScheduleMutation(
+        productId: entry.product.id,
+        slot: _activeSlot,
+        days: Set<int>.from(current)..remove(dayId),
+      ));
+      inverse.add(ScheduleMutation(
+        productId: entry.product.id,
+        slot: _activeSlot,
+        days: current,
+      ));
+    }
+
+    if (mutations.isEmpty) return;
+
+    await _persistMutations(repo, schedules, mutations);
+
+    final summary = descriptions.isNotEmpty
+        ? descriptions.join('\n')
+        : l.autoFixAppliedFallback;
+
+    if (!mounted) return;
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(summary),
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: l.autoFixUndo,
+          onPressed: () {
+            // Re-read latest schedules so the inverse targets current ids.
+            final latest = List<WeekdaySchedule>.from(
+                ref.read(allSchedulesProvider).valueOrNull ?? schedules);
+            _persistMutations(repo, latest, inverse);
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Persist a set of [ScheduleMutation]s, preserving each schedule's stable id
+  /// (or minting one for products without an existing schedule row).
+  Future<void> _persistMutations(
+    UserDataRepository repo,
+    List<WeekdaySchedule> schedules,
+    List<ScheduleMutation> mutations,
+  ) async {
+    for (final m in mutations) {
+      final existing = schedules
+          .where((s) => s.productId == m.productId && s.slot == m.slot)
+          .firstOrNull;
+      await repo.upsertSchedule(
+        WeekdaySchedule(
+          id: existing?.id ?? _uuid.v4(),
+          productId: m.productId,
+          slot: m.slot,
+          weekdays: m.days,
+          lastModified: DateTime.now(),
+        ),
+      );
+    }
   }
 
   void _handleContinue(BuildContext context) {
@@ -600,24 +704,11 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                 categories: master.categories,
                                 isEnglish: isEnglish,
                                 onRemoveFromDay: _removeDay,
-                                onAutoFix: (conflicts) async {
-                                  for (final c in conflicts) {
-                                    // movable = product with WeeklyMaxRule cap; fall back to productB
-                                    final aIsMovable = c.productA
-                                            .configForSlot(_activeSlot)
-                                            ?.frequencyRule is WeeklyMaxRule;
-                                    final movable = aIsMovable
-                                        ? c.productA
-                                        : c.productB;
-                                    await _removeDay(
-                                        movable.id, _selectedDay);
-                                  }
-                                  // auto-fix overuse: remove overused products from this day
-                                  final overuseEntries = overuseMap[_selectedDay] ?? [];
-                                  for (final entry in overuseEntries) {
-                                    await _removeDay(entry.product.id, _selectedDay);
-                                  }
-                                },
+                                onAutoFix: (conflicts) => _autoFix(
+                                  conflicts,
+                                  overuseMap[_selectedDay] ?? [],
+                                  _selectedDay,
+                                ),
                                 l: l,
                               ),
                               const SizedBox(height: 16),

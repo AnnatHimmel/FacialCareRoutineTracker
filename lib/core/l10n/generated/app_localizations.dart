@@ -2649,6 +2649,18 @@ abstract class AppLocalizations {
   /// **'בדיקת ההערות'**
   String get issueActionReviewNotes;
 
+  /// No description provided for @autoFixUndo.
+  ///
+  /// In he, this message translates to:
+  /// **'ביטול'**
+  String get autoFixUndo;
+
+  /// No description provided for @autoFixAppliedFallback.
+  ///
+  /// In he, this message translates to:
+  /// **'התאמנו את השגרה כדי לפתור את ההתנגשות'**
+  String get autoFixAppliedFallback;
+
   /// No description provided for @chipPossibleConflict.
   ///
   /// In he, this message translates to:

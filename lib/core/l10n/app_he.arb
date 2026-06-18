@@ -680,6 +680,8 @@
   },
   "issueActionAutoDistribute": "פיזור אוטומטי לשבוע",
   "issueActionReviewNotes": "בדיקת ההערות",
+  "autoFixUndo": "ביטול",
+  "autoFixAppliedFallback": "התאמנו את השגרה כדי לפתור את ההתנגשות",
   "chipPossibleConflict": "התנגשות אפשרית",
   "chipHighUsage": "שימוש גבוה",
   "orderHeaderMorning": "סדר המריחה בבוקר",

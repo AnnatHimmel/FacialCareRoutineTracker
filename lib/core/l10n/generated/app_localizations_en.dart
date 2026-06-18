@@ -1434,6 +1434,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get issueActionReviewNotes => 'Review notes';
 
   @override
+  String get autoFixUndo => 'Undo';
+
+  @override
+  String get autoFixAppliedFallback =>
+      'Adjusted the routine to resolve the conflict';
+
+  @override
   String get chipPossibleConflict => 'Possible conflict';
 
   @override

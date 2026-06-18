@@ -1416,6 +1416,12 @@ class AppLocalizationsHe extends AppLocalizations {
   String get issueActionReviewNotes => 'בדיקת ההערות';
 
   @override
+  String get autoFixUndo => 'ביטול';
+
+  @override
+  String get autoFixAppliedFallback => 'התאמנו את השגרה כדי לפתור את ההתנגשות';
+
+  @override
   String get chipPossibleConflict => 'התנגשות אפשרית';
 
   @override

@@ -680,6 +680,8 @@
   },
   "issueActionAutoDistribute": "Auto-distribute to week",
   "issueActionReviewNotes": "Review notes",
+  "autoFixUndo": "Undo",
+  "autoFixAppliedFallback": "Adjusted the routine to resolve the conflict",
   "chipPossibleConflict": "Possible conflict",
   "chipHighUsage": "High usage",
   "orderHeaderMorning": "Morning application order",
