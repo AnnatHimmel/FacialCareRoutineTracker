@@ -20,7 +20,8 @@
       "Bash(/c/Workspace/utilities/flutter/bin/flutter devices *)",
       "Bash(mv \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/Debug\" \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/debug-only\")",
       "Bash(git commit *)",
-      "Bash(git commit -q -m 'Slice D: two-tier phase→sub-category sort *)"
+      "Bash(git commit -q -m 'Slice D: two-tier phase→sub-category sort *)",
+      "Bash(git commit -m 'Slice E: sub-category conflict rule targets *)"
     ],
     "additionalDirectories": [
       "C:\\Workspace\\FacialCareRoutineTracker\\.claude\\skills\\Debug"
