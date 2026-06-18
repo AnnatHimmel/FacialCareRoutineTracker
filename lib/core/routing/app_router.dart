@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../theme/app_colors.dart';
 import '../theme/app_layout.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../features/app_entry.dart';
@@ -25,12 +26,15 @@ import '../../features/home/week_glance_screen.dart';
 
 // ── Safe zone wrapper ────────────────────────────────────────────────────────
 
-Widget _withSafeZone(Widget screen) => SafeArea(
-  left: false,
-  top: false,
-  right: false,
-  bottom: true,
-  child: screen,
+Widget _withSafeZone(Widget screen) => Container(
+  color: AppColors.surface,
+  child: SafeArea(
+    left: false,
+    top: false,
+    right: false,
+    bottom: true,
+    child: screen,
+  ),
 );
 
 // ── Shell with bottom nav ─────────────────────────────────────────────────────

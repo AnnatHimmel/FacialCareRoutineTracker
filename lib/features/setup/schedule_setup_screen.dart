@@ -8,9 +8,9 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
-import '../../domain/enums/rule_scope.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/incompatibility_checker.dart';
+import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../shared/widgets/glow_app_bar.dart';
@@ -273,38 +273,26 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .map((s) => s.productId)
               .toSet();
 
-          final categoryOrderById = {
-            for (final cat in master.categories) cat.id: cat.order,
-          };
-
-          int slotOrder(MasterProduct p, Slot slot) =>
-              (slot == Slot.morning
-                  ? p.morningConfig?.order
-                  : p.eveningConfig?.order) ??
-              999;
-
-          int categoryThenSlotOrder(
-              MasterProduct a, MasterProduct b, Slot slot) {
-            final catA = categoryOrderById[a.categoryId] ?? 9999;
-            final catB = categoryOrderById[b.categoryId] ?? 9999;
-            if (catA != catB) return catA.compareTo(catB);
-            return slotOrder(a, slot).compareTo(slotOrder(b, slot));
-          }
-
           final morningProducts = allProducts
               .where((p) =>
                   !p.isDeprecated &&
                   morningSelectedIds.contains(p.id) &&
                   p.morningConfig != null)
               .toList()
-            ..sort((a, b) => categoryThenSlotOrder(a, b, Slot.morning));
+            ..sort(ProductSorter.adminComparator(
+              categories: master.categories,
+              slot: Slot.morning,
+            ));
           final eveningProducts = allProducts
               .where((p) =>
                   !p.isDeprecated &&
                   eveningSelectedIds.contains(p.id) &&
                   p.eveningConfig != null)
               .toList()
-            ..sort((a, b) => categoryThenSlotOrder(a, b, Slot.evening));
+            ..sort(ProductSorter.adminComparator(
+              categories: master.categories,
+              slot: Slot.evening,
+            ));
 
           final activeProducts =
               _activeSlot == Slot.morning ? morningProducts : eveningProducts;
@@ -326,7 +314,10 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                   _effectiveDays(p, _activeSlot, schedules).length == 7)
               .toList();
           final flexed = [...occasional, ...narrowed]
-            ..sort((a, b) => categoryThenSlotOrder(a, b, _activeSlot));
+            ..sort(ProductSorter.adminComparator(
+              categories: master.categories,
+              slot: _activeSlot,
+            ));
 
           final isEmpty = morningProducts.isEmpty && eveningProducts.isEmpty;
 
@@ -352,9 +343,10 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                   : Icons.dark_mode_rounded;
 
           final checker = ref.read(incompatibilityCheckerProvider);
-          final withinSlotRules = master.rules
-              .where((r) => r.scope == RuleScope.withinSlot)
-              .toList();
+          final otherSlot =
+              _activeSlot == Slot.morning ? Slot.evening : Slot.morning;
+          final otherSlotProducts =
+              _activeSlot == Slot.morning ? eveningProducts : morningProducts;
 
           // ── conflict + over-frequency computation for the ACTIVE slot ──
           final Map<int, List<ConflictInfo>> activeDayPairs = {};
@@ -364,12 +356,16 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                 .where((p) =>
                     _effectiveDays(p, _activeSlot, schedules).contains(d))
                 .toList();
+            final otherOnDay = otherSlotProducts
+                .where((p) =>
+                    _effectiveDays(p, otherSlot, schedules).contains(d))
+                .toList();
             final pairs = checker
                 .getConflictsForSelection(
                   activeSlot: _activeSlot,
                   slotProducts: onDay,
-                  otherSlotProducts: const [],
-                  rules: withinSlotRules,
+                  otherSlotProducts: otherOnDay,
+                  rules: master.rules,
                   categories: master.categories,
                   mutedRuleIds: mutedIds,
                 )
@@ -388,6 +384,8 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               activeDayPairs.values.fold<int>(0, (a, b) => a + b.length);
 
           // ── per-day overuse computation ──
+          // Counts total weekly applications across BOTH slots (morning + evening).
+          // A WeeklyMaxRule cap is slot-agnostic: 3 morning uses + 1 evening use = 4 total.
           // overuseMap: day → list of ({product, count, cap}) for that day
           final Map<int, List<({MasterProduct product, int count, int cap})>>
               overuseMap = {};
@@ -396,12 +394,18 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
             for (final p in activeProducts) {
               final rule = p.configForSlot(_activeSlot)?.frequencyRule;
               if (rule is! WeeklyMaxRule) continue;
-              final days = _effectiveDays(p, _activeSlot, schedules);
-              if (!days.contains(d)) continue;
-              if (days.length > rule.maxPerWeek) {
+              final activeDays = _effectiveDays(p, _activeSlot, schedules);
+              if (!activeDays.contains(d)) continue;
+              final otherSlot =
+                  _activeSlot == Slot.morning ? Slot.evening : Slot.morning;
+              final otherDays = p.configForSlot(otherSlot) != null
+                  ? _effectiveDays(p, otherSlot, schedules)
+                  : const <int>{};
+              final totalUses = activeDays.length + otherDays.length;
+              if (totalUses > rule.maxPerWeek) {
                 entries.add((
                   product: p,
-                  count: days.length,
+                  count: totalUses,
                   cap: rule.maxPerWeek,
                 ));
               }
@@ -440,17 +444,24 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
 
           // per-slot issue totals for the tab badges
           int slotIssueCount(Slot slot, List<MasterProduct> products) {
+            final other = slot == Slot.morning ? Slot.evening : Slot.morning;
+            final otherProducts =
+                slot == Slot.morning ? eveningProducts : morningProducts;
             int pairs = 0;
             for (int d = 0; d < 7; d++) {
               final onDay = products
                   .where((p) => _effectiveDays(p, slot, schedules).contains(d))
                   .toList();
+              final otherOnDay = otherProducts
+                  .where(
+                      (p) => _effectiveDays(p, other, schedules).contains(d))
+                  .toList();
               pairs += checker
                   .getConflictsForSelection(
                     activeSlot: slot,
                     slotProducts: onDay,
-                    otherSlotProducts: const [],
-                    rules: withinSlotRules,
+                    otherSlotProducts: otherOnDay,
+                    rules: master.rules,
                     categories: master.categories,
                     mutedRuleIds: mutedIds,
                   )
@@ -459,8 +470,12 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
             }
             final over = products.where((p) {
               final r = p.configForSlot(slot)?.frequencyRule;
-              return r is WeeklyMaxRule &&
-                  _effectiveDays(p, slot, schedules).length > r.maxPerWeek;
+              if (r is! WeeklyMaxRule) return false;
+              final thisDays = _effectiveDays(p, slot, schedules).length;
+              final otherDays = p.configForSlot(other) != null
+                  ? _effectiveDays(p, other, schedules).length
+                  : 0;
+              return (thisDays + otherDays) > r.maxPerWeek;
             }).length;
             return pairs + over;
           }

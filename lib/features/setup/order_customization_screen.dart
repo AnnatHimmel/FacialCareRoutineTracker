@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/order_override.dart';
+import '../../domain/services/product_sorter.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../shared/providers/root_providers.dart';
@@ -348,17 +349,10 @@ class _OrderCustomizationScreenState
         .where((p) => !p.isDeprecated && selectedIds.contains(p.id) && p.configForSlot(slot) != null)
         .toList();
 
-    final categoryOrderById = {
-      for (final cat in master.categories) cat.id: cat.order,
-    };
-
-    int adminOrder(MasterProduct a, MasterProduct b) {
-      final catA = categoryOrderById[a.categoryId] ?? 9999;
-      final catB = categoryOrderById[b.categoryId] ?? 9999;
-      if (catA != catB) return catA.compareTo(catB);
-      return (a.configForSlot(slot)?.order ?? 9999)
-          .compareTo(b.configForSlot(slot)?.order ?? 9999);
-    }
+    final adminCmp = ProductSorter.adminComparator(
+      categories: master.categories,
+      slot: slot,
+    );
 
     final orderIds = localOrder ?? override?.orderedProductIds;
     if (orderIds != null) {
@@ -368,10 +362,10 @@ class _OrderCustomizationScreenState
         if (ai >= 0 && bi >= 0) return ai.compareTo(bi);
         if (ai >= 0) return -1;
         if (bi >= 0) return 1;
-        return adminOrder(a, b);
+        return adminCmp(a, b);
       });
     } else {
-      products.sort(adminOrder);
+      products.sort(adminCmp);
     }
     return products;
   }

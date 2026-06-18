@@ -1,10 +1,11 @@
-import '../entities/category.dart';
 import '../entities/master_product.dart';
 import '../entities/product_selection.dart';
 import '../entities/weekday_schedule.dart';
 import '../entities/order_override.dart';
+import '../entities/category.dart';
 import '../enums/slot.dart';
 import 'day_boundary_service.dart';
+import 'product_sorter.dart';
 
 class RoutineResolver {
   /// Returns products active for [date]+[slot] in effective order.
@@ -52,21 +53,11 @@ class RoutineResolver {
       };
     }).toList();
 
-    final categoryOrderById = {
-      for (final cat in categories) cat.id: cat.order,
-    };
-
-    String effectiveCatId(MasterProduct p) =>
-        categoryOverrides?[p.id] ?? p.categoryId;
-
-    int categoryThenSlotOrder(MasterProduct a, MasterProduct b) {
-      final catA = categoryOrderById[effectiveCatId(a)] ?? 9999;
-      final catB = categoryOrderById[effectiveCatId(b)] ?? 9999;
-      if (catA != catB) return catA.compareTo(catB);
-      final orderA = _slotOrder(a, slot);
-      final orderB = _slotOrder(b, slot);
-      return orderA.compareTo(orderB);
-    }
+    final adminCmp = ProductSorter.adminComparator(
+      categories: categories,
+      slot: slot,
+      categoryOverrides: categoryOverrides,
+    );
 
     if (orderOverride != null && orderOverride.slot == slot) {
       final overrideMap = {
@@ -79,16 +70,12 @@ class RoutineResolver {
         if (ai != null && bi != null) return ai.compareTo(bi);
         if (ai != null) return -1;
         if (bi != null) return 1;
-        return categoryThenSlotOrder(a, b);
+        return adminCmp(a, b);
       });
     } else {
-      active.sort(categoryThenSlotOrder);
+      active.sort(adminCmp);
     }
 
     return active;
   }
-
-  int _slotOrder(MasterProduct p, Slot slot) =>
-      (slot == Slot.morning ? p.morningConfig?.order : p.eveningConfig?.order) ??
-      999;
 }
