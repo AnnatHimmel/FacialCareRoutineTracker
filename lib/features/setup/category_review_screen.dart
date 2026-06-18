@@ -8,6 +8,7 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/category_override.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/enums/slot.dart';
+import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/product_thumb.dart';
@@ -85,16 +86,17 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
           for (final s in evening.where((s) => s.isSelected)) s.productId,
         };
 
-        // Build ordered product list sorted by effective category order
-        final catById = {for (final c in master.categories) c.id: c};
+        // Build ordered product list sorted by effective category order then slot order.
+        // Uses _categoryOverrides (local draft state) for accurate live sorting.
+        // Products span both slots; morning order used as the primary slot key.
         final products = master.products
             .where((p) => !p.isDeprecated && selectedIds.contains(p.id))
             .toList()
-          ..sort((a, b) {
-            final ao = catById[_effectiveCatId(a)]?.order ?? 99;
-            final bo = catById[_effectiveCatId(b)]?.order ?? 99;
-            return ao.compareTo(bo);
-          });
+          ..sort(ProductSorter.adminComparator(
+            categories: master.categories,
+            slot: Slot.morning,
+            categoryOverrides: _categoryOverrides,
+          ));
 
         return Scaffold(
           backgroundColor: AppColors.surface,

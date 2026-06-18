@@ -11,6 +11,7 @@ import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/slot.dart';
+import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/fixed_slot_chip.dart';
 import '../../shared/widgets/glow_app_bar.dart';
@@ -284,13 +285,15 @@ class _ProductSelectionScreenState
     for (final product in filtered) {
       catProducts.putIfAbsent(product.categoryId, () => []).add(product);
     }
-    // Sort within each category by order
+    // Sort within each category by slot order (slot filter applied above).
+    // When no slot filter, use morning order with evening as fallback.
+    final browseSlot = _slotFilter ?? Slot.morning;
+    final browseCmp = ProductSorter.adminComparator(
+      categories: categories,
+      slot: browseSlot,
+    );
     for (final list in catProducts.values) {
-      list.sort((a, b) {
-        final ao = a.morningConfig?.order ?? a.eveningConfig?.order ?? 9999;
-        final bo = b.morningConfig?.order ?? b.eveningConfig?.order ?? 9999;
-        return ao.compareTo(bo);
-      });
+      list.sort(browseCmp);
     }
 
     final totalSelected = selMap.length;
@@ -387,18 +390,15 @@ class _ProductSelectionScreenState
     final selectedCount = selMap.length;
     final selectedPids = selMap.keys.toList();
 
-    // Popular products: all non-deprecated, sorted by category order then slot order
-    final catOrder = {for (final c in categories) c.id: c.order};
+    // Popular products: all non-deprecated, sorted by canonical admin order.
+    // Guided view has no active slot filter; morning order used as the primary key.
     final popularProducts = allProducts
         .where((p) => !p.isDeprecated)
         .toList()
-      ..sort((a, b) {
-        final ao = (catOrder[a.categoryId] ?? 99) * 1000 +
-            (a.morningConfig?.order ?? a.eveningConfig?.order ?? 999);
-        final bo = (catOrder[b.categoryId] ?? 99) * 1000 +
-            (b.morningConfig?.order ?? b.eveningConfig?.order ?? 999);
-        return ao.compareTo(bo);
-      });
+      ..sort(ProductSorter.adminComparator(
+        categories: categories,
+        slot: Slot.morning,
+      ));
 
     // Search-filtered products (name OR brand)
     final query = _searchQuery.toLowerCase().trim();

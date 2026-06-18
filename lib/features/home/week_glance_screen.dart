@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
+import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/product_thumb.dart';
@@ -48,15 +49,19 @@ class WeekGlanceScreen extends ConsumerWidget {
               .where(
                   (p) => morningProductIds.contains(p.id) && !p.isDeprecated)
               .toList()
-            ..sort((a, b) => (a.morningConfig?.order ?? 99)
-                .compareTo(b.morningConfig?.order ?? 99));
+            ..sort(ProductSorter.adminComparator(
+              categories: master.categories,
+              slot: Slot.morning,
+            ));
 
           final eveningProducts = master.products
               .where(
                   (p) => eveningProductIds.contains(p.id) && !p.isDeprecated)
               .toList()
-            ..sort((a, b) => (a.eveningConfig?.order ?? 99)
-                .compareTo(b.eveningConfig?.order ?? 99));
+            ..sort(ProductSorter.adminComparator(
+              categories: master.categories,
+              slot: Slot.evening,
+            ));
 
           // Determine today's weekday index (Sunday=0 per app convention)
           final now = DateTime.now();

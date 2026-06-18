@@ -10,6 +10,7 @@ import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
+import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/primary_button.dart';
@@ -744,20 +745,17 @@ class _PlacementStep extends StatelessWidget {
 
     final catOrderById = {for (final c in categories) c.id: c.order};
 
-    // Products already selected in this slot, sorted by category order
+    // Products already selected in this slot, sorted by canonical admin order
     final slotProducts = allProducts
         .where((p) =>
             selectedIds.contains(p.id) &&
             !p.isDeprecated &&
             p.configForSlot(primarySlot) != null)
         .toList()
-      ..sort((a, b) {
-        final ao = (catOrderById[a.categoryId] ?? 99) * 1000 +
-            (a.configForSlot(primarySlot)?.order ?? 999);
-        final bo = (catOrderById[b.categoryId] ?? 99) * 1000 +
-            (b.configForSlot(primarySlot)?.order ?? 999);
-        return ao.compareTo(bo);
-      });
+      ..sort(ProductSorter.adminComparator(
+        categories: categories,
+        slot: primarySlot,
+      ));
 
     final newCatOrder = catOrderById[effectiveCatId] ?? 99;
 
