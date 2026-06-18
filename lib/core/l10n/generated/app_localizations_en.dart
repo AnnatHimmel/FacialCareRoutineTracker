@@ -1423,6 +1423,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get issueActionAutoFix => 'Auto-adjust';
 
   @override
+  String issueActionRemoveFromDayNamed(Object name) {
+    return 'Remove $name from this day';
+  }
+
+  @override
+  String get issueActionAutoDistribute => 'Auto-distribute to week';
+
+  @override
   String get issueActionReviewNotes => 'Review notes';
 
   @override
@@ -1461,6 +1469,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get orderPerDayMicrocopy =>
       'The default fits most people. Per-day order is only needed if some days have special products.';
+
+  @override
+  String get orderPerDayCustomBadge => 'Custom order';
+
+  @override
+  String get orderPerDayClearDay => 'Clear day order';
+
+  @override
+  String orderPerDaySheetTitle(String day) {
+    return 'Order for $day';
+  }
 
   @override
   String get orderCtaMorning => 'Confirm morning order';

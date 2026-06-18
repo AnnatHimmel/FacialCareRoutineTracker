@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../theme/app_layout.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../features/app_entry.dart';
 import '../../features/onboarding/onboarding_screen.dart';
@@ -22,6 +23,16 @@ import '../../features/setup/order_customization_screen.dart';
 import '../../features/setup/schedule_setup_screen.dart';
 import '../../features/home/week_glance_screen.dart';
 
+// ── Safe zone wrapper ────────────────────────────────────────────────────────
+
+Widget _withSafeZone(Widget screen) => SafeArea(
+  left: false,
+  top: false,
+  right: false,
+  bottom: true,
+  child: screen,
+);
+
 // ── Shell with bottom nav ─────────────────────────────────────────────────────
 
 class _ShellScaffold extends StatelessWidget {
@@ -40,6 +51,7 @@ class _ShellScaffold extends StatelessWidget {
           initialLocation: index == navigationShell.currentIndex,
         ),
       ),
+      resizeToAvoidBottomInset: false,
     );
   }
 }
@@ -51,13 +63,13 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const AppEntryPoint(),
+      builder: (context, state) => _withSafeZone(const AppEntryPoint()),
     ),
     GoRoute(
       path: '/onboarding',
-      builder: (context, state) => OnboardingScreen(
+      builder: (context, state) => _withSafeZone(OnboardingScreen(
         onFinish: () => context.go('/today'),
-      ),
+      )),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) =>
@@ -67,7 +79,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/today',
-              builder: (context, state) => const DailyHomeScreen(),
+              builder: (context, state) => _withSafeZone(const DailyHomeScreen()),
             ),
           ],
         ),
@@ -75,7 +87,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/collection',
-              builder: (context, state) => const CollectionScreen(),
+              builder: (context, state) => _withSafeZone(const CollectionScreen()),
             ),
           ],
         ),
@@ -83,7 +95,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/journal',
-              builder: (context, state) => const SkinJournalScreen(),
+              builder: (context, state) => _withSafeZone(const SkinJournalScreen()),
             ),
           ],
         ),
@@ -91,7 +103,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/settings',
-              builder: (context, state) => const SettingsScreen(),
+              builder: (context, state) => _withSafeZone(const SettingsScreen()),
             ),
           ],
         ),
@@ -101,12 +113,12 @@ final appRouter = GoRouter(
     // Products — standalone (outside shell, no persistent nav)
     GoRoute(
       path: '/products',
-      builder: (context, state) => const ProductSelectionScreen(),
+      builder: (context, state) => _withSafeZone(const ProductSelectionScreen()),
       routes: [
         GoRoute(
           path: 'schedule',
           builder: (context, state) =>
-              const ScheduleSetupScreen(fromProducts: true),
+              _withSafeZone(const ScheduleSetupScreen(fromProducts: true)),
         ),
       ],
     ),
@@ -114,7 +126,7 @@ final appRouter = GoRouter(
     // Calendar — standalone (outside shell)
     GoRoute(
       path: '/calendar',
-      builder: (context, state) => const CalendarScreen(),
+      builder: (context, state) => _withSafeZone(const CalendarScreen()),
     ),
 
     // Setup flow
@@ -122,78 +134,78 @@ final appRouter = GoRouter(
       path: '/setup/selection',
       builder: (context, state) {
         final fromSetup = state.uri.queryParameters['from'] == 'setup';
-        return ProductSelectionScreen(fromSetup: fromSetup);
+        return _withSafeZone(ProductSelectionScreen(fromSetup: fromSetup));
       },
     ),
     GoRoute(
       path: '/setup/schedule',
       builder: (context, state) {
         final fromSetup = state.uri.queryParameters['from'] == 'setup';
-        return ScheduleSetupScreen(fromSetup: fromSetup);
+        return _withSafeZone(ScheduleSetupScreen(fromSetup: fromSetup));
       },
     ),
     GoRoute(
       path: '/setup/order',
       builder: (context, state) {
         final fromSetup = state.uri.queryParameters['from'] == 'setup';
-        return OrderCustomizationScreen(fromSetup: fromSetup);
+        return _withSafeZone(OrderCustomizationScreen(fromSetup: fromSetup));
       },
     ),
 
     // Add product wizard (returning users)
     GoRoute(
       path: '/add-product',
-      builder: (context, state) => const AddProductFlowScreen(),
+      builder: (context, state) => _withSafeZone(const AddProductFlowScreen()),
     ),
 
     // Week at a glance
     GoRoute(
       path: '/week-glance',
-      builder: (context, state) => const WeekGlanceScreen(),
+      builder: (context, state) => _withSafeZone(const WeekGlanceScreen()),
     ),
 
     // Detail routes
     GoRoute(
       path: '/day/:date',
-      builder: (context, state) => DayDetailScreen(
+      builder: (context, state) => _withSafeZone(DayDetailScreen(
         date: state.pathParameters['date']!,
-      ),
+      )),
     ),
     GoRoute(
       path: '/skin-log/:date',
-      builder: (context, state) => SkinLogEntryScreen(
+      builder: (context, state) => _withSafeZone(SkinLogEntryScreen(
         date: state.pathParameters['date']!,
-      ),
+      )),
     ),
     GoRoute(
       path: '/collection/:productId',
-      builder: (context, state) => ProductDetailScreen(
+      builder: (context, state) => _withSafeZone(ProductDetailScreen(
         productId: state.pathParameters['productId']!,
-      ),
+      )),
     ),
 
     // Data management
     GoRoute(
       path: '/export-import',
-      builder: (context, state) => const ExportImportScreen(),
+      builder: (context, state) => _withSafeZone(const ExportImportScreen()),
     ),
     GoRoute(
       path: '/export-import/merge',
-      builder: (context, state) => const MergeConflictScreen(),
+      builder: (context, state) => _withSafeZone(const MergeConflictScreen()),
     ),
 
     // Info
     GoRoute(
       path: '/about',
-      builder: (context, state) => const AboutScreen(),
+      builder: (context, state) => _withSafeZone(const AboutScreen()),
     ),
     GoRoute(
       path: '/update-review',
-      builder: (context, state) => const UpdateReviewScreen(),
+      builder: (context, state) => _withSafeZone(const UpdateReviewScreen()),
     ),
     GoRoute(
       path: '/premium',
-      builder: (context, state) => const PremiumScreen(),
+      builder: (context, state) => _withSafeZone(const PremiumScreen()),
     ),
   ],
 );

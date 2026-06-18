@@ -26,7 +26,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
-    final appVersion = ref.watch(appVersionProvider).valueOrNull ?? '—';
+    final appVersion = ref.watch(appVersionProvider).valueOrNull ?? '';
     final profileAsync = ref.watch(_userProfileProvider);
     final isPro = ref.watch(isProDemoProvider);
 
@@ -97,7 +97,8 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ),
                     const Icon(
-                      Icons.chevron_right_rounded,
+                      Icons.chevron_left_rounded,
+                      textDirection: TextDirection.ltr,
                       color: Colors.white,
                       size: 22,
                     ),
@@ -857,7 +858,8 @@ class _SettingsTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             const Icon(
-              Icons.chevron_right,
+              Icons.chevron_left,
+              textDirection: TextDirection.ltr,
               color: AppColors.onSurfaceVariant,
               size: 20,
             ),

@@ -42,7 +42,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
       if (kIsWeb) {
         await Share.shareXFiles(
           [XFile.fromData(bytes, name: 'skincare_backup.zip', mimeType: 'application/zip')],
-          subject: 'גיבוי נתונים — טיפוח עור',
+          subject: 'גיבוי נתונים: טיפוח עור',
         );
       } else {
         final dir = await getTemporaryDirectory();
@@ -50,7 +50,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
         await file.writeAsBytes(bytes);
         await Share.shareXFiles(
           [XFile(file.path)],
-          subject: 'גיבוי נתונים — טיפוח עור',
+          subject: 'גיבוי נתונים: טיפוח עור',
         );
       }
       if (mounted) {

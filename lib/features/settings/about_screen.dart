@@ -15,7 +15,7 @@ class AboutScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
-    final appVersion = ref.watch(appVersionProvider).valueOrNull ?? '—';
+    final appVersion = ref.watch(appVersionProvider).valueOrNull ?? '';
     final masterAsync = ref.watch(masterContentProvider);
 
     return Scaffold(

@@ -18,6 +18,7 @@ import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
+import 'package:skincare_tracker/domain/entities/category_override.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
 import 'package:skincare_tracker/features/setup/order_customization_screen.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
@@ -37,13 +38,19 @@ class _FakeUDR implements UserDataRepository {
   final List<ProductSelection> eveningSelections;
   final OrderOverride? morningOverride;
   final OrderOverride? eveningOverride;
+  final List<OrderOverride> morningPerDayOverrides;
+  final List<OrderOverride> eveningPerDayOverrides;
   bool deleteOverrideCalled = false;
+  bool deletePerDayOverrideCalled = false;
+  int? deletedPerDayWeekday;
 
   _FakeUDR({
     this.morningSelections = const [],
     this.eveningSelections = const [],
     this.morningOverride,
     this.eveningOverride,
+    this.morningPerDayOverrides = const [],
+    this.eveningPerDayOverrides = const [],
   });
 
   @override
@@ -57,8 +64,28 @@ class _FakeUDR implements UserDataRepository {
       );
 
   @override
+  Stream<List<OrderOverride>> watchPerDayOrderOverrides(Slot slot) => Stream.value(
+        slot == Slot.morning ? morningPerDayOverrides : eveningPerDayOverrides,
+      );
+
+  @override
+  Future<OrderOverride?> getEffectiveOrderOverride(Slot slot, int weekday) async {
+    final perDay = (slot == Slot.morning ? morningPerDayOverrides : eveningPerDayOverrides)
+        .where((o) => o.weekday == weekday)
+        .firstOrNull;
+    if (perDay != null) return perDay;
+    return slot == Slot.morning ? morningOverride : eveningOverride;
+  }
+
+  @override
   Future<void> deleteOrderOverride(Slot slot) async {
     deleteOverrideCalled = true;
+  }
+
+  @override
+  Future<void> deletePerDayOrderOverride(Slot slot, int weekday) async {
+    deletePerDayOverrideCalled = true;
+    deletedPerDayWeekday = weekday;
   }
 
   @override
@@ -87,6 +114,9 @@ class _FakeUDR implements UserDataRepository {
   @override Stream<List<CollectionItem>> watchCollectionItems() => throw UnimplementedError();
   @override Future<void> upsertCollectionItem(CollectionItem item) => throw UnimplementedError();
   @override Future<void> deleteCollectionItem(String id) => throw UnimplementedError();
+  @override Stream<List<CategoryOverride>> watchCategoryOverrides() => Stream.value([]);
+  @override Future<void> upsertCategoryOverride(CategoryOverride o) async {}
+  @override Future<void> deleteCategoryOverride(String productId) async {}
 }
 
 class _FakeSR implements SettingsRepository {
@@ -292,6 +322,95 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(udr.deleteOverrideCalled, isTrue);
+    });
+  });
+
+  group('OrderCustomizationScreen — per-day panel (onboarding mode)', () {
+    Widget _wrapOnboarding({
+      required MasterContent master,
+      required _FakeUDR udr,
+      _FakeSR? sr,
+    }) {
+      return ProviderScope(
+        overrides: [
+          masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
+          userDataRepositoryProvider.overrideWithValue(udr),
+          settingsRepositoryProvider.overrideWithValue(sr ?? _FakeSR()),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('he', 'MA'),
+          home: OrderCustomizationScreen(
+            onboardingSlot: Slot.morning,
+            onContinue: () {},
+            onBack: () {},
+          ),
+        ),
+      );
+    }
+
+    testWidgets('advanced panel toggle is present', (tester) async {
+      final udr = _FakeUDR(morningSelections: [_sel('p1', Slot.morning)]);
+      final master = _master([_product('p1', 'קרם')]);
+
+      await tester.pumpWidget(_wrapOnboarding(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      expect(find.text('אפשרויות מתקדמות'), findsOneWidget);
+    });
+
+    testWidgets('per-day section visible after expanding advanced panel', (tester) async {
+      final udr = _FakeUDR(morningSelections: [_sel('p1', Slot.morning)]);
+      final master = _master([_product('p1', 'קרם')]);
+
+      await tester.pumpWidget(_wrapOnboarding(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('אפשרויות מתקדמות'));
+      await tester.pumpAndSettle();
+
+      // Should show the per-day section title
+      expect(find.text('שינוי סדר לפי יום'), findsOneWidget);
+    });
+
+    testWidgets('seven weekday rows shown when advanced panel expanded', (tester) async {
+      final udr = _FakeUDR(morningSelections: [_sel('p1', Slot.morning)]);
+      final master = _master([_product('p1', 'קרם')]);
+
+      await tester.pumpWidget(_wrapOnboarding(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('אפשרויות מתקדמות'));
+      await tester.pumpAndSettle();
+
+      // Should show all 7 day rows (ראשון, שני, שלישי, רביעי, חמישי, שישי, שבת)
+      expect(find.text('יום ראשון'), findsOneWidget);
+      expect(find.text('יום שני'), findsOneWidget);
+      expect(find.text('יום שבת'), findsOneWidget);
+    });
+
+    testWidgets('custom-order badge shown for day that has per-day override', (tester) async {
+      final perDayOverride = OrderOverride(
+        id: 'pd1',
+        slot: Slot.morning,
+        weekday: 1, // Monday
+        orderedProductIds: ['p1'],
+        lastModified: DateTime(2024),
+      );
+      final udr = _FakeUDR(
+        morningSelections: [_sel('p1', Slot.morning)],
+        morningPerDayOverrides: [perDayOverride],
+      );
+      final master = _master([_product('p1', 'קרם')]);
+
+      await tester.pumpWidget(_wrapOnboarding(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('אפשרויות מתקדמות'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('סדר מותאם'), findsOneWidget);
     });
   });
 }

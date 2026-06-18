@@ -399,12 +399,6 @@ class _StatsRow extends StatelessWidget {
                   ),
                 ] else ...[
                   Text(
-                    '—',
-                    style: AppTypography.headlineMd
-                        .copyWith(color: AppColors.onSurfaceVariant),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
                     l.calendarNoComparison,
                     style: AppTypography.labelSm
                         .copyWith(color: AppColors.onSurfaceVariant),

@@ -18,6 +18,7 @@ import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
+import 'package:skincare_tracker/domain/entities/category_override.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
 import 'package:skincare_tracker/features/onboarding/onboarding_screen.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
@@ -75,6 +76,13 @@ class _FakeUDR implements UserDataRepository {
   Future<void> upsertOrderOverride(OrderOverride o) async {}
   @override
   Future<void> deleteOrderOverride(Slot s) async {}
+
+  @override
+  Stream<List<OrderOverride>> watchPerDayOrderOverrides(Slot slot) => Stream.value([]);
+  @override
+  Future<OrderOverride?> getEffectiveOrderOverride(Slot slot, int weekday) async => null;
+  @override
+  Future<void> deletePerDayOrderOverride(Slot slot, int weekday) async {}
   @override
   Stream<DayRecord?> watchDayRecord(String d, Slot s) => Stream.value(null);
   @override
@@ -98,6 +106,9 @@ class _FakeUDR implements UserDataRepository {
   Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override
   Future<void> replaceAllData(UserDataExport e) async {}
+  @override Stream<List<CategoryOverride>> watchCategoryOverrides() => Stream.value([]);
+  @override Future<void> upsertCategoryOverride(CategoryOverride o) async {}
+  @override Future<void> deleteCategoryOverride(String productId) async {}
 }
 
 class _FakeSettings implements SettingsRepository {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/generated/app_localizations.dart';
 import 'core/routing/app_router.dart';
+import 'core/theme/app_layout.dart';
 import 'core/theme/radiant_dew_theme.dart';
 import 'shared/providers/root_providers.dart';
 
@@ -23,10 +24,21 @@ class SkincareApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       debugShowCheckedModeBanner: false,
-      builder: (context, child) => Directionality(
-        textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-        child: child!,
-      ),
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            padding: mq.padding.copyWith(
+              top: mq.padding.top < AppLayout.safeTop ? AppLayout.safeTop : mq.padding.top,
+              bottom: mq.padding.bottom < AppLayout.safeBottom ? AppLayout.safeBottom : mq.padding.bottom,
+            ),
+          ),
+          child: Directionality(
+            textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+            child: child!,
+          ),
+        );
+      },
     );
   }
 }

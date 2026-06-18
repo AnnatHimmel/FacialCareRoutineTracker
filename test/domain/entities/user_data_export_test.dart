@@ -1,4 +1,6 @@
+// ignore_for_file: directives_ordering
 import 'package:flutter_test/flutter_test.dart';
+import 'package:skincare_tracker/domain/entities/category_override.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
 import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
@@ -193,6 +195,83 @@ void main() {
     });
   });
 
+  group('OrderOverride weekday round-trip', () {
+    test('per-day override with weekday survives toJson → fromJson', () {
+      final override = OrderOverride(
+        id: 'ovr-wed',
+        slot: Slot.morning,
+        weekday: 3,
+        orderedProductIds: ['p1', 'p2'],
+        lastModified: DateTime.utc(2024, 3, 15),
+      );
+      final export = UserDataExport(
+        schemaVersion: '2',
+        exportDate: '2024-03-15T00:00:00.000Z',
+        appVersion: '1.0.0',
+        masterContentVersion: '1.0.0',
+        selections: const [],
+        schedules: const [],
+        overrides: [override],
+        dayRecords: const [],
+        skinLogs: const [],
+        mutedConflicts: const [],
+      );
+
+      final restored = UserDataExport.fromJson(export.toJson());
+      expect(restored.overrides.first.weekday, 3);
+    });
+
+    test('global override (weekday=null) survives round-trip', () {
+      final override = OrderOverride(
+        id: 'ovr-global',
+        slot: Slot.evening,
+        orderedProductIds: ['p1'],
+        lastModified: DateTime.utc(2024, 3, 15),
+      );
+      final export = UserDataExport(
+        schemaVersion: '2',
+        exportDate: '2024-03-15T00:00:00.000Z',
+        appVersion: '1.0.0',
+        masterContentVersion: '1.0.0',
+        selections: const [],
+        schedules: const [],
+        overrides: [override],
+        dayRecords: const [],
+        skinLogs: const [],
+        mutedConflicts: const [],
+      );
+
+      final restored = UserDataExport.fromJson(export.toJson());
+      expect(restored.overrides.first.weekday, isNull);
+    });
+
+    test('legacy export without weekday field deserializes to null', () {
+      final json = <String, dynamic>{
+        'schemaVersion': '1',
+        'exportDate': '2024-01-01T00:00:00.000Z',
+        'appVersion': '1.0.0',
+        'masterContentVersion': '1.0.0',
+        'selections': <dynamic>[],
+        'schedules': <dynamic>[],
+        'overrides': <dynamic>[
+          {
+            'id': 'ovr1',
+            'slot': 'morning',
+            'orderedProductIds': <dynamic>['p1'],
+            'lastModified': '2024-01-01T00:00:00.000Z',
+            // weekday key deliberately absent (legacy format)
+          }
+        ],
+        'dayRecords': <dynamic>[],
+        'skinLogs': <dynamic>[],
+        'mutedConflicts': <dynamic>[],
+      };
+
+      final restored = UserDataExport.fromJson(json);
+      expect(restored.overrides.first.weekday, isNull);
+    });
+  });
+
   group('SkinLogEntry skinState round-trip through UserDataExport', () {
     UserDataExport makeExport(List<SkinLogEntry> skinLogs) => UserDataExport(
           schemaVersion: '2',
@@ -262,6 +341,71 @@ void main() {
       final restored = UserDataExport.fromJson(json);
 
       expect(restored.skinLogs.first.skinState, isNull);
+    });
+  });
+
+  group('CategoryOverride round-trip', () {
+    CategoryOverride makeCatOverride({String id = 'co1'}) => CategoryOverride(
+          id: id,
+          productId: 'prod1',
+          categoryId: 'cat-toner',
+          lastModified: DateTime.utc(2024, 3, 15, 10, 0, 0, 444),
+        );
+
+    UserDataExport exportWith(List<CategoryOverride> catOverrides) =>
+        UserDataExport(
+          schemaVersion: '2',
+          exportDate: '2024-03-15T10:00:00.000Z',
+          appVersion: '1.0.0',
+          masterContentVersion: '1.2.0',
+          selections: const [],
+          schedules: const [],
+          overrides: const [],
+          dayRecords: const [],
+          skinLogs: const [],
+          mutedConflicts: const [],
+          categoryOverrides: catOverrides,
+        );
+
+    test('CategoryOverride survives toJson → fromJson', () {
+      final export = exportWith([makeCatOverride()]);
+      final restored = UserDataExport.fromJson(export.toJson());
+
+      final co = restored.categoryOverrides.first;
+      expect(co.id, 'co1');
+      expect(co.productId, 'prod1');
+      expect(co.categoryId, 'cat-toner');
+      expect(co.lastModified, DateTime.utc(2024, 3, 15, 10, 0, 0, 444));
+    });
+
+    test('lastModified preserved to millisecond', () {
+      final export = exportWith([makeCatOverride()]);
+      final restored = UserDataExport.fromJson(export.toJson());
+
+      expect(
+        restored.categoryOverrides.first.lastModified.millisecondsSinceEpoch,
+        makeCatOverride().lastModified.millisecondsSinceEpoch,
+      );
+    });
+
+    test('legacy export without categoryOverrides field defaults to empty list',
+        () {
+      final json = <String, dynamic>{
+        'schemaVersion': '1',
+        'exportDate': '2024-01-01T00:00:00.000Z',
+        'appVersion': '1.0.0',
+        'masterContentVersion': '1.0.0',
+        'selections': <dynamic>[],
+        'schedules': <dynamic>[],
+        'overrides': <dynamic>[],
+        'dayRecords': <dynamic>[],
+        'skinLogs': <dynamic>[],
+        'mutedConflicts': <dynamic>[],
+        // categoryOverrides deliberately absent
+      };
+
+      final restored = UserDataExport.fromJson(json);
+      expect(restored.categoryOverrides, isEmpty);
     });
   });
 }

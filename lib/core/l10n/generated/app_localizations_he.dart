@@ -1405,6 +1405,14 @@ class AppLocalizationsHe extends AppLocalizations {
   String get issueActionAutoFix => 'התאמה אוטומטית';
 
   @override
+  String issueActionRemoveFromDayNamed(Object name) {
+    return 'הסרת $name מהיום הזה';
+  }
+
+  @override
+  String get issueActionAutoDistribute => 'פיזור אוטומטי לשבוע';
+
+  @override
   String get issueActionReviewNotes => 'בדיקת ההערות';
 
   @override
@@ -1443,6 +1451,17 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get orderPerDayMicrocopy =>
       'ברירת המחדל מתאימה לרוב המשתמשים. שינוי לפי יום נדרש רק אם יש ימים עם מוצרים מיוחדים.';
+
+  @override
+  String get orderPerDayCustomBadge => 'סדר מותאם';
+
+  @override
+  String get orderPerDayClearDay => 'בטל סדר יומי';
+
+  @override
+  String orderPerDaySheetTitle(String day) {
+    return 'סדר יום $day';
+  }
 
   @override
   String get orderCtaMorning => 'אישור סדר הבוקר';

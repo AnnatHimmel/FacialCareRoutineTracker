@@ -674,6 +674,11 @@
   "issueActionRemoveFromDay": "Remove from this day",
   "issueActionKeep": "Keep anyway",
   "issueActionAutoFix": "Auto-adjust",
+  "issueActionRemoveFromDayNamed": "Remove {name} from this day",
+  "@issueActionRemoveFromDayNamed": {
+    "placeholders": { "name": {} }
+  },
+  "issueActionAutoDistribute": "Auto-distribute to week",
   "issueActionReviewNotes": "Review notes",
   "chipPossibleConflict": "Possible conflict",
   "chipHighUsage": "High usage",
@@ -689,6 +694,14 @@
   "orderAdvancedSub": "Change order per day, only if needed",
   "orderPerDayTitle": "Change order per day",
   "orderPerDayMicrocopy": "The default fits most people. Per-day order is only needed if some days have special products.",
+  "orderPerDayCustomBadge": "Custom order",
+  "orderPerDayClearDay": "Clear day order",
+  "orderPerDaySheetTitle": "Order for {day}",
+  "@orderPerDaySheetTitle": {
+    "placeholders": {
+      "day": { "type": "String" }
+    }
+  },
   "orderCtaMorning": "Confirm morning order",
   "orderCtaFinish": "Finish and show my routine",
   "eveningTransitionTitle": "Now for the evening routine",

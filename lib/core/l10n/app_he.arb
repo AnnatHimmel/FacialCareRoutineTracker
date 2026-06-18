@@ -674,6 +674,11 @@
   "issueActionRemoveFromDay": "הסרה מהיום הזה",
   "issueActionKeep": "להשאיר בכל זאת",
   "issueActionAutoFix": "התאמה אוטומטית",
+  "issueActionRemoveFromDayNamed": "הסרת {name} מהיום הזה",
+  "@issueActionRemoveFromDayNamed": {
+    "placeholders": { "name": {} }
+  },
+  "issueActionAutoDistribute": "פיזור אוטומטי לשבוע",
   "issueActionReviewNotes": "בדיקת ההערות",
   "chipPossibleConflict": "התנגשות אפשרית",
   "chipHighUsage": "שימוש גבוה",
@@ -689,6 +694,14 @@
   "orderAdvancedSub": "שינוי סדר לפי יום, רק אם צריך",
   "orderPerDayTitle": "שינוי סדר לפי יום",
   "orderPerDayMicrocopy": "ברירת המחדל מתאימה לרוב המשתמשים. שינוי לפי יום נדרש רק אם יש ימים עם מוצרים מיוחדים.",
+  "orderPerDayCustomBadge": "סדר מותאם",
+  "orderPerDayClearDay": "בטל סדר יומי",
+  "orderPerDaySheetTitle": "סדר יום {day}",
+  "@orderPerDaySheetTitle": {
+    "placeholders": {
+      "day": { "type": "String" }
+    }
+  },
   "orderCtaMorning": "אישור סדר הבוקר",
   "orderCtaFinish": "סיום והצגת השגרה שלי",
   "eveningTransitionTitle": "עכשיו נעבור לשגרת הערב",

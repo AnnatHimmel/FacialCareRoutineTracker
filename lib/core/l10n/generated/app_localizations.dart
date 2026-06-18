@@ -2631,6 +2631,18 @@ abstract class AppLocalizations {
   /// **'התאמה אוטומטית'**
   String get issueActionAutoFix;
 
+  /// No description provided for @issueActionRemoveFromDayNamed.
+  ///
+  /// In he, this message translates to:
+  /// **'הסרת {name} מהיום הזה'**
+  String issueActionRemoveFromDayNamed(Object name);
+
+  /// No description provided for @issueActionAutoDistribute.
+  ///
+  /// In he, this message translates to:
+  /// **'פיזור אוטומטי לשבוע'**
+  String get issueActionAutoDistribute;
+
   /// No description provided for @issueActionReviewNotes.
   ///
   /// In he, this message translates to:
@@ -2702,6 +2714,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'ברירת המחדל מתאימה לרוב המשתמשים. שינוי לפי יום נדרש רק אם יש ימים עם מוצרים מיוחדים.'**
   String get orderPerDayMicrocopy;
+
+  /// No description provided for @orderPerDayCustomBadge.
+  ///
+  /// In he, this message translates to:
+  /// **'סדר מותאם'**
+  String get orderPerDayCustomBadge;
+
+  /// No description provided for @orderPerDayClearDay.
+  ///
+  /// In he, this message translates to:
+  /// **'בטל סדר יומי'**
+  String get orderPerDayClearDay;
+
+  /// No description provided for @orderPerDaySheetTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'סדר יום {day}'**
+  String orderPerDaySheetTitle(String day);
 
   /// No description provided for @orderCtaMorning.
   ///

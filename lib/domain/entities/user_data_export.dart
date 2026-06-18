@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'category_override.dart';
 import 'product_selection.dart';
 import 'weekday_schedule.dart';
 import 'order_override.dart';
@@ -22,6 +23,7 @@ class UserDataExport {
   final List<SkinLogEntry> skinLogs;
   final List<MutedConflict> mutedConflicts;
   final List<CollectionItem> collectionItems;
+  final List<CategoryOverride> categoryOverrides;
   final String? lastExportDate;
   final String? lastKnownMasterVersion;
 
@@ -37,6 +39,7 @@ class UserDataExport {
     required this.skinLogs,
     required this.mutedConflicts,
     this.collectionItems = const [],
+    this.categoryOverrides = const [],
     this.lastExportDate,
     this.lastKnownMasterVersion,
   });
@@ -56,6 +59,8 @@ class UserDataExport {
         'mutedConflicts': mutedConflicts.map(_mutedConflictToJson).toList(),
         'collectionItems':
             collectionItems.map(_collectionItemToJson).toList(),
+        'categoryOverrides':
+            categoryOverrides.map(_categoryOverrideToJson).toList(),
       };
 
   static UserDataExport fromJson(Map<String, dynamic> json) => UserDataExport(
@@ -86,6 +91,10 @@ class UserDataExport {
         collectionItems: (json['collectionItems'] as List<dynamic>? ?? [])
             .map((e) => _collectionItemFromJson(e as Map<String, dynamic>))
             .toList(),
+        categoryOverrides:
+            (json['categoryOverrides'] as List<dynamic>? ?? [])
+                .map((e) => _categoryOverrideFromJson(e as Map<String, dynamic>))
+                .toList(),
       );
 
   @override
@@ -120,6 +129,7 @@ class UserDataExport {
     List<SkinLogEntry>? skinLogs,
     List<MutedConflict>? mutedConflicts,
     List<CollectionItem>? collectionItems,
+    List<CategoryOverride>? categoryOverrides,
     String? lastExportDate,
     String? lastKnownMasterVersion,
   }) =>
@@ -135,6 +145,7 @@ class UserDataExport {
         skinLogs: skinLogs ?? this.skinLogs,
         mutedConflicts: mutedConflicts ?? this.mutedConflicts,
         collectionItems: collectionItems ?? this.collectionItems,
+        categoryOverrides: categoryOverrides ?? this.categoryOverrides,
         lastExportDate: lastExportDate ?? this.lastExportDate,
         lastKnownMasterVersion:
             lastKnownMasterVersion ?? this.lastKnownMasterVersion,
@@ -179,6 +190,7 @@ class UserDataExport {
   static Map<String, dynamic> _overrideToJson(OrderOverride o) => {
         'id': o.id,
         'slot': o.slot.name,
+        'weekday': o.weekday,
         'orderedProductIds': o.orderedProductIds,
         'lastModified': o.lastModified.toIso8601String(),
       };
@@ -187,6 +199,7 @@ class UserDataExport {
       OrderOverride(
         id: m['id'] as String,
         slot: Slot.values.firstWhere((s) => s.name == m['slot']),
+        weekday: m['weekday'] as int?,
         orderedProductIds:
             (m['orderedProductIds'] as List<dynamic>).cast<String>(),
         lastModified: DateTime.parse(m['lastModified'] as String),
@@ -268,6 +281,21 @@ class UserDataExport {
             : DateTime.parse(m['openedDate'] as String),
         paoMonths: m['paoMonths'] as int,
         notificationsEnabled: m['notificationsEnabled'] as bool? ?? true,
+        lastModified: DateTime.parse(m['lastModified'] as String),
+      );
+
+  static Map<String, dynamic> _categoryOverrideToJson(CategoryOverride o) => {
+        'id': o.id,
+        'productId': o.productId,
+        'categoryId': o.categoryId,
+        'lastModified': o.lastModified.toIso8601String(),
+      };
+
+  static CategoryOverride _categoryOverrideFromJson(Map<String, dynamic> m) =>
+      CategoryOverride(
+        id: m['id'] as String,
+        productId: m['productId'] as String,
+        categoryId: m['categoryId'] as String,
         lastModified: DateTime.parse(m['lastModified'] as String),
       );
 }

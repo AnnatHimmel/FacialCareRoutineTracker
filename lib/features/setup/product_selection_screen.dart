@@ -484,16 +484,9 @@ class _ProductSelectionScreenState
         ),
         // ── Bottom tray ───────────────────────────────────────────────────
         _V3BottomTray(
-          selectedPids: selectedPids,
-          allProducts: allProducts,
           selectedCountLabel: l.productSelV3SelectedCount(selectedCount),
           ctaLabel: l.productSelV3ShelfCTA,
           ctaEnabled: selectedCount > 0,
-          onRemove: (pid) {
-            final p = allProducts.firstWhere((x) => x.id == pid,
-                orElse: () => allProducts.first);
-            _toggleProduct(p, selMap, morning, evening);
-          },
           onNext: () {
             if (widget.onDone != null) {
               widget.onDone!();
@@ -1003,28 +996,20 @@ class _CornerPainter extends CustomPainter {
 // ── V3 Bottom tray ────────────────────────────────────────────────────────────
 
 class _V3BottomTray extends StatelessWidget {
-  final List<String> selectedPids;
-  final List<MasterProduct> allProducts;
   final String selectedCountLabel;
   final String ctaLabel;
   final bool ctaEnabled;
-  final void Function(String pid) onRemove;
   final VoidCallback onNext;
 
   const _V3BottomTray({
-    required this.selectedPids,
-    required this.allProducts,
     required this.selectedCountLabel,
     required this.ctaLabel,
     required this.ctaEnabled,
-    required this.onRemove,
     required this.onNext,
   });
 
   @override
   Widget build(BuildContext context) {
-    final prodById = {for (final p in allProducts) p.id: p};
-
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
       decoration: BoxDecoration(
@@ -1036,62 +1021,6 @@ class _V3BottomTray extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Thumbnails row or empty hint
-          if (selectedPids.isNotEmpty)
-            SizedBox(
-              height: 44,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                reverse: true, // RTL order
-                itemCount: selectedPids.length,
-                itemBuilder: (context, i) {
-                  final pid = selectedPids[i];
-                  final p = prodById[pid];
-                  if (p == null) return const SizedBox.shrink();
-                  return Padding(
-                    padding: const EdgeInsetsDirectional.only(end: 6),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        ProductThumb(imageAsset: p.imageAsset, size: 38),
-                        Positioned(
-                          top: -4,
-                          right: -4,
-                          child: GestureDetector(
-                            onTap: () => onRemove(pid),
-                            child: Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                color: AppColors.onSurface,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                    color: Colors.white, width: 1.5),
-                              ),
-                              child: const Icon(Icons.close_rounded,
-                                  color: Colors.white, size: 9),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                'חפשו או סרקו כדי להוסיף את המוצרים שלכם.',
-                textAlign: TextAlign.center,
-                style: AppTypography.labelSm.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          const SizedBox(height: 4),
           Text(
             selectedCountLabel,
             style: AppTypography.labelSm.copyWith(
@@ -1931,7 +1860,8 @@ class _AddCustomProductCTA extends StatelessWidget {
               ),
             ),
             const Icon(
-              Icons.chevron_right_rounded,
+              Icons.chevron_left_rounded,
+              textDirection: TextDirection.ltr,
               color: AppColors.outline,
               size: 20,
             ),

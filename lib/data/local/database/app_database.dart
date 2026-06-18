@@ -8,6 +8,7 @@ import 'tables/skin_log_entries.dart';
 import 'tables/muted_conflicts.dart';
 import 'tables/user_custom_products.dart';
 import 'tables/collection_items.dart';
+import 'tables/category_overrides.dart';
 import 'daos/selections_dao.dart';
 import 'daos/schedules_dao.dart';
 import 'daos/order_overrides_dao.dart';
@@ -16,6 +17,7 @@ import 'daos/skin_log_dao.dart';
 import 'daos/muted_conflicts_dao.dart';
 import 'daos/user_custom_products_dao.dart';
 import 'daos/collection_items_dao.dart';
+import 'daos/category_overrides_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -29,6 +31,7 @@ part 'app_database.g.dart';
     MutedConflicts,
     UserCustomProducts,
     CollectionItems,
+    CategoryOverrides,
   ],
   daos: [
     SelectionsDao,
@@ -39,13 +42,14 @@ part 'app_database.g.dart';
     MutedConflictsDao,
     UserCustomProductsDao,
     CollectionItemsDao,
+    CategoryOverridesDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -78,6 +82,14 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 6) {
             await m.createTable(collectionItems);
+          }
+          if (from < 7) {
+            // Add per-day weekday column to order_overrides.
+            // Existing rows get NULL = global override (existing behavior preserved).
+            await m.addColumn(orderOverrides, orderOverrides.weekday);
+          }
+          if (from < 8) {
+            await m.createTable(categoryOverrides);
           }
         },
       );

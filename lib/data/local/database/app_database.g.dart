@@ -769,6 +769,17 @@ class $OrderOverridesTable extends OrderOverrides
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _weekdayMeta = const VerificationMeta(
+    'weekday',
+  );
+  @override
+  late final GeneratedColumn<int> weekday = GeneratedColumn<int>(
+    'weekday',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _orderedProductIdsJsonMeta =
       const VerificationMeta('orderedProductIdsJson');
   @override
@@ -795,6 +806,7 @@ class $OrderOverridesTable extends OrderOverrides
   List<GeneratedColumn> get $columns => [
     id,
     slot,
+    weekday,
     orderedProductIdsJson,
     lastModifiedMs,
   ];
@@ -822,6 +834,12 @@ class $OrderOverridesTable extends OrderOverrides
       );
     } else if (isInserting) {
       context.missing(_slotMeta);
+    }
+    if (data.containsKey('weekday')) {
+      context.handle(
+        _weekdayMeta,
+        weekday.isAcceptableOrUnknown(data['weekday']!, _weekdayMeta),
+      );
     }
     if (data.containsKey('ordered_product_ids_json')) {
       context.handle(
@@ -862,6 +880,10 @@ class $OrderOverridesTable extends OrderOverrides
         DriftSqlType.string,
         data['${effectivePrefix}slot'],
       )!,
+      weekday: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}weekday'],
+      ),
       orderedProductIdsJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}ordered_product_ids_json'],
@@ -883,11 +905,13 @@ class OrderOverrideRow extends DataClass
     implements Insertable<OrderOverrideRow> {
   final String id;
   final String slot;
+  final int? weekday;
   final String orderedProductIdsJson;
   final int lastModifiedMs;
   const OrderOverrideRow({
     required this.id,
     required this.slot,
+    this.weekday,
     required this.orderedProductIdsJson,
     required this.lastModifiedMs,
   });
@@ -896,6 +920,9 @@ class OrderOverrideRow extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['slot'] = Variable<String>(slot);
+    if (!nullToAbsent || weekday != null) {
+      map['weekday'] = Variable<int>(weekday);
+    }
     map['ordered_product_ids_json'] = Variable<String>(orderedProductIdsJson);
     map['last_modified_ms'] = Variable<int>(lastModifiedMs);
     return map;
@@ -905,6 +932,9 @@ class OrderOverrideRow extends DataClass
     return OrderOverridesCompanion(
       id: Value(id),
       slot: Value(slot),
+      weekday: weekday == null && nullToAbsent
+          ? const Value.absent()
+          : Value(weekday),
       orderedProductIdsJson: Value(orderedProductIdsJson),
       lastModifiedMs: Value(lastModifiedMs),
     );
@@ -918,6 +948,7 @@ class OrderOverrideRow extends DataClass
     return OrderOverrideRow(
       id: serializer.fromJson<String>(json['id']),
       slot: serializer.fromJson<String>(json['slot']),
+      weekday: serializer.fromJson<int?>(json['weekday']),
       orderedProductIdsJson: serializer.fromJson<String>(
         json['orderedProductIdsJson'],
       ),
@@ -930,6 +961,7 @@ class OrderOverrideRow extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'slot': serializer.toJson<String>(slot),
+      'weekday': serializer.toJson<int?>(weekday),
       'orderedProductIdsJson': serializer.toJson<String>(orderedProductIdsJson),
       'lastModifiedMs': serializer.toJson<int>(lastModifiedMs),
     };
@@ -938,11 +970,13 @@ class OrderOverrideRow extends DataClass
   OrderOverrideRow copyWith({
     String? id,
     String? slot,
+    Value<int?> weekday = const Value.absent(),
     String? orderedProductIdsJson,
     int? lastModifiedMs,
   }) => OrderOverrideRow(
     id: id ?? this.id,
     slot: slot ?? this.slot,
+    weekday: weekday.present ? weekday.value : this.weekday,
     orderedProductIdsJson: orderedProductIdsJson ?? this.orderedProductIdsJson,
     lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
   );
@@ -950,6 +984,7 @@ class OrderOverrideRow extends DataClass
     return OrderOverrideRow(
       id: data.id.present ? data.id.value : this.id,
       slot: data.slot.present ? data.slot.value : this.slot,
+      weekday: data.weekday.present ? data.weekday.value : this.weekday,
       orderedProductIdsJson: data.orderedProductIdsJson.present
           ? data.orderedProductIdsJson.value
           : this.orderedProductIdsJson,
@@ -964,6 +999,7 @@ class OrderOverrideRow extends DataClass
     return (StringBuffer('OrderOverrideRow(')
           ..write('id: $id, ')
           ..write('slot: $slot, ')
+          ..write('weekday: $weekday, ')
           ..write('orderedProductIdsJson: $orderedProductIdsJson, ')
           ..write('lastModifiedMs: $lastModifiedMs')
           ..write(')'))
@@ -972,13 +1008,14 @@ class OrderOverrideRow extends DataClass
 
   @override
   int get hashCode =>
-      Object.hash(id, slot, orderedProductIdsJson, lastModifiedMs);
+      Object.hash(id, slot, weekday, orderedProductIdsJson, lastModifiedMs);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is OrderOverrideRow &&
           other.id == this.id &&
           other.slot == this.slot &&
+          other.weekday == this.weekday &&
           other.orderedProductIdsJson == this.orderedProductIdsJson &&
           other.lastModifiedMs == this.lastModifiedMs);
 }
@@ -986,12 +1023,14 @@ class OrderOverrideRow extends DataClass
 class OrderOverridesCompanion extends UpdateCompanion<OrderOverrideRow> {
   final Value<String> id;
   final Value<String> slot;
+  final Value<int?> weekday;
   final Value<String> orderedProductIdsJson;
   final Value<int> lastModifiedMs;
   final Value<int> rowid;
   const OrderOverridesCompanion({
     this.id = const Value.absent(),
     this.slot = const Value.absent(),
+    this.weekday = const Value.absent(),
     this.orderedProductIdsJson = const Value.absent(),
     this.lastModifiedMs = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -999,6 +1038,7 @@ class OrderOverridesCompanion extends UpdateCompanion<OrderOverrideRow> {
   OrderOverridesCompanion.insert({
     required String id,
     required String slot,
+    this.weekday = const Value.absent(),
     required String orderedProductIdsJson,
     required int lastModifiedMs,
     this.rowid = const Value.absent(),
@@ -1009,6 +1049,7 @@ class OrderOverridesCompanion extends UpdateCompanion<OrderOverrideRow> {
   static Insertable<OrderOverrideRow> custom({
     Expression<String>? id,
     Expression<String>? slot,
+    Expression<int>? weekday,
     Expression<String>? orderedProductIdsJson,
     Expression<int>? lastModifiedMs,
     Expression<int>? rowid,
@@ -1016,6 +1057,7 @@ class OrderOverridesCompanion extends UpdateCompanion<OrderOverrideRow> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (slot != null) 'slot': slot,
+      if (weekday != null) 'weekday': weekday,
       if (orderedProductIdsJson != null)
         'ordered_product_ids_json': orderedProductIdsJson,
       if (lastModifiedMs != null) 'last_modified_ms': lastModifiedMs,
@@ -1026,6 +1068,7 @@ class OrderOverridesCompanion extends UpdateCompanion<OrderOverrideRow> {
   OrderOverridesCompanion copyWith({
     Value<String>? id,
     Value<String>? slot,
+    Value<int?>? weekday,
     Value<String>? orderedProductIdsJson,
     Value<int>? lastModifiedMs,
     Value<int>? rowid,
@@ -1033,6 +1076,7 @@ class OrderOverridesCompanion extends UpdateCompanion<OrderOverrideRow> {
     return OrderOverridesCompanion(
       id: id ?? this.id,
       slot: slot ?? this.slot,
+      weekday: weekday ?? this.weekday,
       orderedProductIdsJson:
           orderedProductIdsJson ?? this.orderedProductIdsJson,
       lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
@@ -1048,6 +1092,9 @@ class OrderOverridesCompanion extends UpdateCompanion<OrderOverrideRow> {
     }
     if (slot.present) {
       map['slot'] = Variable<String>(slot.value);
+    }
+    if (weekday.present) {
+      map['weekday'] = Variable<int>(weekday.value);
     }
     if (orderedProductIdsJson.present) {
       map['ordered_product_ids_json'] = Variable<String>(
@@ -1068,6 +1115,7 @@ class OrderOverridesCompanion extends UpdateCompanion<OrderOverrideRow> {
     return (StringBuffer('OrderOverridesCompanion(')
           ..write('id: $id, ')
           ..write('slot: $slot, ')
+          ..write('weekday: $weekday, ')
           ..write('orderedProductIdsJson: $orderedProductIdsJson, ')
           ..write('lastModifiedMs: $lastModifiedMs, ')
           ..write('rowid: $rowid')
@@ -3381,6 +3429,329 @@ class CollectionItemsCompanion extends UpdateCompanion<CollectionItemRow> {
   }
 }
 
+class $CategoryOverridesTable extends CategoryOverrides
+    with TableInfo<$CategoryOverridesTable, CategoryOverrideRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CategoryOverridesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productIdMeta = const VerificationMeta(
+    'productId',
+  );
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+    'product_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastModifiedMsMeta = const VerificationMeta(
+    'lastModifiedMs',
+  );
+  @override
+  late final GeneratedColumn<int> lastModifiedMs = GeneratedColumn<int>(
+    'last_modified_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    productId,
+    categoryId,
+    lastModifiedMs,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'category_overrides';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CategoryOverrideRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(
+        _productIdMeta,
+        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('last_modified_ms')) {
+      context.handle(
+        _lastModifiedMsMeta,
+        lastModifiedMs.isAcceptableOrUnknown(
+          data['last_modified_ms']!,
+          _lastModifiedMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastModifiedMsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CategoryOverrideRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CategoryOverrideRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      productId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_id'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      )!,
+      lastModifiedMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_modified_ms'],
+      )!,
+    );
+  }
+
+  @override
+  $CategoryOverridesTable createAlias(String alias) {
+    return $CategoryOverridesTable(attachedDatabase, alias);
+  }
+}
+
+class CategoryOverrideRow extends DataClass
+    implements Insertable<CategoryOverrideRow> {
+  final String id;
+  final String productId;
+  final String categoryId;
+  final int lastModifiedMs;
+  const CategoryOverrideRow({
+    required this.id,
+    required this.productId,
+    required this.categoryId,
+    required this.lastModifiedMs,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['product_id'] = Variable<String>(productId);
+    map['category_id'] = Variable<String>(categoryId);
+    map['last_modified_ms'] = Variable<int>(lastModifiedMs);
+    return map;
+  }
+
+  CategoryOverridesCompanion toCompanion(bool nullToAbsent) {
+    return CategoryOverridesCompanion(
+      id: Value(id),
+      productId: Value(productId),
+      categoryId: Value(categoryId),
+      lastModifiedMs: Value(lastModifiedMs),
+    );
+  }
+
+  factory CategoryOverrideRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CategoryOverrideRow(
+      id: serializer.fromJson<String>(json['id']),
+      productId: serializer.fromJson<String>(json['productId']),
+      categoryId: serializer.fromJson<String>(json['categoryId']),
+      lastModifiedMs: serializer.fromJson<int>(json['lastModifiedMs']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'productId': serializer.toJson<String>(productId),
+      'categoryId': serializer.toJson<String>(categoryId),
+      'lastModifiedMs': serializer.toJson<int>(lastModifiedMs),
+    };
+  }
+
+  CategoryOverrideRow copyWith({
+    String? id,
+    String? productId,
+    String? categoryId,
+    int? lastModifiedMs,
+  }) => CategoryOverrideRow(
+    id: id ?? this.id,
+    productId: productId ?? this.productId,
+    categoryId: categoryId ?? this.categoryId,
+    lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
+  );
+  CategoryOverrideRow copyWithCompanion(CategoryOverridesCompanion data) {
+    return CategoryOverrideRow(
+      id: data.id.present ? data.id.value : this.id,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      lastModifiedMs: data.lastModifiedMs.present
+          ? data.lastModifiedMs.value
+          : this.lastModifiedMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoryOverrideRow(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('lastModifiedMs: $lastModifiedMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, productId, categoryId, lastModifiedMs);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CategoryOverrideRow &&
+          other.id == this.id &&
+          other.productId == this.productId &&
+          other.categoryId == this.categoryId &&
+          other.lastModifiedMs == this.lastModifiedMs);
+}
+
+class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
+  final Value<String> id;
+  final Value<String> productId;
+  final Value<String> categoryId;
+  final Value<int> lastModifiedMs;
+  final Value<int> rowid;
+  const CategoryOverridesCompanion({
+    this.id = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.lastModifiedMs = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CategoryOverridesCompanion.insert({
+    required String id,
+    required String productId,
+    required String categoryId,
+    required int lastModifiedMs,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       productId = Value(productId),
+       categoryId = Value(categoryId),
+       lastModifiedMs = Value(lastModifiedMs);
+  static Insertable<CategoryOverrideRow> custom({
+    Expression<String>? id,
+    Expression<String>? productId,
+    Expression<String>? categoryId,
+    Expression<int>? lastModifiedMs,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (productId != null) 'product_id': productId,
+      if (categoryId != null) 'category_id': categoryId,
+      if (lastModifiedMs != null) 'last_modified_ms': lastModifiedMs,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CategoryOverridesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? productId,
+    Value<String>? categoryId,
+    Value<int>? lastModifiedMs,
+    Value<int>? rowid,
+  }) {
+    return CategoryOverridesCompanion(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      categoryId: categoryId ?? this.categoryId,
+      lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (lastModifiedMs.present) {
+      map['last_modified_ms'] = Variable<int>(lastModifiedMs.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoryOverridesCompanion(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('lastModifiedMs: $lastModifiedMs, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3398,6 +3769,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $CollectionItemsTable collectionItems = $CollectionItemsTable(
     this,
   );
+  late final $CategoryOverridesTable categoryOverrides =
+      $CategoryOverridesTable(this);
   late final SelectionsDao selectionsDao = SelectionsDao(this as AppDatabase);
   late final SchedulesDao schedulesDao = SchedulesDao(this as AppDatabase);
   late final OrderOverridesDao orderOverridesDao = OrderOverridesDao(
@@ -3413,6 +3786,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final CollectionItemsDao collectionItemsDao = CollectionItemsDao(
     this as AppDatabase,
   );
+  late final CategoryOverridesDao categoryOverridesDao = CategoryOverridesDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3426,6 +3802,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     mutedConflicts,
     userCustomProducts,
     collectionItems,
+    categoryOverrides,
   ];
 }
 
@@ -3852,6 +4229,7 @@ typedef $$OrderOverridesTableCreateCompanionBuilder =
     OrderOverridesCompanion Function({
       required String id,
       required String slot,
+      Value<int?> weekday,
       required String orderedProductIdsJson,
       required int lastModifiedMs,
       Value<int> rowid,
@@ -3860,6 +4238,7 @@ typedef $$OrderOverridesTableUpdateCompanionBuilder =
     OrderOverridesCompanion Function({
       Value<String> id,
       Value<String> slot,
+      Value<int?> weekday,
       Value<String> orderedProductIdsJson,
       Value<int> lastModifiedMs,
       Value<int> rowid,
@@ -3881,6 +4260,11 @@ class $$OrderOverridesTableFilterComposer
 
   ColumnFilters<String> get slot => $composableBuilder(
     column: $table.slot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get weekday => $composableBuilder(
+    column: $table.weekday,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3914,6 +4298,11 @@ class $$OrderOverridesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get weekday => $composableBuilder(
+    column: $table.weekday,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get orderedProductIdsJson => $composableBuilder(
     column: $table.orderedProductIdsJson,
     builder: (column) => ColumnOrderings(column),
@@ -3939,6 +4328,9 @@ class $$OrderOverridesTableAnnotationComposer
 
   GeneratedColumn<String> get slot =>
       $composableBuilder(column: $table.slot, builder: (column) => column);
+
+  GeneratedColumn<int> get weekday =>
+      $composableBuilder(column: $table.weekday, builder: (column) => column);
 
   GeneratedColumn<String> get orderedProductIdsJson => $composableBuilder(
     column: $table.orderedProductIdsJson,
@@ -3990,12 +4382,14 @@ class $$OrderOverridesTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> slot = const Value.absent(),
+                Value<int?> weekday = const Value.absent(),
                 Value<String> orderedProductIdsJson = const Value.absent(),
                 Value<int> lastModifiedMs = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OrderOverridesCompanion(
                 id: id,
                 slot: slot,
+                weekday: weekday,
                 orderedProductIdsJson: orderedProductIdsJson,
                 lastModifiedMs: lastModifiedMs,
                 rowid: rowid,
@@ -4004,12 +4398,14 @@ class $$OrderOverridesTableTableManager
               ({
                 required String id,
                 required String slot,
+                Value<int?> weekday = const Value.absent(),
                 required String orderedProductIdsJson,
                 required int lastModifiedMs,
                 Value<int> rowid = const Value.absent(),
               }) => OrderOverridesCompanion.insert(
                 id: id,
                 slot: slot,
+                weekday: weekday,
                 orderedProductIdsJson: orderedProductIdsJson,
                 lastModifiedMs: lastModifiedMs,
                 rowid: rowid,
@@ -5244,6 +5640,204 @@ typedef $$CollectionItemsTableProcessedTableManager =
       CollectionItemRow,
       PrefetchHooks Function()
     >;
+typedef $$CategoryOverridesTableCreateCompanionBuilder =
+    CategoryOverridesCompanion Function({
+      required String id,
+      required String productId,
+      required String categoryId,
+      required int lastModifiedMs,
+      Value<int> rowid,
+    });
+typedef $$CategoryOverridesTableUpdateCompanionBuilder =
+    CategoryOverridesCompanion Function({
+      Value<String> id,
+      Value<String> productId,
+      Value<String> categoryId,
+      Value<int> lastModifiedMs,
+      Value<int> rowid,
+    });
+
+class $$CategoryOverridesTableFilterComposer
+    extends Composer<_$AppDatabase, $CategoryOverridesTable> {
+  $$CategoryOverridesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastModifiedMs => $composableBuilder(
+    column: $table.lastModifiedMs,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CategoryOverridesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CategoryOverridesTable> {
+  $$CategoryOverridesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastModifiedMs => $composableBuilder(
+    column: $table.lastModifiedMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CategoryOverridesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CategoryOverridesTable> {
+  $$CategoryOverridesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastModifiedMs => $composableBuilder(
+    column: $table.lastModifiedMs,
+    builder: (column) => column,
+  );
+}
+
+class $$CategoryOverridesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CategoryOverridesTable,
+          CategoryOverrideRow,
+          $$CategoryOverridesTableFilterComposer,
+          $$CategoryOverridesTableOrderingComposer,
+          $$CategoryOverridesTableAnnotationComposer,
+          $$CategoryOverridesTableCreateCompanionBuilder,
+          $$CategoryOverridesTableUpdateCompanionBuilder,
+          (
+            CategoryOverrideRow,
+            BaseReferences<
+              _$AppDatabase,
+              $CategoryOverridesTable,
+              CategoryOverrideRow
+            >,
+          ),
+          CategoryOverrideRow,
+          PrefetchHooks Function()
+        > {
+  $$CategoryOverridesTableTableManager(
+    _$AppDatabase db,
+    $CategoryOverridesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CategoryOverridesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CategoryOverridesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CategoryOverridesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> productId = const Value.absent(),
+                Value<String> categoryId = const Value.absent(),
+                Value<int> lastModifiedMs = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CategoryOverridesCompanion(
+                id: id,
+                productId: productId,
+                categoryId: categoryId,
+                lastModifiedMs: lastModifiedMs,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String productId,
+                required String categoryId,
+                required int lastModifiedMs,
+                Value<int> rowid = const Value.absent(),
+              }) => CategoryOverridesCompanion.insert(
+                id: id,
+                productId: productId,
+                categoryId: categoryId,
+                lastModifiedMs: lastModifiedMs,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CategoryOverridesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CategoryOverridesTable,
+      CategoryOverrideRow,
+      $$CategoryOverridesTableFilterComposer,
+      $$CategoryOverridesTableOrderingComposer,
+      $$CategoryOverridesTableAnnotationComposer,
+      $$CategoryOverridesTableCreateCompanionBuilder,
+      $$CategoryOverridesTableUpdateCompanionBuilder,
+      (
+        CategoryOverrideRow,
+        BaseReferences<
+          _$AppDatabase,
+          $CategoryOverridesTable,
+          CategoryOverrideRow
+        >,
+      ),
+      CategoryOverrideRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5264,4 +5858,6 @@ class $AppDatabaseManager {
       $$UserCustomProductsTableTableManager(_db, _db.userCustomProducts);
   $$CollectionItemsTableTableManager get collectionItems =>
       $$CollectionItemsTableTableManager(_db, _db.collectionItems);
+  $$CategoryOverridesTableTableManager get categoryOverrides =>
+      $$CategoryOverridesTableTableManager(_db, _db.categoryOverrides);
 }

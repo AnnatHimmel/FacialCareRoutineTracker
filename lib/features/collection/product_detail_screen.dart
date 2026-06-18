@@ -708,7 +708,7 @@ class _LifecycleCardLocked extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '— · —',
+                    '· · ·',
                     style: GoogleFonts.quicksand(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -731,7 +731,7 @@ class _LifecycleCardLocked extends StatelessWidget {
 
             // ── Pitch text ────────────────────────────────────────────────
             Text(
-              'מתי נפתח? כמה זמן נשאר? עקבי אחרי חיי מדף, תוקף והתראות — עם Glow PRO.',
+              'מתי נפתח? כמה זמן נשאר? עקבי אחרי חיי מדף, תוקף והתראות, עם Glow PRO.',
               style: GoogleFonts.quicksand(
                 fontSize: 13,
                 color: AppColors.onSurfaceVariant,
@@ -889,7 +889,7 @@ class _RoutineInfoGrid extends StatelessWidget {
     if (_hasMorning && _hasEvening) return 'בוקר + ערב';
     if (_hasMorning) return 'בוקר';
     if (_hasEvening) return 'ערב';
-    return '—';
+    return '';
   }
 
   IconData get _slotIcon {
@@ -900,11 +900,11 @@ class _RoutineInfoGrid extends StatelessWidget {
 
   String get _freqValue {
     final config = product.morningConfig ?? product.eveningConfig;
-    if (config == null) return '—';
+    if (config == null) return '';
     final rule = config.frequencyRule;
     if (rule is DailyRule) return 'יומי';
     if (rule is WeeklyMaxRule) return 'עד ${rule.maxPerWeek} בשבוע';
-    return '—';
+    return '';
   }
 
   @override

@@ -1,3 +1,4 @@
+import '../entities/category_override.dart';
 import '../entities/collection_item.dart';
 import '../entities/product_selection.dart';
 import '../entities/weekday_schedule.dart';
@@ -20,6 +21,10 @@ abstract class UserDataRepository {
   Stream<OrderOverride?> watchOrderOverride(Slot slot);
   Future<void> upsertOrderOverride(OrderOverride o);
   Future<void> deleteOrderOverride(Slot slot);
+
+  Stream<List<OrderOverride>> watchPerDayOrderOverrides(Slot slot);
+  Future<OrderOverride?> getEffectiveOrderOverride(Slot slot, int weekday);
+  Future<void> deletePerDayOrderOverride(Slot slot, int weekday);
 
   Stream<DayRecord?> watchDayRecord(String date, Slot slot);
   Future<DayRecord> snapshotAndGetDayRecord(
@@ -47,6 +52,10 @@ abstract class UserDataRepository {
   Stream<List<CollectionItem>> watchCollectionItems();
   Future<void> upsertCollectionItem(CollectionItem item);
   Future<void> deleteCollectionItem(String id);
+
+  Stream<List<CategoryOverride>> watchCategoryOverrides();
+  Future<void> upsertCategoryOverride(CategoryOverride o);
+  Future<void> deleteCategoryOverride(String productId);
 
   Future<UserDataExport> exportAllData();
   Future<void> replaceAllData(UserDataExport export);

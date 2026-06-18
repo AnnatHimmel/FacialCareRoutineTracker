@@ -18,6 +18,7 @@ import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
+import 'package:skincare_tracker/domain/entities/category_override.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
 import 'package:skincare_tracker/features/setup/barcode_scan_sheet.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
@@ -77,6 +78,13 @@ class _CapturingUDR implements UserDataRepository {
   @override Stream<OrderOverride?> watchOrderOverride(Slot s) => throw UnimplementedError();
   @override Future<void> upsertOrderOverride(OrderOverride o) => throw UnimplementedError();
   @override Future<void> deleteOrderOverride(Slot s) => throw UnimplementedError();
+
+  @override
+  Stream<List<OrderOverride>> watchPerDayOrderOverrides(Slot slot) => Stream.value([]);
+  @override
+  Future<OrderOverride?> getEffectiveOrderOverride(Slot slot, int weekday) async => null;
+  @override
+  Future<void> deletePerDayOrderOverride(Slot slot, int weekday) async {}
   @override Stream<DayRecord?> watchDayRecord(String d, Slot s) => throw UnimplementedError();
   @override Future<DayRecord> snapshotAndGetDayRecord(String d, Slot s, List<String> ids, String v) => throw UnimplementedError();
   @override Future<void> updateDayRecord(DayRecord r) => throw UnimplementedError();
@@ -87,6 +95,9 @@ class _CapturingUDR implements UserDataRepository {
   @override Stream<List<SkinLogEntry>> watchAllSkinLogs() => throw UnimplementedError();
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
+  @override Stream<List<CategoryOverride>> watchCategoryOverrides() => Stream.value([]);
+  @override Future<void> upsertCategoryOverride(CategoryOverride o) async {}
+  @override Future<void> deleteCategoryOverride(String productId) async {}
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

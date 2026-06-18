@@ -276,7 +276,7 @@ class _ConflictOption extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.chevron_left, color: color, size: 20),
+          Icon(Icons.chevron_left, textDirection: TextDirection.ltr, color: color, size: 20),
         ],
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/l10n/generated/app_localizations.dart';
+import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/master_product.dart';
@@ -233,6 +234,8 @@ class _OrderCustomizationScreenState
                           onToggle: () => setState(
                               () => _advancedExpanded = !_advancedExpanded),
                           onReset: () => _resetOrder(slot),
+                          products: products,
+                          globalOverride: override,
                           l: l,
                         ),
                       ],
@@ -462,6 +465,12 @@ final _orderOverrideProvider =
       ref.watch(userDataRepositoryProvider).watchOrderOverride(slot),
 );
 
+final _perDayOverridesProvider =
+    StreamProvider.family<List<OrderOverride>, Slot>(
+  (ref, slot) =>
+      ref.watch(userDataRepositoryProvider).watchPerDayOrderOverrides(slot),
+);
+
 // ── Onboarding single-slot header ────────────────────────────────────────────
 // Matches the _Header style from CategoryReviewScreen: back arrow + title +
 // step label + subtitle.
@@ -543,16 +552,18 @@ class _OnboardingOrderHeader extends StatelessWidget {
 }
 
 // ── Advanced options collapsible (onboarding order screen) ───────────────────
-// Collapsed by default. Shows orderAdvancedTitle + sub as a tappable row;
-// when expanded shows orderPerDayTitle + microcopy + reset-to-recommended
-// action. Per-day reordering is NOT implemented in v1 — only the microcopy.
+// Collapsed by default. Header shows orderAdvancedTitle + sub.
+// When expanded: global reset button (if custom order exists) + per-day section
+// with 7 tappable weekday rows that open a drag-to-reorder bottom sheet.
 
-class _AdvancedOptionsPanel extends StatelessWidget {
+class _AdvancedOptionsPanel extends ConsumerWidget {
   final Slot slot;
   final bool expanded;
   final bool hasCustomOrder;
   final VoidCallback onToggle;
   final VoidCallback onReset;
+  final List<MasterProduct> products;
+  final OrderOverride? globalOverride;
   final AppLocalizations l;
 
   const _AdvancedOptionsPanel({
@@ -561,11 +572,25 @@ class _AdvancedOptionsPanel extends StatelessWidget {
     required this.hasCustomOrder,
     required this.onToggle,
     required this.onReset,
+    required this.products,
+    required this.globalOverride,
     required this.l,
   });
 
+  String _dayName(int ourDay, BuildContext context) {
+    final isHe = Localizations.localeOf(context).languageCode == 'he';
+    // ourDay: 0=Sun…6=Sat; HebrewDateStrings/EnglishDateStrings: 0=Mon…6=Sun
+    final idx = (ourDay + 6) % 7;
+    return isHe
+        ? 'יום ${HebrewDateStrings.weekdays[idx]}'
+        : EnglishDateStrings.weekdays[idx];
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final perDayAsync = ref.watch(_perDayOverridesProvider(slot));
+    final perDayOverrides = perDayAsync.valueOrNull ?? [];
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
@@ -628,25 +653,9 @@ class _AdvancedOptionsPanel extends StatelessWidget {
                     color: AppColors.outlineVariant.withValues(alpha: 0.5),
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    l.orderPerDayTitle,
-                    style: AppTypography.labelMd.copyWith(
-                      color: AppColors.onSurface,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l.orderPerDayMicrocopy,
-                    style: AppTypography.labelSm.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                      fontSize: 11,
-                      height: 1.4,
-                    ),
-                  ),
+
+                  // Global reset button
                   if (hasCustomOrder) ...[
-                    const SizedBox(height: 12),
                     Align(
                       alignment: AlignmentDirectional.centerStart,
                       child: OutlinedButton.icon(
@@ -674,11 +683,328 @@ class _AdvancedOptionsPanel extends StatelessWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 12),
+                    Divider(
+                      height: 1,
+                      color: AppColors.outlineVariant.withValues(alpha: 0.4),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+
+                  // Per-day section title
+                  Text(
+                    l.orderPerDayTitle,
+                    style: AppTypography.labelMd.copyWith(
+                      color: AppColors.onSurface,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Seven weekday rows: Sun=0 … Sat=6
+                  for (int day = 0; day < 7; day++) ...[
+                    _WeekdayRow(
+                      dayName: _dayName(day, context),
+                      hasPerDayOverride: perDayOverrides.any(
+                        (o) => o.weekday == day,
+                      ),
+                      customBadgeLabel: l.orderPerDayCustomBadge,
+                      onTap: () => showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => _PerDayOrderSheet(
+                          slot: slot,
+                          weekday: day,
+                          dayName: _dayName(day, context),
+                          products: products,
+                          perDayOverride: perDayOverrides
+                              .where((o) => o.weekday == day)
+                              .firstOrNull,
+                          globalOverride: globalOverride,
+                          l: l,
+                        ),
+                      ),
+                    ),
+                    if (day < 6)
+                      Divider(
+                        height: 1,
+                        indent: 0,
+                        color:
+                            AppColors.outlineVariant.withValues(alpha: 0.25),
+                      ),
                   ],
                 ],
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Single weekday row inside the advanced panel ──────────────────────────────
+
+class _WeekdayRow extends StatelessWidget {
+  final String dayName;
+  final bool hasPerDayOverride;
+  final String customBadgeLabel;
+  final VoidCallback onTap;
+
+  const _WeekdayRow({
+    required this.dayName,
+    required this.hasPerDayOverride,
+    required this.customBadgeLabel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                dayName,
+                style: AppTypography.bodyMd.copyWith(
+                  fontSize: 13,
+                  color: AppColors.onSurface,
+                ),
+              ),
+            ),
+            if (hasPerDayOverride) ...[
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  customBadgeLabel,
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSecondaryContainer,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Icon(
+              Icons.chevron_left_rounded,
+              textDirection: TextDirection.ltr,
+              size: 18,
+              color: AppColors.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Per-day order bottom sheet ────────────────────────────────────────────────
+
+class _PerDayOrderSheet extends ConsumerStatefulWidget {
+  final Slot slot;
+  final int weekday; // 0=Sun…6=Sat
+  final String dayName;
+  final List<MasterProduct> products;
+  final OrderOverride? perDayOverride;
+  final OrderOverride? globalOverride;
+  final AppLocalizations l;
+
+  const _PerDayOrderSheet({
+    required this.slot,
+    required this.weekday,
+    required this.dayName,
+    required this.products,
+    required this.perDayOverride,
+    required this.globalOverride,
+    required this.l,
+  });
+
+  @override
+  ConsumerState<_PerDayOrderSheet> createState() => _PerDayOrderSheetState();
+}
+
+class _PerDayOrderSheetState extends ConsumerState<_PerDayOrderSheet> {
+  late List<String> _ids;
+  String? _overrideId;
+
+  @override
+  void initState() {
+    super.initState();
+    _overrideId = widget.perDayOverride?.id;
+
+    // Initial order: per-day override > global override > admin order
+    final sourceIds = widget.perDayOverride?.orderedProductIds ??
+        widget.globalOverride?.orderedProductIds;
+
+    if (sourceIds != null) {
+      final sorted = List<MasterProduct>.from(widget.products);
+      sorted.sort((a, b) {
+        final ai = sourceIds.indexOf(a.id);
+        final bi = sourceIds.indexOf(b.id);
+        if (ai >= 0 && bi >= 0) return ai.compareTo(bi);
+        if (ai >= 0) return -1;
+        if (bi >= 0) return 1;
+        return 0;
+      });
+      _ids = sorted.map((p) => p.id).toList();
+    } else {
+      _ids = widget.products.map((p) => p.id).toList();
+    }
+  }
+
+  Future<void> _onReorder(int oldIndex, int newIndex) async {
+    if (newIndex > oldIndex) newIndex -= 1;
+    setState(() {
+      final id = _ids.removeAt(oldIndex);
+      _ids.insert(newIndex, id);
+    });
+
+    _overrideId ??= _uuid.v4();
+    final repo = ref.read(userDataRepositoryProvider);
+    await repo.upsertOrderOverride(
+      OrderOverride(
+        id: _overrideId!,
+        slot: widget.slot,
+        weekday: widget.weekday,
+        orderedProductIds: List<String>.from(_ids),
+        lastModified: DateTime.now(),
+      ),
+    );
+  }
+
+  Future<void> _clearDayOrder() async {
+    final repo = ref.read(userDataRepositoryProvider);
+    await repo.deletePerDayOrderOverride(widget.slot, widget.weekday);
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPerDayOrder = _overrideId != null;
+
+    final orderedProducts = widget.products
+        .where((p) => _ids.contains(p.id))
+        .toList()
+      ..sort((a, b) => _ids.indexOf(a.id).compareTo(_ids.indexOf(b.id)));
+
+    return Container(
+      margin: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 24,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.l.orderPerDaySheetTitle(widget.dayName),
+                    style: AppTypography.headlineMd.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded),
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: Column(
+                children: [
+                  GlowCard(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 0),
+                    child: ReorderableListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: orderedProducts.length,
+                      onReorderItem: _onReorder,
+                      itemBuilder: (context, index) {
+                        final product = orderedProducts[index];
+                        return RoutineItemRow(
+                          key: ValueKey(product.id),
+                          product: product,
+                          isToggled: false,
+                          onToggle: () {},
+                          isDraggable: true,
+                        );
+                      },
+                    ),
+                  ),
+                  if (hasPerDayOrder) ...[
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: OutlinedButton.icon(
+                        onPressed: _clearDayOrder,
+                        icon: const Icon(Icons.clear_rounded, size: 16),
+                        label: Text(
+                          widget.l.orderPerDayClearDay,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(
+                            color: AppColors.primaryFixed,
+                            width: 1.5,
+                          ),
+                          textStyle: AppTypography.labelMd
+                              .copyWith(fontWeight: FontWeight.w700),
+                          backgroundColor: AppColors.surfaceLow,
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ),
+                  ],
+                  SizedBox(
+                    height: MediaQuery.of(context).padding.bottom + 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

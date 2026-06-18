@@ -1995,7 +1995,7 @@ class _ConflictSheetCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                      'הסרת ${movable.name} מהיום הזה',
+                      l.issueActionRemoveFromDayNamed(movable.name),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -2022,7 +2022,7 @@ class _ConflictSheetCard extends StatelessWidget {
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Text(
-                  'להשאיר בכל זאת',
+                  l.issueActionKeep,
                   style: AppTypography.labelMd.copyWith(
                     color: AppColors.onSurfaceVariant,
                     fontSize: 12,
@@ -2045,7 +2045,7 @@ class _ConflictSheetCard extends StatelessWidget {
                   Navigator.of(context).pop();
                 },
                 child: Text(
-                  'פיזור אוטומטי לשבוע',
+                  l.issueActionAutoDistribute,
                   style: AppTypography.labelMd.copyWith(
                     color: AppColors.primary,
                     fontSize: 12,

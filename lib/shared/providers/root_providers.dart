@@ -12,6 +12,7 @@ import '../../data/local/photo_storage/photo_repository_android.dart';
 import '../../data/local/photo_storage/photo_repository_web.dart';
 import '../../data/local/preferences/settings_repository_impl.dart';
 import '../../data/repositories_impl/user_data_repository_impl.dart';
+import '../../domain/entities/category_override.dart';
 import '../../domain/entities/collection_item.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/muted_conflict.dart';
@@ -200,6 +201,10 @@ final collectionItemsProvider = StreamProvider<List<CollectionItem>>(
   (ref) => ref.watch(userDataRepositoryProvider).watchCollectionItems(),
 );
 
+final categoryOverridesProvider = StreamProvider<List<CategoryOverride>>(
+  (ref) => ref.watch(userDataRepositoryProvider).watchCategoryOverrides(),
+);
+
 final paoCalculatorProvider = Provider((ref) => const PaoCalculator());
 
 final userNameProvider = FutureProvider<String?>(
@@ -218,11 +223,18 @@ final dailyRoutineProvider =
     final resolver = ref.watch(routineResolverProvider);
     final userRepo = ref.watch(userDataRepositoryProvider);
 
+    final effectiveDate = boundary.parseDate(params.date);
+    final dayOfWeek = effectiveDate.weekday % 7; // Sun=0…Sat=6
+
     await for (final selections in userRepo.watchSelections(params.slot)) {
       final customProds = await userRepo.watchCustomProducts().first;
       final schedules = await userRepo.watchAllSchedules().first;
       final orderOverride =
-          await userRepo.watchOrderOverride(params.slot).first;
+          await userRepo.getEffectiveOrderOverride(params.slot, dayOfWeek);
+      final catOverrideList = await userRepo.watchCategoryOverrides().first;
+      final catOverrides = {
+        for (final o in catOverrideList) o.productId: o.categoryId,
+      };
 
       final allProducts = [
         ...masterContent.products,
@@ -230,7 +242,7 @@ final dailyRoutineProvider =
       ];
 
       yield resolver.resolve(
-        date: boundary.parseDate(params.date),
+        date: effectiveDate,
         slot: params.slot,
         allProducts: allProducts,
         categories: masterContent.categories,
@@ -238,6 +250,7 @@ final dailyRoutineProvider =
         schedules: schedules,
         orderOverride: orderOverride,
         boundary: boundary,
+        categoryOverrides: catOverrides.isNotEmpty ? catOverrides : null,
       );
     }
   },

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:uuid/uuid.dart';
 import '../../core/utils/json_list.dart';
 import '../../data/local/database/app_database.dart';
+import '../../domain/entities/category_override.dart';
 import '../../domain/entities/collection_item.dart';
 import '../../domain/entities/day_record.dart';
 import '../../domain/entities/muted_conflict.dart';
@@ -72,7 +73,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
 
   @override
   Stream<OrderOverride?> watchOrderOverride(Slot slot) =>
-      _db.orderOverridesDao.watchBySlot(slot.name).map(
+      _db.orderOverridesDao.watchGlobalBySlot(slot.name).map(
             (rows) => rows.isEmpty ? null : _overrideFromRow(rows.first),
           );
 
@@ -82,6 +83,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
         OrderOverridesCompanion(
           id: Value(o.id),
           slot: Value(o.slot.name),
+          weekday: Value(o.weekday),
           orderedProductIdsJson: Value(encodeIds(o.orderedProductIds)),
           lastModifiedMs: Value(o.lastModified.millisecondsSinceEpoch),
         ),
@@ -89,7 +91,36 @@ class UserDataRepositoryImpl implements UserDataRepository {
 
   @override
   Future<void> deleteOrderOverride(Slot slot) async {
-    final rows = await _db.orderOverridesDao.watchBySlot(slot.name).first;
+    final rows =
+        await _db.orderOverridesDao.watchGlobalBySlot(slot.name).first;
+    for (final row in rows) {
+      await _db.orderOverridesDao.deleteById(row.id);
+    }
+  }
+
+  @override
+  Stream<List<OrderOverride>> watchPerDayOrderOverrides(Slot slot) =>
+      _db.orderOverridesDao.watchPerDayBySlot(slot.name).map(
+            (rows) => rows.map(_overrideFromRow).toList(),
+          );
+
+  @override
+  Future<OrderOverride?> getEffectiveOrderOverride(
+      Slot slot, int weekday) async {
+    final perDay = await _db.orderOverridesDao
+        .watchBySlotAndWeekday(slot.name, weekday)
+        .first;
+    if (perDay.isNotEmpty) return _overrideFromRow(perDay.first);
+    final global =
+        await _db.orderOverridesDao.watchGlobalBySlot(slot.name).first;
+    return global.isNotEmpty ? _overrideFromRow(global.first) : null;
+  }
+
+  @override
+  Future<void> deletePerDayOrderOverride(Slot slot, int weekday) async {
+    final rows = await _db.orderOverridesDao
+        .watchBySlotAndWeekday(slot.name, weekday)
+        .first;
     for (final row in rows) {
       await _db.orderOverridesDao.deleteById(row.id);
     }
@@ -251,6 +282,29 @@ class UserDataRepositoryImpl implements UserDataRepository {
   Future<void> deleteCollectionItem(String id) =>
       _db.collectionItemsDao.deleteById(id);
 
+  // ── Category overrides ────────────────────────────────────────────────────
+
+  @override
+  Stream<List<CategoryOverride>> watchCategoryOverrides() =>
+      _db.categoryOverridesDao.watchAll().map(
+            (rows) => rows.map(_categoryOverrideFromRow).toList(),
+          );
+
+  @override
+  Future<void> upsertCategoryOverride(CategoryOverride o) =>
+      _db.categoryOverridesDao.upsert(
+        CategoryOverridesCompanion(
+          id: Value(o.id),
+          productId: Value(o.productId),
+          categoryId: Value(o.categoryId),
+          lastModifiedMs: Value(o.lastModified.millisecondsSinceEpoch),
+        ),
+      );
+
+  @override
+  Future<void> deleteCategoryOverride(String productId) =>
+      _db.categoryOverridesDao.deleteByProductId(productId);
+
   // ── Export / Import ───────────────────────────────────────────────────────
 
   @override
@@ -262,6 +316,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
     final slRows = await _db.skinLogDao.watchAll().first;
     final mcRows = await _db.mutedConflictsDao.watchAll().first;
     final ciRows = await _db.collectionItemsDao.watchAll().first;
+    final coRows = await _db.categoryOverridesDao.watchAll().first;
 
     return UserDataExport(
       schemaVersion: '1',
@@ -275,6 +330,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
       skinLogs: slRows.map(_skinLogFromRow).toList(),
       mutedConflicts: mcRows.map(_mutedConflictFromRow).toList(),
       collectionItems: ciRows.map(_collectionItemFromRow).toList(),
+      categoryOverrides: coRows.map(_categoryOverrideFromRow).toList(),
     );
   }
 
@@ -288,6 +344,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
       await _db.skinLogDao.deleteAll();
       await _db.mutedConflictsDao.deleteAll();
       await _db.collectionItemsDao.deleteAll();
+      await _db.categoryOverridesDao.deleteAll();
 
       for (final s in export.selections) {
         await upsertSelection(s);
@@ -309,6 +366,9 @@ class UserDataRepositoryImpl implements UserDataRepository {
       }
       for (final c in export.collectionItems) {
         await upsertCollectionItem(c);
+      }
+      for (final o in export.categoryOverrides) {
+        await upsertCategoryOverride(o);
       }
     });
   }
@@ -336,6 +396,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
   OrderOverride _overrideFromRow(OrderOverrideRow r) => OrderOverride(
         id: r.id,
         slot: Slot.values.firstWhere((s) => s.name == r.slot),
+        weekday: r.weekday,
         orderedProductIds: decodeIds(r.orderedProductIdsJson),
         lastModified:
             DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),
@@ -403,5 +464,13 @@ class UserDataRepositoryImpl implements UserDataRepository {
         recordedProductIdsJson: Value(encodeIds(r.recordedProductIds)),
         resolvedAtMasterVersion: Value(r.resolvedAtMasterVersion),
         lastModifiedMs: Value(r.lastModified.millisecondsSinceEpoch),
+      );
+
+  CategoryOverride _categoryOverrideFromRow(CategoryOverrideRow r) =>
+      CategoryOverride(
+        id: r.id,
+        productId: r.productId,
+        categoryId: r.categoryId,
+        lastModified: DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),
       );
 }

@@ -16,7 +16,6 @@ import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/pao_meter.dart';
 import '../../shared/widgets/pro_tag.dart';
 import '../../shared/widgets/product_thumb.dart';
-import '../setup/barcode_scan_sheet.dart';
 import '../../shared/widgets/upgrade_sheet.dart';
 
 class CollectionScreen extends ConsumerStatefulWidget {
@@ -116,21 +115,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           floatingActionButton: kIsWeb
               ? null
               : FloatingActionButton.extended(
-                  onPressed: () => showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => const BarcodeScanSheet(),
-                  ),
+                  onPressed: () => context.push('/add-product'),
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(9999),
                   ),
-                  icon: const Icon(Icons.qr_code_scanner_rounded, size: 22),
+                  icon: const Icon(Icons.add_rounded, size: 22),
                   label: Text(
-                    l.barcodeScan,
+                    l.addProductTitle,
                     style: GoogleFonts.quicksand(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,

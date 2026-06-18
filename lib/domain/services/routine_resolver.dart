@@ -8,6 +8,10 @@ import 'day_boundary_service.dart';
 
 class RoutineResolver {
   /// Returns products active for [date]+[slot] in effective order.
+  ///
+  /// [categoryOverrides] maps productId → categoryId for user-assigned
+  /// category reassignments. When provided, overrides a product's master
+  /// categoryId for sorting purposes only.
   List<MasterProduct> resolve({
     required DateTime date,
     required Slot slot,
@@ -17,6 +21,7 @@ class RoutineResolver {
     required List<WeekdaySchedule> schedules,
     required OrderOverride? orderOverride,
     required DayBoundaryService boundary,
+    Map<String, String>? categoryOverrides,
   }) {
     final effectiveDate = boundary.effectiveDate(date);
     // Dart: Mon=1..Sun=7 → convert to Sun=0..Sat=6
@@ -51,9 +56,12 @@ class RoutineResolver {
       for (final cat in categories) cat.id: cat.order,
     };
 
+    String effectiveCatId(MasterProduct p) =>
+        categoryOverrides?[p.id] ?? p.categoryId;
+
     int categoryThenSlotOrder(MasterProduct a, MasterProduct b) {
-      final catA = categoryOrderById[a.categoryId] ?? 9999;
-      final catB = categoryOrderById[b.categoryId] ?? 9999;
+      final catA = categoryOrderById[effectiveCatId(a)] ?? 9999;
+      final catB = categoryOrderById[effectiveCatId(b)] ?? 9999;
       if (catA != catB) return catA.compareTo(catB);
       final orderA = _slotOrder(a, slot);
       final orderB = _slotOrder(b, slot);

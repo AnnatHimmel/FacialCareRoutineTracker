@@ -616,7 +616,7 @@ class _CategoryDropdown extends StatelessWidget {
           value: selected,
           isExpanded: true,
           hint: Text(
-            '—',
+            'בחר...',
             style: AppTypography.bodyMd.copyWith(
               color: AppColors.outline.withAlpha(153),
             ),

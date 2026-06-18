@@ -13,6 +13,7 @@ import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
+import 'package:skincare_tracker/domain/entities/category_override.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
 import 'package:skincare_tracker/domain/services/reconciliation_service.dart';
 
@@ -80,6 +81,13 @@ class FakeUserRepo implements UserDataRepository {
   @override Stream<OrderOverride?> watchOrderOverride(Slot slot) => const Stream.empty();
   @override Future<void> upsertOrderOverride(OrderOverride o) async {}
   @override Future<void> deleteOrderOverride(Slot slot) async {}
+
+  @override
+  Stream<List<OrderOverride>> watchPerDayOrderOverrides(Slot slot) => Stream.value([]);
+  @override
+  Future<OrderOverride?> getEffectiveOrderOverride(Slot slot, int weekday) async => null;
+  @override
+  Future<void> deletePerDayOrderOverride(Slot slot, int weekday) async {}
   @override Stream<DayRecord?> watchDayRecord(String date, Slot slot) => const Stream.empty();
   @override Future<DayRecord> snapshotAndGetDayRecord(String date, Slot slot, List<String> ids, String v) => throw UnimplementedError();
   @override Future<void> updateDayRecord(DayRecord r) async {}
@@ -98,6 +106,9 @@ class FakeUserRepo implements UserDataRepository {
   @override Stream<List<CollectionItem>> watchCollectionItems() => throw UnimplementedError();
   @override Future<void> upsertCollectionItem(CollectionItem item) => throw UnimplementedError();
   @override Future<void> deleteCollectionItem(String id) => throw UnimplementedError();
+  @override Stream<List<CategoryOverride>> watchCategoryOverrides() => Stream.value([]);
+  @override Future<void> upsertCategoryOverride(CategoryOverride o) async {}
+  @override Future<void> deleteCategoryOverride(String productId) async {}
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

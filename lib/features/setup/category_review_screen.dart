@@ -5,6 +5,7 @@ import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/entities/category_override.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
@@ -27,9 +28,9 @@ class CategoryReviewScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
-  // productId → categoryId override (ephemeral — not persisted in V1)
   final Map<String, String> _categoryOverrides = {};
   String? _editingProductId;
+  bool _overridesLoaded = false;
 
   String _effectiveCatId(MasterProduct p) =>
       _categoryOverrides[p.id] ?? p.categoryId;
@@ -39,6 +40,15 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
       _categoryOverrides[productId] = catId;
       _editingProductId = null;
     });
+    // Persist immediately — fire and forget
+    ref.read(userDataRepositoryProvider).upsertCategoryOverride(
+          CategoryOverride(
+            id: 'cat-override-$productId',
+            productId: productId,
+            categoryId: catId,
+            lastModified: DateTime.now(),
+          ),
+        );
   }
 
   @override
@@ -47,6 +57,18 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
     final masterAsync = ref.watch(masterContentProvider);
     final morningAsync = ref.watch(selectionsProvider(Slot.morning));
     final eveningAsync = ref.watch(selectionsProvider(Slot.evening));
+    final savedOverridesAsync = ref.watch(categoryOverridesProvider);
+
+    // Seed local map from DB once on first successful load.
+    // Subsequent changes go through _reassign which writes directly to _categoryOverrides.
+    if (!_overridesLoaded) {
+      savedOverridesAsync.whenData((saved) {
+        _overridesLoaded = true;
+        for (final o in saved) {
+          _categoryOverrides[o.productId] = o.categoryId;
+        }
+      });
+    }
 
     return masterAsync.when(
       loading: () => const Scaffold(

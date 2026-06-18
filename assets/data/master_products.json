@@ -13,7 +13,6 @@
   "products": [
     {
       "id": "prod-039",
-      "brand": null,
       "name": "Generic Cleansing Gel",
       "imageAsset": "assets/images/products/generic_cleansing_gel.jpg",
       "categoryId": "cat-cleanser-step2",
@@ -23,8 +22,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Glycerin", "Cocamidopropyl Betaine", "Panthenol", "Allantoin", "Sodium Hyaluronate"],
-      "barcodes": [],
       "morningConfig": null,
       "eveningConfig": {
         "order": 0,
@@ -35,7 +32,6 @@
     },
     {
       "id": "prod-007",
-      "brand": "Beauty of Joseon",
       "name": "Relief Sun: Rice + Probiotics",
       "imageAsset": "assets/images/products/prod-007.jpg",
       "categoryId": "cat-spf",
@@ -45,8 +41,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Rice Extract", "Lactobacillus Ferment", "Niacinamide", "Zinc Oxide", "Panthenol"],
-      "barcodes": ["8809782555508"],
       "morningConfig": {
         "order": 20,
         "frequency": {
@@ -58,7 +52,6 @@
     },
     {
       "id": "prod-008",
-      "brand": "Heimish",
       "name": "All Clean Balm",
       "imageAsset": "assets/images/products/heimish_all_clean_balm.jpg",
       "categoryId": "cat-cleanser-step1",
@@ -68,8 +61,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Sunflower Seed Oil", "Shea Butter", "Vitamin E", "Glycerin", "Beeswax"],
-      "barcodes": ["8809481760678"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 0,
@@ -80,7 +71,6 @@
     },
     {
       "id": "prod-009",
-      "brand": "Heimish",
       "name": "All Clean Green Foam",
       "imageAsset": "assets/images/products/heimish_all_clean_green_foam.jpg",
       "categoryId": "cat-cleanser-step2",
@@ -90,8 +80,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Glycerin", "Cocamidopropyl Betaine", "Green Tea Extract", "Panthenol", "Allantoin"],
-      "barcodes": ["8809481760722"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 1,
@@ -102,7 +90,6 @@
     },
     {
       "id": "prod-010",
-      "brand": "MarulaLab",
       "name": "Anti-Aging Marula Oil",
       "imageAsset": "assets/images/products/marulalab_marula_oil.jpg",
       "categoryId": "cat-oil",
@@ -112,8 +99,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Marula Oil (Sclerocarya Birrea)", "Vitamin E (Tocopherol)", "Oleic Acid", "Squalane", "Omega-9 Fatty Acids"],
-      "barcodes": [],
       "morningConfig": null,
       "eveningConfig": {
         "order": 25,
@@ -124,7 +109,6 @@
     },
     {
       "id": "prod-011",
-      "brand": "ILLIYOON",
       "name": "Ceramide Ato Concentrate Cream",
       "imageAsset": "assets/images/products/illiyoon_ceramide_ato_cream.jpg",
       "categoryId": "cat-moisturizer",
@@ -134,8 +118,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Ceramide NP", "Panthenol", "Glycerin", "Shea Butter", "Madecassoside"],
-      "barcodes": ["8806390500050"],
       "morningConfig": {
         "order": 19,
         "frequency": {
@@ -151,7 +133,6 @@
     },
     {
       "id": "prod-012",
-      "brand": "Purito SEOUL",
       "name": "Daily Soft Touch Sunscreen",
       "imageAsset": "assets/images/products/purito_seoul_soft_touch_sunscreen.jpg",
       "categoryId": "cat-spf",
@@ -161,8 +142,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Tinosorb S (Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine)", "Uvinul A Plus", "Niacinamide", "Glycerin", "Panthenol"],
-      "barcodes": ["8809563102600"],
       "morningConfig": {
         "order": 23,
         "frequency": {
@@ -173,7 +152,6 @@
     },
     {
       "id": "prod-013",
-      "brand": "AXIS-Y",
       "name": "Heartleaf My-Type Calming Cream",
       "imageAsset": "assets/images/products/axis_y_heartleaf_calming_cream.jpg",
       "categoryId": "cat-moisturizer",
@@ -183,8 +161,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Houttuynia Cordata (Heartleaf) Extract", "Centella Asiatica Extract", "Panthenol", "Glycerin", "Ceramide NP"],
-      "barcodes": [],
       "morningConfig": {
         "order": 17,
         "frequency": {
@@ -200,7 +176,6 @@
     },
     {
       "id": "prod-014",
-      "brand": "iUNIK",
       "name": "Tea Tree Relief Serum",
       "imageAsset": "assets/images/products/iunik_tea_tree_relief_serum.jpg",
       "categoryId": "cat-serum",
@@ -210,8 +185,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Tea Tree Leaf Oil", "Centella Asiatica Extract", "Salicylic Acid", "Niacinamide", "Panthenol"],
-      "barcodes": ["8809728080071"],
       "morningConfig": {
         "order": 11,
         "frequency": {
@@ -227,7 +200,6 @@
     },
     {
       "id": "prod-015",
-      "brand": "S.NATURE",
       "name": "Aqua Squalane Moisturizing Cream",
       "imageAsset": "assets/images/products/snature_aqua_squalane_cream.jpg",
       "categoryId": "cat-moisturizer",
@@ -237,8 +209,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Squalane", "Glycerin", "Hyaluronic Acid", "Panthenol", "Ceramide NP"],
-      "barcodes": ["8809506310406"],
       "morningConfig": {
         "order": 18,
         "frequency": {
@@ -254,7 +224,6 @@
     },
     {
       "id": "prod-016",
-      "brand": "Beauty of Joseon",
       "name": "Light On Serum Centella + Vita C",
       "imageAsset": "assets/images/products/beauty_of_joseon_light_on_serum.jpg",
       "categoryId": "cat-serum",
@@ -264,8 +233,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Ascorbic Acid (Vitamin C)", "Centella Asiatica Extract", "Niacinamide", "Vitamin E (Tocopherol)", "Glycerin"],
-      "barcodes": ["8809875906477"],
       "morningConfig": {
         "order": 4,
         "frequency": {
@@ -276,7 +243,6 @@
     },
     {
       "id": "prod-017",
-      "brand": "Isntree",
       "name": "Hyper Acid 4 AHA BHA PHA LHA 30 Serum",
       "imageAsset": "assets/images/products/isntree_hyper_acid_30_serum.jpg",
       "categoryId": "cat-serum",
@@ -286,8 +252,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Glycolic Acid (AHA)", "Salicylic Acid (BHA)", "Gluconolactone (PHA)", "Lactobionic Acid (LHA)", "Niacinamide"],
-      "barcodes": ["8809800940880"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 18,
@@ -299,7 +263,6 @@
     },
     {
       "id": "prod-018",
-      "brand": "Dr.Jart+",
       "name": "Cicapair Intensive Soothing Repair Treatment Lotion",
       "imageAsset": "assets/images/products/dr_jart_cicapair_treatment_lotion.jpg",
       "categoryId": "cat-moisturizer",
@@ -309,8 +272,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Centella Asiatica Extract", "Madecassoside", "Panthenol", "Glycerin", "Ceramide NP"],
-      "barcodes": [],
       "morningConfig": {
         "order": 14,
         "frequency": {
@@ -326,7 +287,6 @@
     },
     {
       "id": "prod-019",
-      "brand": "Beauty of Joseon",
       "name": "Relief Sun Aqua Fresh Rice+B5",
       "imageAsset": "assets/images/products/beauty_of_joseon_relief_sun_aqua_fresh.jpg",
       "categoryId": "cat-spf",
@@ -336,8 +296,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Rice Extract", "Panthenol (Vitamin B5)", "Niacinamide", "Zinc Oxide", "Glycerin"],
-      "barcodes": ["8809968130277"],
       "morningConfig": {
         "order": 21,
         "frequency": {
@@ -348,7 +306,6 @@
     },
     {
       "id": "prod-020",
-      "brand": "Kisocare",
       "name": "Azelaic Acid Cream 20%",
       "imageAsset": "assets/images/products/kisocare_azelaic_acid_cream_20.jpg",
       "categoryId": "cat-serum",
@@ -358,8 +315,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Azelaic Acid 20%", "Glycerin", "Panthenol", "Niacinamide", "Allantoin"],
-      "barcodes": [],
       "morningConfig": {
         "order": 6,
         "frequency": {
@@ -375,7 +330,6 @@
     },
     {
       "id": "prod-021",
-      "brand": "JUMISO",
       "name": "Niacinamide 20 Serum",
       "imageAsset": "assets/images/products/jumiso_niacinamide_20_serum.jpg",
       "categoryId": "cat-serum",
@@ -385,8 +339,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Niacinamide 20%", "Zinc PCA", "Panthenol", "Glycerin", "Hyaluronic Acid"],
-      "barcodes": ["8809655952236"],
       "morningConfig": {
         "order": 9,
         "frequency": {
@@ -402,7 +354,6 @@
     },
     {
       "id": "prod-022",
-      "brand": "PURCELL",
       "name": "88B/mL L-Glutathione Flexible Liposome",
       "imageAsset": "assets/images/products/purcell_l_glutathione_liposome.jpg",
       "categoryId": "cat-toner",
@@ -412,8 +363,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["L-Glutathione (Liposomal)", "Niacinamide", "Ascorbic Acid (Vitamin C)", "Glycerin", "Panthenol"],
-      "barcodes": [],
       "morningConfig": {
         "order": 0,
         "frequency": {
@@ -429,7 +378,6 @@
     },
     {
       "id": "prod-023",
-      "brand": "Cos De BAHA",
       "name": "T15 Serum",
       "imageAsset": "assets/images/products/cos_de_baha_t15_serum.jpg",
       "categoryId": "cat-serum",
@@ -439,8 +387,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Tranexamic Acid 15%", "Niacinamide", "Glycerin", "Panthenol", "Hyaluronic Acid"],
-      "barcodes": [],
       "morningConfig": {
         "order": 8,
         "frequency": {
@@ -456,7 +402,6 @@
     },
     {
       "id": "prod-024",
-      "brand": "Genabelle",
       "name": "PDRN 3% Hyper Boost Ampoule",
       "imageAsset": "assets/images/products/genabelle_pdrn_hyper_boost_ampoule.jpg",
       "categoryId": "cat-serum",
@@ -466,8 +411,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["PDRN (Polydeoxyribonucleotide) 3%", "Adenosine", "Hyaluronic Acid", "Panthenol", "Glycerin"],
-      "barcodes": [],
       "morningConfig": {
         "order": 12,
         "frequency": {
@@ -483,7 +426,6 @@
     },
     {
       "id": "prod-025",
-      "brand": "DERMA E",
       "name": "Acne Blemish Control Treatment Serum",
       "imageAsset": "assets/images/products/derma_e_acne_blemish_control_serum.jpg",
       "categoryId": "cat-serum",
@@ -493,8 +435,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Salicylic Acid", "Tea Tree Leaf Oil", "Niacinamide", "Willow Bark Extract", "Glycerin"],
-      "barcodes": ["030985038514"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 17,
@@ -506,7 +446,6 @@
     },
     {
       "id": "prod-026",
-      "brand": "Cos De BAHA",
       "name": "AZ15 Serum",
       "imageAsset": "assets/images/products/cos_de_baha_az15_serum.jpg",
       "categoryId": "cat-serum",
@@ -516,8 +455,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Azelaic Acid 15%", "Panthenol", "Niacinamide", "Glycerin", "Allantoin"],
-      "barcodes": ["8809240318126"],
       "morningConfig": {
         "order": 7,
         "frequency": {
@@ -533,7 +470,6 @@
     },
     {
       "id": "prod-027",
-      "brand": "boben",
       "name": "Ectoin Moisturizing Soothing Sensitivity Repair Cream",
       "imageAsset": "assets/images/products/boben_ectoin_sensitivity_repair_cream.jpg",
       "categoryId": "cat-moisturizer",
@@ -543,8 +479,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Ectoin", "Panthenol", "Glycerin", "Ceramide NP", "Allantoin"],
-      "barcodes": [],
       "morningConfig": {
         "order": 15,
         "frequency": {
@@ -560,7 +494,6 @@
     },
     {
       "id": "prod-028",
-      "brand": "I'm from",
       "name": "Rice Toner",
       "imageAsset": "assets/images/products/im_from_rice_toner.jpg",
       "categoryId": "cat-toner",
@@ -570,8 +503,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Rice Extract", "Niacinamide", "Glycerin", "Inositol", "Ferulic Acid"],
-      "barcodes": ["8809581074767"],
       "morningConfig": {
         "order": 1,
         "frequency": {
@@ -587,7 +518,6 @@
     },
     {
       "id": "prod-029",
-      "brand": "By Wishtrend",
       "name": "Vitamin A-mazing Bakuchiol Night Cream",
       "imageAsset": "assets/images/products/by_wishtrend_vitamin_amazing_bakuchiol_cream.jpg",
       "categoryId": "cat-retinoid",
@@ -597,8 +527,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Retinal (Retinaldehyde)", "Bakuchiol", "Squalane", "Vitamin E (Tocopherol)", "Panthenol"],
-      "barcodes": ["8809572891328"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 2,
@@ -609,7 +537,6 @@
     },
     {
       "id": "prod-030",
-      "brand": "Anua",
       "name": "Niacinamide 10% + TXA 4% Serum",
       "imageAsset": "assets/images/products/anua_niacinamide_txa_serum.jpg",
       "categoryId": "cat-serum",
@@ -619,8 +546,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Niacinamide 10%", "Tranexamic Acid 4%", "Panthenol", "Glycerin", "Hyaluronic Acid"],
-      "barcodes": ["8809640734526"],
       "morningConfig": {
         "order": 10,
         "frequency": {
@@ -636,7 +561,6 @@
     },
     {
       "id": "prod-031",
-      "brand": "Beauty of Joseon",
       "name": "Dynasty Cream",
       "imageAsset": "assets/images/products/beauty_of_joseon_dynasty_cream.jpg",
       "categoryId": "cat-moisturizer",
@@ -646,8 +570,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Ginseng Extract", "Niacinamide", "Glycerin", "Honey Extract", "Adenosine"],
-      "barcodes": ["8809525249565"],
       "morningConfig": {
         "order": 16,
         "frequency": {
@@ -663,7 +585,6 @@
     },
     {
       "id": "prod-032",
-      "brand": "Medicube",
       "name": "Deep Vita A Retinol Serum",
       "imageAsset": "assets/images/products/medicube_deep_vita_a_retinol_serum.jpg",
       "categoryId": "cat-retinoid",
@@ -673,8 +594,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Retinol (Vitamin A)", "Squalane", "Vitamin E (Tocopherol)", "Panthenol", "Hyaluronic Acid"],
-      "barcodes": ["8809960356620"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 3,
@@ -685,7 +604,6 @@
     },
     {
       "id": "prod-033",
-      "brand": "haruharu wonder",
       "name": "Black Rice Moisture Airyfit Sunscreen",
       "imageAsset": "assets/images/products/haruharu_wonder_black_rice_airyfit_sunscreen.jpg",
       "categoryId": "cat-spf",
@@ -695,8 +613,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Fermented Black Rice Extract", "Niacinamide", "Zinc Oxide", "Glycerin", "Panthenol"],
-      "barcodes": ["8809532221707"],
       "morningConfig": {
         "order": 22,
         "frequency": {
@@ -707,7 +623,6 @@
     },
     {
       "id": "prod-034",
-      "brand": "Beauty of Joseon",
       "name": "Glow Replenishing Rice Milk",
       "imageAsset": "assets/images/products/beauty_of_joseon_glow_replenishing_rice_milk.jpg",
       "categoryId": "cat-toner",
@@ -717,8 +632,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Rice Extract", "Niacinamide", "Glycerin", "Panthenol", "Beta-Glucan"],
-      "barcodes": ["8809968130239"],
       "morningConfig": {
         "order": 2,
         "frequency": {
@@ -734,7 +647,6 @@
     },
     {
       "id": "prod-038",
-      "brand": "Beauty of Joseon",
       "name": "Revive Eye Serum Ginseng + Retinal",
       "imageAsset": "assets/images/products/beauty_of_joseon_revive_eye_serum.jpg",
       "categoryId": "cat-retinoid",
@@ -744,8 +656,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Retinal (Retinaldehyde)", "Ginseng Extract", "Niacinamide", "Adenosine", "Panthenol"],
-      "barcodes": ["8809738316146"],
       "morningConfig": null,
       "eveningConfig": {
         "order": 0,
@@ -756,7 +666,6 @@
     },
     {
       "id": "prod-035",
-      "brand": "COSRX",
       "name": "The 6 Peptide Skin Booster",
       "imageAsset": "assets/images/products/cosrx_the_6_peptide_skin_booster.jpg",
       "categoryId": "cat-toner",
@@ -766,8 +675,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Copper Tripeptide-1", "Hexapeptide-11", "Niacinamide", "Adenosine", "Glycerin"],
-      "barcodes": ["8809598455658"],
       "morningConfig": {
         "order": 3,
         "frequency": {
@@ -783,7 +690,6 @@
     },
     {
       "id": "prod-036",
-      "brand": "Medicube",
       "name": "PDRN Pink Peptide Serum",
       "imageAsset": "assets/images/products/medicube_pdrn_pink_peptide_serum.jpg",
       "categoryId": "cat-serum",
@@ -793,8 +699,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["PDRN (Polydeoxyribonucleotide)", "Copper Tripeptide-1", "Niacinamide", "Adenosine", "Panthenol"],
-      "barcodes": ["8800256108053"],
       "morningConfig": {
         "order": 13,
         "frequency": {
@@ -810,7 +714,6 @@
     },
     {
       "id": "prod-037",
-      "brand": "THE ORDINARY",
       "name": "Argireline Solution 10%",
       "imageAsset": "assets/images/products/the_ordinary_argireline_solution_10.jpg",
       "categoryId": "cat-serum",
@@ -820,8 +723,6 @@
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "ingredients": ["Argireline (Acetyl Hexapeptide-3) 10%", "Leuphasyl", "Hyaluronic Acid", "Glycerin", "Panthenol"],
-      "barcodes": ["0769915190946"],
       "morningConfig": {
         "order": 5,
         "frequency": {

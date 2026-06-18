@@ -48,7 +48,7 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       leading: showBack
           ? IconButton(
-              icon: const Icon(Icons.arrow_forward_rounded),
+              icon: const Icon(Icons.arrow_back_rounded),
               color: AppColors.primary,
               onPressed: onBack ?? () => Navigator.of(context).pop(),
             )
