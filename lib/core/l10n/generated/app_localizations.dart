@@ -2652,7 +2652,7 @@ abstract class AppLocalizations {
   /// No description provided for @autoFixUndo.
   ///
   /// In he, this message translates to:
-  /// **'ביטול'**
+  /// **'שחזר'**
   String get autoFixUndo;
 
   /// No description provided for @autoFixAppliedFallback.

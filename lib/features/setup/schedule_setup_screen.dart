@@ -198,7 +198,15 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     final isEnglish = l.localeName == 'en';
 
     // 1 · Resolve each conflicting pair into reversible mutations.
-    for (final c in conflicts) {
+    // Deduplicate first: multiple rules can match the same product pair
+    // (e.g. a product-level rule AND a sub-category rule for Argireline×VitC).
+    final seenPairs = <String>{};
+    final uniqueConflicts = conflicts.where((c) {
+      final key = ([c.productA.id, c.productB.id]..sort()).join('|');
+      return seenPairs.add(key);
+    }).toList();
+
+    for (final c in uniqueConflicts) {
       final res = resolver.resolve(
         productA: c.productA,
         productB: c.productB,

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/material.dart' show Locale;
@@ -127,6 +127,9 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
   final master = await ref.read(masterContentProvider.future);
   final userRepo = ref.read(userDataRepositoryProvider);
 
+  debugPrint('[ConflictAutoFix] contentVersion=${master.manifest.contentVersion}');
+  debugPrint('[ConflictAutoFix] subcategories=${master.subcategories.length}');
+
   final morningSelections = await userRepo.watchSelections(Slot.morning).first;
   final eveningSelections = await userRepo.watchSelections(Slot.evening).first;
   var schedules = await userRepo.watchAllSchedules().first;
@@ -137,6 +140,14 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
     ...master.products,
     ...customProds.map((p) => p.toMasterProduct()),
   ];
+
+  final classified = allProducts.where((p) => p.subCategoryId != null).length;
+  debugPrint('[ConflictAutoFix] classified=$classified/${allProducts.length}');
+
+  final argireline = allProducts.where((p) => p.id == 'prod-037').firstOrNull;
+  final vitc = allProducts.where((p) => p.id == 'prod-016').firstOrNull;
+  debugPrint('[ConflictAutoFix] argireline.subCategoryId=${argireline?.subCategoryId}');
+  debugPrint('[ConflictAutoFix] vitc.subCategoryId=${vitc?.subCategoryId}');
 
   Set<String> _selectedIds(List<ProductSelection> sels) =>
       sels.where((s) => s.isSelected).map((s) => s.productId).toSet();
@@ -150,11 +161,17 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
                   : p.eveningConfig != null))
           .toList();
 
-  final morningProds =
-      _productsForSlot(Slot.morning, _selectedIds(morningSelections));
-  final eveningProds =
-      _productsForSlot(Slot.evening, _selectedIds(eveningSelections));
+  final morningIds = _selectedIds(morningSelections);
+  final eveningIds = _selectedIds(eveningSelections);
+  debugPrint('[ConflictAutoFix] morning_selected=${morningIds.length} evening_selected=${eveningIds.length}');
+  debugPrint('[ConflictAutoFix] argireline in morning=${morningIds.contains("prod-037")} evening=${eveningIds.contains("prod-037")}');
+  debugPrint('[ConflictAutoFix] vitc in morning=${morningIds.contains("prod-016")}');
+
+  final morningProds = _productsForSlot(Slot.morning, morningIds);
+  final eveningProds = _productsForSlot(Slot.evening, eveningIds);
   final mutedRuleIds = mutedConflicts.map((m) => m.ruleId).toSet();
+
+  debugPrint('[ConflictAutoFix] morningProds=${morningProds.map((p) => p.id).join(",")}');
 
   final checker = IncompatibilityChecker();
   final conflicts = checker.getConflictsForDay(
@@ -165,7 +182,22 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
     mutedRuleIds: mutedRuleIds,
   );
 
-  final active = conflicts.where((c) => !c.isMuted).toList();
+  debugPrint('[ConflictAutoFix] raw_conflicts=${conflicts.length}');
+  for (final c in conflicts) {
+    debugPrint('[ConflictAutoFix]   conflict: ${c.productA.id}(${c.productA.subCategoryId}) × ${c.productB.id}(${c.productB.subCategoryId}) rule=${c.ruleId} muted=${c.isMuted}');
+  }
+
+  // Deduplicate: multiple rules can match the same product pair (e.g. a
+  // product-level rule AND a sub-category rule both cover Argireline×VitC).
+  // Process each unique unordered {productA, productB} pair only once.
+  final seen = <String>{};
+  final active = conflicts.where((c) {
+    if (c.isMuted) return false;
+    final key = ([c.productA.id, c.productB.id]..sort()).join('|');
+    return seen.add(key);
+  }).toList();
+
+  debugPrint('[ConflictAutoFix] deduped_active=${active.length}');
   if (active.isEmpty) return 0;
 
   const resolver = ConflictResolver();
@@ -175,6 +207,7 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
     final inMorning = morningProds.any((p) => p.id == conflict.productA.id) &&
         morningProds.any((p) => p.id == conflict.productB.id);
     final conflictSlot = inMorning ? Slot.morning : Slot.evening;
+    debugPrint('[ConflictAutoFix] resolving ${conflict.productA.id} × ${conflict.productB.id} in $conflictSlot');
 
     final resolution = resolver.resolve(
       productA: conflict.productA,
@@ -182,6 +215,8 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
       slot: conflictSlot,
       schedules: schedules,
     );
+
+    debugPrint('[ConflictAutoFix] mutations=${resolution.mutations.length}: ${resolution.mutations.map((m) => "${m.productId}@${m.slot.name}→${m.days}").join(", ")}');
 
     for (final m in resolution.mutations) {
       final existing = schedules
@@ -207,6 +242,7 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
     fixCount++;
   }
 
+  debugPrint('[ConflictAutoFix] done — fixed $fixCount pairs');
   return fixCount;
 });
 
