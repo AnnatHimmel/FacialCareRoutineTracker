@@ -351,6 +351,7 @@ class _OrderCustomizationScreenState
 
     final adminCmp = ProductSorter.adminComparator(
       categories: master.categories,
+      subcategories: master.subcategories,
       slot: slot,
     );
 

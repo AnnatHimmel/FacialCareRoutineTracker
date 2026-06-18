@@ -104,6 +104,36 @@ void main() {
       expect(restored.products.first.brand, 'Beauty of Joseon');
     });
 
+    test('round-trips subCategory rule target type', () {
+      final content = MasterContent(
+        products: [],
+        categories: [],
+        rules: [
+          const IncompatibilityRule(
+            id: 'r-sub',
+            entityA:
+                RuleTarget(type: RuleTargetType.subCategory, id: 'sub-argireline'),
+            entityB:
+                RuleTarget(type: RuleTargetType.subCategory, id: 'sub-vitamin-c'),
+            scope: RuleScope.withinSlot,
+            reason: 'לא יחד',
+            reasonEn: 'Not together',
+          ),
+        ],
+        manifest: const MasterListManifest(
+          contentVersion: '1.0.0',
+          appVersion: '1.0.0',
+          changelog: [],
+        ),
+      );
+      final json = MasterContentSerializer.toJson(content);
+      final restored = MasterContentSerializer.fromCombinedJson(json);
+      expect(restored.rules.first.entityA.type, RuleTargetType.subCategory);
+      expect(restored.rules.first.entityA.id, 'sub-argireline');
+      expect(restored.rules.first.entityB.type, RuleTargetType.subCategory);
+      expect(restored.rules.first.entityB.id, 'sub-vitamin-c');
+    });
+
     test('fromCombinedJson with empty products list returns empty list', () {
       final content = MasterContent(
         products: [],

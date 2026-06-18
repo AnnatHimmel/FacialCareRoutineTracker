@@ -18,14 +18,16 @@
       "Skill(update-config)",
       "Skill(update-config:*)",
       "Bash(/c/Workspace/utilities/flutter/bin/flutter devices *)",
-      "Bash(mv \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/Debug\" \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/debug-only\")"
+      "Bash(mv \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/Debug\" \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/debug-only\")",
+      "Bash(git commit *)",
+      "Bash(git commit -q -m 'Slice D: two-tier phase→sub-category sort *)"
     ],
     "additionalDirectories": [
       "C:\\Workspace\\FacialCareRoutineTracker\\.claude\\skills\\Debug"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

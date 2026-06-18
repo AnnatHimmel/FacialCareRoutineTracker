@@ -281,6 +281,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .toList()
             ..sort(ProductSorter.adminComparator(
               categories: master.categories,
+              subcategories: master.subcategories,
               slot: Slot.morning,
             ));
           final eveningProducts = allProducts
@@ -291,6 +292,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .toList()
             ..sort(ProductSorter.adminComparator(
               categories: master.categories,
+              subcategories: master.subcategories,
               slot: Slot.evening,
             ));
 
@@ -316,6 +318,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           final flexed = [...occasional, ...narrowed]
             ..sort(ProductSorter.adminComparator(
               categories: master.categories,
+              subcategories: master.subcategories,
               slot: _activeSlot,
             ));
 

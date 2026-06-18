@@ -112,8 +112,11 @@ abstract final class MasterContentSerializer {
         'reason': {'he': r.reason, 'en': r.reasonEn},
       };
 
-  static String _targetTypeStr(RuleTargetType t) =>
-      t == RuleTargetType.product ? 'product' : 'category';
+  static String _targetTypeStr(RuleTargetType t) => switch (t) {
+        RuleTargetType.product => 'product',
+        RuleTargetType.category => 'category',
+        RuleTargetType.subCategory => 'subCategory',
+      };
 
   static String _scopeStr(RuleScope s) =>
       s == RuleScope.withinSlot ? 'withinSlot' : 'sameDayAcrossBoth';
@@ -254,9 +257,11 @@ abstract final class MasterContentSerializer {
   }
 
   static RuleTarget _parseTarget(Map<String, dynamic> m) => RuleTarget(
-        type: m['type'] == 'product'
-            ? RuleTargetType.product
-            : RuleTargetType.category,
+        type: switch (m['type']) {
+          'product' => RuleTargetType.product,
+          'subCategory' => RuleTargetType.subCategory,
+          _ => RuleTargetType.category,
+        },
         id: m['id'] as String,
       );
 

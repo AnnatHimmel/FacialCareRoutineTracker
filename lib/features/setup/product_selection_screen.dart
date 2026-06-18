@@ -9,6 +9,7 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
+import '../../domain/entities/sub_category.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/product_sorter.dart';
@@ -238,11 +239,11 @@ class _ProductSelectionScreenState
         ];
 
         if (widget.isTabDestination) {
-          return _buildBrowse(
-              context, allProducts, categories, selMap, morning, evening, l);
+          return _buildBrowse(context, allProducts, categories,
+              master.subcategories, selMap, morning, evening, l);
         }
-        return _buildGuided(
-            context, allProducts, categories, selMap, morning, evening, l);
+        return _buildGuided(context, allProducts, categories,
+            master.subcategories, selMap, morning, evening, l);
       },
     );
 
@@ -262,6 +263,7 @@ class _ProductSelectionScreenState
     BuildContext context,
     List<MasterProduct> allProducts,
     List<Category> categories,
+    List<SubCategory> subcategories,
     Map<String, Set<Slot>> selMap,
     List<ProductSelection> morning,
     List<ProductSelection> evening,
@@ -290,6 +292,7 @@ class _ProductSelectionScreenState
     final browseSlot = _slotFilter ?? Slot.morning;
     final browseCmp = ProductSorter.adminComparator(
       categories: categories,
+      subcategories: subcategories,
       slot: browseSlot,
     );
     for (final list in catProducts.values) {
@@ -382,6 +385,7 @@ class _ProductSelectionScreenState
     BuildContext context,
     List<MasterProduct> allProducts,
     List<Category> categories,
+    List<SubCategory> subcategories,
     Map<String, Set<Slot>> selMap,
     List<ProductSelection> morning,
     List<ProductSelection> evening,
@@ -397,6 +401,7 @@ class _ProductSelectionScreenState
         .toList()
       ..sort(ProductSorter.adminComparator(
         categories: categories,
+        subcategories: subcategories,
         slot: Slot.morning,
       ));
 

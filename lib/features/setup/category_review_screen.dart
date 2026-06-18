@@ -94,6 +94,7 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
             .toList()
           ..sort(ProductSorter.adminComparator(
             categories: master.categories,
+            subcategories: master.subcategories,
             slot: Slot.morning,
             categoryOverrides: _categoryOverrides,
           ));

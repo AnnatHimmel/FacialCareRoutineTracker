@@ -3,6 +3,7 @@ import '../entities/product_selection.dart';
 import '../entities/weekday_schedule.dart';
 import '../entities/order_override.dart';
 import '../entities/category.dart';
+import '../entities/sub_category.dart';
 import '../enums/slot.dart';
 import 'day_boundary_service.dart';
 import 'product_sorter.dart';
@@ -18,6 +19,7 @@ class RoutineResolver {
     required Slot slot,
     required List<MasterProduct> allProducts,
     required List<Category> categories,
+    List<SubCategory> subcategories = const [],
     required List<ProductSelection> selections,
     required List<WeekdaySchedule> schedules,
     required OrderOverride? orderOverride,
@@ -55,6 +57,7 @@ class RoutineResolver {
 
     final adminCmp = ProductSorter.adminComparator(
       categories: categories,
+      subcategories: subcategories,
       slot: slot,
       categoryOverrides: categoryOverrides,
     );

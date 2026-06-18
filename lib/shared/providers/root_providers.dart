@@ -246,6 +246,7 @@ final dailyRoutineProvider =
         slot: params.slot,
         allProducts: allProducts,
         categories: masterContent.categories,
+        subcategories: masterContent.subcategories,
         selections: selections,
         schedules: schedules,
         orderOverride: orderOverride,
