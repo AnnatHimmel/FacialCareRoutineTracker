@@ -9,6 +9,8 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
+import '../../domain/repositories/user_data_repository.dart';
+import '../../domain/services/conflict_resolver.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
@@ -172,6 +174,147 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     await _updateSchedule(p.id, _activeSlot, updated, existing);
   }
 
+  /// Opt-out conflict resolution for [dayId] in the active slot.
+  ///
+  /// Builds a reversible [ConflictResolution] per conflicting pair (slot
+  /// separation, else day separation), applies all mutations by default, then
+  /// surfaces a "what changed" snackbar with an Undo that re-applies the
+  /// inverses. Overused products on the day are also pruned (reversibly).
+  Future<void> _autoFix(
+    List<ConflictInfo> conflicts,
+    List<({MasterProduct product, int count, int cap})> overused,
+    int dayId,
+  ) async {
+    final l = AppLocalizations.of(context)!;
+    final repo = ref.read(userDataRepositoryProvider);
+    var schedules =
+        List<WeekdaySchedule>.from(ref.read(allSchedulesProvider).valueOrNull ?? []);
+
+    final resolver = const ConflictResolver();
+    final mutations = <ScheduleMutation>[];
+    final inverse = <ScheduleMutation>[];
+    final descriptions = <String>[];
+    final isEnglish = l.localeName == 'en';
+
+    // 1 · Resolve each conflicting pair into reversible mutations.
+    // Deduplicate first: multiple rules can match the same product pair
+    // (e.g. a product-level rule AND a sub-category rule for Argireline×VitC).
+    final seenPairs = <String>{};
+    final uniqueConflicts = conflicts.where((c) {
+      final key = ([c.productA.id, c.productB.id]..sort()).join('|');
+      return seenPairs.add(key);
+    }).toList();
+
+    for (final c in uniqueConflicts) {
+      final res = resolver.resolve(
+        productA: c.productA,
+        productB: c.productB,
+        slot: _activeSlot,
+        schedules: schedules,
+      );
+      mutations.addAll(res.mutations);
+      inverse.addAll(res.inverse);
+      descriptions.add(res.localizedDescription(isEnglish ? 'en' : 'he'));
+      // Update the local snapshot so the next conflict sees the already-placed
+      // days — prevents duplicate mutations and wrong anchor calculations.
+      schedules = applyMutations(schedules, res.mutations);
+    }
+
+    // 2 · Overused products: drop them from this day (reversible).
+    for (final entry in overused) {
+      final current = _effectiveDays(entry.product, _activeSlot, schedules);
+      if (!current.contains(dayId)) continue;
+      mutations.add(ScheduleMutation(
+        productId: entry.product.id,
+        slot: _activeSlot,
+        days: Set<int>.from(current)..remove(dayId),
+      ));
+      inverse.add(ScheduleMutation(
+        productId: entry.product.id,
+        slot: _activeSlot,
+        days: current,
+      ));
+    }
+
+    if (mutations.isEmpty) return;
+
+    await _persistMutations(repo, schedules, mutations);
+
+    final summary = descriptions.isNotEmpty
+        ? descriptions.join('\n')
+        : l.autoFixAppliedFallback;
+
+    if (!mounted) return;
+
+    // Show a dialog with explicit "keep" and "undo" buttons. A SnackBar with a
+    // single action reads as "cancel" in Hebrew, so the user had no clear path
+    // to confirm the fix.
+    final shouldUndo = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        content: Text(
+          summary,
+          style: AppTypography.bodyMd.copyWith(
+            color: AppColors.onSurface,
+            fontSize: 14,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              l.autoFixUndo,
+              style: AppTypography.labelMd.copyWith(
+                color: AppColors.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              l.autoFixKeep,
+              style: AppTypography.labelMd.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldUndo == true && mounted) {
+      final latest = List<WeekdaySchedule>.from(
+          ref.read(allSchedulesProvider).valueOrNull ?? schedules);
+      await _persistMutations(repo, latest, inverse);
+    }
+  }
+
+  /// Persist a set of [ScheduleMutation]s, preserving each schedule's stable id
+  /// (or minting one for products without an existing schedule row).
+  Future<void> _persistMutations(
+    UserDataRepository repo,
+    List<WeekdaySchedule> schedules,
+    List<ScheduleMutation> mutations,
+  ) async {
+    for (final m in mutations) {
+      final existing = schedules
+          .where((s) => s.productId == m.productId && s.slot == m.slot)
+          .firstOrNull;
+      await repo.upsertSchedule(
+        WeekdaySchedule(
+          id: existing?.id ?? _uuid.v4(),
+          productId: m.productId,
+          slot: m.slot,
+          weekdays: m.days,
+          lastModified: DateTime.now(),
+        ),
+      );
+    }
+  }
+
   void _handleContinue(BuildContext context) {
     if (widget.fromSetup) {
       context.go('/setup/order?from=setup');
@@ -226,7 +369,9 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     final sched = schedules
         .where((s) => s.productId == p.id && s.slot == slot)
         .firstOrNull;
-    if (sched != null && sched.weekdays.isNotEmpty) return sched.weekdays;
+    // Explicit schedule row always wins — even an empty set means the product
+    // was intentionally excluded from this slot (written by auto-fix or user).
+    if (sched != null) return Set<int>.from(sched.weekdays);
     if (p.configForSlot(slot)?.frequencyRule is DailyRule) {
       return {0, 1, 2, 3, 4, 5, 6};
     }
@@ -281,6 +426,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .toList()
             ..sort(ProductSorter.adminComparator(
               categories: master.categories,
+              subcategories: master.subcategories,
               slot: Slot.morning,
             ));
           final eveningProducts = allProducts
@@ -291,6 +437,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .toList()
             ..sort(ProductSorter.adminComparator(
               categories: master.categories,
+              subcategories: master.subcategories,
               slot: Slot.evening,
             ));
 
@@ -316,6 +463,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           final flexed = [...occasional, ...narrowed]
             ..sort(ProductSorter.adminComparator(
               categories: master.categories,
+              subcategories: master.subcategories,
               slot: _activeSlot,
             ));
 
@@ -416,6 +564,20 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
 
           // Combined issue days (conflict OR overuse)
           final issueDays = {...activeDayPairs.keys, ...overuseDays};
+
+          // WeeklyMax products in the active slot that have 0 effective days
+          // in ALL their configured slots — i.e. completely unscheduled.
+          // Bi-slot products slot-separated to the other slot are excluded.
+          final zeroDayCount = activeProducts.where((p) {
+            if (p.configForSlot(_activeSlot)?.frequencyRule is! WeeklyMaxRule) {
+              return false;
+            }
+            if (_effectiveDays(p, _activeSlot, schedules).isNotEmpty) return false;
+            final hasOther = p.configForSlot(otherSlot) != null;
+            final otherDays =
+                hasOther ? _effectiveDays(p, otherSlot, schedules).length : 0;
+            return otherDays == 0;
+          }).length;
 
           // Priority day: first issue day, else today, else first day with product
           if (!_selectedDayInitialized) {
@@ -597,24 +759,16 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                 categories: master.categories,
                                 isEnglish: isEnglish,
                                 onRemoveFromDay: _removeDay,
-                                onAutoFix: (conflicts) async {
-                                  for (final c in conflicts) {
-                                    // movable = product with WeeklyMaxRule cap; fall back to productB
-                                    final aIsMovable = c.productA
-                                            .configForSlot(_activeSlot)
-                                            ?.frequencyRule is WeeklyMaxRule;
-                                    final movable = aIsMovable
-                                        ? c.productA
-                                        : c.productB;
-                                    await _removeDay(
-                                        movable.id, _selectedDay);
-                                  }
-                                  // auto-fix overuse: remove overused products from this day
-                                  final overuseEntries = overuseMap[_selectedDay] ?? [];
-                                  for (final entry in overuseEntries) {
-                                    await _removeDay(entry.product.id, _selectedDay);
-                                  }
-                                },
+                                onAutoFix: (_) => _autoFix(
+                                  // Collect conflicts from ALL days so a single
+                                  // tap resolves the full week, not just the
+                                  // currently visible day.
+                                  activeDayPairs.values
+                                      .expand((x) => x)
+                                      .toList(),
+                                  overuseMap[_selectedDay] ?? [],
+                                  _selectedDay,
+                                ),
                                 l: l,
                               ),
                               const SizedBox(height: 16),
@@ -678,7 +832,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
-                                          'לא בשימוש ביום ${_getDayFullName(_selectedDay, l)} (${notSelectedDayProducts.length})',
+                                          'לא בשימוש ב${_activeSlot == Slot.morning ? "בוקר" : "ערב"} ביום ${_getDayFullName(_selectedDay, l)} (${notSelectedDayProducts.length})',
                                           textAlign: TextAlign.start,
                                           style:
                                               AppTypography.labelMd.copyWith(
@@ -798,6 +952,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                   activeSlotLabel: _activeSlot == Slot.morning
                       ? l.slotMorning
                       : l.slotEvening,
+                  hasZeroDays: zeroDayCount > 0,
                 )
               else
                 _BottomCta(
@@ -811,6 +966,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                   activeSlotLabel: _activeSlot == Slot.morning
                       ? l.slotMorning
                       : l.slotEvening,
+                  hasZeroDays: zeroDayCount > 0,
                   onTap: nextSlot != null
                       ? () => _switchSlot(nextSlot)
                       : () => _handleContinue(context),
@@ -946,6 +1102,7 @@ class _OnboardingScheduleCta extends StatelessWidget {
   final bool hasConflicts;
   final int conflictCount;
   final String activeSlotLabel;
+  final bool hasZeroDays;
 
   const _OnboardingScheduleCta({
     required this.l,
@@ -953,6 +1110,7 @@ class _OnboardingScheduleCta extends StatelessWidget {
     required this.hasConflicts,
     required this.conflictCount,
     required this.activeSlotLabel,
+    required this.hasZeroDays,
   });
 
   @override
@@ -968,11 +1126,21 @@ class _OnboardingScheduleCta extends StatelessWidget {
         children: [
           PrimaryButton(
             label: l.scheduleContinueToOrder,
-            onTap: onContinue,
+            onTap: hasZeroDays ? null : onContinue,
             trailingIcon: Icons.arrow_forward,
             height: 56,
           ),
-          if (hasConflicts) ...[
+          if (hasZeroDays) ...[
+            const SizedBox(height: 6),
+            Text(
+              l.scheduleZeroDayError(activeSlotLabel),
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ] else if (hasConflicts) ...[
             const SizedBox(height: 6),
             Text(
               l.scheduleConflictWarningCount(conflictCount, activeSlotLabel),
@@ -3027,6 +3195,7 @@ class _BottomCta extends StatelessWidget {
   final bool hasConflicts;
   final int conflictCount;
   final String activeSlotLabel;
+  final bool hasZeroDays;
 
   const _BottomCta({
     required this.fromSetup,
@@ -3038,6 +3207,7 @@ class _BottomCta extends StatelessWidget {
     required this.hasConflicts,
     required this.conflictCount,
     required this.activeSlotLabel,
+    required this.hasZeroDays,
     this.onBack,
   });
 
@@ -3089,7 +3259,7 @@ class _BottomCta extends StatelessWidget {
               Expanded(
                 child: PrimaryButton(
                   label: label,
-                  onTap: onTap,
+                  onTap: hasZeroDays ? null : onTap,
                   leadingIcon: isAdvancing ? nextSlotIcon : null,
                   trailingIcon: trailingIcon,
                   height: 56,
@@ -3097,7 +3267,17 @@ class _BottomCta extends StatelessWidget {
               ),
             ],
           ),
-          if (hasConflicts) ...[
+          if (hasZeroDays) ...[
+            const SizedBox(height: 6),
+            Text(
+              l.scheduleZeroDayError(activeSlotLabel),
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ] else if (hasConflicts) ...[
             const SizedBox(height: 6),
             Text(
               l.scheduleConflictWarningCount(conflictCount, activeSlotLabel),

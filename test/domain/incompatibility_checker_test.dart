@@ -18,6 +18,33 @@ void main() {
         addedInVersion: '1.0.0',
       );
 
+  MasterProduct makeSubProduct(
+    String id,
+    String categoryId,
+    String subCategoryId,
+  ) =>
+      MasterProduct(
+        id: id,
+        name: id,
+        categoryId: categoryId,
+        subCategoryId: subCategoryId,
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+      );
+
+  IncompatibilityRule subCategoryRule(
+    String id,
+    String scA,
+    String scB,
+    RuleScope scope,
+  ) =>
+      IncompatibilityRule(
+        id: id,
+        entityA: RuleTarget(type: RuleTargetType.subCategory, id: scA),
+        entityB: RuleTarget(type: RuleTargetType.subCategory, id: scB),
+        scope: scope,
+      );
+
   IncompatibilityRule productRule(String id, String pA, String pB, RuleScope scope) =>
       IncompatibilityRule(
         id: id,
@@ -85,6 +112,50 @@ void main() {
       );
 
       expect(conflicts.length, 1);
+    });
+  });
+
+  group('sub-category conflicts', () {
+    test('detects subCategory↔subCategory conflict within slot', () {
+      final p1 = makeSubProduct('p1', 'cat-serum', 'sub-argireline');
+      final p2 = makeSubProduct('p2', 'cat-serum', 'sub-vitamin-c');
+      final rule = subCategoryRule(
+        'r1',
+        'sub-argireline',
+        'sub-vitamin-c',
+        RuleScope.withinSlot,
+      );
+
+      final conflicts = checker.getConflictsForDay(
+        morningProducts: [p1, p2],
+        eveningProducts: [],
+        rules: [rule],
+        categories: categories,
+        mutedRuleIds: {},
+      );
+
+      expect(conflicts.length, 1);
+      expect(conflicts.first.ruleId, 'r1');
+    });
+
+    test('no conflict when only one sub-category present', () {
+      final p1 = makeSubProduct('p1', 'cat-serum', 'sub-argireline');
+      final rule = subCategoryRule(
+        'r1',
+        'sub-argireline',
+        'sub-vitamin-c',
+        RuleScope.withinSlot,
+      );
+
+      final conflicts = checker.getConflictsForDay(
+        morningProducts: [p1],
+        eveningProducts: [],
+        rules: [rule],
+        categories: categories,
+        mutedRuleIds: {},
+      );
+
+      expect(conflicts.isEmpty, isTrue);
     });
   });
 

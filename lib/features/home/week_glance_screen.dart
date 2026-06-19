@@ -51,6 +51,7 @@ class WeekGlanceScreen extends ConsumerWidget {
               .toList()
             ..sort(ProductSorter.adminComparator(
               categories: master.categories,
+              subcategories: master.subcategories,
               slot: Slot.morning,
             ));
 
@@ -60,6 +61,7 @@ class WeekGlanceScreen extends ConsumerWidget {
               .toList()
             ..sort(ProductSorter.adminComparator(
               categories: master.categories,
+              subcategories: master.subcategories,
               slot: Slot.evening,
             ));
 

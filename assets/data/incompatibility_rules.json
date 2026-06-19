@@ -13,6 +13,20 @@
       "entityB": {"type": "product", "id": "prod-016"},
       "scope": "withinSlot",
       "reason": {"he":"רטינואידים ו-AHA/BHA עלולים לגרום לגירוי יתר ולפגיעה במחסום העור בשימוש יחד.","en":"Retinoids and AHA/BHA may cause over-irritation and damage the skin barrier when used together."}
+    },
+    {
+      "id": "rule-003",
+      "entityA": {"type": "category", "id": "cat-retinoid"},
+      "entityB": {"type": "category", "id": "cat-exfoliate"},
+      "scope": "withinSlot",
+      "reason": {"he":"רטינואידים וחומצות פילינג עלולים לגרום לגירוי יתר ולפגיעה במחסום העור בשימוש יחד.","en":"Retinoids and exfoliating acids may cause over-irritation and damage the skin barrier when used together."}
+    },
+    {
+      "id": "rule-004",
+      "entityA": {"type": "subCategory", "id": "sub-argireline"},
+      "entityB": {"type": "subCategory", "id": "sub-vitamin-c"},
+      "scope": "withinSlot",
+      "reason": {"he":"ארגירלין וויטמין C עלולים להחליש זה את פעילותו של זה בשימוש יחד.","en":"Argireline and vitamin C may reduce each other's effectiveness when used together."}
     }
   ]
 }

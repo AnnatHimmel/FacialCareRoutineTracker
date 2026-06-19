@@ -26,6 +26,12 @@ class MasterContentRepositoryImpl implements MasterContentRepository {
         .map((c) => MasterContentSerializer.parseCategory(c as Map<String, dynamic>))
         .toList();
 
+    final subcategories =
+        ((productsData['subcategories'] as List<dynamic>?) ?? const [])
+            .map((s) => MasterContentSerializer.parseSubCategory(
+                s as Map<String, dynamic>))
+            .toList();
+
     final products = (productsData['products'] as List<dynamic>)
         .map((p) => MasterContentSerializer.parseProduct(p as Map<String, dynamic>))
         .toList();
@@ -45,6 +51,7 @@ class MasterContentRepositoryImpl implements MasterContentRepository {
     _cached = MasterContent(
       products: products,
       categories: categories,
+      subcategories: subcategories,
       rules: rules,
       manifest: manifest,
     );

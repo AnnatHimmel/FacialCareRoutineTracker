@@ -6,6 +6,7 @@ import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/entities/sub_category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/weekday_schedule.dart';
@@ -249,6 +250,7 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
                 chosenSlots: _chosenSlots ?? _defaultSlots(_product!),
                 allProducts: allProducts,
                 categories: master.categories,
+                subcategories: master.subcategories,
                 morningSelections:
                     ref.watch(selectionsProvider(Slot.morning)).valueOrNull ??
                         [],
@@ -714,6 +716,7 @@ class _PlacementStep extends StatelessWidget {
   final Set<Slot> chosenSlots;
   final List<MasterProduct> allProducts;
   final List<Category> categories;
+  final List<SubCategory> subcategories;
   final List<ProductSelection> morningSelections;
   final List<ProductSelection> eveningSelections;
   final AppLocalizations l;
@@ -725,6 +728,7 @@ class _PlacementStep extends StatelessWidget {
     required this.chosenSlots,
     required this.allProducts,
     required this.categories,
+    required this.subcategories,
     required this.morningSelections,
     required this.eveningSelections,
     required this.l,
@@ -754,6 +758,7 @@ class _PlacementStep extends StatelessWidget {
         .toList()
       ..sort(ProductSorter.adminComparator(
         categories: categories,
+        subcategories: subcategories,
         slot: primarySlot,
       ));
 

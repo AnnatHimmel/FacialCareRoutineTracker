@@ -124,6 +124,7 @@ class _FakeUserDataRepo implements UserDataRepository {
 
   @override
   Future<void> replaceAllData(UserDataExport export) async {}
+  @override Future<void> clearRoutineData() async {}
   @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
   @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
   @override Future<void> deleteCustomProduct(String id) async {}

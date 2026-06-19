@@ -100,6 +100,7 @@ class FakeUserRepo implements UserDataRepository {
   @override Future<void> muteConflict(MutedConflict m) async {}
   @override Future<void> unmuteConflict(String ruleId) async {}
   @override Future<void> replaceAllData(UserDataExport export) async {}
+  @override Future<void> clearRoutineData() async {}
   @override Stream<List<UserCustomProduct>> watchCustomProducts() => const Stream.empty();
   @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
   @override Future<void> deleteCustomProduct(String id) async {}

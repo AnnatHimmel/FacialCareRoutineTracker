@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 import '../enums/rule_scope.dart';
 
-enum RuleTargetType { product, category }
+enum RuleTargetType { product, category, subCategory }
 
 @immutable
 class RuleTarget {

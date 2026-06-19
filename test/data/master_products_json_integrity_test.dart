@@ -37,6 +37,37 @@ void main() {
       });
     });
 
+    group('subcategories', () {
+      test('present, well-formed, and categoryId references a real category',
+          () {
+        final categories =
+            (data['categories'] as List).cast<Map<String, dynamic>>();
+        final categoryIds = categories.map((c) => c['id'] as String).toSet();
+        final subs = data['subcategories'] as List<dynamic>;
+        expect(subs, isNotEmpty);
+        final seenIds = <String>{};
+        for (final raw in subs) {
+          final s = raw as Map<String, dynamic>;
+          final id = s['id'];
+          expect(id, isA<String>(), reason: 'subcategory id must be a string');
+          expect(seenIds.add(id as String), isTrue,
+              reason: 'duplicate subcategory id $id');
+          final name = s['name'];
+          expect(name, isA<Map<String, dynamic>>(),
+              reason: 'subcategory $id: name must be a map');
+          expect(((name as Map)['he'] as String?)?.trim(), isNotEmpty,
+              reason: 'subcategory $id: name.he must not be empty');
+          expect((name['en'] as String?)?.trim(), isNotEmpty,
+              reason: 'subcategory $id: name.en must not be empty');
+          expect(s['order'], isA<int>(),
+              reason: 'subcategory $id: order must be an int');
+          expect(categoryIds.contains(s['categoryId']), isTrue,
+              reason:
+                  'subcategory $id: categoryId ${s['categoryId']} must reference a real category');
+        }
+      });
+    });
+
     group('products', () {
       test('every product comment is a {"he","en"} map', () {
         final products = data['products'] as List<dynamic>;

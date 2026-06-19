@@ -69,6 +69,7 @@ class _FakeUDR implements UserDataRepository {
     mutedConflicts: [],
   );
   @override Future<void> replaceAllData(UserDataExport e) async {}
+  @override Future<void> clearRoutineData() async {}
   @override Stream<List<CategoryOverride>> watchCategoryOverrides() => Stream.value([]);
   @override Future<void> upsertCategoryOverride(CategoryOverride o) async {}
   @override Future<void> deleteCategoryOverride(String productId) async {}

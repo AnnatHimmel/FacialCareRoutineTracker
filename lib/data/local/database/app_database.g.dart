@@ -2357,6 +2357,17 @@ class $UserCustomProductsTable extends UserCustomProducts
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _subCategoryIdMeta = const VerificationMeta(
+    'subCategoryId',
+  );
+  @override
+  late final GeneratedColumn<String> subCategoryId = GeneratedColumn<String>(
+    'sub_category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _inMorningMeta = const VerificationMeta(
     'inMorning',
   );
@@ -2438,6 +2449,7 @@ class $UserCustomProductsTable extends UserCustomProducts
     name,
     photoKey,
     categoryId,
+    subCategoryId,
     inMorning,
     inEvening,
     isDaily,
@@ -2483,6 +2495,15 @@ class $UserCustomProductsTable extends UserCustomProducts
       );
     } else if (isInserting) {
       context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('sub_category_id')) {
+      context.handle(
+        _subCategoryIdMeta,
+        subCategoryId.isAcceptableOrUnknown(
+          data['sub_category_id']!,
+          _subCategoryIdMeta,
+        ),
+      );
     }
     if (data.containsKey('in_morning')) {
       context.handle(
@@ -2562,6 +2583,10 @@ class $UserCustomProductsTable extends UserCustomProducts
         DriftSqlType.string,
         data['${effectivePrefix}category_id'],
       )!,
+      subCategoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sub_category_id'],
+      ),
       inMorning: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}in_morning'],
@@ -2601,6 +2626,7 @@ class CustomProductRow extends DataClass
   final String name;
   final String? photoKey;
   final String categoryId;
+  final String? subCategoryId;
   final bool inMorning;
   final bool inEvening;
   final bool isDaily;
@@ -2612,6 +2638,7 @@ class CustomProductRow extends DataClass
     required this.name,
     this.photoKey,
     required this.categoryId,
+    this.subCategoryId,
     required this.inMorning,
     required this.inEvening,
     required this.isDaily,
@@ -2628,6 +2655,9 @@ class CustomProductRow extends DataClass
       map['photo_key'] = Variable<String>(photoKey);
     }
     map['category_id'] = Variable<String>(categoryId);
+    if (!nullToAbsent || subCategoryId != null) {
+      map['sub_category_id'] = Variable<String>(subCategoryId);
+    }
     map['in_morning'] = Variable<bool>(inMorning);
     map['in_evening'] = Variable<bool>(inEvening);
     map['is_daily'] = Variable<bool>(isDaily);
@@ -2649,6 +2679,9 @@ class CustomProductRow extends DataClass
           ? const Value.absent()
           : Value(photoKey),
       categoryId: Value(categoryId),
+      subCategoryId: subCategoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subCategoryId),
       inMorning: Value(inMorning),
       inEvening: Value(inEvening),
       isDaily: Value(isDaily),
@@ -2672,6 +2705,7 @@ class CustomProductRow extends DataClass
       name: serializer.fromJson<String>(json['name']),
       photoKey: serializer.fromJson<String?>(json['photoKey']),
       categoryId: serializer.fromJson<String>(json['categoryId']),
+      subCategoryId: serializer.fromJson<String?>(json['subCategoryId']),
       inMorning: serializer.fromJson<bool>(json['inMorning']),
       inEvening: serializer.fromJson<bool>(json['inEvening']),
       isDaily: serializer.fromJson<bool>(json['isDaily']),
@@ -2688,6 +2722,7 @@ class CustomProductRow extends DataClass
       'name': serializer.toJson<String>(name),
       'photoKey': serializer.toJson<String?>(photoKey),
       'categoryId': serializer.toJson<String>(categoryId),
+      'subCategoryId': serializer.toJson<String?>(subCategoryId),
       'inMorning': serializer.toJson<bool>(inMorning),
       'inEvening': serializer.toJson<bool>(inEvening),
       'isDaily': serializer.toJson<bool>(isDaily),
@@ -2702,6 +2737,7 @@ class CustomProductRow extends DataClass
     String? name,
     Value<String?> photoKey = const Value.absent(),
     String? categoryId,
+    Value<String?> subCategoryId = const Value.absent(),
     bool? inMorning,
     bool? inEvening,
     bool? isDaily,
@@ -2713,6 +2749,9 @@ class CustomProductRow extends DataClass
     name: name ?? this.name,
     photoKey: photoKey.present ? photoKey.value : this.photoKey,
     categoryId: categoryId ?? this.categoryId,
+    subCategoryId: subCategoryId.present
+        ? subCategoryId.value
+        : this.subCategoryId,
     inMorning: inMorning ?? this.inMorning,
     inEvening: inEvening ?? this.inEvening,
     isDaily: isDaily ?? this.isDaily,
@@ -2728,6 +2767,9 @@ class CustomProductRow extends DataClass
       categoryId: data.categoryId.present
           ? data.categoryId.value
           : this.categoryId,
+      subCategoryId: data.subCategoryId.present
+          ? data.subCategoryId.value
+          : this.subCategoryId,
       inMorning: data.inMorning.present ? data.inMorning.value : this.inMorning,
       inEvening: data.inEvening.present ? data.inEvening.value : this.inEvening,
       isDaily: data.isDaily.present ? data.isDaily.value : this.isDaily,
@@ -2750,6 +2792,7 @@ class CustomProductRow extends DataClass
           ..write('name: $name, ')
           ..write('photoKey: $photoKey, ')
           ..write('categoryId: $categoryId, ')
+          ..write('subCategoryId: $subCategoryId, ')
           ..write('inMorning: $inMorning, ')
           ..write('inEvening: $inEvening, ')
           ..write('isDaily: $isDaily, ')
@@ -2766,6 +2809,7 @@ class CustomProductRow extends DataClass
     name,
     photoKey,
     categoryId,
+    subCategoryId,
     inMorning,
     inEvening,
     isDaily,
@@ -2781,6 +2825,7 @@ class CustomProductRow extends DataClass
           other.name == this.name &&
           other.photoKey == this.photoKey &&
           other.categoryId == this.categoryId &&
+          other.subCategoryId == this.subCategoryId &&
           other.inMorning == this.inMorning &&
           other.inEvening == this.inEvening &&
           other.isDaily == this.isDaily &&
@@ -2794,6 +2839,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
   final Value<String> name;
   final Value<String?> photoKey;
   final Value<String> categoryId;
+  final Value<String?> subCategoryId;
   final Value<bool> inMorning;
   final Value<bool> inEvening;
   final Value<bool> isDaily;
@@ -2806,6 +2852,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     this.name = const Value.absent(),
     this.photoKey = const Value.absent(),
     this.categoryId = const Value.absent(),
+    this.subCategoryId = const Value.absent(),
     this.inMorning = const Value.absent(),
     this.inEvening = const Value.absent(),
     this.isDaily = const Value.absent(),
@@ -2819,6 +2866,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     required String name,
     this.photoKey = const Value.absent(),
     required String categoryId,
+    this.subCategoryId = const Value.absent(),
     required bool inMorning,
     required bool inEvening,
     required bool isDaily,
@@ -2838,6 +2886,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     Expression<String>? name,
     Expression<String>? photoKey,
     Expression<String>? categoryId,
+    Expression<String>? subCategoryId,
     Expression<bool>? inMorning,
     Expression<bool>? inEvening,
     Expression<bool>? isDaily,
@@ -2851,6 +2900,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
       if (name != null) 'name': name,
       if (photoKey != null) 'photo_key': photoKey,
       if (categoryId != null) 'category_id': categoryId,
+      if (subCategoryId != null) 'sub_category_id': subCategoryId,
       if (inMorning != null) 'in_morning': inMorning,
       if (inEvening != null) 'in_evening': inEvening,
       if (isDaily != null) 'is_daily': isDaily,
@@ -2866,6 +2916,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     Value<String>? name,
     Value<String?>? photoKey,
     Value<String>? categoryId,
+    Value<String?>? subCategoryId,
     Value<bool>? inMorning,
     Value<bool>? inEvening,
     Value<bool>? isDaily,
@@ -2879,6 +2930,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
       name: name ?? this.name,
       photoKey: photoKey ?? this.photoKey,
       categoryId: categoryId ?? this.categoryId,
+      subCategoryId: subCategoryId ?? this.subCategoryId,
       inMorning: inMorning ?? this.inMorning,
       inEvening: inEvening ?? this.inEvening,
       isDaily: isDaily ?? this.isDaily,
@@ -2903,6 +2955,9 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     }
     if (categoryId.present) {
       map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (subCategoryId.present) {
+      map['sub_category_id'] = Variable<String>(subCategoryId.value);
     }
     if (inMorning.present) {
       map['in_morning'] = Variable<bool>(inMorning.value);
@@ -2935,6 +2990,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
           ..write('name: $name, ')
           ..write('photoKey: $photoKey, ')
           ..write('categoryId: $categoryId, ')
+          ..write('subCategoryId: $subCategoryId, ')
           ..write('inMorning: $inMorning, ')
           ..write('inEvening: $inEvening, ')
           ..write('isDaily: $isDaily, ')
@@ -5080,6 +5136,7 @@ typedef $$UserCustomProductsTableCreateCompanionBuilder =
       required String name,
       Value<String?> photoKey,
       required String categoryId,
+      Value<String?> subCategoryId,
       required bool inMorning,
       required bool inEvening,
       required bool isDaily,
@@ -5094,6 +5151,7 @@ typedef $$UserCustomProductsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String?> photoKey,
       Value<String> categoryId,
+      Value<String?> subCategoryId,
       Value<bool> inMorning,
       Value<bool> inEvening,
       Value<bool> isDaily,
@@ -5129,6 +5187,11 @@ class $$UserCustomProductsTableFilterComposer
 
   ColumnFilters<String> get categoryId => $composableBuilder(
     column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subCategoryId => $composableBuilder(
+    column: $table.subCategoryId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5192,6 +5255,11 @@ class $$UserCustomProductsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get subCategoryId => $composableBuilder(
+    column: $table.subCategoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get inMorning => $composableBuilder(
     column: $table.inMorning,
     builder: (column) => ColumnOrderings(column),
@@ -5243,6 +5311,11 @@ class $$UserCustomProductsTableAnnotationComposer
 
   GeneratedColumn<String> get categoryId => $composableBuilder(
     column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get subCategoryId => $composableBuilder(
+    column: $table.subCategoryId,
     builder: (column) => column,
   );
 
@@ -5315,6 +5388,7 @@ class $$UserCustomProductsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> photoKey = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
+                Value<String?> subCategoryId = const Value.absent(),
                 Value<bool> inMorning = const Value.absent(),
                 Value<bool> inEvening = const Value.absent(),
                 Value<bool> isDaily = const Value.absent(),
@@ -5327,6 +5401,7 @@ class $$UserCustomProductsTableTableManager
                 name: name,
                 photoKey: photoKey,
                 categoryId: categoryId,
+                subCategoryId: subCategoryId,
                 inMorning: inMorning,
                 inEvening: inEvening,
                 isDaily: isDaily,
@@ -5341,6 +5416,7 @@ class $$UserCustomProductsTableTableManager
                 required String name,
                 Value<String?> photoKey = const Value.absent(),
                 required String categoryId,
+                Value<String?> subCategoryId = const Value.absent(),
                 required bool inMorning,
                 required bool inEvening,
                 required bool isDaily,
@@ -5353,6 +5429,7 @@ class $$UserCustomProductsTableTableManager
                 name: name,
                 photoKey: photoKey,
                 categoryId: categoryId,
+                subCategoryId: subCategoryId,
                 inMorning: inMorning,
                 inEvening: inEvening,
                 isDaily: isDaily,

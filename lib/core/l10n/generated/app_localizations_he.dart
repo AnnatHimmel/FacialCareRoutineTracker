@@ -986,6 +986,11 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
+  String scheduleZeroDayError(Object slot) {
+    return 'מוצר אחד או יותר ב$slot לא משויך לאף יום — בחרי ימים לפני שממשיכים.';
+  }
+
+  @override
   String get scheduleCustomizeDays => 'בחירת ימים';
 
   @override
@@ -1414,6 +1419,15 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get issueActionReviewNotes => 'בדיקת ההערות';
+
+  @override
+  String get autoFixUndo => 'שחזר';
+
+  @override
+  String get autoFixKeep => 'שמור שינויים';
+
+  @override
+  String get autoFixAppliedFallback => 'התאמנו את השגרה כדי לפתור את ההתנגשות';
 
   @override
   String get chipPossibleConflict => 'התנגשות אפשרית';

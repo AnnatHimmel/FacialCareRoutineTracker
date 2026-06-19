@@ -93,6 +93,7 @@ class IncompatibilityChecker {
       switch (target.type) {
         RuleTargetType.product => p.id == target.id,
         RuleTargetType.category => p.categoryId == target.id,
+        RuleTargetType.subCategory => p.subCategoryId == target.id,
       };
 
   void _checkWithinSlot(
@@ -116,7 +117,6 @@ class IncompatibilityChecker {
             reason: rule.reason,
             reasonEn: rule.reasonEn,
           ));
-          return;
         }
       }
     }
@@ -145,7 +145,6 @@ class IncompatibilityChecker {
             reason: rule.reason,
             reasonEn: rule.reasonEn,
           ));
-          return;
         }
       }
     }

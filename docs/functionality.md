@@ -53,6 +53,14 @@ Activity before 06:00 counts toward the prior calendar day.
 
 Advisory only — never block selection. Rules reference product-pairs or category-pairs within a scope (Morning, Evening, or same-day cross-slot). Conflicts shown as warning chips on routine rows and inline on product selection. Per-conflict mute stored locally.
 
+## Exfoliating Acids — Frequency Limit (master-data authoring rule)
+
+When an admin adds an **exfoliating-acid** product to the master DB, the product's Evening frequency rule **must** also be set to **max 3×/week** (`WeeklyMaxRule`, max = 3) — never Daily. Exfoliating acids are **evening-only**.
+
+Covered actives: AHA (glycolic, lactic, mandelic, malic), BHA (salicylic), PHA. Application note: applied after double cleanse, left ~10 min, then rinsed off.
+
+Ties into the sub-category model: a product auto-classified into an exfoliating-acid sub-category should **default** its Evening frequency to the 3×/week cap at author/add time (and must not be Daily).
+
 ## Export / Import
 
 Export = single portable JSON archive of all user data. Import = "Replace" (full overwrite) or "Merge" (per-conflict resolution using stable product IDs and `lastModified` timestamps).

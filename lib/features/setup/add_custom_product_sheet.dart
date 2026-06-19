@@ -11,12 +11,19 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/scanned_product_info.dart';
+import '../../domain/entities/sub_category.dart';
 import '../../domain/entities/user_custom_product.dart';
+import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/user_data_repository.dart';
+import '../../domain/services/default_schedule.dart';
+import '../../domain/services/product_classifier.dart';
 import '../../shared/providers/root_providers.dart';
 
 const _uuid = Uuid();
+
+/// Category id for chemical exfoliants (acids). Capped + evening-only by default.
+const _exfoliateCategoryId = 'cat-exfoliate';
 
 class AddCustomProductSheet extends ConsumerStatefulWidget {
   final UserCustomProduct? initialProduct;
@@ -41,6 +48,19 @@ class _AddCustomProductSheetState
   Uint8List? _photoBytes;
   bool _photoChanged = false;
   String? _categoryId;
+
+  /// Sub-category resolved by the classifier from the product name. Persisted on
+  /// the [UserCustomProduct]; null when nothing classified confidently.
+  String? _subCategoryId;
+
+  /// True once the user has manually picked a category from the dropdown — after
+  /// that, auto-classification no longer overrides their choice.
+  bool _categoryManuallyChosen = false;
+
+  /// True once frequency has been auto-defaulted from classification (or the
+  /// user has touched it) — prevents clobbering a user-chosen frequency.
+  bool _frequencyTouched = false;
+
   bool _inMorning = true;
   bool _inEvening = false;
   bool _isDaily = true;
@@ -57,6 +77,9 @@ class _AddCustomProductSheetState
     if (p != null) {
       _nameController.text = p.name;
       _categoryId = p.categoryId;
+      _subCategoryId = p.subCategoryId;
+      _categoryManuallyChosen = true; // editing: respect the saved category
+      _frequencyTouched = true; // editing: respect the saved frequency
       // comment is loaded after locale is available — deferred to didChangeDependencies
       _inMorning = p.inMorning;
       _inEvening = p.inEvening;
@@ -72,7 +95,59 @@ class _AddCustomProductSheetState
         _commentController.text = scan.ingredients!;
       }
       _prefillImageUrl = scan.imageUrl;
+      // Defer classification until the classifier + master content are ready.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _classifyName());
     }
+  }
+
+  /// Runs the on-device classifier against the current name and, unless the user
+  /// has manually overridden it, auto-assigns category + sub-category. Exfoliants
+  /// (cat-exfoliate) additionally default to weekly-max-3, evening-only.
+  void _classifyName() {
+    if (_isEditing) return;
+    final name = _nameController.text.trim();
+    final classifier = ref.read(productClassifierProvider).valueOrNull;
+    final master = ref.read(masterContentProvider).valueOrNull;
+    if (classifier == null || master == null) return;
+
+    if (name.isEmpty) {
+      if (!_categoryManuallyChosen) {
+        setState(() => _subCategoryId = null);
+      }
+      return;
+    }
+
+    final ingredients = _commentController.text.trim();
+    final subId = classifier.classify(
+      name: name,
+      ingredients: ingredients.isEmpty ? const [] : [ingredients],
+    );
+    if (subId == ProductClassifier.unclassifiedId) {
+      if (!_categoryManuallyChosen) setState(() => _subCategoryId = null);
+      return;
+    }
+
+    // Map the classified sub-category back to its phase (category).
+    final sub = master.subcategories
+        .where((s) => s.id == subId)
+        .cast<SubCategory?>()
+        .firstWhere((_) => true, orElse: () => null);
+    final catId = sub?.categoryId;
+
+    setState(() {
+      _subCategoryId = subId;
+      if (!_categoryManuallyChosen && catId != null) {
+        _categoryId = catId;
+      }
+      // Exfoliants default to weekly max 3, evening-only — unless the user has
+      // already chosen a frequency/slots.
+      if (!_frequencyTouched && catId == _exfoliateCategoryId) {
+        _isDaily = false;
+        _timesPerWeek = 3;
+        _inMorning = false;
+        _inEvening = true;
+      }
+    });
   }
 
   Future<void> _loadInitialPhoto(String photoKey) async {
@@ -181,6 +256,7 @@ class _AddCustomProductSheetState
         name: name,
         photoKey: photoKey,
         categoryId: _categoryId!,
+        subCategoryId: _subCategoryId,
         inMorning: inMorning,
         inEvening: inEvening,
         isDaily: _isDaily,
@@ -220,6 +296,13 @@ class _AddCustomProductSheetState
         }
       }
 
+      // A capped (weekly-max) product must never end up selected with a slot but
+      // no scheduled days. Seed a spread default for each selected slot so the
+      // product actually appears in the routine on sensible, well-spaced days.
+      if (!_isDaily) {
+        await _seedSpreadSchedule(repo, id, inMorning, inEvening);
+      }
+
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -250,6 +333,38 @@ class _AddCustomProductSheetState
         lastModified: DateTime.now(),
       ));
     }
+  }
+
+  /// Seeds an evenly-spread [WeekdaySchedule] for a capped product on each
+  /// selected slot, so it never ends up selected with a slot but no days
+  /// (PRD §15.5). Skips a slot that already has a schedule (e.g. when editing).
+  Future<void> _seedSpreadSchedule(
+    UserDataRepository repo,
+    String productId,
+    bool inMorning,
+    bool inEvening,
+  ) async {
+    final days = spreadWeekdays(_timesPerWeek);
+    if (days.isEmpty) return;
+
+    final existing =
+        ref.read(allSchedulesProvider).valueOrNull ?? const [];
+
+    Future<void> seed(Slot slot) async {
+      final already = existing
+          .any((s) => s.productId == productId && s.slot == slot);
+      if (already) return;
+      await repo.upsertSchedule(WeekdaySchedule(
+        id: _uuid.v4(),
+        productId: productId,
+        slot: slot,
+        weekdays: days.toSet(),
+        lastModified: DateTime.now(),
+      ));
+    }
+
+    if (inMorning) await seed(Slot.morning);
+    if (inEvening) await seed(Slot.evening);
   }
 
   Future<void> _deleteProduct(AppLocalizations l) async {
@@ -286,6 +401,16 @@ class _AddCustomProductSheetState
     final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
     final categories = masterAsync.valueOrNull?.categories ?? [];
+
+    // Once the classifier / master content finish loading, (re)classify the
+    // name the user may have already typed, so auto-assignment doesn't depend
+    // on which resolved first.
+    ref.listen(productClassifierProvider, (_, next) {
+      if (next.hasValue) _classifyName();
+    });
+    ref.listen(masterContentProvider, (_, next) {
+      if (next.hasValue) _classifyName();
+    });
 
     final isRtl = l.localeName == 'he';
     return Directionality(
@@ -415,7 +540,10 @@ class _AddCustomProductSheetState
                     _buildTextField(
                       controller: _nameController,
                       hint: l.customProductNameHint,
-                      onChanged: (_) => setState(() {}),
+                      onChanged: (_) {
+                        setState(() {});
+                        _classifyName();
+                      },
                     ),
                     const SizedBox(height: 20),
 
@@ -431,7 +559,13 @@ class _AddCustomProductSheetState
                       categories: categories,
                       selected: _categoryId,
                       locale: l.localeName,
-                      onSelect: (id) => setState(() => _categoryId = id),
+                      onSelect: (id) => setState(() {
+                        _categoryId = id;
+                        // Manual category choice wins over auto-classification,
+                        // and clears the now-mismatched sub-category guess.
+                        _categoryManuallyChosen = true;
+                        _subCategoryId = null;
+                      }),
                     ),
                     const SizedBox(height: 20),
 
@@ -484,14 +618,20 @@ class _AddCustomProductSheetState
                         ('weekly', l.customProductFrequencyWeekly),
                       ],
                       selected: _isDaily ? 'daily' : 'weekly',
-                      onSelect: (v) => setState(() => _isDaily = v == 'daily'),
+                      onSelect: (v) => setState(() {
+                        _isDaily = v == 'daily';
+                        _frequencyTouched = true;
+                      }),
                     ),
                     if (!_isDaily) ...[
                       const SizedBox(height: 12),
                       _TimesPerWeekPicker(
                         label: l.customProductTimesPerWeekLabel,
                         value: _timesPerWeek,
-                        onChanged: (v) => setState(() => _timesPerWeek = v),
+                        onChanged: (v) => setState(() {
+                          _timesPerWeek = v;
+                          _frequencyTouched = true;
+                        }),
                       ),
                     ],
                     const SizedBox(height: 20),

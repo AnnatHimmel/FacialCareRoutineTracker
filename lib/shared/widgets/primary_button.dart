@@ -4,7 +4,7 @@ import '../../core/theme/app_typography.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final IconData? leadingIcon;
   final IconData? trailingIcon;
   final double height;
@@ -20,12 +20,15 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final disabled = onTap == null;
+    return Opacity(
+      opacity: disabled ? 0.45 : 1.0,
+      child: Container(
       height: height,
       decoration: BoxDecoration(
         gradient: AppColors.primaryGlowGradient,
         borderRadius: BorderRadius.circular(9999),
-        boxShadow: AppColors.glowLg,
+        boxShadow: disabled ? null : AppColors.glowLg,
       ),
       child: Material(
         type: MaterialType.transparency,
@@ -57,6 +60,7 @@ class PrimaryButton extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

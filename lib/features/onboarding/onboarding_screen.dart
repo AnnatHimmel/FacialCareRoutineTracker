@@ -98,6 +98,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.surface,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: _step == 1
             ? _buildStep1(l)

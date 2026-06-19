@@ -1851,6 +1851,12 @@ abstract class AppLocalizations {
   /// **'עדיין יש {count} ימי התנגשות ב{label}'**
   String scheduleConflictWarningCount(int count, Object label);
 
+  /// No description provided for @scheduleZeroDayError.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצר אחד או יותר ב{slot} לא משויך לאף יום — בחרי ימים לפני שממשיכים.'**
+  String scheduleZeroDayError(Object slot);
+
   /// No description provided for @scheduleCustomizeDays.
   ///
   /// In he, this message translates to:
@@ -2648,6 +2654,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בדיקת ההערות'**
   String get issueActionReviewNotes;
+
+  /// No description provided for @autoFixUndo.
+  ///
+  /// In he, this message translates to:
+  /// **'שחזר'**
+  String get autoFixUndo;
+
+  /// No description provided for @autoFixKeep.
+  ///
+  /// In he, this message translates to:
+  /// **'שמור שינויים'**
+  String get autoFixKeep;
+
+  /// No description provided for @autoFixAppliedFallback.
+  ///
+  /// In he, this message translates to:
+  /// **'התאמנו את השגרה כדי לפתור את ההתנגשות'**
+  String get autoFixAppliedFallback;
 
   /// No description provided for @chipPossibleConflict.
   ///

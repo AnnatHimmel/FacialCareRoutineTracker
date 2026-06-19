@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/order_override.dart';
+import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/services/product_sorter.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/master_content_repository.dart';
@@ -114,6 +115,8 @@ class _OrderCustomizationScreenState
     final eveningOverrideAsync =
         ref.watch(_orderOverrideProvider(Slot.evening));
 
+    final schedulesAsync = ref.watch(allSchedulesProvider);
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: _isOnboarding ? null : GlowAppBar(showBack: !widget.fromSetup),
@@ -130,6 +133,7 @@ class _OrderCustomizationScreenState
               eveningSelectionsAsync.valueOrNull ?? [];
           final morningOverride = morningOverrideAsync.valueOrNull;
           final eveningOverride = eveningOverrideAsync.valueOrNull;
+          final schedules = schedulesAsync.valueOrNull ?? [];
 
           final morningSelectedIds = morningSelections
               .where((s) => s.isSelected)
@@ -146,6 +150,7 @@ class _OrderCustomizationScreenState
             Slot.morning,
             morningOverride,
             _localOrder[Slot.morning],
+            schedules,
           );
           final eveningProducts = _sortedProducts(
             master,
@@ -153,6 +158,7 @@ class _OrderCustomizationScreenState
             Slot.evening,
             eveningOverride,
             _localOrder[Slot.evening],
+            schedules,
           );
 
           if (_isOnboarding) {
@@ -344,13 +350,25 @@ class _OrderCustomizationScreenState
     Slot slot,
     OrderOverride? override,
     List<String>? localOrder,
+    List<WeekdaySchedule> schedules,
   ) {
+    // Exclude products whose schedule for this slot was explicitly cleared to
+    // empty (e.g. moved to the other slot by the conflict resolver).
+    bool isExcluded(String id) => schedules.any(
+          (s) => s.productId == id && s.slot == slot && s.weekdays.isEmpty,
+        );
+
     final products = master.products
-        .where((p) => !p.isDeprecated && selectedIds.contains(p.id) && p.configForSlot(slot) != null)
+        .where((p) =>
+            !p.isDeprecated &&
+            selectedIds.contains(p.id) &&
+            p.configForSlot(slot) != null &&
+            !isExcluded(p.id))
         .toList();
 
     final adminCmp = ProductSorter.adminComparator(
       categories: master.categories,
+      subcategories: master.subcategories,
       slot: slot,
     );
 

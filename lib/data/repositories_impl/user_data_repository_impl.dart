@@ -239,6 +239,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
           name: Value(p.name),
           photoKey: Value(p.photoKey),
           categoryId: Value(p.categoryId),
+          subCategoryId: Value(p.subCategoryId),
           inMorning: Value(p.inMorning),
           inEvening: Value(p.inEvening),
           isDaily: Value(p.isDaily),
@@ -373,6 +374,17 @@ class UserDataRepositoryImpl implements UserDataRepository {
     });
   }
 
+  @override
+  Future<void> clearRoutineData() async {
+    await _db.transaction(() async {
+      await _db.schedulesDao.deleteAll();
+      await _db.orderOverridesDao.deleteAll();
+      await _db.dayRecordsDao.deleteAll();
+      await _db.skinLogDao.deleteAll();
+      await _db.mutedConflictsDao.deleteAll();
+    });
+  }
+
   // ── Row → Domain mappers ──────────────────────────────────────────────────
 
   ProductSelection _selectionFromRow(SelectionRow r) => ProductSelection(
@@ -435,6 +447,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
         name: r.name,
         photoKey: r.photoKey,
         categoryId: r.categoryId,
+        subCategoryId: r.subCategoryId,
         inMorning: r.inMorning,
         inEvening: r.inEvening,
         isDaily: r.isDaily,
