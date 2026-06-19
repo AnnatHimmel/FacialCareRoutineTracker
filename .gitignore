@@ -53,3 +53,12 @@ app.*.map.json
 credentials.json
 
 claude-workspace.code-workspace
+
+# Playwright output (root-level invocation)
+/playwright-report/
+/test-results/
+/node_modules/
+
+# Admin Playwright output
+admin/playwright-report/
+admin/test-results/

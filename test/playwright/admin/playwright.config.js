@@ -1,7 +1,7 @@
 const { defineConfig } = require('@playwright/test');
 
 module.exports = defineConfig({
-  testDir: '../test/playwright/admin',
+  testDir: '.',
   timeout: 30000,
   retries: 0,
   use: {
@@ -9,7 +9,7 @@ module.exports = defineConfig({
     headless: true,
   },
   webServer: {
-    command: 'node server.js',
+    command: 'cd ../../../admin && node server.js',
     url: 'http://localhost:3001',
     reuseExistingServer: true,
     timeout: 10000,

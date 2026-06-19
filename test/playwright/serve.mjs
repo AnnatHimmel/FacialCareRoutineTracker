@@ -6,7 +6,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..', 'build', 'web');
+const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '../..', 'build', 'web');
 const PORT = Number(process.env.GLOW_WEB_PORT ?? 8080);
 
 const MIME = {

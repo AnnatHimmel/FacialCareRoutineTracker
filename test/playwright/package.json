@@ -8,8 +8,8 @@
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "report": "playwright show-report",
-    "build:web": "cd .. && flutter build web",
-    "serve:web": "cd .. && flutter run -d web-server --web-port=8080",
+    "build:web": "cd ../.. && flutter build web",
+    "serve:web": "cd ../.. && flutter run -d web-server --web-port=8080",
     "install:browsers": "playwright install chromium"
   },
   "devDependencies": {
