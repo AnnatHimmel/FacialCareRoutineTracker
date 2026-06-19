@@ -1,0 +1,18 @@
+{
+  "name": "glow-protocol-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright end-to-end tests driving the Flutter web build of The Glow Protocol.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "build:web": "cd .. && flutter build web",
+    "serve:web": "cd .. && flutter run -d web-server --web-port=8080",
+    "install:browsers": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}
