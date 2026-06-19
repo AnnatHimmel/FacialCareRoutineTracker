@@ -112,12 +112,6 @@ class SettingsScreen extends ConsumerWidget {
           // ── Standard settings group ─────────────────────────────────────────
           _SettingsGroupCard(
             children: [
-              _SettingsTile(
-                icon: Icons.reorder,
-                label: l.settingsOrderProducts,
-                subtitle: l.settingsOrderSubtitle,
-                onTap: () => context.push('/setup/order'),
-              ),
               const _LanguageTile(),
               _SettingsTile(
                 icon: Icons.cloud_download_outlined,

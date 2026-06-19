@@ -145,6 +145,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     ),
                   ),
                 ),
+                // ── Week Glance entry card ──────────────────────────────────
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
+                    child: WeekGlanceEntryCard(),
+                  ),
+                ),
                 // ── Segmented tab control ───────────────────────────────────
                 SliverToBoxAdapter(
                   child: Padding(
@@ -185,6 +192,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       inRoutineCount: inUseProducts.length,
                       l: l,
                     ),
+                  ),
+                ),
+                // ── Week Glance entry card ──────────────────────────────────
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
+                    child: WeekGlanceEntryCard(),
                   ),
                 ),
                 // ── Free product list ───────────────────────────────────────
@@ -1083,6 +1097,86 @@ class _FreeRow extends StatelessWidget {
               Icons.chevron_left,
               textDirection: TextDirection.ltr,
               size: 22,
+              color: AppColors.outline,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Week Glance Entry Card ────────────────────────────────────────────────────
+
+/// Tappable entry card that opens the "שגרת השבוע שלי" screen.
+/// Placed in the collection screen between the health card and tab content.
+class WeekGlanceEntryCard extends StatelessWidget {
+  const WeekGlanceEntryCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return GestureDetector(
+      onTap: () => context.push('/week-glance'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: AppColors.glowSm,
+          border: Border.all(
+            color: AppColors.outlineVariant.withAlpha(51), // /20 opacity
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.primaryFixed.withAlpha(127),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.calendar_view_week,
+                size: 26,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.weekGlanceTitle,
+                    style: GoogleFonts.quicksand(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                      color: AppColors.onSurface,
+                    ),
+                    textDirection: TextDirection.rtl,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l.weekGlanceEntrySubtitle,
+                    style: GoogleFonts.quicksand(
+                      fontSize: 11.5,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                    textDirection: TextDirection.rtl,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // RTL chevron: textDirection.ltr is mandatory per project rules
+            // (chevron_left has matchTextDirection:true; ltr prevents auto-mirror)
+            const Icon(
+              Icons.chevron_left,
+              textDirection: TextDirection.ltr,
+              size: 20,
               color: AppColors.outline,
             ),
           ],

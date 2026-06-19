@@ -589,12 +589,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get settingsSectionRoutine => 'שגרת הטיפוח שלי';
 
   @override
-  String get settingsOrderProducts => 'סדר מוצרים';
-
-  @override
-  String get settingsOrderSubtitle => 'גררי לסידור אישי';
-
-  @override
   String get settingsSectionData => 'נתונים';
 
   @override
@@ -643,9 +637,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String aboutVersionLabel(Object version) {
     return 'גרסה $version';
   }
-
-  @override
-  String get aboutChangelog => 'מה חדש';
 
   @override
   String get exportDataTitle => 'ייצוא נתונים';
@@ -1550,6 +1541,137 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get commonDone => 'סיום';
+
+  @override
+  String get welcomeAppName => 'The Glow Protocol';
+
+  @override
+  String welcomeGreeting(String name, String weekday) {
+    return 'ברוכה השבה, $name · $weekday';
+  }
+
+  @override
+  String get welcomeStreakLabel => 'ימים ברצף';
+
+  @override
+  String get welcomeCta => 'לשגרה של היום';
+
+  @override
+  String get welcomeHint => 'ממשיכים לשגרה אוטומטית · הקישו לדילוג';
+
+  @override
+  String welcomeGraceLabel(int n) {
+    return 'נשארו $n \"אופס פיספסתי\" השבוע...';
+  }
+
+  @override
+  String welcomeGraceMissedCount(int n) {
+    return '$n פעמים פיספסתי השבוע';
+  }
+
+  @override
+  String get welcomePersonalBestLabel => 'שיא אישי';
+
+  @override
+  String welcomeDaysCount(int n) {
+    return '$n ימים';
+  }
+
+  @override
+  String get welcomeHeadline0 => 'התחלה חדשה ✨';
+
+  @override
+  String get welcomeSubline0 => 'יום אחד בכיף ואת כבר בדרך.';
+
+  @override
+  String get welcomeHeadline1 => 'יום ראשון של זוהר ✨';
+
+  @override
+  String get welcomeSubline1 => 'יום ראשון בשגרה — כל מסע מתחיל בצעד הראשון.';
+
+  @override
+  String welcomeHeadline2to4(int streak) {
+    return '$streak ימים של הרגל מתהווה ✨';
+  }
+
+  @override
+  String welcomeSubline2to4(int streak) {
+    return 'שמרת על השגרה $streak ימים ברצף — המומנטום בנייה.';
+  }
+
+  @override
+  String welcomeHeadline5to9(int streak) {
+    return '$streak ימים של זוהר רצוף ✨';
+  }
+
+  @override
+  String welcomeSubline5to9(int streak) {
+    return 'שמרת על השגרה $streak ימים ברצף — את בדרך הנכונה לזוהר מושלם.';
+  }
+
+  @override
+  String welcomeHeadline10to29(int streak) {
+    return '$streak ימים — את בוהקת! ✨';
+  }
+
+  @override
+  String welcomeSubline10to29(int streak) {
+    return 'עשרה ימים ומעלה של עקביות — העור שלך מרגיש את זה.';
+  }
+
+  @override
+  String welcomeHeadline30plus(int streak) {
+    return '$streak ימים! מדהים! 🌟';
+  }
+
+  @override
+  String get welcomeSubline30plus =>
+      'חודש ויותר של שגרת טיפוח עקבית — את אגדה!';
+
+  @override
+  String get weekGlanceTitle => 'שגרת השבוע שלי';
+
+  @override
+  String get weekGlanceEntrySubtitle => 'מה בשגרת הבוקר ומה בשגרת הערב בכל יום';
+
+  @override
+  String get weekGlanceEditButton => 'עריכה';
+
+  @override
+  String get weekGlanceStatusOkTitle => 'השגרה נראית תקינה';
+
+  @override
+  String get weekGlanceStatusOkSubMorning => 'אין התנגשויות בשגרת הבוקר';
+
+  @override
+  String get weekGlanceStatusOkSubEvening => 'אין התנגשויות בשגרת הערב';
+
+  @override
+  String get weekGlanceIssueSub => 'יש מוצרים שכדאי לבדוק';
+
+  @override
+  String get weekGlanceCheckIssues => 'בדיקת הערות';
+
+  @override
+  String get weekGlanceConflictSheetSubtitle =>
+      'שילובים שכדאי לשנות בימים מסוימים';
+
+  @override
+  String get weekGlanceConflictNotMix => 'לא מומלץ לשלב יחד';
+
+  @override
+  String get weekGlanceConflictExplanation =>
+      'ניאצינמיד ורטינול עשויים להפחית זה את יעילות זה כשמשתמשים בהם באותו ערב. מומלץ להפריד לערבים שונים.';
+
+  @override
+  String weekGlanceIssueTitle(int count, String slot) {
+    return '$count הערות בשגרת $slot';
+  }
+
+  @override
+  String weekGlanceEditRoutine(String slot) {
+    return 'עריכת שגרת $slot';
+  }
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -1815,12 +1937,6 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get settingsSectionRoutine => 'שגרת הטיפוח שלי';
-
-  @override
-  String get settingsOrderProducts => 'סדר מוצרים';
-
-  @override
-  String get settingsOrderSubtitle => 'גרור לסידור אישי';
 
   @override
   String get settingsSectionAccount => 'חשבון';

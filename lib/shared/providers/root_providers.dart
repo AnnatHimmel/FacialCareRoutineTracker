@@ -18,6 +18,7 @@ import '../../domain/entities/category_override.dart';
 import '../../domain/entities/collection_item.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/muted_conflict.dart';
+import '../../domain/entities/order_override.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/services/pao_calculator.dart';
@@ -363,6 +364,15 @@ final mutedConflictsProvider = StreamProvider<List<MutedConflict>>(
 
 final allSchedulesProvider = StreamProvider(
   (ref) => ref.watch(userDataRepositoryProvider).watchAllSchedules(),
+);
+
+/// The global (all-day) custom product order for a slot, as set on the Order
+/// Customization screen (S3). Used so the week overview reflects the order the
+/// routine already uses rather than re-deriving admin order.
+final orderOverrideProvider =
+    StreamProvider.family<OrderOverride?, Slot>(
+  (ref, slot) =>
+      ref.watch(userDataRepositoryProvider).watchOrderOverride(slot),
 );
 
 final allDayRecordsProvider = StreamProvider(

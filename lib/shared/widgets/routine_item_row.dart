@@ -130,13 +130,13 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
                           color: AppColors.onSurfaceVariant,
                         ),
                       ),
-                    ] else if (_showSlotChip) ...[
+                    ] else if (!_isDoneVariant && _showSlotChip) ...[
                       const SizedBox(height: 4),
                       Align(
                         alignment: AlignmentDirectional.centerEnd,
                         child: FixedSlotChip(product: product),
                       ),
-                    ] else if (subtitle != null) ...[
+                    ] else if (!_isDoneVariant && subtitle != null) ...[
                       const SizedBox(height: 2),
                       Text(
                         subtitle,

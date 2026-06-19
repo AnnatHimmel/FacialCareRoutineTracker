@@ -45,12 +45,16 @@ class RoutineResolver {
       final config =
           slot == Slot.morning ? p.morningConfig! : p.eveningConfig!;
       return switch (config.frequencyRule) {
-        DailyRule() => schedules
+        // An explicit schedule row is authoritative per-day: the product runs
+        // only on its listed weekdays (empty set = excluded). With no row, a
+        // daily product defaults to every day. Mirrors the schedule screen's
+        // `_effectiveDays` and the week-overview builder.
+        DailyRule() => () {
+            final row = schedules
                 .where((s) => s.productId == p.id && s.slot == slot)
-                .firstOrNull
-                ?.weekdays
-                .isNotEmpty ??
-            true,
+                .firstOrNull;
+            return row == null ? true : row.weekdays.contains(dayOfWeek);
+          }(),
         WeeklyMaxRule() => schedules.any(
             (s) =>
                 s.productId == p.id &&

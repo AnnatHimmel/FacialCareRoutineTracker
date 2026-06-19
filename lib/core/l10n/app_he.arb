@@ -253,22 +253,36 @@
   "scheduleAlertsOne": "התראה אחת",
   "scheduleAlertsCount": "{count} התראות",
   "@scheduleAlertsCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduleAlertsConflicts": "{count} שילובים בעיתיים",
   "@scheduleAlertsConflicts": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduleAlertsOverFreq": "{count} שימושים מעל המומלץ",
   "@scheduleAlertsOverFreq": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduleConflictsSection": "שילובים לא מומלצים",
   "scheduleOverFreqSection": "חריגה בתדירות",
   "scheduleByFrequency": "לפי תדירות",
   "scheduleDayChip": "יום {day}",
   "@scheduleDayChip": {
-    "placeholders": { "day": {} }
+    "placeholders": {
+      "day": {}
+    }
   },
   "scheduleSoftAlertsNote": "כל ההתראות הן רכות. מותר לחרוג, רק מזכירים.",
   "orderInstruction": "גררו את המוצרים כדי לסדר את השגרה שלכם",
@@ -279,8 +293,6 @@
   "settingsGreeting": "שלום",
   "settingsWelcome": "ברוכה הבאה ל־The Glow Protocol",
   "settingsSectionRoutine": "שגרת הטיפוח שלי",
-  "settingsOrderProducts": "סדר מוצרים",
-  "settingsOrderSubtitle": "גררי לסידור אישי",
   "settingsSectionData": "נתונים",
   "settingsExportSubtitle": "גיבוי מקומי של הנתונים",
   "settingsSectionInfo": "מידע",
@@ -306,7 +318,6 @@
       "version": {}
     }
   },
-  "aboutChangelog": "מה חדש",
   "exportDataTitle": "ייצוא נתונים",
   "exportDataDesc": "שמור גיבוי של כל הנתונים שלך כארכיון ZIP",
   "exportDataAction": "ייצוא",
@@ -598,7 +609,9 @@
   "collectionAttentionCount": "{count} מוצרים לסיום בקרוב",
   "@collectionAttentionCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "collectionHealthOk": "המדף במצב טוב",
@@ -609,7 +622,9 @@
   "homeAttentionCount": "{count} מוצרים כדאי לסיים בקרוב",
   "@homeAttentionCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "homeAttentionNone": "ייתכן שיש במדף שלך דברים שכדאי לשים לב אליהם",
@@ -637,7 +652,9 @@
   "productSelV3SelectedCount": "{count} מוצרים נבחרו",
   "@productSelV3SelectedCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "productSelV3ShelfCTA": "סידור המדף שלי",
@@ -651,7 +668,9 @@
   "scheduleHeaderWeekly": "תזמון שבועי",
   "scheduleStepLabel": "שלב 1 מתוך 2 · {slot}",
   "@scheduleStepLabel": {
-    "placeholders": { "slot": {} }
+    "placeholders": {
+      "slot": {}
+    }
   },
   "scheduleSubtitleV3": "בחרו באילו ימים להשתמש בכל מוצר. נציג הערות רק כשצריך.",
   "scheduleContextChipMorning": "שגרת בוקר",
@@ -659,30 +678,48 @@
   "scheduleContinueToOrder": "המשך לסדר המריחה",
   "daySummaryNoteCount": "{count} הערות ליום {day}",
   "@daySummaryNoteCount": {
-    "placeholders": { "count": { "type": "int" }, "day": {} }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "day": {}
+    }
   },
   "daySummaryNoteSub": "יש שילוב מוצרים או שימוש גבוה שכדאי לבדוק",
   "daySummaryAllGood": "יום {day} נראה טוב, אין הערות.",
   "@daySummaryAllGood": {
-    "placeholders": { "day": {} }
+    "placeholders": {
+      "day": {}
+    }
   },
   "issueSheetTitle": "הערות ליום {day}",
   "@issueSheetTitle": {
-    "placeholders": { "day": {} }
+    "placeholders": {
+      "day": {}
+    }
   },
   "issueSheetSubtitle": "אפשר לשנות רק את היום הזה, או להשאיר את השגרה כמו שהיא.",
   "issueSheetConflictSection": "לא מומלץ לשלב באותו יום",
   "issueSheetOveruseSection": "שימוש גבוה מההמלצה",
   "issueSheetOveruseBody": "המוצר מתוכנן ל־{count} פעמים בשבוע, וההמלצה היא עד {cap}.",
   "@issueSheetOveruseBody": {
-    "placeholders": { "count": { "type": "int" }, "cap": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "cap": {
+        "type": "int"
+      }
+    }
   },
   "issueActionRemoveFromDay": "הסרה מהיום הזה",
   "issueActionKeep": "להשאיר בכל זאת",
   "issueActionAutoFix": "התאמה אוטומטית",
   "issueActionRemoveFromDayNamed": "הסרת {name} מהיום הזה",
   "@issueActionRemoveFromDayNamed": {
-    "placeholders": { "name": {} }
+    "placeholders": {
+      "name": {}
+    }
   },
   "issueActionAutoDistribute": "התאמה אוטומטית",
   "issueActionReviewNotes": "בדיקת ההערות",
@@ -695,7 +732,9 @@
   "orderHeaderEvening": "סדר המריחה בערב",
   "orderStepLabel": "שלב 2 מתוך 2 · {slot}",
   "@orderStepLabel": {
-    "placeholders": { "slot": {} }
+    "placeholders": {
+      "slot": {}
+    }
   },
   "orderSubtitleV3": "סידרנו את המוצרים לפי סדר שימוש מומלץ. אפשר לגרור כדי לשנות.",
   "orderViewGeneral": "סדר כללי",
@@ -708,7 +747,9 @@
   "orderPerDaySheetTitle": "סדר יום {day}",
   "@orderPerDaySheetTitle": {
     "placeholders": {
-      "day": { "type": "String" }
+      "day": {
+        "type": "String"
+      }
     }
   },
   "orderCtaMorning": "אישור סדר הבוקר",
@@ -725,26 +766,168 @@
   "addProductPlacementTitle": "המיקום המוצע",
   "addProductPlacement": "נמקם אותו אחרי {before} ולפני {after}",
   "@addProductPlacement": {
-    "placeholders": { "before": {}, "after": {} }
+    "placeholders": {
+      "before": {},
+      "after": {}
+    }
   },
   "addProductPlacementAfter": "נמקם אותו אחרי {before}",
   "@addProductPlacementAfter": {
-    "placeholders": { "before": {} }
+    "placeholders": {
+      "before": {}
+    }
   },
   "addProductPlacementGeneric": "נמקם אותו במקום המתאים בשגרה",
   "addProductCta": "הוספה לשגרה",
   "addProductSuccess": "המוצר נוסף לשגרה",
   "addProductSuccessSubMorning": "הוספנו אותו לשגרת הבוקר בימים {days}.",
   "@addProductSuccessSubMorning": {
-    "placeholders": { "days": {} }
+    "placeholders": {
+      "days": {}
+    }
   },
   "addProductSuccessSubEvening": "הוספנו אותו לשגרת הערב בימים {days}.",
   "@addProductSuccessSubEvening": {
-    "placeholders": { "days": {} }
+    "placeholders": {
+      "days": {}
+    }
   },
   "addProductSuccessSubBoth": "הוספנו אותו לשגרת הבוקר והערב בימים {days}.",
   "@addProductSuccessSubBoth": {
-    "placeholders": { "days": {} }
+    "placeholders": {
+      "days": {}
+    }
   },
-  "commonDone": "סיום"
+  "commonDone": "סיום",
+  "welcomeAppName": "The Glow Protocol",
+  "welcomeGreeting": "ברוכה השבה, {name} · {weekday}",
+  "@welcomeGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "welcomeStreakLabel": "ימים ברצף",
+  "welcomeCta": "לשגרה של היום",
+  "welcomeHint": "ממשיכים לשגרה אוטומטית · הקישו לדילוג",
+  "welcomeGraceLabel": "נשארו {n} \"אופס פיספסתי\" השבוע...",
+  "@welcomeGraceLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeGraceMissedCount": "{n} פעמים פיספסתי השבוע",
+  "@welcomeGraceMissedCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomePersonalBestLabel": "שיא אישי",
+  "welcomeDaysCount": "{n} ימים",
+  "@welcomeDaysCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeHeadline0": "התחלה חדשה ✨",
+  "welcomeSubline0": "יום אחד בכיף ואת כבר בדרך.",
+  "welcomeHeadline1": "יום ראשון של זוהר ✨",
+  "welcomeSubline1": "יום ראשון בשגרה — כל מסע מתחיל בצעד הראשון.",
+  "welcomeHeadline2to4": "{streak} ימים של הרגל מתהווה ✨",
+  "@welcomeHeadline2to4": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeSubline2to4": "שמרת על השגרה {streak} ימים ברצף — המומנטום בנייה.",
+  "@welcomeSubline2to4": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeHeadline5to9": "{streak} ימים של זוהר רצוף ✨",
+  "@welcomeHeadline5to9": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeSubline5to9": "שמרת על השגרה {streak} ימים ברצף — את בדרך הנכונה לזוהר מושלם.",
+  "@welcomeSubline5to9": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeHeadline10to29": "{streak} ימים — את בוהקת! ✨",
+  "@welcomeHeadline10to29": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeSubline10to29": "עשרה ימים ומעלה של עקביות — העור שלך מרגיש את זה.",
+  "@welcomeSubline10to29": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeHeadline30plus": "{streak} ימים! מדהים! 🌟",
+  "@welcomeHeadline30plus": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeSubline30plus": "חודש ויותר של שגרת טיפוח עקבית — את אגדה!",
+  "weekGlanceTitle": "שגרת השבוע שלי",
+  "weekGlanceEntrySubtitle": "מה בשגרת הבוקר ומה בשגרת הערב בכל יום",
+  "weekGlanceEditButton": "עריכה",
+  "weekGlanceStatusOkTitle": "השגרה נראית תקינה",
+  "weekGlanceStatusOkSubMorning": "אין התנגשויות בשגרת הבוקר",
+  "weekGlanceStatusOkSubEvening": "אין התנגשויות בשגרת הערב",
+  "weekGlanceIssueSub": "יש מוצרים שכדאי לבדוק",
+  "weekGlanceCheckIssues": "בדיקת הערות",
+  "weekGlanceConflictSheetSubtitle": "שילובים שכדאי לשנות בימים מסוימים",
+  "weekGlanceConflictNotMix": "לא מומלץ לשלב יחד",
+  "weekGlanceConflictExplanation": "ניאצינמיד ורטינול עשויים להפחית זה את יעילות זה כשמשתמשים בהם באותו ערב. מומלץ להפריד לערבים שונים.",
+  "weekGlanceIssueTitle": "{count} הערות בשגרת {slot}",
+  "@weekGlanceIssueTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "weekGlanceEditRoutine": "עריכת שגרת {slot}",
+  "@weekGlanceEditRoutine": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  }
 }

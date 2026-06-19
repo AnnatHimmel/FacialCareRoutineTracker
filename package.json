@@ -1,7 +1,7 @@
 {
   "name": "facial-care-tracker",
   "private": true,
-  "workspaces": ["test/playwright"],
+  "workspaces": ["test/playwright", "admin"],
   "devDependencies": {
     "@playwright/test": "^1.49.0"
   }

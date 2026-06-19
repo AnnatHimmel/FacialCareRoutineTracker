@@ -23,6 +23,7 @@ import '../../features/setup/add_product_flow_screen.dart';
 import '../../features/setup/order_customization_screen.dart';
 import '../../features/setup/schedule_setup_screen.dart';
 import '../../features/home/week_glance_screen.dart';
+import '../../features/welcome/welcome_screen.dart';
 
 // ── Safe zone wrapper ────────────────────────────────────────────────────────
 
@@ -74,6 +75,10 @@ final appRouter = GoRouter(
       builder: (context, state) => _withSafeZone(OnboardingScreen(
         onFinish: () => context.go('/today'),
       )),
+    ),
+    GoRoute(
+      path: '/welcome',
+      builder: (context, state) => _withSafeZone(const WelcomeScreen()),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) =>

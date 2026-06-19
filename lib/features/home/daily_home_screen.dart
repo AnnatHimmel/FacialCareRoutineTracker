@@ -12,15 +12,12 @@ import '../../domain/entities/master_product.dart';
 import '../../domain/enums/collection_status.dart';
 import '../../domain/enums/pao_tone.dart';
 import '../../domain/enums/slot.dart';
-import '../../domain/services/incompatibility_checker.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/pro_tag.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
-import '../../shared/widgets/streak_widget.dart';
-
 enum _ViewMode { list, images }
 
 class DailyHomeScreen extends ConsumerStatefulWidget {
@@ -167,10 +164,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
         ref.watch(_dayRecordProvider((date: dateStr, slot: Slot.morning)));
     final eveningRecordAsync =
         ref.watch(_dayRecordProvider((date: dateStr, slot: Slot.evening)));
-    final allRecordsAsync = ref.watch(allDayRecordsProvider);
-    final mutedAsync = ref.watch(mutedConflictsProvider);
-    final masterAsync = ref.watch(masterContentProvider);
-
     final collectionItems = ref.watch(collectionItemsProvider).valueOrNull ?? [];
     final pao = ref.watch(paoCalculatorProvider);
     final now = DateTime.now();
@@ -192,9 +185,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     final eveningProducts = eveningRoutineAsync.valueOrNull ?? [];
     final morningRecord = morningRecordAsync.valueOrNull;
     final eveningRecord = eveningRecordAsync.valueOrNull;
-    final allRecords = allRecordsAsync.valueOrNull ?? [];
-    final mutedIds =
-        (mutedAsync.valueOrNull ?? []).map((m) => m.ruleId).toSet();
 
     if (morningProducts.isNotEmpty) {
       _ensureRecord(dateStr, Slot.morning, morningProducts, morningRecord);
@@ -202,28 +192,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     if (eveningProducts.isNotEmpty) {
       _ensureRecord(dateStr, Slot.evening, eveningProducts, eveningRecord);
     }
-
-    final boundary = ref.read(dayBoundaryServiceProvider);
-    final calculator = ref.read(streakCalculatorProvider);
-    final streakResult = calculator.compute(
-      allRecords: allRecords,
-      asOf: DateTime.now(),
-      boundary: boundary,
-    );
-
-    final List<ConflictInfo> conflicts = masterAsync.valueOrNull != null
-        ? ref.read(incompatibilityCheckerProvider).getConflictsForDay(
-            morningProducts: morningProducts,
-            eveningProducts: eveningProducts,
-            rules: masterAsync.valueOrNull!.rules,
-            categories: masterAsync.valueOrNull!.categories,
-            mutedRuleIds: mutedIds,
-          )
-        : [];
-
-    final Set<String> conflictProductIds = {
-      for (final c in conflicts) ...<String>[c.productA.id, c.productB.id],
-    };
 
     final morningRecorded = morningRecord?.recordedProductIds.toSet() ?? {};
     final eveningRecorded = eveningRecord?.recordedProductIds.toSet() ?? {};
@@ -233,12 +201,12 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
         eveningProducts.where((p) => eveningRecorded.contains(p.id)).length;
 
     final isPro = ref.watch(isProDemoProvider);
-    final showMilestone = ref.watch(milestoneDemoProvider);
 
     final isLoading =
         morningRoutineAsync.isLoading && eveningRoutineAsync.isLoading;
 
     // Build day label from current date + user name
+    final boundary = ref.read(dayBoundaryServiceProvider);
     final effectiveDate = boundary.todayEffectiveDate;
     final userName = ref.watch(userNameProvider).valueOrNull;
     final isEn = l.localeName == 'en';
@@ -295,19 +263,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                   ),
                 ),
 
-                if (allRecords.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      child: StreakWidget(
-                        currentStreak: streakResult.currentStreak,
-                        longestStreak: streakResult.longestStreak,
-                        gracesUsed: streakResult.missesThisWeek,
-                        showMilestonePitch: showMilestone,
-                      ),
-                    ),
-                  ),
-
                 if (isPro ? nearExpiryIds.isNotEmpty : true)
                   SliverToBoxAdapter(
                     child: Padding(
@@ -320,18 +275,18 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
 
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (isPro) ...[
-                          const SizedBox(height: 6),
-                          Row(
+                          const SizedBox(height: 4),
+                          const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [ProTag()],
+                            children: [ProTag()],
                           ),
                         ],
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 8),
                         _ViewModeControl(
                           viewMode: _viewMode,
                           showNames: _showNames,
@@ -348,21 +303,19 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     slot: Slot.morning,
                     products: morningProducts,
                     record: morningRecord,
-                    conflictProductIds: conflictProductIds,
                     doneCount: morningDone,
                     nearExpiryIds: nearExpiryIds,
                     isPro: isPro,
                   ),
 
                 if (morningProducts.isNotEmpty && eveningProducts.isNotEmpty)
-                  const SliverToBoxAdapter(child: SizedBox(height: 72)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 36)),
 
                 if (eveningProducts.isNotEmpty)
                   _buildSlotSection(
                     slot: Slot.evening,
                     products: eveningProducts,
                     record: eveningRecord,
-                    conflictProductIds: conflictProductIds,
                     doneCount: eveningDone,
                     nearExpiryIds: nearExpiryIds,
                     isPro: isPro,
@@ -414,7 +367,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     required Slot slot,
     required List<MasterProduct> products,
     required DayRecord? record,
-    required Set<String> conflictProductIds,
     required int doneCount,
     required Set<String> nearExpiryIds,
     required bool isPro,
@@ -486,8 +438,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                       (context, index) {
                         final product = products[index];
                         final isToggled = recorded.contains(product.id);
-                        final hasConflict =
-                            conflictProductIds.contains(product.id);
 
                         return Padding(
                           padding: EdgeInsets.only(
@@ -501,7 +451,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                                 _toggleProduct(record, product.id);
                               }
                             },
-                            hasConflict: hasConflict,
                             isHintTarget: product.id == hintTargetId,
                           ),
                         );
@@ -908,12 +857,12 @@ class _ProductGridTile extends ConsumerWidget {
       return CachedNetworkImage(
         imageUrl: asset,
         fit: BoxFit.cover,
-        placeholder: (_, __) => Image.asset(
+        placeholder: (_, _) => Image.asset(
           localAsset,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _fallback(),
+          errorBuilder: (_, _, _) => _fallback(),
         ),
-        errorWidget: (_, __, ___) => _fallback(),
+        errorWidget: (_, _, _) => _fallback(),
       );
     } else if (asset != null) {
       return Image.asset(

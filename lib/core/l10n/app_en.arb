@@ -253,22 +253,36 @@
   "scheduleAlertsOne": "1 alert",
   "scheduleAlertsCount": "{count} alerts",
   "@scheduleAlertsCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduleAlertsConflicts": "{count} products conflicts",
   "@scheduleAlertsConflicts": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduleAlertsOverFreq": "{count} over recommended usage",
   "@scheduleAlertsOverFreq": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduleConflictsSection": "Not recommended together",
   "scheduleOverFreqSection": "Over recommended frequency",
   "scheduleByFrequency": "By frequency",
   "scheduleDayChip": "{day}",
   "@scheduleDayChip": {
-    "placeholders": { "day": {} }
+    "placeholders": {
+      "day": {}
+    }
   },
   "scheduleSoftAlertsNote": "All alerts are soft. You can exceed, we'll just remind you.",
   "orderInstruction": "Drag products to reorder your routine",
@@ -279,8 +293,6 @@
   "settingsGreeting": "Hello",
   "settingsWelcome": "Welcome to The Glow Protocol",
   "settingsSectionRoutine": "My Skincare Routine",
-  "settingsOrderProducts": "Product Order",
-  "settingsOrderSubtitle": "Drag to personalise order",
   "settingsSectionData": "Data",
   "settingsExportSubtitle": "Local data backup",
   "settingsSectionInfo": "Info",
@@ -306,7 +318,6 @@
       "version": {}
     }
   },
-  "aboutChangelog": "What's New",
   "exportDataTitle": "Export Data",
   "exportDataDesc": "Save a backup of all your data as a ZIP archive",
   "exportDataAction": "Export",
@@ -598,7 +609,9 @@
   "collectionAttentionCount": "{count} products to finish soon",
   "@collectionAttentionCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "collectionHealthOk": "Shelf in good shape",
@@ -609,7 +622,9 @@
   "homeAttentionCount": "{count} products to finish soon",
   "@homeAttentionCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "homeAttentionNone": "You may have a few things on your shelf worth checking on",
@@ -637,7 +652,9 @@
   "productSelV3SelectedCount": "{count} products selected",
   "@productSelV3SelectedCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "productSelV3ShelfCTA": "Organize my shelf",
@@ -651,7 +668,9 @@
   "scheduleHeaderWeekly": "Weekly schedule",
   "scheduleStepLabel": "Step 1 of 2 · {slot}",
   "@scheduleStepLabel": {
-    "placeholders": { "slot": {} }
+    "placeholders": {
+      "slot": {}
+    }
   },
   "scheduleSubtitleV3": "Choose which days to use each product. We'll only show notes when needed.",
   "scheduleContextChipMorning": "Morning routine",
@@ -659,30 +678,48 @@
   "scheduleContinueToOrder": "Continue to application order",
   "daySummaryNoteCount": "{count} notes for {day}",
   "@daySummaryNoteCount": {
-    "placeholders": { "count": { "type": "int" }, "day": {} }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "day": {}
+    }
   },
   "daySummaryNoteSub": "There's a product combination or high usage worth checking",
   "daySummaryAllGood": "{day} looks good, no notes.",
   "@daySummaryAllGood": {
-    "placeholders": { "day": {} }
+    "placeholders": {
+      "day": {}
+    }
   },
   "issueSheetTitle": "Notes for {day}",
   "@issueSheetTitle": {
-    "placeholders": { "day": {} }
+    "placeholders": {
+      "day": {}
+    }
   },
   "issueSheetSubtitle": "You can change just this day, or keep the routine as is.",
   "issueSheetConflictSection": "Not recommended on the same day",
   "issueSheetOveruseSection": "Higher usage than recommended",
   "issueSheetOveruseBody": "The product is scheduled {count} times per week, and the recommendation is up to {cap}.",
   "@issueSheetOveruseBody": {
-    "placeholders": { "count": { "type": "int" }, "cap": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "cap": {
+        "type": "int"
+      }
+    }
   },
   "issueActionRemoveFromDay": "Remove from this day",
   "issueActionKeep": "Keep anyway",
   "issueActionAutoFix": "Auto-adjust",
   "issueActionRemoveFromDayNamed": "Remove {name} from this day",
   "@issueActionRemoveFromDayNamed": {
-    "placeholders": { "name": {} }
+    "placeholders": {
+      "name": {}
+    }
   },
   "issueActionAutoDistribute": "Auto-distribute to week",
   "issueActionReviewNotes": "Review notes",
@@ -695,7 +732,9 @@
   "orderHeaderEvening": "Evening application order",
   "orderStepLabel": "Step 2 of 2 · {slot}",
   "@orderStepLabel": {
-    "placeholders": { "slot": {} }
+    "placeholders": {
+      "slot": {}
+    }
   },
   "orderSubtitleV3": "We sorted your products by recommended usage order. Drag to change.",
   "orderViewGeneral": "General order",
@@ -708,7 +747,9 @@
   "orderPerDaySheetTitle": "Order for {day}",
   "@orderPerDaySheetTitle": {
     "placeholders": {
-      "day": { "type": "String" }
+      "day": {
+        "type": "String"
+      }
     }
   },
   "orderCtaMorning": "Confirm morning order",
@@ -725,25 +766,167 @@
   "addProductPlacementTitle": "Suggested placement",
   "addProductPlacement": "We'll place it after {before} and before {after}",
   "@addProductPlacement": {
-    "placeholders": { "before": {}, "after": {} }
+    "placeholders": {
+      "before": {},
+      "after": {}
+    }
   },
   "addProductPlacementAfter": "We'll place it after {before}",
   "@addProductPlacementAfter": {
-    "placeholders": { "before": {} }
+    "placeholders": {
+      "before": {}
+    }
   },
   "addProductPlacementGeneric": "We'll place it where it fits in the routine",
   "addProductCta": "Add to routine",
   "addProductSuccess": "Product added to routine",
   "addProductSuccessSubMorning": "We added it to your morning routine on {days}.",
   "@addProductSuccessSubMorning": {
-    "placeholders": { "days": {} }
+    "placeholders": {
+      "days": {}
+    }
   },
   "addProductSuccessSubEvening": "We added it to your evening routine on {days}.",
   "@addProductSuccessSubEvening": {
-    "placeholders": { "days": {} }
+    "placeholders": {
+      "days": {}
+    }
   },
   "addProductSuccessSubBoth": "We added it to your morning and evening routine on {days}.",
   "@addProductSuccessSubBoth": {
-    "placeholders": { "days": {} }
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "welcomeAppName": "The Glow Protocol",
+  "welcomeGreeting": "Welcome back, {name} · {weekday}",
+  "@welcomeGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "welcomeStreakLabel": "days in a row",
+  "welcomeCta": "Today's Routine",
+  "welcomeHint": "Auto-continuing to your routine · tap to skip",
+  "welcomeGraceLabel": "{n} \"oops I missed\" left this week...",
+  "@welcomeGraceLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeGraceMissedCount": "{n} misses this week",
+  "@welcomeGraceMissedCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomePersonalBestLabel": "Personal Best",
+  "welcomeDaysCount": "{n} days",
+  "@welcomeDaysCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeHeadline0": "A fresh start ✨",
+  "welcomeSubline0": "Every streak starts with day one.",
+  "welcomeHeadline1": "Day one of your glow ✨",
+  "welcomeSubline1": "First day in the routine — every journey starts with a single step.",
+  "welcomeHeadline2to4": "{streak} days and building ✨",
+  "@welcomeHeadline2to4": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeSubline2to4": "You kept up your routine for {streak} days — the momentum is building.",
+  "@welcomeSubline2to4": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeHeadline5to9": "{streak} days of radiant consistency ✨",
+  "@welcomeHeadline5to9": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeSubline5to9": "You kept up your routine for {streak} days — you're on the path to a perfect glow.",
+  "@welcomeSubline5to9": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeHeadline10to29": "{streak} days — you're glowing! ✨",
+  "@welcomeHeadline10to29": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeSubline10to29": "Ten days and counting of consistency — your skin can feel it.",
+  "@welcomeSubline10to29": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeHeadline30plus": "{streak} days! Amazing! 🌟",
+  "@welcomeHeadline30plus": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeSubline30plus": "A month or more of consistent skincare — you're a legend!",
+  "weekGlanceTitle": "My Week's Routine",
+  "weekGlanceEntrySubtitle": "Morning and evening routines, day by day",
+  "weekGlanceEditButton": "Edit",
+  "weekGlanceStatusOkTitle": "Routine looks good",
+  "weekGlanceStatusOkSubMorning": "No conflicts in morning routine",
+  "weekGlanceStatusOkSubEvening": "No conflicts in evening routine",
+  "weekGlanceIssueSub": "Some products are worth checking",
+  "weekGlanceCheckIssues": "Review notes",
+  "weekGlanceConflictSheetSubtitle": "Combinations worth adjusting on certain days",
+  "weekGlanceConflictNotMix": "Not recommended to combine",
+  "weekGlanceConflictExplanation": "Niacinamide and retinol may reduce each other's efficacy when used on the same evening. It's best to alternate evenings.",
+  "weekGlanceIssueTitle": "{count} notes in {slot} routine",
+  "@weekGlanceIssueTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "weekGlanceEditRoutine": "Edit {slot} routine",
+  "@weekGlanceEditRoutine": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
   }
 }

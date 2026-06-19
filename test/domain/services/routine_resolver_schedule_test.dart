@@ -127,5 +127,55 @@ void main() {
       expect(result, hasLength(1),
           reason: 'Daily product with all-days schedule must still appear');
     });
+
+    test(
+        'daily product with partial schedule is hidden on a day NOT in the set',
+        () {
+      // A daily product the user (or auto-fix split) restricted to specific
+      // weekdays must honour those days — not appear on every day. {3,5} =
+      // Wed/Fri, so on Monday (dayOfWeek 1) it must NOT appear.
+      final argireline = _dailyBiSlot('argireline');
+
+      final result = _resolver.resolve(
+        date: _monday, // dayOfWeek 1 — not in {3,5}
+        slot: Slot.morning,
+        allProducts: [argireline],
+        categories: _cats,
+        selections: [_morningSelection('argireline')],
+        schedules: [
+          _scheduleWithDays('argireline', Slot.morning, {3, 5}),
+        ],
+        orderOverride: null,
+        boundary: _boundary,
+      );
+
+      expect(result, isEmpty,
+          reason: 'Daily product restricted to {Wed,Fri} must not appear on '
+              'Monday');
+    });
+
+    test(
+        'daily product with partial schedule appears on a day IN the set',
+        () {
+      final argireline = _dailyBiSlot('argireline');
+      final wednesday = DateTime(2024, 6, 12, 12); // dayOfWeek 3
+
+      final result = _resolver.resolve(
+        date: wednesday,
+        slot: Slot.morning,
+        allProducts: [argireline],
+        categories: _cats,
+        selections: [_morningSelection('argireline')],
+        schedules: [
+          _scheduleWithDays('argireline', Slot.morning, {3, 5}),
+        ],
+        orderOverride: null,
+        boundary: _boundary,
+      );
+
+      expect(result, hasLength(1),
+          reason: 'Daily product restricted to {Wed,Fri} must appear on '
+              'Wednesday');
+    });
   });
 }

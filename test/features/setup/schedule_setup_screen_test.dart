@@ -292,8 +292,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Weekly product is in the "לפי תדירות" list as a collapsed _ListRow.
-      // Tap the row to expand it and reveal the WeekdayPicker.
-      await tester.tap(find.text('סרום'));
+      // Tap the tune icon (expand toggle) to expand it and reveal the WeekdayPicker.
+      // (Tapping the product name now navigates to /collection/{id} instead.)
+      await tester.tap(find.byIcon(Icons.tune_rounded));
       await tester.pumpAndSettle();
 
       // Tap the first GestureDetector inside the WeekdayPicker (Sunday chip)

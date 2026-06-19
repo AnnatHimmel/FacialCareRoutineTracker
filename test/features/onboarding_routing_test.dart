@@ -102,13 +102,13 @@ void main() {
       expect(find.text('onboarding'), findsOneWidget);
     });
 
-    testWidgets('navigates to /today when onboarding is already completed',
+    testWidgets('navigates to /welcome when onboarding is already completed',
         (tester) async {
       await tester.pumpWidget(buildTestApp(
         onboardingCompleted: true,
         extraRoutes: [
           GoRoute(
-            path: '/today',
+            path: '/welcome',
             builder: (_, state) =>
                 const Scaffold(body: Text('home')),
           ),

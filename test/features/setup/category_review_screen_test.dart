@@ -212,7 +212,7 @@ void main() {
       expect(find.text('ג׳ל ניקוי'), findsNothing);
     });
 
-    testWidgets('category chip uses calm (peach) background — AppColors.primaryFixed',
+    testWidgets('category chip uses calm background — AppColors.surfaceLow',
         (tester) async {
       await tester.pumpWidget(_wrap(
         master: master,
@@ -223,12 +223,12 @@ void main() {
       final calmChip = find.byWidgetPredicate((w) {
         if (w is Container && w.decoration is BoxDecoration) {
           final dec = w.decoration as BoxDecoration;
-          return dec.color == AppColors.primaryFixed;
+          return dec.color == AppColors.surfaceLow;
         }
         return false;
       });
       expect(calmChip, findsWidgets,
-          reason: 'Category chip must use AppColors.primaryFixed background');
+          reason: 'Category chip must use AppColors.surfaceLow background');
     });
 
     testWidgets(
@@ -258,7 +258,7 @@ void main() {
       // The change-category control must be on a line below the product name,
       // so the name can use the full row width.
       final nameRect = tester.getRect(find.text('מוצר עם שם ארוך מאוד שאמור למלא את כל השורה'));
-      final buttonRect = tester.getRect(find.text('שינוי קטגוריה'));
+      final buttonRect = tester.getRect(find.byIcon(Icons.edit_rounded));
       expect(buttonRect.top, greaterThan(nameRect.bottom),
           reason: 'Change-category button should sit below the product name');
     });
@@ -271,7 +271,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('שינוי קטגוריה'), findsNWidgets(2));
+      expect(find.byIcon(Icons.edit_rounded), findsNWidgets(2));
     });
 
     testWidgets('tapping "שינוי קטגוריה" expands the category picker',
@@ -285,7 +285,7 @@ void main() {
       // Before expand — category picker items not visible
       expect(find.text('ניקוי'), findsNothing);
 
-      await tester.tap(find.text('שינוי קטגוריה').first);
+      await tester.tap(find.byIcon(Icons.edit_rounded).first);
       await tester.pumpAndSettle();
 
       // After expand — category options are shown

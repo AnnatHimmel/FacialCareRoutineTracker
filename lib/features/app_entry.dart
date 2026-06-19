@@ -23,7 +23,7 @@ class AppEntryPoint extends ConsumerWidget {
     final completed = setupAsync.valueOrNull ?? false;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.mounted) {
-        context.go(completed ? '/today' : '/onboarding');
+        context.go(completed ? '/welcome' : '/onboarding');
       }
     });
     return const Scaffold(body: Center(child: CircularProgressIndicator()));

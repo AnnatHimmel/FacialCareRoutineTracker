@@ -36,7 +36,7 @@ Widget buildTestApp({
 
 void main() {
   group('silent startup reconciliation', () {
-    testWidgets('silentStartupProvider runs before routing to /today',
+    testWidgets('silentStartupProvider runs before routing to /welcome',
         (tester) async {
       bool startupRan = false;
 
@@ -45,7 +45,7 @@ void main() {
         onStartupRan: () => startupRan = true,
         extraRoutes: [
           GoRoute(
-            path: '/today',
+            path: '/welcome',
             builder: (context, state) => const Scaffold(body: Text('home')),
           ),
         ],
@@ -80,7 +80,7 @@ void main() {
       expect(find.text('onboarding'), findsOneWidget);
     });
 
-    testWidgets('app routes to /today (not S14) regardless of startup result',
+    testWidgets('app routes to /welcome (not S14) regardless of startup result',
         (tester) async {
       // Even if reconciliation detects a content update, no S14 is shown.
       await tester.pumpWidget(buildTestApp(
@@ -88,7 +88,7 @@ void main() {
         onStartupRan: () {}, // startup completes without navigating to S14
         extraRoutes: [
           GoRoute(
-            path: '/today',
+            path: '/welcome',
             builder: (context, state) => const Scaffold(body: Text('home')),
           ),
           GoRoute(

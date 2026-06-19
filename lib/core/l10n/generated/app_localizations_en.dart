@@ -595,12 +595,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionRoutine => 'My Skincare Routine';
 
   @override
-  String get settingsOrderProducts => 'Product Order';
-
-  @override
-  String get settingsOrderSubtitle => 'Drag to personalise order';
-
-  @override
   String get settingsSectionData => 'Data';
 
   @override
@@ -649,9 +643,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String aboutVersionLabel(Object version) {
     return 'Version $version';
   }
-
-  @override
-  String get aboutChangelog => 'What\'s New';
 
   @override
   String get exportDataTitle => 'Export Data';
@@ -1571,4 +1562,137 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonDone => 'סיום';
+
+  @override
+  String get welcomeAppName => 'The Glow Protocol';
+
+  @override
+  String welcomeGreeting(String name, String weekday) {
+    return 'Welcome back, $name · $weekday';
+  }
+
+  @override
+  String get welcomeStreakLabel => 'days in a row';
+
+  @override
+  String get welcomeCta => 'Today\'s Routine';
+
+  @override
+  String get welcomeHint => 'Auto-continuing to your routine · tap to skip';
+
+  @override
+  String welcomeGraceLabel(int n) {
+    return '$n \"oops I missed\" left this week...';
+  }
+
+  @override
+  String welcomeGraceMissedCount(int n) {
+    return '$n misses this week';
+  }
+
+  @override
+  String get welcomePersonalBestLabel => 'Personal Best';
+
+  @override
+  String welcomeDaysCount(int n) {
+    return '$n days';
+  }
+
+  @override
+  String get welcomeHeadline0 => 'A fresh start ✨';
+
+  @override
+  String get welcomeSubline0 => 'Every streak starts with day one.';
+
+  @override
+  String get welcomeHeadline1 => 'Day one of your glow ✨';
+
+  @override
+  String get welcomeSubline1 =>
+      'First day in the routine — every journey starts with a single step.';
+
+  @override
+  String welcomeHeadline2to4(int streak) {
+    return '$streak days and building ✨';
+  }
+
+  @override
+  String welcomeSubline2to4(int streak) {
+    return 'You kept up your routine for $streak days — the momentum is building.';
+  }
+
+  @override
+  String welcomeHeadline5to9(int streak) {
+    return '$streak days of radiant consistency ✨';
+  }
+
+  @override
+  String welcomeSubline5to9(int streak) {
+    return 'You kept up your routine for $streak days — you\'re on the path to a perfect glow.';
+  }
+
+  @override
+  String welcomeHeadline10to29(int streak) {
+    return '$streak days — you\'re glowing! ✨';
+  }
+
+  @override
+  String welcomeSubline10to29(int streak) {
+    return 'Ten days and counting of consistency — your skin can feel it.';
+  }
+
+  @override
+  String welcomeHeadline30plus(int streak) {
+    return '$streak days! Amazing! 🌟';
+  }
+
+  @override
+  String get welcomeSubline30plus =>
+      'A month or more of consistent skincare — you\'re a legend!';
+
+  @override
+  String get weekGlanceTitle => 'My Week\'s Routine';
+
+  @override
+  String get weekGlanceEntrySubtitle =>
+      'Morning and evening routines, day by day';
+
+  @override
+  String get weekGlanceEditButton => 'Edit';
+
+  @override
+  String get weekGlanceStatusOkTitle => 'Routine looks good';
+
+  @override
+  String get weekGlanceStatusOkSubMorning => 'No conflicts in morning routine';
+
+  @override
+  String get weekGlanceStatusOkSubEvening => 'No conflicts in evening routine';
+
+  @override
+  String get weekGlanceIssueSub => 'Some products are worth checking';
+
+  @override
+  String get weekGlanceCheckIssues => 'Review notes';
+
+  @override
+  String get weekGlanceConflictSheetSubtitle =>
+      'Combinations worth adjusting on certain days';
+
+  @override
+  String get weekGlanceConflictNotMix => 'Not recommended to combine';
+
+  @override
+  String get weekGlanceConflictExplanation =>
+      'Niacinamide and retinol may reduce each other\'s efficacy when used on the same evening. It\'s best to alternate evenings.';
+
+  @override
+  String weekGlanceIssueTitle(int count, String slot) {
+    return '$count notes in $slot routine';
+  }
+
+  @override
+  String weekGlanceEditRoutine(String slot) {
+    return 'Edit $slot routine';
+  }
 }

@@ -1143,18 +1143,6 @@ abstract class AppLocalizations {
   /// **'שגרת הטיפוח שלי'**
   String get settingsSectionRoutine;
 
-  /// No description provided for @settingsOrderProducts.
-  ///
-  /// In he, this message translates to:
-  /// **'סדר מוצרים'**
-  String get settingsOrderProducts;
-
-  /// No description provided for @settingsOrderSubtitle.
-  ///
-  /// In he, this message translates to:
-  /// **'גררי לסידור אישי'**
-  String get settingsOrderSubtitle;
-
   /// No description provided for @settingsSectionData.
   ///
   /// In he, this message translates to:
@@ -1244,12 +1232,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'גרסה {version}'**
   String aboutVersionLabel(Object version);
-
-  /// No description provided for @aboutChangelog.
-  ///
-  /// In he, this message translates to:
-  /// **'מה חדש'**
-  String get aboutChangelog;
 
   /// No description provided for @exportDataTitle.
   ///
@@ -2882,6 +2864,210 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'סיום'**
   String get commonDone;
+
+  /// No description provided for @welcomeAppName.
+  ///
+  /// In he, this message translates to:
+  /// **'The Glow Protocol'**
+  String get welcomeAppName;
+
+  /// No description provided for @welcomeGreeting.
+  ///
+  /// In he, this message translates to:
+  /// **'ברוכה השבה, {name} · {weekday}'**
+  String welcomeGreeting(String name, String weekday);
+
+  /// No description provided for @welcomeStreakLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'ימים ברצף'**
+  String get welcomeStreakLabel;
+
+  /// No description provided for @welcomeCta.
+  ///
+  /// In he, this message translates to:
+  /// **'לשגרה של היום'**
+  String get welcomeCta;
+
+  /// No description provided for @welcomeHint.
+  ///
+  /// In he, this message translates to:
+  /// **'ממשיכים לשגרה אוטומטית · הקישו לדילוג'**
+  String get welcomeHint;
+
+  /// No description provided for @welcomeGraceLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'נשארו {n} \"אופס פיספסתי\" השבוע...'**
+  String welcomeGraceLabel(int n);
+
+  /// No description provided for @welcomeGraceMissedCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{n} פעמים פיספסתי השבוע'**
+  String welcomeGraceMissedCount(int n);
+
+  /// No description provided for @welcomePersonalBestLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'שיא אישי'**
+  String get welcomePersonalBestLabel;
+
+  /// No description provided for @welcomeDaysCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{n} ימים'**
+  String welcomeDaysCount(int n);
+
+  /// No description provided for @welcomeHeadline0.
+  ///
+  /// In he, this message translates to:
+  /// **'התחלה חדשה ✨'**
+  String get welcomeHeadline0;
+
+  /// No description provided for @welcomeSubline0.
+  ///
+  /// In he, this message translates to:
+  /// **'יום אחד בכיף ואת כבר בדרך.'**
+  String get welcomeSubline0;
+
+  /// No description provided for @welcomeHeadline1.
+  ///
+  /// In he, this message translates to:
+  /// **'יום ראשון של זוהר ✨'**
+  String get welcomeHeadline1;
+
+  /// No description provided for @welcomeSubline1.
+  ///
+  /// In he, this message translates to:
+  /// **'יום ראשון בשגרה — כל מסע מתחיל בצעד הראשון.'**
+  String get welcomeSubline1;
+
+  /// No description provided for @welcomeHeadline2to4.
+  ///
+  /// In he, this message translates to:
+  /// **'{streak} ימים של הרגל מתהווה ✨'**
+  String welcomeHeadline2to4(int streak);
+
+  /// No description provided for @welcomeSubline2to4.
+  ///
+  /// In he, this message translates to:
+  /// **'שמרת על השגרה {streak} ימים ברצף — המומנטום בנייה.'**
+  String welcomeSubline2to4(int streak);
+
+  /// No description provided for @welcomeHeadline5to9.
+  ///
+  /// In he, this message translates to:
+  /// **'{streak} ימים של זוהר רצוף ✨'**
+  String welcomeHeadline5to9(int streak);
+
+  /// No description provided for @welcomeSubline5to9.
+  ///
+  /// In he, this message translates to:
+  /// **'שמרת על השגרה {streak} ימים ברצף — את בדרך הנכונה לזוהר מושלם.'**
+  String welcomeSubline5to9(int streak);
+
+  /// No description provided for @welcomeHeadline10to29.
+  ///
+  /// In he, this message translates to:
+  /// **'{streak} ימים — את בוהקת! ✨'**
+  String welcomeHeadline10to29(int streak);
+
+  /// No description provided for @welcomeSubline10to29.
+  ///
+  /// In he, this message translates to:
+  /// **'עשרה ימים ומעלה של עקביות — העור שלך מרגיש את זה.'**
+  String welcomeSubline10to29(int streak);
+
+  /// No description provided for @welcomeHeadline30plus.
+  ///
+  /// In he, this message translates to:
+  /// **'{streak} ימים! מדהים! 🌟'**
+  String welcomeHeadline30plus(int streak);
+
+  /// No description provided for @welcomeSubline30plus.
+  ///
+  /// In he, this message translates to:
+  /// **'חודש ויותר של שגרת טיפוח עקבית — את אגדה!'**
+  String get welcomeSubline30plus;
+
+  /// No description provided for @weekGlanceTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שגרת השבוע שלי'**
+  String get weekGlanceTitle;
+
+  /// No description provided for @weekGlanceEntrySubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מה בשגרת הבוקר ומה בשגרת הערב בכל יום'**
+  String get weekGlanceEntrySubtitle;
+
+  /// No description provided for @weekGlanceEditButton.
+  ///
+  /// In he, this message translates to:
+  /// **'עריכה'**
+  String get weekGlanceEditButton;
+
+  /// No description provided for @weekGlanceStatusOkTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השגרה נראית תקינה'**
+  String get weekGlanceStatusOkTitle;
+
+  /// No description provided for @weekGlanceStatusOkSubMorning.
+  ///
+  /// In he, this message translates to:
+  /// **'אין התנגשויות בשגרת הבוקר'**
+  String get weekGlanceStatusOkSubMorning;
+
+  /// No description provided for @weekGlanceStatusOkSubEvening.
+  ///
+  /// In he, this message translates to:
+  /// **'אין התנגשויות בשגרת הערב'**
+  String get weekGlanceStatusOkSubEvening;
+
+  /// No description provided for @weekGlanceIssueSub.
+  ///
+  /// In he, this message translates to:
+  /// **'יש מוצרים שכדאי לבדוק'**
+  String get weekGlanceIssueSub;
+
+  /// No description provided for @weekGlanceCheckIssues.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקת הערות'**
+  String get weekGlanceCheckIssues;
+
+  /// No description provided for @weekGlanceConflictSheetSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שילובים שכדאי לשנות בימים מסוימים'**
+  String get weekGlanceConflictSheetSubtitle;
+
+  /// No description provided for @weekGlanceConflictNotMix.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מומלץ לשלב יחד'**
+  String get weekGlanceConflictNotMix;
+
+  /// No description provided for @weekGlanceConflictExplanation.
+  ///
+  /// In he, this message translates to:
+  /// **'ניאצינמיד ורטינול עשויים להפחית זה את יעילות זה כשמשתמשים בהם באותו ערב. מומלץ להפריד לערבים שונים.'**
+  String get weekGlanceConflictExplanation;
+
+  /// No description provided for @weekGlanceIssueTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} הערות בשגרת {slot}'**
+  String weekGlanceIssueTitle(int count, String slot);
+
+  /// No description provided for @weekGlanceEditRoutine.
+  ///
+  /// In he, this message translates to:
+  /// **'עריכת שגרת {slot}'**
+  String weekGlanceEditRoutine(String slot);
 }
 
 class _AppLocalizationsDelegate
