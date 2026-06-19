@@ -14,7 +14,9 @@ import '../../domain/entities/user_custom_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/user_data_repository.dart';
+import '../../domain/services/conflict_resolver.dart';
 import '../../domain/services/default_schedule.dart';
+import '../../domain/services/incompatibility_checker.dart';
 import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/fixed_slot_chip.dart';
@@ -199,6 +201,98 @@ class _ProductSelectionScreenState
     // when it has no schedule yet (PRD §15.5).
     if (isSelected) {
       await _ensureCappedSchedule(repo, product, slot);
+      // Immediately resolve any within-slot conflicts introduced by this
+      // selection. conflictAutoFixProvider only runs at cold start — without
+      // this call a product selected mid-session would show conflicts until
+      // the next app restart.
+      await _resolveSlotConflicts(repo, product.id, slot);
+    }
+  }
+
+  /// Resolves within-slot incompatibility conflicts for [slot] after a product
+  /// is newly selected. Mirrors the core logic of [conflictAutoFixProvider] but
+  /// runs inline so the fix is applied in the same session as the selection.
+  Future<void> _resolveSlotConflicts(
+    UserDataRepository repo,
+    String newProductId,
+    Slot slot,
+  ) async {
+    final master = ref.read(masterContentProvider).valueOrNull;
+    if (master == null) return;
+
+    final selections = ref.read(selectionsProvider(slot)).valueOrNull ?? [];
+    // Include the newly-selected product explicitly — the stream may not have
+    // updated yet since the DB write completes asynchronously.
+    final selectedIds = {
+      ...selections.where((s) => s.isSelected).map((s) => s.productId),
+      newProductId,
+    };
+
+    final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
+    final allProducts = [
+      ...master.products,
+      ...customProds.map((p) => p.toMasterProduct()),
+    ];
+
+    final slotProducts = allProducts
+        .where((p) => selectedIds.contains(p.id) && p.configForSlot(slot) != null)
+        .toList();
+
+    var schedules = ref.read(allSchedulesProvider).valueOrNull ?? const [];
+    final mutedConflicts = ref.read(mutedConflictsProvider).valueOrNull ?? [];
+    final mutedRuleIds = mutedConflicts.map((m) => m.ruleId).toSet();
+
+    final checker = IncompatibilityChecker();
+    final conflicts = checker.getConflictsForDay(
+      morningProducts: slot == Slot.morning ? slotProducts : [],
+      eveningProducts: slot == Slot.evening ? slotProducts : [],
+      rules: master.rules,
+      categories: master.categories,
+      mutedRuleIds: mutedRuleIds,
+    );
+
+    final seen = <String>{};
+    final active = conflicts.where((c) {
+      if (c.isMuted) return false;
+      final key = ([c.productA.id, c.productB.id]..sort()).join('|');
+      return seen.add(key);
+    }).toList();
+
+    if (active.isEmpty) return;
+
+    const resolver = ConflictResolver();
+    for (final conflict in active) {
+      final resolution = resolver.resolve(
+        productA: conflict.productA,
+        productB: conflict.productB,
+        slot: slot,
+        schedules: schedules,
+      );
+
+      for (final m in resolution.mutations) {
+        final existing = schedules
+            .where((s) => s.productId == m.productId && s.slot == m.slot)
+            .firstOrNull;
+
+        // Don't overwrite a schedule the user explicitly set.
+        if (existing != null && existing.weekdays.isNotEmpty) continue;
+
+        final updated = WeekdaySchedule(
+          id: existing?.id ?? 'autofix-${m.productId}-${m.slot.name}',
+          productId: m.productId,
+          slot: m.slot,
+          weekdays: m.days,
+          lastModified: DateTime.now(),
+        );
+        await repo.upsertSchedule(updated);
+        final idx = schedules
+            .indexWhere((s) => s.productId == m.productId && s.slot == m.slot);
+        if (idx >= 0) {
+          schedules = [...schedules]..[idx] = updated;
+        } else {
+          schedules = [...schedules, updated];
+        }
+      }
     }
   }
 
@@ -291,6 +385,7 @@ class _ProductSelectionScreenState
       backgroundColor: AppColors.surface,
       appBar: const GlowAppBar(),
       body: body,
+      resizeToAvoidBottomInset: false,
       floatingActionButton: widget.isTabDestination && !kIsWeb
           ? _BarcodeFAB(onTap: () => _showBarcodeScan(context))
           : null,

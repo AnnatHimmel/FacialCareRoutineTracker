@@ -173,6 +173,45 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
 
   debugPrint('[ConflictAutoFix] morningProds=${morningProds.map((p) => p.id).join(",")}');
 
+  // ── Phase 0: ensure capped products have a default spread schedule ──────────
+  // After clearRoutineData (logout), schedules are wiped but product selections
+  // are kept. WeeklyMaxRule products with no schedule would show 0 effective days
+  // and never surface as conflicts (conflict detection is schedule-agnostic but
+  // the UI shows 0 days). Write the spread default here so Phase 1 conflict
+  // detection always sees a valid starting state.
+  Set<int> _spreadN7(int n) {
+    final result = <int>{};
+    for (var i = 0; i < n; i++) {
+      result.add((i * 7 ~/ n));
+    }
+    return result;
+  }
+
+  final allSlotPairs = [
+    ...[for (final p in morningProds) (prod: p, slot: Slot.morning)],
+    ...[for (final p in eveningProds) (prod: p, slot: Slot.evening)],
+  ];
+  for (final pair in allSlotPairs) {
+    final p = pair.prod;
+    final slot = pair.slot;
+    final rule = p.configForSlot(slot)?.frequencyRule;
+    if (rule is! WeeklyMaxRule) continue;
+    final existing =
+        schedules.where((s) => s.productId == p.id && s.slot == slot).firstOrNull;
+    if (existing != null) continue; // already scheduled (or explicitly excluded)
+    final defaultDays = _spreadN7(rule.maxPerWeek);
+    debugPrint('[ConflictAutoFix] ensure-default ${p.id}@${slot.name} → $defaultDays');
+    final newSchedule = WeekdaySchedule(
+      id: 'autofix-default-${p.id}-${slot.name}',
+      productId: p.id,
+      slot: slot,
+      weekdays: defaultDays,
+      lastModified: DateTime.now(),
+    );
+    await userRepo.upsertSchedule(newSchedule);
+    schedules = [...schedules, newSchedule];
+  }
+
   final checker = IncompatibilityChecker();
   final conflicts = checker.getConflictsForDay(
     morningProducts: morningProds,
@@ -207,6 +246,7 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
     final inMorning = morningProds.any((p) => p.id == conflict.productA.id) &&
         morningProds.any((p) => p.id == conflict.productB.id);
     final conflictSlot = inMorning ? Slot.morning : Slot.evening;
+
     debugPrint('[ConflictAutoFix] resolving ${conflict.productA.id} × ${conflict.productB.id} in $conflictSlot');
 
     final resolution = resolver.resolve(
@@ -222,6 +262,15 @@ final conflictAutoFixProvider = FutureProvider<int>((ref) async {
       final existing = schedules
           .where((s) => s.productId == m.productId && s.slot == m.slot)
           .firstOrNull;
+
+      // Don't overwrite a non-empty schedule the user explicitly set.
+      // An empty schedule (written by a prior auto-fix pass) is safe to
+      // re-write because an empty set means "excluded", not "user-chosen days".
+      if (existing != null && existing.weekdays.isNotEmpty) {
+        debugPrint('[ConflictAutoFix] skip mutation ${m.productId}@${m.slot.name}: user has schedule=${existing.weekdays}');
+        continue;
+      }
+
       final updated = WeekdaySchedule(
         id: existing?.id ?? 'autofix-${m.productId}-${m.slot.name}',
         productId: m.productId,
@@ -389,7 +438,16 @@ final dailyRoutineProvider =
         ...customProds.map((p) => p.toMasterProduct()),
       ];
 
-      yield resolver.resolve(
+      if (params.slot == Slot.morning) {
+        final p037 = schedules
+            .where((s) => s.productId == 'prod-037' && s.slot == Slot.morning)
+            .firstOrNull;
+        debugPrint('[DailyRoutine] morning: p037@morning='
+            '${p037 != null ? "weekdays=${p037.weekdays}" : "NO ROW"}');
+        debugPrint('[DailyRoutine] morning: all_schedules=${schedules.length}');
+      }
+
+      final resolved = resolver.resolve(
         date: effectiveDate,
         slot: params.slot,
         allProducts: allProducts,
@@ -401,6 +459,14 @@ final dailyRoutineProvider =
         boundary: boundary,
         categoryOverrides: catOverrides.isNotEmpty ? catOverrides : null,
       );
+
+      if (params.slot == Slot.morning) {
+        debugPrint('[DailyRoutine] morning: p037 in result='
+            '${resolved.any((p) => p.id == "prod-037")}');
+        debugPrint('[DailyRoutine] morning: result=${resolved.map((p) => p.id).join(",")}');
+      }
+
+      yield resolved;
     }
   },
 );

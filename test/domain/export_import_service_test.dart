@@ -103,6 +103,9 @@ class _FakeUserDataRepo implements UserDataRepository {
     _stored = export;
   }
 
+  @override
+  Future<void> clearRoutineData() async {}
+
   // ── Unused stubs ────────────────────────────────────────────────────────────
 
   @override

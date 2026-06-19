@@ -40,6 +40,7 @@ class _FakeUDR implements UserDataRepository {
   final OrderOverride? eveningOverride;
   final List<OrderOverride> morningPerDayOverrides;
   final List<OrderOverride> eveningPerDayOverrides;
+  final List<WeekdaySchedule> schedules;
   bool deleteOverrideCalled = false;
   bool deletePerDayOverrideCalled = false;
   int? deletedPerDayWeekday;
@@ -51,6 +52,7 @@ class _FakeUDR implements UserDataRepository {
     this.eveningOverride,
     this.morningPerDayOverrides = const [],
     this.eveningPerDayOverrides = const [],
+    this.schedules = const [],
   });
 
   @override
@@ -93,7 +95,7 @@ class _FakeUDR implements UserDataRepository {
 
   @override Future<void> upsertSelection(ProductSelection s) => throw UnimplementedError();
   @override Stream<WeekdaySchedule?> watchSchedule(String p, Slot s) => throw UnimplementedError();
-  @override Stream<List<WeekdaySchedule>> watchAllSchedules() => throw UnimplementedError();
+  @override Stream<List<WeekdaySchedule>> watchAllSchedules() => Stream.value(schedules);
   @override Future<void> upsertSchedule(WeekdaySchedule s) => throw UnimplementedError();
   @override Stream<DayRecord?> watchDayRecord(String d, Slot s) => throw UnimplementedError();
   @override Future<DayRecord> snapshotAndGetDayRecord(String d, Slot s, List<String> ids, String v) => throw UnimplementedError();
@@ -108,6 +110,7 @@ class _FakeUDR implements UserDataRepository {
   @override Future<void> unmuteConflict(String ruleId) => throw UnimplementedError();
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
+  @override Future<void> clearRoutineData() async {}
   @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
   @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
   @override Future<void> deleteCustomProduct(String id) async {}
@@ -160,6 +163,25 @@ MasterProduct _product(String id, String name) => MasterProduct(
       isDeprecated: false,
       addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+    );
+
+// A product configured for both slots (bi-slot), like Argireline.
+MasterProduct _biSlotProduct(String id, String name) => MasterProduct(
+      id: id,
+      name: name,
+      categoryId: 'cat1',
+      isDeprecated: false,
+      addedInVersion: '1.0.0',
+      morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+      eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+    );
+
+WeekdaySchedule _emptySchedule(String productId, Slot slot) => WeekdaySchedule(
+      id: 'sched-$productId-${slot.name}',
+      productId: productId,
+      slot: slot,
+      weekdays: const {},
+      lastModified: DateTime(2024, 1, 1),
     );
 
 MasterContent _master(List<MasterProduct> products) => MasterContent(
@@ -322,6 +344,30 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(udr.deleteOverrideCalled, isTrue);
+    });
+
+    // Regression: conflict resolver clears a product's morning schedule (sets
+    // weekdays={}) but leaves the morning ProductSelection isSelected=true.
+    // The order screen must not show the product in the morning list.
+    testWidgets(
+        'product with empty morning schedule excluded from morning order list',
+        (tester) async {
+      // Argireline-like: selected for morning AND evening, but morning schedule
+      // was cleared to {} by the conflict resolver.
+      // Without the fix the product would appear in BOTH sections (findsNWidgets(2)).
+      // With the fix it must appear only in the evening section (findsOneWidget).
+      final udr = _FakeUDR(
+        morningSelections: [_sel('p1', Slot.morning)],
+        eveningSelections: [_sel('p1', Slot.evening)],
+        schedules: [_emptySchedule('p1', Slot.morning)],
+      );
+      final master = _master([_biSlotProduct('p1', 'ארגירלין')]);
+
+      await tester.pumpWidget(_wrap(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      // Appears exactly once — evening section only, not morning.
+      expect(find.text('ארגירלין'), findsOneWidget);
     });
   });
 

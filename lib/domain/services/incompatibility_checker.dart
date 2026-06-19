@@ -117,7 +117,6 @@ class IncompatibilityChecker {
             reason: rule.reason,
             reasonEn: rule.reasonEn,
           ));
-          return;
         }
       }
     }
@@ -146,7 +145,6 @@ class IncompatibilityChecker {
             reason: rule.reason,
             reasonEn: rule.reasonEn,
           ));
-          return;
         }
       }
     }

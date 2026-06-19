@@ -998,6 +998,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String scheduleZeroDayError(Object slot) {
+    return 'One or more products in $slot have no scheduled days — select days before continuing.';
+  }
+
+  @override
   String get scheduleCustomizeDays => 'Select days';
 
   @override
@@ -1435,6 +1440,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autoFixUndo => 'Undo';
+
+  @override
+  String get autoFixKeep => 'Keep changes';
 
   @override
   String get autoFixAppliedFallback =>

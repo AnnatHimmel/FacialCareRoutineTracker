@@ -581,8 +581,12 @@ Future<void> _confirmLogout(
     ),
   );
   if (confirmed == true && context.mounted) {
+    await ref.read(userDataRepositoryProvider).clearRoutineData();
     await ref.read(settingsRepositoryProvider).clearUserProfile();
     ref.invalidate(onboardingCompletedProvider);
+    // Force the startup auto-fix to re-run on next app_entry mount so it
+    // assigns default spread schedules and re-resolves all conflicts from scratch.
+    ref.invalidate(conflictAutoFixProvider);
     if (context.mounted) context.go('/');
   }
 }

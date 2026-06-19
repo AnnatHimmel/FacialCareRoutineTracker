@@ -916,7 +916,7 @@
       "id": "prod-022",
       "name": "88B/mL L-Glutathione Flexible Liposome",
       "imageAsset": "assets/images/products/purcell_l_glutathione_liposome.jpg",
-      "categoryId": "cat-toner",
+      "categoryId": "cat-serum",
       "comment": {
         "he": "סרום אנטיאוקסידנטי מתקדם עם גלוטתיון ליפוזומלי להבהרה, הגנה מפני רדיקלים חופשיים והאחדת גוון העור",
         "en": "Advanced antioxidant serum with liposomal glutathione for brightening, free radical protection, and evening skin tone"
@@ -935,7 +935,7 @@
           "type": "daily"
         }
       },
-      "subCategoryId": "sub-toner"
+      "subCategoryId": "sub-glutathione"
     },
     {
       "id": "prod-023",

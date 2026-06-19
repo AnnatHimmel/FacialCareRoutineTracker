@@ -91,6 +91,7 @@ class _FakeUDR implements UserDataRepository {
   @override Future<void> unmuteConflict(String ruleId) => throw UnimplementedError();
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
+  @override Future<void> clearRoutineData() async {}
   @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
   @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
   @override Future<void> deleteCustomProduct(String id) async {}
@@ -138,6 +139,15 @@ ProductSelection _sel(String productId, Slot slot) => ProductSelection(
       productId: productId,
       slot: slot,
       isSelected: true,
+      lastModified: DateTime(2024, 1, 1),
+    );
+
+WeekdaySchedule _sched(String productId, Slot slot, Set<int> days) =>
+    WeekdaySchedule(
+      id: 'sched-$productId-${slot.name}',
+      productId: productId,
+      slot: slot,
+      weekdays: days,
       lastModified: DateTime(2024, 1, 1),
     );
 
@@ -201,6 +211,7 @@ void main() {
       final product = _weeklyProduct('p1', 'סרום ויטמין C');
       final udr = _FakeUDR(
         morningSelections: [_sel('p1', Slot.morning)],
+        schedules: [_sched('p1', Slot.morning, {0, 2, 4})],
       );
 
       await tester.pumpWidget(_wrap(master: _master([product]), udr: udr));
@@ -252,7 +263,10 @@ void main() {
     testWidgets('fromSetup: true CTA navigates to /setup/order?from=setup',
         (tester) async {
       final product = _weeklyProduct('p1', 'סרום');
-      final udr = _FakeUDR(morningSelections: [_sel('p1', Slot.morning)]);
+      final udr = _FakeUDR(
+        morningSelections: [_sel('p1', Slot.morning)],
+        schedules: [_sched('p1', Slot.morning, {0, 2, 4})],
+      );
 
       await tester.pumpWidget(
         _wrap(master: _master([product]), udr: udr, fromSetup: true),
@@ -635,6 +649,55 @@ void main() {
       // Day 3 is Wednesday. The day summary card should show issue note count
       // for Wednesday (the first issue day), not today (Sunday with no products).
       expect(find.text(l.daySummaryNoteSub), findsOneWidget);
+    });
+
+    testWidgets(
+        'WeeklyMax product with no schedule shows zero-day error and blocks continue',
+        (tester) async {
+      // A WeeklyMax morning product with NO schedule row → 0 effective days
+      final product = _weeklyProduct('pz', 'חומצה');
+      final udr = _FakeUDR(morningSelections: [_sel('pz', Slot.morning)]);
+
+      await tester.pumpWidget(_wrapDirect(master: _master([product]), udr: udr));
+      await tester.pumpAndSettle();
+
+      final l = AppLocalizations.of(tester.element(find.byType(ScheduleSetupScreen)))!;
+
+      // Error message is shown
+      expect(
+        find.text(l.scheduleZeroDayError(l.slotMorning)),
+        findsOneWidget,
+        reason: 'zero-day error must be visible when a WeeklyMax product has no schedule',
+      );
+    });
+
+    testWidgets(
+        'WeeklyMax product WITH schedule does not show zero-day error',
+        (tester) async {
+      final product = _weeklyProduct('pz', 'חומצה');
+      final udr = _FakeUDR(
+        morningSelections: [_sel('pz', Slot.morning)],
+        schedules: [
+          WeekdaySchedule(
+            id: 's1',
+            productId: 'pz',
+            slot: Slot.morning,
+            weekdays: {0, 2, 4},
+            lastModified: DateTime(2024),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(_wrapDirect(master: _master([product]), udr: udr));
+      await tester.pumpAndSettle();
+
+      final l = AppLocalizations.of(tester.element(find.byType(ScheduleSetupScreen)))!;
+
+      expect(
+        find.text(l.scheduleZeroDayError(l.slotMorning)),
+        findsNothing,
+        reason: 'no zero-day error when product has a non-empty schedule',
+      );
     });
   });
 }

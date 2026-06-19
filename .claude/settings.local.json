@@ -21,7 +21,11 @@
       "Bash(mv \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/Debug\" \"C:/Workspace/FacialCareRoutineTracker/.claude/skills/debug-only\")",
       "Bash(git commit *)",
       "Bash(git commit -q -m 'Slice D: two-tier phase→sub-category sort *)",
-      "Bash(git commit -m 'Slice E: sub-category conflict rule targets *)"
+      "Bash(git commit -m 'Slice E: sub-category conflict rule targets *)",
+      "mcp__supabase__list_projects",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__execute_sql",
+      "Bash(git stash *)"
     ],
     "additionalDirectories": [
       "C:\\Workspace\\FacialCareRoutineTracker\\.claude\\skills\\Debug"

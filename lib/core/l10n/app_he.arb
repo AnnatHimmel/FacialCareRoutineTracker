@@ -497,6 +497,12 @@
       "label": {}
     }
   },
+  "scheduleZeroDayError": "מוצר אחד או יותר ב{slot} לא משויך לאף יום — בחרי ימים לפני שממשיכים.",
+  "@scheduleZeroDayError": {
+    "placeholders": {
+      "slot": {}
+    }
+  },
   "scheduleCustomizeDays": "בחירת ימים",
   "scheduleDailyDefaultSuffix": "· כברירת מחדל כל יום",
   "scheduleDailyCollapse": "סגירה",
@@ -681,6 +687,7 @@
   "issueActionAutoDistribute": "פיזור אוטומטי לשבוע",
   "issueActionReviewNotes": "בדיקת ההערות",
   "autoFixUndo": "שחזר",
+  "autoFixKeep": "שמור שינויים",
   "autoFixAppliedFallback": "התאמנו את השגרה כדי לפתור את ההתנגשות",
   "chipPossibleConflict": "התנגשות אפשרית",
   "chipHighUsage": "שימוש גבוה",

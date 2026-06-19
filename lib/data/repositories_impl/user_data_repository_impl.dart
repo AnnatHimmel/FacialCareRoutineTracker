@@ -374,6 +374,17 @@ class UserDataRepositoryImpl implements UserDataRepository {
     });
   }
 
+  @override
+  Future<void> clearRoutineData() async {
+    await _db.transaction(() async {
+      await _db.schedulesDao.deleteAll();
+      await _db.orderOverridesDao.deleteAll();
+      await _db.dayRecordsDao.deleteAll();
+      await _db.skinLogDao.deleteAll();
+      await _db.mutedConflictsDao.deleteAll();
+    });
+  }
+
   // ── Row → Domain mappers ──────────────────────────────────────────────────
 
   ProductSelection _selectionFromRow(SelectionRow r) => ProductSelection(

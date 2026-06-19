@@ -30,7 +30,9 @@ A personal skincare routine tracker app. An admin curates a master list of skinc
 - The "replace or merge" import flow (UC-17) and the post-update reconciliation (UC-18) are related: both use stable product IDs to match records.
 
 ### Two Conceptually Distinct Data Domains
-1. **Master list** — admin-authored, bundled, versioned per release, read-only at runtime.
+1. **Master list** — admin-authored, Supabase is the live source; the bundled JSON files are offline fallbacks only. **Any change to master content must be applied to BOTH Supabase (`ddrxzzeplokmkzizailn`) AND the corresponding bundled file — Supabase first:**
+   - Products / categories / subcategories → `assets/data/master_products.json`
+   - Incompatibility rules → `assets/data/incompatibility_rules.json`
 2. **User personalization** — per-device local storage, independently versioned schema, must outlast app updates and Android APK upgrades.
 
 ### Day Boundary

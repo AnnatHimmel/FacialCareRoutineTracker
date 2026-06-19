@@ -59,4 +59,9 @@ abstract class UserDataRepository {
 
   Future<UserDataExport> exportAllData();
   Future<void> replaceAllData(UserDataExport export);
+
+  /// Deletes all routine-derived data (schedules, order overrides, day records,
+  /// skin log entries, muted conflicts) while preserving product selections and
+  /// custom products. Use on logout so the auto-resolver starts clean.
+  Future<void> clearRoutineData();
 }

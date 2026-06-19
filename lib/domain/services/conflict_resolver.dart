@@ -177,11 +177,13 @@ class ConflictResolver {
     final yielderCurrent = _daysFor(schedules, yielder.id, slot);
 
     // Anchor's target days: its current spread, capped to its allowance.
+    // When starting from scratch (empty), spread the days evenly so capped
+    // products land on non-consecutive days (e.g. BHA cap-3 → {0,2,4}).
     Set<int> anchorDays = anchorCurrent.isEmpty
-        ? (anchorCap == null ? _allDays : _firstN(_allDays, anchorCap))
+        ? (anchorCap == null ? _allDays : _spreadN(_allDays, anchorCap))
         : anchorCurrent;
     if (anchorCap != null && anchorDays.length > anchorCap) {
-      anchorDays = _firstN(anchorDays, anchorCap);
+      anchorDays = _spreadN(anchorDays, anchorCap);
     }
 
     // Yielder fills the remaining days, capped to its own allowance.
@@ -200,14 +202,24 @@ class ConflictResolver {
     if (!_sameSet(anchorDays, anchorCurrent)) {
       mutations.add(ScheduleMutation(
           productId: anchor.id, slot: slot, days: anchorDays));
+      // Inverse: restore prior state. A DailyRule anchor with no prior row
+      // must be restored to _allDays so RoutineResolver treats it as daily.
+      final isAnchorDaily = _weeklyCap(anchor, slot) == null;
+      final anchorInverseDays =
+          (anchorCurrent.isEmpty && isAnchorDaily) ? _allDays : anchorCurrent;
       inverse.add(ScheduleMutation(
-          productId: anchor.id, slot: slot, days: anchorCurrent));
+          productId: anchor.id, slot: slot, days: anchorInverseDays));
     }
     if (!_sameSet(yielderDays, yielderCurrent)) {
       mutations.add(ScheduleMutation(
           productId: yielder.id, slot: slot, days: yielderDays));
+      // Inverse: a DailyRule yielder with no prior row restores to _allDays,
+      // not {} — an empty explicit schedule would permanently suppress it.
+      final isYielderDaily = _weeklyCap(yielder, slot) == null;
+      final yielderInverseDays =
+          (yielderCurrent.isEmpty && isYielderDaily) ? _allDays : yielderCurrent;
       inverse.add(ScheduleMutation(
-          productId: yielder.id, slot: slot, days: yielderCurrent));
+          productId: yielder.id, slot: slot, days: yielderInverseDays));
     }
 
     return ConflictResolution(
@@ -241,6 +253,18 @@ class ConflictResolver {
   Set<int> _firstN(Iterable<int> days, int n) {
     final sorted = days.toList()..sort();
     return sorted.take(n).toSet();
+  }
+
+  /// Picks [n] evenly spread items from [days], maximising the gap between
+  /// consecutive picks. For 3 picks from {0..6}: {0,2,4} (gap = 2 each).
+  Set<int> _spreadN(Iterable<int> days, int n) {
+    final sorted = days.toList()..sort();
+    if (sorted.length <= n) return sorted.toSet();
+    final result = <int>{};
+    for (int i = 0; i < n; i++) {
+      result.add(sorted[(i * sorted.length / n).floor()]);
+    }
+    return result;
   }
 
   bool _sameSet(Set<int> a, Set<int> b) =>
