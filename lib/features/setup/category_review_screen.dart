@@ -248,7 +248,6 @@ class _ProductReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
     final catName = categories
             .cast<Category?>()
             .firstWhere((c) => c?.id == effectiveCatId, orElse: () => null)
@@ -302,7 +301,6 @@ class _ProductReviewCard extends StatelessWidget {
                         children: [
                           _CalmCategoryChip(catName: catName),
                           _ChangeCategoryButton(
-                            label: l.categoryReviewChangeCategory,
                             isEditing: isEditing,
                             onTap: onEditToggle,
                           ),
@@ -341,12 +339,10 @@ class _ProductReviewCard extends StatelessWidget {
 // ── Change category button ──────────────────────────────────────────────────────
 
 class _ChangeCategoryButton extends StatelessWidget {
-  final String label;
   final bool isEditing;
   final VoidCallback onTap;
 
   const _ChangeCategoryButton({
-    required this.label,
     required this.isEditing,
     required this.onTap,
   });
@@ -362,24 +358,10 @@ class _ChangeCategoryButton extends StatelessWidget {
           color: isEditing ? AppColors.primary : AppColors.surfaceLow,
           borderRadius: BorderRadius.circular(9999),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.edit_rounded,
-              size: 13,
-              color: isEditing ? Colors.white : AppColors.onSurfaceVariant,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: AppTypography.labelSm.copyWith(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: isEditing ? Colors.white : AppColors.onSurfaceVariant,
-              ),
-            ),
-          ],
+        child: Icon(
+          Icons.edit_rounded,
+          size: 14,
+          color: isEditing ? Colors.white : AppColors.onSurfaceVariant,
         ),
       ),
     );
@@ -387,8 +369,6 @@ class _ChangeCategoryButton extends StatelessWidget {
 }
 
 // ── Calm category chip ─────────────────────────────────────────────────────────
-// Background: very light peach (primaryFixed). Text: brand brown (primary).
-// Reserved for category labels only — do NOT use error colors here.
 
 class _CalmCategoryChip extends StatelessWidget {
   final String catName;
@@ -400,7 +380,7 @@ class _CalmCategoryChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.primaryFixed,
+        color: AppColors.surfaceLow,
         borderRadius: BorderRadius.circular(9999),
       ),
       child: Text(
@@ -408,7 +388,7 @@ class _CalmCategoryChip extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: AppTypography.labelSm.copyWith(
-          color: AppColors.primary,
+          color: AppColors.onSurfaceVariant,
           fontWeight: FontWeight.w600,
           fontSize: 11,
         ),

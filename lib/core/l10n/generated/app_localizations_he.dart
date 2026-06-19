@@ -987,7 +987,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String scheduleZeroDayError(Object slot) {
-    return 'מוצר אחד או יותר ב$slot לא משויך לאף יום — בחרי ימים לפני שממשיכים.';
+    return 'מוצר אחד או יותר ב$slot לא משויך לאף יום. בחרי ימים לפני שממשיכים.';
   }
 
   @override
@@ -1415,7 +1415,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get issueActionAutoDistribute => 'פיזור אוטומטי לשבוע';
+  String get issueActionAutoDistribute => 'התאמה אוטומטית';
 
   @override
   String get issueActionReviewNotes => 'בדיקת ההערות';
@@ -1547,6 +1547,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String addProductSuccessSubBoth(Object days) {
     return 'הוספנו אותו לשגרת הבוקר והערב בימים $days.';
   }
+
+  @override
+  String get commonDone => 'סיום';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).

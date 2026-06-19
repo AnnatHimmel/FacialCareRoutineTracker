@@ -34,6 +34,7 @@ class _FakeMCR implements MasterContentRepository {
 class _FakeUDR implements UserDataRepository {
   final List<ProductSelection> upserted = [];
   final List<WeekdaySchedule> schedulesUpserted = [];
+  final List<CategoryOverride> categoryOverridesUpserted = [];
 
   @override
   Stream<List<ProductSelection>> watchSelections(Slot slot) =>
@@ -104,7 +105,8 @@ class _FakeUDR implements UserDataRepository {
       throw UnimplementedError();
   @override Future<void> clearRoutineData() async {}
   @override Stream<List<CategoryOverride>> watchCategoryOverrides() => Stream.value([]);
-  @override Future<void> upsertCategoryOverride(CategoryOverride o) async {}
+  @override Future<void> upsertCategoryOverride(CategoryOverride o) async =>
+      categoryOverridesUpserted.add(o);
   @override Future<void> deleteCategoryOverride(String productId) async {}
 }
 
@@ -372,6 +374,47 @@ void main() {
           reason: 'upsertSelection should have been called');
       expect(udr.schedulesUpserted, isNotEmpty,
           reason: 'upsertSchedule should have been called');
+    });
+
+    testWidgets('changing category in step 2 persists CategoryOverride on save',
+        (tester) async {
+      final udr = _FakeUDR();
+      // AM-only product so the slot step is skipped.
+      final master = _masterWith([
+        _amProduct('p1', 'קרם לחות', 'cat-serum'),
+      ], [cat1, cat2]);
+
+      await tester.pumpWidget(_wrap(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      // Step 1: select product
+      await tester.tap(find.text('קרם לחות'));
+      await tester.pumpAndSettle();
+
+      // Step 2 (category): pick cat2 ('לחות') instead of the default cat1
+      await tester.tap(find.text('לחות'));
+      await tester.pumpAndSettle();
+
+      // Advance from step 2
+      await tester.tap(find.text('המשך'));
+      await tester.pumpAndSettle();
+
+      // Step 4 (days) — slot step was skipped for AM-only product
+      expect(find.text('באילו ימים?'), findsOneWidget);
+      await tester.tap(find.text('המשך'));
+      await tester.pumpAndSettle();
+
+      // Step 5 (placement): confirm add
+      expect(find.text('המיקום המוצע'), findsOneWidget);
+      await tester.tap(find.text('הוספה לשגרה'));
+      await tester.pumpAndSettle();
+
+      // CategoryOverride must have been persisted with the user-chosen category
+      expect(udr.categoryOverridesUpserted, hasLength(1),
+          reason: 'upsertCategoryOverride should have been called once');
+      expect(udr.categoryOverridesUpserted.first.categoryId, 'cat-moisturizer',
+          reason: 'persisted categoryId must match the user selection');
+      expect(udr.categoryOverridesUpserted.first.productId, 'p1');
     });
   });
 }

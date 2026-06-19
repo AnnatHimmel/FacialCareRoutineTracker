@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/sub_category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
+import '../../domain/entities/category_override.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/product_sorter.dart';
@@ -167,6 +169,16 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
           productId: p.id,
           slot: slot,
           weekdays: _chosenDays,
+          lastModified: now,
+        ),
+      );
+    }
+    if (_catIdOverride != null) {
+      await repo.upsertCategoryOverride(
+        CategoryOverride(
+          id: 'cat-override-${p.id}',
+          productId: p.id,
+          categoryId: _catIdOverride!,
           lastModified: now,
         ),
       );
@@ -341,35 +353,37 @@ class _SearchStep extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              // Scan button
-              GestureDetector(
-                onTap: onScan,
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceLow,
-                    borderRadius: BorderRadius.circular(9999),
-                    border: Border.all(color: AppColors.outlineVariant),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.qr_code_scanner_rounded,
-                          size: 18, color: AppColors.onSurfaceVariant),
-                      const SizedBox(width: 8),
-                      Text(
-                        l.productSelV3ScanTab,
-                        style: AppTypography.labelMd.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+              // Scan button — hidden on web (camera scanner not supported)
+              if (!kIsWeb) ...[
+                GestureDetector(
+                  onTap: onScan,
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLow,
+                      borderRadius: BorderRadius.circular(9999),
+                      border: Border.all(color: AppColors.outlineVariant),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.qr_code_scanner_rounded,
+                            size: 18, color: AppColors.onSurfaceVariant),
+                        const SizedBox(width: 8),
+                        Text(
+                          l.productSelV3ScanTab,
+                          style: AppTypography.labelMd.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
+                const SizedBox(height: 8),
+              ],
             ],
           ),
         ),
@@ -949,7 +963,7 @@ class _SuccessScreen extends StatelessWidget {
               ),
             ),
             PrimaryButton(
-              label: 'סיום',
+              label: l.commonDone,
               trailingIcon: Icons.arrow_forward,
               onTap: onDone,
             ),

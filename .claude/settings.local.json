@@ -25,7 +25,8 @@
       "mcp__supabase__list_projects",
       "mcp__supabase__list_tables",
       "mcp__supabase__execute_sql",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(git rm *)"
     ],
     "additionalDirectories": [
       "C:\\Workspace\\FacialCareRoutineTracker\\.claude\\skills\\Debug"

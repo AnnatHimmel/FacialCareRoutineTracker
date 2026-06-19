@@ -1854,7 +1854,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleZeroDayError.
   ///
   /// In he, this message translates to:
-  /// **'מוצר אחד או יותר ב{slot} לא משויך לאף יום — בחרי ימים לפני שממשיכים.'**
+  /// **'מוצר אחד או יותר ב{slot} לא משויך לאף יום. בחרי ימים לפני שממשיכים.'**
   String scheduleZeroDayError(Object slot);
 
   /// No description provided for @scheduleCustomizeDays.
@@ -2646,7 +2646,7 @@ abstract class AppLocalizations {
   /// No description provided for @issueActionAutoDistribute.
   ///
   /// In he, this message translates to:
-  /// **'פיזור אוטומטי לשבוע'**
+  /// **'התאמה אוטומטית'**
   String get issueActionAutoDistribute;
 
   /// No description provided for @issueActionReviewNotes.
@@ -2876,6 +2876,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הוספנו אותו לשגרת הבוקר והערב בימים {days}.'**
   String addProductSuccessSubBoth(Object days);
+
+  /// No description provided for @commonDone.
+  ///
+  /// In he, this message translates to:
+  /// **'סיום'**
+  String get commonDone;
 }
 
 class _AppLocalizationsDelegate

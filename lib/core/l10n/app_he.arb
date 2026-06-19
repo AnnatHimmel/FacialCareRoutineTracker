@@ -497,7 +497,7 @@
       "label": {}
     }
   },
-  "scheduleZeroDayError": "מוצר אחד או יותר ב{slot} לא משויך לאף יום — בחרי ימים לפני שממשיכים.",
+  "scheduleZeroDayError": "מוצר אחד או יותר ב{slot} לא משויך לאף יום. בחרי ימים לפני שממשיכים.",
   "@scheduleZeroDayError": {
     "placeholders": {
       "slot": {}
@@ -684,7 +684,7 @@
   "@issueActionRemoveFromDayNamed": {
     "placeholders": { "name": {} }
   },
-  "issueActionAutoDistribute": "פיזור אוטומטי לשבוע",
+  "issueActionAutoDistribute": "התאמה אוטומטית",
   "issueActionReviewNotes": "בדיקת ההערות",
   "autoFixUndo": "שחזר",
   "autoFixKeep": "שמור שינויים",
@@ -745,5 +745,6 @@
   "addProductSuccessSubBoth": "הוספנו אותו לשגרת הבוקר והערב בימים {days}.",
   "@addProductSuccessSubBoth": {
     "placeholders": { "days": {} }
-  }
+  },
+  "commonDone": "סיום"
 }

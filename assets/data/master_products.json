@@ -1,87 +1,15 @@
 {
   "contentVersion": "1.1.0",
   "categories": [
-    {
-      "id": "cat-cleanser-step1",
-      "name": {
-        "he": "ניקוי שלב 1",
-        "en": "Cleanse — Step 1"
-      },
-      "order": 1,
-      "icon": "soap"
-    },
-    {
-      "id": "cat-cleanser-step2",
-      "name": {
-        "he": "ניקוי שלב 2",
-        "en": "Cleanse — Step 2"
-      },
-      "order": 2,
-      "icon": "bubble_chart"
-    },
-    {
-      "id": "cat-exfoliate",
-      "name": {
-        "he": "פילינג / חומצות",
-        "en": "Exfoliate"
-      },
-      "order": 3,
-      "icon": "grain"
-    },
-    {
-      "id": "cat-toner",
-      "name": {
-        "he": "טונר / אסנס",
-        "en": "Toner / Essence"
-      },
-      "order": 4,
-      "icon": "water_drop"
-    },
-    {
-      "id": "cat-retinoid",
-      "name": {
-        "he": "רטינואידים",
-        "en": "Retinoid"
-      },
-      "order": 5,
-      "icon": "science"
-    },
-    {
-      "id": "cat-serum",
-      "name": {
-        "he": "סרום / טיפול",
-        "en": "Serum / Active"
-      },
-      "order": 6,
-      "icon": "auto_awesome"
-    },
-    {
-      "id": "cat-moisturizer",
-      "name": {
-        "he": "לחות",
-        "en": "Moisturizer"
-      },
-      "order": 7,
-      "icon": "opacity"
-    },
-    {
-      "id": "cat-oil",
-      "name": {
-        "he": "שמנים",
-        "en": "Face Oil"
-      },
-      "order": 8,
-      "icon": "spa"
-    },
-    {
-      "id": "cat-spf",
-      "name": {
-        "he": "הגנה",
-        "en": "Protect (SPF)"
-      },
-      "order": 9,
-      "icon": "wb_sunny"
-    }
+    {"id":"cat-cleanser-step1","name":{"he":"ניקוי שלב 1","en":"Cleanse — Step 1"},"order":1,"icon":"soap"},
+    {"id":"cat-cleanser-step2","name":{"he":"ניקוי שלב 2","en":"Cleanse — Step 2"},"order":2,"icon":"bubble_chart"},
+    {"id":"cat-exfoliate","name":{"he":"פילינג / חומצות","en":"Exfoliate"},"order":3,"icon":"grain"},
+    {"id":"cat-toner","name":{"he":"טונר / אסנס","en":"Toner / Essence"},"order":4,"icon":"water_drop"},
+    {"id":"cat-retinoid","name":{"he":"רטינואידים","en":"Retinoid"},"order":5,"icon":"science"},
+    {"id":"cat-serum","name":{"he":"סרום / טיפול","en":"Serum / Active"},"order":6,"icon":"auto_awesome"},
+    {"id":"cat-moisturizer","name":{"he":"לחות","en":"Moisturizer"},"order":7,"icon":"opacity"},
+    {"id":"cat-oil","name":{"he":"שמנים","en":"Face Oil"},"order":8,"icon":"spa"},
+    {"id":"cat-spf","name":{"he":"הגנה","en":"Protect (SPF)"},"order":9,"icon":"wb_sunny"}
   ],
   "subcategories": [
     {
@@ -572,8 +500,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-water-cleanser"
+      }
     },
     {
       "id": "prod-007",
@@ -593,8 +520,7 @@
           "maxPerWeek": 3
         }
       },
-      "eveningConfig": null,
-      "subCategoryId": "sub-spf"
+      "eveningConfig": null
     },
     {
       "id": "prod-008",
@@ -613,8 +539,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-oil-cleanser"
+      }
     },
     {
       "id": "prod-009",
@@ -633,8 +558,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-water-cleanser"
+      }
     },
     {
       "id": "prod-010",
@@ -653,8 +577,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-face-oil"
+      }
     },
     {
       "id": "prod-011",
@@ -678,8 +601,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-moisturizer"
+      }
     },
     {
       "id": "prod-012",
@@ -698,8 +620,7 @@
           "type": "daily"
         }
       },
-      "eveningConfig": null,
-      "subCategoryId": "sub-spf"
+      "eveningConfig": null
     },
     {
       "id": "prod-013",
@@ -723,8 +644,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-moisturizer"
+      }
     },
     {
       "id": "prod-014",
@@ -748,8 +668,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-tea-tree"
+      }
     },
     {
       "id": "prod-015",
@@ -773,8 +692,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-moisturizer"
+      }
     },
     {
       "id": "prod-016",
@@ -793,8 +711,7 @@
           "type": "daily"
         }
       },
-      "eveningConfig": null,
-      "subCategoryId": "sub-vitamin-c"
+      "eveningConfig": null
     },
     {
       "id": "prod-017",
@@ -814,8 +731,7 @@
           "type": "weeklyMax",
           "maxPerWeek": 3
         }
-      },
-      "subCategoryId": "sub-bha-salicylic"
+      }
     },
     {
       "id": "prod-018",
@@ -839,8 +755,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-moisturizer"
+      }
     },
     {
       "id": "prod-019",
@@ -859,8 +774,7 @@
           "type": "daily"
         }
       },
-      "eveningConfig": null,
-      "subCategoryId": "sub-spf"
+      "eveningConfig": null
     },
     {
       "id": "prod-020",
@@ -884,8 +798,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-azelaic"
+      }
     },
     {
       "id": "prod-021",
@@ -909,8 +822,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-niacinamide"
+      }
     },
     {
       "id": "prod-022",
@@ -934,8 +846,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-glutathione"
+      }
     },
     {
       "id": "prod-023",
@@ -959,8 +870,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-tranexamic"
+      }
     },
     {
       "id": "prod-024",
@@ -984,8 +894,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-pdrn"
+      }
     },
     {
       "id": "prod-025",
@@ -1005,8 +914,7 @@
           "type": "weeklyMax",
           "maxPerWeek": 3
         }
-      },
-      "subCategoryId": "sub-tea-tree"
+      }
     },
     {
       "id": "prod-026",
@@ -1030,8 +938,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-azelaic"
+      }
     },
     {
       "id": "prod-027",
@@ -1055,8 +962,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-moisturizer"
+      }
     },
     {
       "id": "prod-028",
@@ -1080,8 +986,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-toner"
+      }
     },
     {
       "id": "prod-029",
@@ -1100,8 +1005,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-retinoid"
+      }
     },
     {
       "id": "prod-030",
@@ -1125,8 +1029,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-niacinamide"
+      }
     },
     {
       "id": "prod-031",
@@ -1150,8 +1053,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-moisturizer"
+      }
     },
     {
       "id": "prod-032",
@@ -1170,8 +1072,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-retinoid"
+      }
     },
     {
       "id": "prod-033",
@@ -1190,8 +1091,7 @@
           "type": "daily"
         }
       },
-      "eveningConfig": null,
-      "subCategoryId": "sub-spf"
+      "eveningConfig": null
     },
     {
       "id": "prod-034",
@@ -1215,8 +1115,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-toner"
+      }
     },
     {
       "id": "prod-038",
@@ -1235,8 +1134,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-retinoid"
+      }
     },
     {
       "id": "prod-035",
@@ -1260,8 +1158,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-toner"
+      }
     },
     {
       "id": "prod-036",
@@ -1285,8 +1182,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-pdrn"
+      }
     },
     {
       "id": "prod-037",
@@ -1310,8 +1206,7 @@
         "frequency": {
           "type": "daily"
         }
-      },
-      "subCategoryId": "sub-argireline"
+      }
     }
   ]
 }

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -112,9 +111,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         return Scaffold(
           backgroundColor: AppColors.surface,
           appBar: GlowAppBar(title: l.navCollection),
-          floatingActionButton: kIsWeb
-              ? null
-              : FloatingActionButton.extended(
+          floatingActionButton: FloatingActionButton.extended(
                   onPressed: () => context.push('/add-product'),
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,

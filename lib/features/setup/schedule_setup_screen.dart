@@ -1627,9 +1627,6 @@ class _DayProductCard extends StatelessWidget {
         .where((c) => c.id == product.categoryId)
         .firstOrNull;
 
-    final slotColor =
-        slot == Slot.morning ? AppColors.primaryContainer : AppColors.tertiary;
-
     // Schedule text
     final rule = product.configForSlot(slot)?.frequencyRule;
     final scheduleText = rule is WeeklyMaxRule
@@ -1657,7 +1654,11 @@ class _DayProductCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _productName(product, fontSize: 13),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => context.push('/collection/${product.id}'),
+                  child: _productName(product, fontSize: 13),
+                ),
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 4,
@@ -1757,32 +1758,25 @@ class _DayProductCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Toggle switch
           GestureDetector(
             onTap: onToggle,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 46,
-              height: 28,
-              padding: const EdgeInsets.all(3),
+            child: Container(
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: included
-                    ? slotColor
-                    : AppColors.outlineVariant.withValues(alpha: 0.5),
+                    ? AppColors.errorContainer
+                    : AppColors.surfaceLow,
                 borderRadius: BorderRadius.circular(999),
               ),
-              child: Align(
-                alignment: included
-                    ? AlignmentDirectional.centerStart
-                    : AlignmentDirectional.centerEnd,
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
+              child: Icon(
+                included
+                    ? Icons.delete_outline_rounded
+                    : Icons.add_rounded,
+                size: 18,
+                color: included
+                    ? AppColors.error
+                    : AppColors.onSurfaceVariant,
               ),
             ),
           ),
@@ -2727,7 +2721,11 @@ class _ListRow extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _productName(product, fontSize: 13),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => context.push('/collection/${product.id}'),
+                          child: _productName(product, fontSize: 13),
+                        ),
                         const SizedBox(height: 6),
                         Row(
                           children: [

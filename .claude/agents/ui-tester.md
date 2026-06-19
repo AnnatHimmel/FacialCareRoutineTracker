@@ -5,7 +5,7 @@ supervisor: ui-designer
 maxRetries: 2
 optional: true
 activateWhen: "project.type == 'UI' || project.type == 'Hybrid'"
-description: "Autonomous UI testing agent. Uses structured validation (accessibility tree, computed styles, axe-core) instead of screenshots. Provides actionable, machine-readable errors. Supports QUICK mode (TDD) and FULL mode (Review)."
+description: "Autonomous UI testing agent. Uses structured validation (accessibility tree, computed styles, axe-core) instead of screenshots. Provides actionable, machine-readable errors. Supports QUICK mode (TDD) and FULL mode (Review). Also authors and maintains Playwright .spec.ts end-to-end tests for the Flutter-web (CanvasKit) target via the accessibility/semantics tree, reusing e2e/helpers/flutter.ts."
 requiredPlugins:
   - playwright  # Optional - gracefully degrades if unavailable
 allowedTools:
@@ -35,6 +35,47 @@ Autonomous UI validation using **structured data** instead of screenshots. You v
 
 ## Core Principle
 > **Never rely on screenshots for debugging.** Use accessibility trees, computed styles, and programmatic assertions.
+>
+> **Exception — the Flutter-web/CanvasKit target** (see next section): the app paints to a `<canvas>`, so screenshots and the Playwright `error-context.md` accessibility snapshot ARE the structured signal and are legitimate debugging aids. The "no screenshots" rule below applies to ordinary DOM apps, not to this project's app screens.
+
+---
+
+## Flutter Web (CanvasKit) — Authoring `.spec.ts` Tests
+
+> **This app renders to a `<canvas>`; there is no normal DOM for its widgets.** Drive it through Flutter's `<flt-semantics>` accessibility tree (Playwright auto-pierces the open shadow root). **ALWAYS reuse/extend the interaction primitives in `e2e/helpers/flutter.ts` — never re-derive them.** They encode every rule below; re-implementing inline reliably reproduces the same multi-hour trial-and-error.
+
+These rules are not theoretical — each is a concrete failure observed while authoring `e2e/tests/schedule.spec.ts`:
+
+- **Enable semantics first.** Start every test with `bootFlutter()` — it navigates, waits for `flutter-view`, then calls `enableSemantics()` to materialise the `<flt-semantics>` overlay nodes. Without this, no widget is queryable.
+- **Tapping non-button CTAs** (e.g. "Continue", "Finish and show my routine"): `getByText` resolves to an inner `<span>` with a **degenerate 0×0 box**, so `locator.click()`, `{force:true}`, and `dispatchEvent('click')` all fail ("outside of viewport") or are silently ignored. Use a **settled bounding-box centre + `page.mouse.click`** — this is what `tapText` (via the internal `clickCenter`) does. It polls the box until stable and on-screen first, because onboarding screens slide in and briefly report an off-screen position.
+- **Role=button widgets** (language, gender, nav tabs, day chips): a coordinate-free **`dispatchEvent('click')`** reliably triggers Flutter's tap (`tapNavTab`, `tapDayChip`). `tapButton` uses a plain `.click()` and works for large buttons.
+- **Geometry: CSS px, DPR = 1, canvas at the viewport origin** in this setup — box coordinates map directly to mouse coordinates, no conversion. Do **not** assume high-DPI scaling: a DPR-division theory cost real time here. If the environment ever differs, write a throwaway probe test that dumps `window.devicePixelRatio` + `boundingBox` + the parent chain, instead of guessing.
+- **Text input:** a programmatic `focus()` does **not** establish Flutter's text-editing connection, and `fill()` sets the DOM `<input>` value **without** notifying Flutter (so the search filter / `onChanged` never fires). Required sequence (see `fillField`/internal `engageAndType`): **real pointer tap (`clickCenter`) to engage → clear (`Ctrl+A`, then `Delete`) → type via `page.keyboard.type`**.
+- **Verify by the real result, not the input value.** Keystrokes can land in the DOM `<input>` while Flutter's controller stays stale, so `inputValue()` may read correct while the canvas still shows old results. `selectProduct` retries the whole search-and-tap until **the product row actually appears** — that is the only trustworthy success signal.
+- **Lists only render on-screen items** into the semantics tree (plus a small cache extent); off-screen rows are simply absent from the DOM. To assert membership or ordering, **scroll top→bottom (`page.mouse.wheel`) and record first-seen order** (`scanDaySchedule` + `scrollScheduleToTop`). Never expect a far-apart element and a section separator (e.g. the `לא בשימוש` / "not used" header) to be visible simultaneously.
+- **Compound accessible names:** aggregated widgets expose a single merged name (a day chip is `"Sun 12"`, not `"Sun"`). Match by **prefix/regex on the button role**, not exact text.
+- **Confirm state changes actually happened, and retry if not** — Flutter taps are occasionally dropped. After tapping a day chip, wait for the new day's full name ("Monday") to render before reading; `tapDayChip` retries until the switch takes.
+- **Use the app's real localized strings.** Read `lib/core/l10n/generated/app_localizations_en.dart` for exact CTA labels — never guess (e.g. `orderCtaFinish` is "Finish and show my routine", not "Finish & Save Routine").
+- **When a tap "does nothing":** read the failure screenshot AND the Playwright `test-results/.../error-context.md` accessibility snapshot to see how the widget is actually exposed (role + accessible name), then add a tiny probe test to dump geometry. The a11y snapshot is the canvas app's structured truth.
+
+### Reusable helper API — `e2e/helpers/flutter.ts`
+
+| Purpose | Exports |
+|---------|---------|
+| Boot / seed | `bootFlutter`, `enableSemantics`, `seedPrefs`, `seedOnboardedEnglish` |
+| Locators | `button`, `text`, `textContaining`, `textbox`, `navTab` |
+| Actions | `tapButton`, `tapText`, `tapNavTab`, `tapDayChip`, `fillField`, `selectProduct` |
+| List/schedule scanning | `scrollScheduleToTop`, `scanDaySchedule` → `DayPlacement` (`'scheduled' \| 'notUsed' \| 'absent'`) |
+| Assertions | `expectText`, `expectTextContaining` |
+
+(`clickCenter` and `engageAndType` are internal to `tapText`/`fillField` — not exported.)
+
+### Test infrastructure
+
+- Tests: `e2e/tests/*.spec.ts`; helpers: `e2e/helpers/flutter.ts`; config: `playwright.config.ts`.
+- `webServer` runs `flutter build web && node e2e/serve.mjs`; viewport `412×915`; `workers: 1`; `reuseExistingServer` locally.
+- Run: `npx playwright test` (all) or `npx playwright test e2e/tests/<file>.spec.ts` (one file).
+- `e2e/tests/schedule.spec.ts` is the worked reference example: full 15-product onboarding + per-day schedule assertions.
 
 ---
 
@@ -504,6 +545,8 @@ IF fixing Issue A causes Issue B:
 - Final documentation
 - Visual regression baseline (optional)
 - Human review when requested
+
+> **Does not apply to the Flutter-web/CanvasKit target.** Because that app paints to an opaque `<canvas>`, the failure screenshot and the Playwright `error-context.md` accessibility snapshot are the primary debugging signal — see "Flutter Web (CanvasKit) — Authoring `.spec.ts` Tests" above.
 
 ### On-Demand Screenshot Command
 

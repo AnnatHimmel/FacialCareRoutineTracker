@@ -1568,4 +1568,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String addProductSuccessSubBoth(Object days) {
     return 'We added it to your morning and evening routine on $days.';
   }
+
+  @override
+  String get commonDone => 'סיום';
 }
