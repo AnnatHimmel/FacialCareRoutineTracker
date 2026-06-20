@@ -35,6 +35,13 @@ A personal skincare routine tracker app. An admin curates a master list of skinc
    - Incompatibility rules → `assets/data/incompatibility_rules.json`
 2. **User personalization** — per-device local storage, independently versioned schema, must outlast app updates and Android APK upgrades.
 
+### Routine Data Access — `RoutineScheduler` is the single source of truth
+All **routine** device data — `ProductSelection`, `WeekdaySchedule`, `OrderOverride` — is read and written **only** through `RoutineScheduler` (`lib/domain/services/routine_scheduler.dart`), exposed as `routineSchedulerProvider`. **Never** call `userDataRepositoryProvider` directly for these three tables from a screen or provider; use the scheduler's `watch*` streams and mutation methods (`addProduct`/`removeProduct`/`setDays`/`toggleDay`/`removeDay`/`setOrder`/`resetOrder`/`fixProblems`/…). The scheduler also owns the derived reads (`orderForDay`, `warningsForDay`, `weekGlance`) by composing `RoutineResolver`, `WeekGlanceBuilder`, `IncompatibilityChecker`, `ConflictResolver`, `ProductSorter`.
+
+- **Scope is routine-only.** Day records, skin logs, collection items, category overrides, and muted conflicts stay on `UserDataRepository` — do not route them through the scheduler.
+- The per-product "effective days" rule lives **once** in `effectiveDays`/`defaultDaysFor` (`lib/domain/services/schedule_days.dart`). Never re-derive per-day inclusion inline (it was previously triplicated — don't reintroduce that).
+- Need a new routine read/write? **Extend `RoutineScheduler`** (TDD), then consume it — do not bypass it. Full rationale: `doc/ARCHITECTURE.md` §3.0.
+
 ### Day Boundary
 A "day" ends at **6:00am the following morning** — activity before 6am counts toward the prior calendar day. This affects the home screen's "today," day records, and streak computation everywhere.
 

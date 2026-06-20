@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -9,10 +8,9 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
-import '../../domain/repositories/user_data_repository.dart';
-import '../../domain/services/conflict_resolver.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../domain/services/product_sorter.dart';
+import '../../domain/services/routine_scheduler.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../shared/widgets/glow_app_bar.dart';
@@ -20,8 +18,6 @@ import '../../shared/widgets/glow_card.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/weekday_picker.dart';
-
-const _uuid = Uuid();
 
 String _getDayFullName(int d, AppLocalizations l) => switch (d) {
       0 => l.calendarDayFullSun,
@@ -120,125 +116,64 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     }
   }
 
-  Future<void> _updateSchedule(
-    String productId,
-    Slot slot,
-    Set<int> weekdays,
-    WeekdaySchedule? existing,
-  ) async {
-    await ref.read(userDataRepositoryProvider).upsertSchedule(
-          WeekdaySchedule(
-            id: existing?.id ?? _uuid.v4(),
-            productId: productId,
-            slot: slot,
-            weekdays: weekdays,
-            lastModified: DateTime.now(),
-          ),
-        );
-  }
-
   /// Remove a single weekday for a product (used by the conflict "remove from
   /// {day}" action). Daily products with no override start as all-7.
   Future<void> _removeDay(String productId, int dayId) async {
     final schedules = ref.read(allSchedulesProvider).valueOrNull ?? [];
-    final existing = schedules
-        .where((s) => s.productId == productId && s.slot == _activeSlot)
-        .firstOrNull;
     final master = ref.read(masterContentProvider).valueOrNull;
-    final product = master?.products.where((p) => p.id == productId).firstOrNull;
-    final Set<int> current;
-    if (existing != null && existing.weekdays.isNotEmpty) {
-      current = Set.from(existing.weekdays);
-    } else if (product?.configForSlot(_activeSlot)?.frequencyRule is DailyRule) {
-      current = {0, 1, 2, 3, 4, 5, 6};
-    } else {
-      current = <int>{};
-    }
-    current.remove(dayId);
-    await _updateSchedule(productId, _activeSlot, current, existing);
+    final product =
+        master?.products.where((p) => p.id == productId).firstOrNull;
+    final currentDays = product != null
+        ? RoutineScheduler.effectiveDays(product, _activeSlot, schedules)
+        : <int>{};
+    final updated = Set<int>.from(currentDays)..remove(dayId);
+    await ref.read(routineSchedulerProvider).setDays(
+          productId: productId,
+          slot: _activeSlot,
+          days: updated,
+        );
   }
 
   /// Toggle a product's presence on a specific day (used in days mode).
   Future<void> _toggleDayForProduct(MasterProduct p, int dayId) async {
     final schedules = ref.read(allSchedulesProvider).valueOrNull ?? [];
-    final existing = schedules
-        .where((s) => s.productId == p.id && s.slot == _activeSlot)
-        .firstOrNull;
-    final current = _effectiveDays(p, _activeSlot, schedules);
+    final current =
+        RoutineScheduler.effectiveDays(p, _activeSlot, schedules);
     final updated = Set<int>.from(current);
     if (updated.contains(dayId)) {
       updated.remove(dayId);
     } else {
       updated.add(dayId);
     }
-    await _updateSchedule(p.id, _activeSlot, updated, existing);
+    await ref.read(routineSchedulerProvider).setDays(
+          productId: p.id,
+          slot: _activeSlot,
+          days: updated,
+        );
   }
 
-  /// Opt-out conflict resolution for [dayId] in the active slot.
+  /// Auto-fix all conflicts/overuse for the active slot.
   ///
-  /// Builds a reversible [ConflictResolution] per conflicting pair (slot
-  /// separation, else day separation), applies all mutations by default, then
-  /// surfaces a "what changed" snackbar with an Undo that re-applies the
-  /// inverses. Overused products on the day are also pruned (reversibly).
-  Future<void> _autoFix(
-    List<ConflictInfo> conflicts,
-    List<({MasterProduct product, int count, int cap})> overused,
-    int dayId,
-  ) async {
+  /// Delegates to [RoutineScheduler.fixProblems], which handles conflict
+  /// resolution, overuse pruning, and persistence. Surfaces a "what changed"
+  /// dialog with an Undo that re-applies the inverse mutations.
+  Future<void> _autoFix() async {
     final l = AppLocalizations.of(context)!;
-    final repo = ref.read(userDataRepositoryProvider);
-    var schedules =
-        List<WeekdaySchedule>.from(ref.read(allSchedulesProvider).valueOrNull ?? []);
+    final scheduler = ref.read(routineSchedulerProvider);
+    final master = ref.read(masterContentProvider).valueOrNull;
+    if (master == null) return;
 
-    final resolver = const ConflictResolver();
-    final mutations = <ScheduleMutation>[];
-    final inverse = <ScheduleMutation>[];
-    final descriptions = <String>[];
+    final result = await scheduler.fixProblems(
+      master: master,
+      slot: _activeSlot,
+    );
+
+    if (result.isEmpty) return;
+
     final isEnglish = l.localeName == 'en';
-
-    // 1 · Resolve each conflicting pair into reversible mutations.
-    // Deduplicate first: multiple rules can match the same product pair
-    // (e.g. a product-level rule AND a sub-category rule for Argireline×VitC).
-    final seenPairs = <String>{};
-    final uniqueConflicts = conflicts.where((c) {
-      final key = ([c.productA.id, c.productB.id]..sort()).join('|');
-      return seenPairs.add(key);
-    }).toList();
-
-    for (final c in uniqueConflicts) {
-      final res = resolver.resolve(
-        productA: c.productA,
-        productB: c.productB,
-        slot: _activeSlot,
-        schedules: schedules,
-      );
-      mutations.addAll(res.mutations);
-      inverse.addAll(res.inverse);
-      descriptions.add(res.localizedDescription(isEnglish ? 'en' : 'he'));
-      // Update the local snapshot so the next conflict sees the already-placed
-      // days — prevents duplicate mutations and wrong anchor calculations.
-      schedules = applyMutations(schedules, res.mutations);
-    }
-
-    // 2 · Overused products: drop them from this day (reversible).
-    for (final entry in overused) {
-      final current = _effectiveDays(entry.product, _activeSlot, schedules);
-      if (!current.contains(dayId)) continue;
-      mutations.add(ScheduleMutation(
-        productId: entry.product.id,
-        slot: _activeSlot,
-        days: Set<int>.from(current)..remove(dayId),
-      ));
-      inverse.add(ScheduleMutation(
-        productId: entry.product.id,
-        slot: _activeSlot,
-        days: current,
-      ));
-    }
-
-    if (mutations.isEmpty) return;
-
-    await _persistMutations(repo, schedules, mutations);
+    final descriptions = result.changeDescriptions
+        .map((d) => isEnglish ? d.en : d.he)
+        .toList();
 
     final summary = descriptions.isNotEmpty
         ? descriptions.join('\n')
@@ -286,32 +221,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     );
 
     if (shouldUndo == true && mounted) {
-      final latest = List<WeekdaySchedule>.from(
-          ref.read(allSchedulesProvider).valueOrNull ?? schedules);
-      await _persistMutations(repo, latest, inverse);
-    }
-  }
-
-  /// Persist a set of [ScheduleMutation]s, preserving each schedule's stable id
-  /// (or minting one for products without an existing schedule row).
-  Future<void> _persistMutations(
-    UserDataRepository repo,
-    List<WeekdaySchedule> schedules,
-    List<ScheduleMutation> mutations,
-  ) async {
-    for (final m in mutations) {
-      final existing = schedules
-          .where((s) => s.productId == m.productId && s.slot == m.slot)
-          .firstOrNull;
-      await repo.upsertSchedule(
-        WeekdaySchedule(
-          id: existing?.id ?? _uuid.v4(),
-          productId: m.productId,
-          slot: m.slot,
-          weekdays: m.days,
-          lastModified: DateTime.now(),
-        ),
-      );
+      await scheduler.applyMutationsPersisting(result.inverse);
     }
   }
 
@@ -357,25 +267,6 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
         );
       }
     });
-  }
-
-  // ── derived helpers ────────────────────────────────────────────────────────
-
-  Set<int> _effectiveDays(
-    MasterProduct p,
-    Slot slot,
-    List<WeekdaySchedule> schedules,
-  ) {
-    final sched = schedules
-        .where((s) => s.productId == p.id && s.slot == slot)
-        .firstOrNull;
-    // Explicit schedule row always wins — even an empty set means the product
-    // was intentionally excluded from this slot (written by auto-fix or user).
-    if (sched != null) return Set<int>.from(sched.weekdays);
-    if (p.configForSlot(slot)?.frequencyRule is DailyRule) {
-      return {0, 1, 2, 3, 4, 5, 6};
-    }
-    return <int>{};
   }
 
   @override
@@ -454,11 +345,11 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .toList();
           final narrowed = daily
               .where((p) =>
-                  _effectiveDays(p, _activeSlot, schedules).length < 7)
+                  RoutineScheduler.effectiveDays(p, _activeSlot, schedules).length < 7)
               .toList();
           final everyDay = daily
               .where((p) =>
-                  _effectiveDays(p, _activeSlot, schedules).length == 7)
+                  RoutineScheduler.effectiveDays(p, _activeSlot, schedules).length == 7)
               .toList();
           final flexed = [...occasional, ...narrowed]
             ..sort(ProductSorter.adminComparator(
@@ -490,94 +381,51 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                   ? Icons.wb_sunny_rounded
                   : Icons.dark_mode_rounded;
 
-          final checker = ref.read(incompatibilityCheckerProvider);
-          final otherSlot =
-              _activeSlot == Slot.morning ? Slot.evening : Slot.morning;
+          final scheduler = ref.read(routineSchedulerProvider);
           final otherSlotProducts =
               _activeSlot == Slot.morning ? eveningProducts : morningProducts;
 
           // ── conflict + over-frequency computation for the ACTIVE slot ──
+          // warningsForDayFrom is pure/synchronous; pass the full product lists
+          // (not pre-filtered to the day) — it filters per-day internally.
           final Map<int, List<ConflictInfo>> activeDayPairs = {};
+          final Map<int, List<({MasterProduct product, int count, int cap})>>
+              overuseMap = {};
           final Set<String> cellSet = {};
+          int zeroDayCount = 0;
           for (int d = 0; d < 7; d++) {
-            final onDay = activeProducts
-                .where((p) =>
-                    _effectiveDays(p, _activeSlot, schedules).contains(d))
-                .toList();
-            final otherOnDay = otherSlotProducts
-                .where((p) =>
-                    _effectiveDays(p, otherSlot, schedules).contains(d))
-                .toList();
-            final pairs = checker
-                .getConflictsForSelection(
-                  activeSlot: _activeSlot,
-                  slotProducts: onDay,
-                  otherSlotProducts: otherOnDay,
-                  rules: master.rules,
-                  categories: master.categories,
-                  mutedRuleIds: mutedIds,
-                )
-                .where((c) => !c.isMuted)
-                .toList();
-            if (pairs.isNotEmpty) {
-              activeDayPairs[d] = pairs;
-              for (final c in pairs) {
+            final w = scheduler.warningsForDayFrom(
+              master: master,
+              slot: _activeSlot,
+              weekday: d,
+              slotProducts: activeProducts,
+              otherSlotProducts: otherSlotProducts,
+              schedules: schedules,
+              mutedRuleIds: mutedIds,
+            );
+            if (w.conflicts.isNotEmpty) {
+              activeDayPairs[d] = w.conflicts;
+              for (final c in w.conflicts) {
                 cellSet.add('${c.productA.id}-$d');
                 cellSet.add('${c.productB.id}-$d');
               }
             }
-          }
-          final conflictDays = activeDayPairs.keys.toList()..sort();
-          final pairCount =
-              activeDayPairs.values.fold<int>(0, (a, b) => a + b.length);
-
-          // ── per-day overuse computation ──
-          // Counts total weekly applications across BOTH slots (morning + evening).
-          // A WeeklyMaxRule cap is slot-agnostic: 3 morning uses + 1 evening use = 4 total.
-          // overuseMap: day → list of ({product, count, cap}) for that day
-          final Map<int, List<({MasterProduct product, int count, int cap})>>
-              overuseMap = {};
-          for (int d = 0; d < 7; d++) {
-            final entries = <({MasterProduct product, int count, int cap})>[];
-            for (final p in activeProducts) {
-              final rule = p.configForSlot(_activeSlot)?.frequencyRule;
-              if (rule is! WeeklyMaxRule) continue;
-              final activeDays = _effectiveDays(p, _activeSlot, schedules);
-              if (!activeDays.contains(d)) continue;
-              final otherSlot =
-                  _activeSlot == Slot.morning ? Slot.evening : Slot.morning;
-              final otherDays = p.configForSlot(otherSlot) != null
-                  ? _effectiveDays(p, otherSlot, schedules)
-                  : const <int>{};
-              final totalUses = activeDays.length + otherDays.length;
-              if (totalUses > rule.maxPerWeek) {
-                entries.add((
-                  product: p,
-                  count: totalUses,
-                  cap: rule.maxPerWeek,
-                ));
-              }
+            if (w.overused.isNotEmpty) {
+              overuseMap[d] = w.overused
+                  .map((e) => (product: e.product, count: e.count, cap: e.cap))
+                  .toList();
             }
-            if (entries.isNotEmpty) overuseMap[d] = entries;
+            // zeroDayCount is slot-level (constant across days); take from day 0
+            if (d == 0) zeroDayCount = w.zeroDayCount;
           }
           final overuseDays = overuseMap.keys.toSet();
 
           // Combined issue days (conflict OR overuse)
           final issueDays = {...activeDayPairs.keys, ...overuseDays};
 
-          // WeeklyMax products in the active slot that have 0 effective days
-          // in ALL their configured slots — i.e. completely unscheduled.
-          // Bi-slot products slot-separated to the other slot are excluded.
-          final zeroDayCount = activeProducts.where((p) {
-            if (p.configForSlot(_activeSlot)?.frequencyRule is! WeeklyMaxRule) {
-              return false;
-            }
-            if (_effectiveDays(p, _activeSlot, schedules).isNotEmpty) return false;
-            final hasOther = p.configForSlot(otherSlot) != null;
-            final otherDays =
-                hasOther ? _effectiveDays(p, otherSlot, schedules).length : 0;
-            return otherDays == 0;
-          }).length;
+          final conflictDays = activeDayPairs.keys.toList()..sort();
+          final pairCount =
+              activeDayPairs.values.fold<int>(0, (a, b) => a + b.length);
 
           // Priority day: first issue day, else today, else first day with product
           if (!_selectedDayInitialized) {
@@ -589,7 +437,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
             } else {
               final firstProductDay = List.generate(7, (d) => d).firstWhere(
                 (d) => activeProducts.any(
-                    (p) => _effectiveDays(p, _activeSlot, schedules).contains(d)),
+                    (p) => RoutineScheduler.effectiveDays(p, _activeSlot, schedules).contains(d)),
                 orElse: () => today,
               );
               priorityDay = issueDays.isEmpty ? firstProductDay : today;
@@ -605,41 +453,23 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           }
 
           // per-slot issue totals for the tab badges
-          int slotIssueCount(Slot slot, List<MasterProduct> products) {
-            final other = slot == Slot.morning ? Slot.evening : Slot.morning;
-            final otherProducts =
-                slot == Slot.morning ? eveningProducts : morningProducts;
-            int pairs = 0;
+          int slotIssueCount(Slot tabSlot, List<MasterProduct> products) {
+            final tabOtherProducts =
+                tabSlot == Slot.morning ? eveningProducts : morningProducts;
+            int total = 0;
             for (int d = 0; d < 7; d++) {
-              final onDay = products
-                  .where((p) => _effectiveDays(p, slot, schedules).contains(d))
-                  .toList();
-              final otherOnDay = otherProducts
-                  .where(
-                      (p) => _effectiveDays(p, other, schedules).contains(d))
-                  .toList();
-              pairs += checker
-                  .getConflictsForSelection(
-                    activeSlot: slot,
-                    slotProducts: onDay,
-                    otherSlotProducts: otherOnDay,
-                    rules: master.rules,
-                    categories: master.categories,
-                    mutedRuleIds: mutedIds,
-                  )
-                  .where((c) => !c.isMuted)
-                  .length;
+              final w = scheduler.warningsForDayFrom(
+                master: master,
+                slot: tabSlot,
+                weekday: d,
+                slotProducts: products,
+                otherSlotProducts: tabOtherProducts,
+                schedules: schedules,
+                mutedRuleIds: mutedIds,
+              );
+              total += w.conflicts.length + w.overused.length;
             }
-            final over = products.where((p) {
-              final r = p.configForSlot(slot)?.frequencyRule;
-              if (r is! WeeklyMaxRule) return false;
-              final thisDays = _effectiveDays(p, slot, schedules).length;
-              final otherDays = p.configForSlot(other) != null
-                  ? _effectiveDays(p, other, schedules).length
-                  : 0;
-              return (thisDays + otherDays) > r.maxPerWeek;
-            }).length;
-            return pairs + over;
+            return total;
           }
 
           final isEnglish = l.localeName == 'en';
@@ -647,12 +477,12 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           // ── days mode helpers ──
           final selectedDayProducts = activeProducts
               .where((p) =>
-                  _effectiveDays(p, _activeSlot, schedules)
+                  RoutineScheduler.effectiveDays(p, _activeSlot, schedules)
                       .contains(_selectedDay))
               .toList();
           final notSelectedDayProducts = activeProducts
               .where((p) =>
-                  !_effectiveDays(p, _activeSlot, schedules)
+                  !RoutineScheduler.effectiveDays(p, _activeSlot, schedules)
                       .contains(_selectedDay))
               .toList();
 
@@ -662,7 +492,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
             for (int d = 0; d < 7; d++) {
               counts[d] = activeProducts
                   .where((p) =>
-                      _effectiveDays(p, _activeSlot, schedules).contains(d))
+                      RoutineScheduler.effectiveDays(p, _activeSlot, schedules).contains(d))
                   .length;
             }
             return counts;
@@ -759,16 +589,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                 categories: master.categories,
                                 isEnglish: isEnglish,
                                 onRemoveFromDay: _removeDay,
-                                onAutoFix: (_) => _autoFix(
-                                  // Collect conflicts from ALL days so a single
-                                  // tap resolves the full week, not just the
-                                  // currently visible day.
-                                  activeDayPairs.values
-                                      .expand((x) => x)
-                                      .toList(),
-                                  overuseMap[_selectedDay] ?? [],
-                                  _selectedDay,
-                                ),
+                                onAutoFix: (_) => _autoFix(),
                                 l: l,
                               ),
                               const SizedBox(height: 16),
@@ -905,11 +726,14 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                               _openProductId == p.id
                                                   ? null
                                                   : p.id),
-                                      selectedDays: _effectiveDays(
+                                      selectedDays: RoutineScheduler.effectiveDays(
                                           p, _activeSlot, schedules),
                                       onChanged: (days, existing) =>
-                                          _updateSchedule(p.id, _activeSlot,
-                                              days, existing),
+                                          ref.read(routineSchedulerProvider).setDays(
+                                            productId: p.id,
+                                            slot: _activeSlot,
+                                            days: days,
+                                          ),
                                       l: l,
                                     ),
                                   ),
@@ -933,10 +757,13 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                       _openProductId =
                                           _openProductId == id ? null : id),
                                   effectiveDays: (p) =>
-                                      _effectiveDays(p, _activeSlot, schedules),
+                                      RoutineScheduler.effectiveDays(p, _activeSlot, schedules),
                                   onChanged: (id, days, existing) =>
-                                      _updateSchedule(
-                                          id, _activeSlot, days, existing),
+                                      ref.read(routineSchedulerProvider).setDays(
+                                        productId: id,
+                                        slot: _activeSlot,
+                                        days: days,
+                                      ),
                                   l: l,
                                 ),
                               ],

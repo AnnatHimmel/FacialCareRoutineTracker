@@ -71,8 +71,8 @@ class _OrderCustomizationScreenState
 
     setState(() => _localOrder[slot] = ids);
 
-    final repo = ref.read(userDataRepositoryProvider);
-    await repo.upsertOrderOverride(
+    final scheduler = ref.read(routineSchedulerProvider);
+    await scheduler.upsertOrderOverride(
       OrderOverride(
         id: existing?.id ?? _uuid.v4(),
         slot: slot,
@@ -84,8 +84,8 @@ class _OrderCustomizationScreenState
 
   Future<void> _resetOrder(Slot slot) async {
     setState(() => _localOrder[slot] = null);
-    final repo = ref.read(userDataRepositoryProvider);
-    await repo.deleteOrderOverride(slot);
+    final scheduler = ref.read(routineSchedulerProvider);
+    await scheduler.deleteOrderOverride(slot);
   }
 
   Future<void> _save(BuildContext context) async {
@@ -474,13 +474,13 @@ class _OrderCustomizationScreenState
 final _orderOverrideProvider =
     StreamProvider.family<OrderOverride?, Slot>(
   (ref, slot) =>
-      ref.watch(userDataRepositoryProvider).watchOrderOverride(slot),
+      ref.watch(routineSchedulerProvider).watchOrderOverride(slot),
 );
 
 final _perDayOverridesProvider =
     StreamProvider.family<List<OrderOverride>, Slot>(
   (ref, slot) =>
-      ref.watch(userDataRepositoryProvider).watchPerDayOrderOverrides(slot),
+      ref.watch(routineSchedulerProvider).watchPerDayOrderOverrides(slot),
 );
 
 // ── Onboarding single-slot header ────────────────────────────────────────────
@@ -884,8 +884,8 @@ class _PerDayOrderSheetState extends ConsumerState<_PerDayOrderSheet> {
     });
 
     _overrideId ??= _uuid.v4();
-    final repo = ref.read(userDataRepositoryProvider);
-    await repo.upsertOrderOverride(
+    final scheduler = ref.read(routineSchedulerProvider);
+    await scheduler.upsertOrderOverride(
       OrderOverride(
         id: _overrideId!,
         slot: widget.slot,
@@ -897,8 +897,8 @@ class _PerDayOrderSheetState extends ConsumerState<_PerDayOrderSheet> {
   }
 
   Future<void> _clearDayOrder() async {
-    final repo = ref.read(userDataRepositoryProvider);
-    await repo.deletePerDayOrderOverride(widget.slot, widget.weekday);
+    final scheduler = ref.read(routineSchedulerProvider);
+    await scheduler.deletePerDayOrderOverride(widget.slot, widget.weekday);
     if (mounted) Navigator.of(context).pop();
   }
 

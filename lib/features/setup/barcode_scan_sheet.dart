@@ -111,9 +111,9 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
           .where((p) => !p.isDeprecated && p.barcodes.contains(barcode))
           .firstOrNull;
       if (match != null) {
-        final repo = ref.read(userDataRepositoryProvider);
-        final morningList = await repo.watchSelections(Slot.morning).first;
-        final eveningList = await repo.watchSelections(Slot.evening).first;
+        final scheduler = ref.read(routineSchedulerProvider);
+        final morningList = await scheduler.watchSelections(Slot.morning).first;
+        final eveningList = await scheduler.watchSelections(Slot.evening).first;
         final alreadyMorning = match.morningConfig == null ||
             morningList.any((s) => s.productId == match.id && s.isSelected);
         final alreadyEvening = match.eveningConfig == null ||
@@ -141,9 +141,9 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
   }
 
   Future<void> _addMasterProduct(MasterProduct product) async {
-    final repo = ref.read(userDataRepositoryProvider);
-    final morningList = await repo.watchSelections(Slot.morning).first;
-    final eveningList = await repo.watchSelections(Slot.evening).first;
+    final scheduler = ref.read(routineSchedulerProvider);
+    final morningList = await scheduler.watchSelections(Slot.morning).first;
+    final eveningList = await scheduler.watchSelections(Slot.evening).first;
 
     final alreadyMorning =
         morningList.any((s) => s.productId == product.id && s.isSelected);
@@ -152,7 +152,7 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
 
     const uuid = Uuid();
     if (product.morningConfig != null && !alreadyMorning) {
-      await repo.upsertSelection(ProductSelection(
+      await scheduler.upsertSelection(ProductSelection(
         id: uuid.v4(),
         productId: product.id,
         slot: Slot.morning,
@@ -161,7 +161,7 @@ class _BarcodeScanSheetState extends ConsumerState<BarcodeScanSheet> {
       ));
     }
     if (product.eveningConfig != null && !alreadyEvening) {
-      await repo.upsertSelection(ProductSelection(
+      await scheduler.upsertSelection(ProductSelection(
         id: uuid.v4(),
         productId: product.id,
         slot: Slot.evening,
@@ -510,7 +510,7 @@ class _MasterProductFoundState extends StatelessWidget {
               Text(
                 l.barcodeScanMasterProductFound,
                 style: AppTypography.labelMd.copyWith(
-                  color: Color(0xFFEDE282),
+                  color: const Color(0xFFEDE282),
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),

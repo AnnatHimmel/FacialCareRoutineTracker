@@ -13,8 +13,8 @@ import '../../domain/entities/sub_category.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
-import '../../domain/repositories/user_data_repository.dart';
 import '../../domain/services/conflict_resolver.dart';
+import '../../domain/services/routine_scheduler.dart';
 import '../../domain/services/default_schedule.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../domain/services/product_sorter.dart';
@@ -174,18 +174,18 @@ class _ProductSelectionScreenState
     bool isSelected,
     List<ProductSelection> existing,
   ) async {
-    final repo = ref.read(userDataRepositoryProvider);
+    final scheduler = ref.read(routineSchedulerProvider);
     final matches = existing
         .where((s) => s.productId == product.id && s.slot == slot)
         .toList();
     if (matches.isNotEmpty) {
       for (final match in matches) {
-        await repo.upsertSelection(
+        await scheduler.upsertSelection(
           match.copyWith(isSelected: isSelected, lastModified: DateTime.now()),
         );
       }
     } else if (isSelected) {
-      await repo.upsertSelection(
+      await scheduler.upsertSelection(
         ProductSelection(
           id: _uuid.v4(),
           productId: product.id,
@@ -200,12 +200,12 @@ class _ProductSelectionScreenState
     // slot but no scheduled days. Seed an evenly-spread default for the slot
     // when it has no schedule yet (PRD §15.5).
     if (isSelected) {
-      await _ensureCappedSchedule(repo, product, slot);
+      await _ensureCappedSchedule(scheduler, product, slot);
       // Immediately resolve any within-slot conflicts introduced by this
       // selection. conflictAutoFixProvider only runs at cold start — without
       // this call a product selected mid-session would show conflicts until
       // the next app restart.
-      await _resolveSlotConflicts(repo, product.id, slot);
+      await _resolveSlotConflicts(scheduler, product.id, slot);
     }
   }
 
@@ -213,7 +213,7 @@ class _ProductSelectionScreenState
   /// is newly selected. Mirrors the core logic of [conflictAutoFixProvider] but
   /// runs inline so the fix is applied in the same session as the selection.
   Future<void> _resolveSlotConflicts(
-    UserDataRepository repo,
+    RoutineScheduler scheduler,
     String newProductId,
     Slot slot,
   ) async {
@@ -284,7 +284,7 @@ class _ProductSelectionScreenState
           weekdays: m.days,
           lastModified: DateTime.now(),
         );
-        await repo.upsertSchedule(updated);
+        await scheduler.upsertSchedule(updated);
         final idx = schedules
             .indexWhere((s) => s.productId == m.productId && s.slot == m.slot);
         if (idx >= 0) {
@@ -300,7 +300,7 @@ class _ProductSelectionScreenState
   /// the given slot has no schedule. No-op for daily products or when a schedule
   /// already exists.
   Future<void> _ensureCappedSchedule(
-    UserDataRepository repo,
+    RoutineScheduler scheduler,
     MasterProduct product,
     Slot slot,
   ) async {
@@ -317,7 +317,7 @@ class _ProductSelectionScreenState
     final days = spreadWeekdays(rule.maxPerWeek);
     if (days.isEmpty) return;
 
-    await repo.upsertSchedule(WeekdaySchedule(
+    await scheduler.upsertSchedule(WeekdaySchedule(
       id: _uuid.v4(),
       productId: product.id,
       slot: slot,

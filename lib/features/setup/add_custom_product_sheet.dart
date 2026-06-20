@@ -15,8 +15,8 @@ import '../../domain/entities/sub_category.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
-import '../../domain/repositories/user_data_repository.dart';
 import '../../domain/services/default_schedule.dart';
+import '../../domain/services/routine_scheduler.dart';
 import '../../domain/services/product_classifier.dart';
 import '../../shared/providers/root_providers.dart';
 
@@ -265,19 +265,21 @@ class _AddCustomProductSheetState
         comment: existingComment.isNotEmpty ? existingComment : null,
       );
 
-      final repo = ref.read(userDataRepositoryProvider);
-      await repo.upsertCustomProduct(product);
+      final userRepo = ref.read(userDataRepositoryProvider);
+      await userRepo.upsertCustomProduct(product);
+
+      final scheduler = ref.read(routineSchedulerProvider);
 
       if (_isEditing) {
         final morningSelections =
             ref.read(selectionsProvider(Slot.morning)).valueOrNull ?? [];
         final eveningSelections =
             ref.read(selectionsProvider(Slot.evening)).valueOrNull ?? [];
-        await _updateSlot(repo, id, Slot.morning, inMorning, morningSelections);
-        await _updateSlot(repo, id, Slot.evening, inEvening, eveningSelections);
+        await _updateSlot(scheduler, id, Slot.morning, inMorning, morningSelections);
+        await _updateSlot(scheduler, id, Slot.evening, inEvening, eveningSelections);
       } else {
         if (inMorning) {
-          await repo.upsertSelection(ProductSelection(
+          await scheduler.upsertSelection(ProductSelection(
             id: _uuid.v4(),
             productId: id,
             slot: Slot.morning,
@@ -286,7 +288,7 @@ class _AddCustomProductSheetState
           ));
         }
         if (inEvening) {
-          await repo.upsertSelection(ProductSelection(
+          await scheduler.upsertSelection(ProductSelection(
             id: _uuid.v4(),
             productId: id,
             slot: Slot.evening,
@@ -300,7 +302,7 @@ class _AddCustomProductSheetState
       // no scheduled days. Seed a spread default for each selected slot so the
       // product actually appears in the routine on sensible, well-spaced days.
       if (!_isDaily) {
-        await _seedSpreadSchedule(repo, id, inMorning, inEvening);
+        await _seedSpreadSchedule(scheduler, id, inMorning, inEvening);
       }
 
       if (mounted) Navigator.of(context).pop();
@@ -310,7 +312,7 @@ class _AddCustomProductSheetState
   }
 
   Future<void> _updateSlot(
-    UserDataRepository repo,
+    RoutineScheduler scheduler,
     String productId,
     Slot slot,
     bool shouldBeSelected,
@@ -320,12 +322,12 @@ class _AddCustomProductSheetState
         existing.where((s) => s.productId == productId && s.slot == slot).toList();
     if (matches.isNotEmpty) {
       for (final match in matches) {
-        await repo.upsertSelection(
+        await scheduler.upsertSelection(
           match.copyWith(isSelected: shouldBeSelected, lastModified: DateTime.now()),
         );
       }
     } else if (shouldBeSelected) {
-      await repo.upsertSelection(ProductSelection(
+      await scheduler.upsertSelection(ProductSelection(
         id: _uuid.v4(),
         productId: productId,
         slot: slot,
@@ -339,7 +341,7 @@ class _AddCustomProductSheetState
   /// selected slot, so it never ends up selected with a slot but no days
   /// (PRD §15.5). Skips a slot that already has a schedule (e.g. when editing).
   Future<void> _seedSpreadSchedule(
-    UserDataRepository repo,
+    RoutineScheduler scheduler,
     String productId,
     bool inMorning,
     bool inEvening,
@@ -354,7 +356,7 @@ class _AddCustomProductSheetState
       final already = existing
           .any((s) => s.productId == productId && s.slot == slot);
       if (already) return;
-      await repo.upsertSchedule(WeekdaySchedule(
+      await scheduler.upsertSchedule(WeekdaySchedule(
         id: _uuid.v4(),
         productId: productId,
         slot: slot,

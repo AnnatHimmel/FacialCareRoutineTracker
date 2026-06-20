@@ -8,6 +8,7 @@ import '../entities/weekday_schedule.dart';
 import '../enums/slot.dart';
 import 'incompatibility_checker.dart';
 import 'product_sorter.dart';
+import 'schedule_days.dart';
 
 class ProductWeekSpread {
   final MasterProduct product;
@@ -303,29 +304,15 @@ class WeekGlanceBuilder {
     return filtered;
   }
 
-  /// The actual per-day allocation for [product] in [slot], matching the
-  /// schedule screen's `_effectiveDays` semantics: an explicit schedule row
-  /// always wins (even an empty set means "intentionally excluded"). Only when
-  /// no row exists do we fall back to the frequency rule — DailyRule defaults
-  /// to all 7 days, WeeklyMaxRule to none (its days come from a schedule).
+  /// The actual per-day allocation for [product] in [slot].
+  /// Delegates to the canonical [effectiveDays] leaf helper.
   List<bool> _buildActiveDays(
     MasterProduct product,
     Slot slot,
     List<WeekdaySchedule> schedules,
   ) {
-    final config = product.configForSlot(slot)!;
-    final row = schedules
-        .where((s) => s.productId == product.id && s.slot == slot)
-        .firstOrNull;
-
-    if (row != null) {
-      return List.generate(7, (d) => row.weekdays.contains(d));
-    }
-
-    return switch (config.frequencyRule) {
-      DailyRule() => List.filled(7, true),
-      WeeklyMaxRule() => List.filled(7, false),
-    };
+    final days = effectiveDays(product, slot, schedules);
+    return List.generate(7, (d) => days.contains(d));
   }
 }
 

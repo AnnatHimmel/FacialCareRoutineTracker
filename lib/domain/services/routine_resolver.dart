@@ -7,6 +7,7 @@ import '../entities/sub_category.dart';
 import '../enums/slot.dart';
 import 'day_boundary_service.dart';
 import 'product_sorter.dart';
+import 'schedule_days.dart';
 
 class RoutineResolver {
   /// Returns products active for [date]+[slot] in effective order.
@@ -42,28 +43,9 @@ class RoutineResolver {
       return selectedIds.contains(p.id);
     }).toList();
 
-    final active = selected.where((p) {
-      final config =
-          slot == Slot.morning ? p.morningConfig! : p.eveningConfig!;
-      return switch (config.frequencyRule) {
-        // An explicit schedule row is authoritative per-day: the product runs
-        // only on its listed weekdays (empty set = excluded). With no row, a
-        // daily product defaults to every day. Mirrors the schedule screen's
-        // `_effectiveDays` and the week-overview builder.
-        DailyRule() => () {
-            final row = schedules
-                .where((s) => s.productId == p.id && s.slot == slot)
-                .firstOrNull;
-            return row == null ? true : row.weekdays.contains(dayOfWeek);
-          }(),
-        WeeklyMaxRule() => schedules.any(
-            (s) =>
-                s.productId == p.id &&
-                s.slot == slot &&
-                s.weekdays.contains(dayOfWeek),
-          ),
-      };
-    }).toList();
+    final active = selected
+        .where((p) => effectiveDays(p, slot, schedules).contains(dayOfWeek))
+        .toList();
 
     final adminCmp = ProductSorter.adminComparator(
       categories: categories,

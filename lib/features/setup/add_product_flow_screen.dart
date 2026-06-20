@@ -150,11 +150,11 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
   Future<void> _save() async {
     final p = _product;
     if (p == null) return;
-    final repo = ref.read(userDataRepositoryProvider);
+    final scheduler = ref.read(routineSchedulerProvider);
     final slots = _chosenSlots ?? _defaultSlots(p);
     final now = DateTime.now();
     for (final slot in slots) {
-      await repo.upsertSelection(
+      await scheduler.upsertSelection(
         ProductSelection(
           id: _uuid.v4(),
           productId: p.id,
@@ -163,7 +163,7 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
           lastModified: now,
         ),
       );
-      await repo.upsertSchedule(
+      await scheduler.upsertSchedule(
         WeekdaySchedule(
           id: _uuid.v4(),
           productId: p.id,
@@ -174,7 +174,7 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
       );
     }
     if (_catIdOverride != null) {
-      await repo.upsertCategoryOverride(
+      await ref.read(userDataRepositoryProvider).upsertCategoryOverride(
         CategoryOverride(
           id: 'cat-override-${p.id}',
           productId: p.id,

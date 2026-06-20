@@ -162,6 +162,7 @@ A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusiv
 | **PhotoRepository** | Platform-abstracted photo storage: read, write, delete, list; used by export | Android: FilesDir adapter; Web: IndexedDB adapter |
 | **SettingsRepository** | Key-value store for app settings: last export date, last known master version, schema version | SharedPreferences |
 | **PremiumRepository** | Stub in v1.0 (always returns `isActivated: false`); interface is the hookpoint for UC-21 | none in v1.0 |
+| **RoutineScheduler** | Single gateway for all routine data (selections, weekday schedules, order overrides) and product ordering; owns every routine device read/write; orchestrates RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver, ProductSorter | UserDataRepository, RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver |
 
 ### 2.3 Interface Contracts
 
@@ -186,6 +187,42 @@ getConflictsForDay(date: DateTime) → List<ConflictInfo>
 getConflictsForSchedule(productId, slot, proposedWeekdays) → List<ConflictInfo>
   // for S2 scheduling warnings
 // ConflictInfo: {ruleId, productA, productB, scope, isMuted}
+```
+
+**RoutineScheduler**
+```
+// Reactive reads (delegate to UserDataRepository)
+watchSelections(slot: Slot) → Stream<List<ProductSelection>>
+watchAllSchedules() → Stream<List<WeekdaySchedule>>
+watchOrderOverride(slot: Slot) → Stream<OrderOverride?>
+
+// Derived reads
+orderForDay(master: MasterContent, slot: Slot, weekday: int) → Future<List<MasterProduct>>
+warningsForDay(master: MasterContent, slot: Slot, weekday: int) → Future<DayWarnings>
+  // DayWarnings: {conflicts: List<ConflictInfo>, overused: List<OveruseEntry>, zeroDayCount: int}
+weekGlance(master: MasterContent) → Future<WeekGlance>
+
+// Product mutations
+addProduct(master: MasterContent, productId: String, slot: Slot) → Future<int>
+  // returns the product's 0-based index in the admin-sorted slot routine
+removeProduct(productId: String, slot: Slot) → Future<void>
+fixProblems(master: MasterContent, slot: Slot) → Future<RoutineFixResult>
+  // RoutineFixResult: {applied, inverse, changeDescriptions, anyPartial}
+
+// Schedule mutations
+setDays(productId: String, slot: Slot, weekdays: Set<int>) → Future<void>
+toggleDay(productId: String, slot: Slot, weekday: int) → Future<void>
+removeDay(productId: String, slot: Slot, weekday: int) → Future<void>
+setOrder(slot: Slot, {int? weekday, required List<String> orderedIds}) → Future<void>
+resetOrder(slot: Slot, {int? weekday}) → Future<void>
+applyMutationsPersisting(mutations: List<ScheduleMutation>) → Future<void>
+ensureDefaultSchedules(master: MasterContent) → Future<void>
+
+// Canonical static helpers
+static effectiveDays(product: MasterProduct, slot: Slot, schedules: List<WeekdaySchedule>) → Set<int>
+  // explicit schedule row wins; DailyRule → {0..6}; WeeklyMaxRule → {} if no row
+static defaultDaysFor(product: MasterProduct, slot: Slot) → Set<int>
+  // DailyRule → {0..6}; WeeklyMaxRule → evenly spread N days
 ```
 
 **ExportImportService**
@@ -213,6 +250,14 @@ replaceAllData(export: UserDataExport) → Future<void>
 ---
 
 ## 3. Data Architecture
+
+### 3.0 Routine data — single source of truth
+
+Only `RoutineScheduler` (`lib/domain/services/routine_scheduler.dart`) may read or write routine device data — that is, `ProductSelection`, `WeekdaySchedule`, and `OrderOverride` records. No feature screen or provider accesses `UserDataRepository` directly for these three tables; every routine read/write is funnelled through the scheduler's `watch*` streams and mutation methods.
+
+**Scope is routine-only.** Day records, skin log entries, muted conflicts, collection items, and category overrides remain on `UserDataRepository` and are not part of the scheduler's contract.
+
+**`effectiveDays` is the canonical rule.** The rule "which weekdays is a product active on for a given slot" was previously implemented independently in `RoutineResolver.resolve`, `WeekGlanceBuilder._buildActiveDays`, and the schedule setup screen's `_effectiveDays` helper. It is now defined once as `RoutineScheduler.effectiveDays(product, slot, schedules)` and called from all three sites. The semantics are: an explicit `WeekdaySchedule` row wins regardless of value (even an empty set means intentionally excluded); a `DailyRule` product with no row defaults to `{0..6}`; a `WeeklyMaxRule` product with no row defaults to `{}`.
 
 ### 3.1 Data Models
 
@@ -534,12 +579,16 @@ SoftWarningBanner({
 |----------|------|-------|
 | `masterContentProvider` | `FutureProvider<MasterContent>` | Global — loaded once at startup |
 | `effectiveDateProvider` | `Provider<LocalDate>` | Global — recomputed; invalidated at 06:00 |
-| `dailyRoutineProvider(date, slot)` | `StreamProvider<List<ResolvedProduct>>` | Per-day; depends on master content + user data streams |
+| `routineSchedulerProvider` | `Provider<RoutineScheduler>` | Global — single instance; owns all routine device access |
+| `dailyRoutineProvider(date, slot)` | `StreamProvider<List<ResolvedProduct>>` | Per-day; **scheduler-backed** — combines `watchSelections`, `watchOrderOverride`, `orderForDay` |
 | `dayRecordProvider(date, slot)` | `StreamProvider<DayRecord?>` | Per-day per-slot |
 | `streakProvider` | `StreamProvider<StreakResult>` | Global — recomputes when DayRecords change |
-| `selectionsProvider(slot)` | `StreamProvider<List<ProductSelection>>` | Per-slot |
+| `selectionsProvider(slot)` | `StreamProvider<List<ProductSelection>>` | Per-slot; **scheduler-backed** — delegates to `routineSchedulerProvider.watchSelections` |
+| `allSchedulesProvider` | `StreamProvider<List<WeekdaySchedule>>` | Global; **scheduler-backed** — delegates to `routineSchedulerProvider.watchAllSchedules` |
 | `conflictsForDayProvider(date)` | `Provider<List<ConflictInfo>>` | Per-day; derived from routine + rules |
-| `orderOverrideProvider(slot)` | `StreamProvider<OrderOverride?>` | Per-slot |
+| `orderOverrideProvider(slot)` | `StreamProvider<OrderOverride?>` | Per-slot; **scheduler-backed** — delegates to `routineSchedulerProvider.watchOrderOverride` |
+| `weekGlanceProvider` | `FutureProvider<WeekGlance>` | Global; **scheduler-backed** — delegates to `routineSchedulerProvider.weekGlance` |
+| `dayWarningsProvider(slot, weekday)` | `FutureProvider.family<DayWarnings, ({Slot slot, int weekday})>` | Per-slot per-weekday; **scheduler-backed** — delegates to `routineSchedulerProvider.warningsForDay` |
 | `exportImportStateProvider` | `StateNotifierProvider<ExportImportNotifier>` | Feature-scoped |
 | `settingsProvider` | `StateNotifierProvider<SettingsNotifier>` | Global |
 
@@ -590,6 +639,7 @@ skincare_tracker/
 │   │   │   ├── settings_repository.dart
 │   │   │   └── premium_repository.dart
 │   │   └── services/
+│   │       ├── routine_scheduler.dart        # Single gateway for all routine device data
 │   │       ├── routine_resolver.dart
 │   │       ├── streak_calculator.dart
 │   │       ├── incompatibility_checker.dart
@@ -744,10 +794,10 @@ Dependencies flow from foundation to feature. Each step assumes prior steps are 
 | UC-1b Incompatibility rules | `assets/data/incompatibility_rules.json`; `IncompatibilityChecker` |
 | UC-2 Product deprecation | `MasterProduct.isDeprecated`; `RoutineResolver` (include deprecated if selected); `RoutineItemRow` deprecated variant |
 | UC-3 Release versioning | `MasterListManifest.contentVersion`; `assets/data/changelog.json` |
-| UC-4 Product selection (S1) | `SelectionFeature`; `UserDataRepository.upsertSelection()`; `MasterContentRepository` |
+| UC-4 Product selection (S1) | `SelectionFeature`; **`RoutineScheduler.addProduct/removeProduct`**; `MasterContentRepository` |
 | UC-4b Incompatibility feedback | `IncompatibilityChecker`; `SoftWarningBanner` widget; `MutedConflicts` table |
-| UC-5 Schedule setup (S2) | `ScheduleFeature`; `UserDataRepository.upsertSchedule()`; `WeekdayPicker` widget |
-| UC-6 Order customization (S3) | `OrderingFeature`; `UserDataRepository.upsertOrderOverride()` |
+| UC-5 Schedule setup (S2) | `ScheduleFeature`; **`RoutineScheduler.setDays/toggleDay/removeDay/fixProblems`**; `WeekdayPicker` widget |
+| UC-6 Order customization (S3) | `OrderingFeature`; **`RoutineScheduler.setOrder/resetOrder`** |
 | UC-7 Revise setup | Navigation back to S1/S2/S3 from S11; `IncompatibilityChecker` re-evaluates on change |
 | UC-8 View today's routine (S4) | `DailyHomeFeature`; `RoutineResolver`; `DayBoundaryService` |
 | UC-9 Record product use | `UserDataRepository.toggleProductDone()`; `RoutineItemRow.onToggleDone` |

@@ -258,18 +258,7 @@ class _WeekGlanceScreenState extends ConsumerState<WeekGlanceScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
 
-    final masterAsync = ref.watch(masterContentProvider);
-    final morningSelections =
-        ref.watch(selectionsProvider(Slot.morning)).valueOrNull ?? [];
-    final eveningSelections =
-        ref.watch(selectionsProvider(Slot.evening)).valueOrNull ?? [];
-    final schedules = ref.watch(allSchedulesProvider).valueOrNull ?? [];
-    final muted = ref.watch(mutedConflictsProvider).valueOrNull ?? [];
-    final customProducts = ref.watch(customProductsProvider).valueOrNull ?? [];
-    final morningOrder =
-        ref.watch(orderOverrideProvider(Slot.morning)).valueOrNull;
-    final eveningOrder =
-        ref.watch(orderOverrideProvider(Slot.evening)).valueOrNull;
+    final glanceAsync = ref.watch(weekGlanceProvider);
 
     final dayAbbrevs = [
       l.calendarDayAbbrevSun,
@@ -284,29 +273,11 @@ class _WeekGlanceScreenState extends ConsumerState<WeekGlanceScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: GlowAppBar(title: l.weekGlanceTitle, showBack: true),
-      body: masterAsync.when(
+      body: glanceAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
         error: (e, stack) => const SizedBox.shrink(),
-        data: (master) {
-          final allProducts = [
-            ...master.products,
-            ...customProducts.map((c) => c.toMasterProduct()),
-          ];
-
-          final glance = const WeekGlanceBuilder().build(
-            allProducts: allProducts,
-            categories: master.categories,
-            subcategories: master.subcategories,
-            rules: master.rules,
-            morningSelections: morningSelections,
-            eveningSelections: eveningSelections,
-            schedules: schedules,
-            mutedRuleIds: muted.map((m) => m.ruleId).toSet(),
-            morningOrderOverride: morningOrder,
-            eveningOrderOverride: eveningOrder,
-          );
-
+        data: (glance) {
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
