@@ -752,7 +752,7 @@
       }
     }
   },
-  "orderCtaMorning": "Confirm morning order",
+  "orderCtaMorning": "Looks good, continue to evening routine",
   "orderCtaFinish": "Finish and show my routine",
   "eveningTransitionTitle": "Now for the evening routine",
   "eveningTransitionBody": "We'll use the same products and suggest days and an order that suit the evening.",
@@ -813,7 +813,7 @@
   "welcomeStreakLabel": "days in a row",
   "welcomeCta": "Today's Routine",
   "welcomeHint": "Auto-continuing to your routine · tap to skip",
-  "welcomeGraceLabel": "{n} \"oops I missed\" left this week...",
+  "welcomeGraceLabel": "{n} \"oops I missed...\" left this week",
   "@welcomeGraceLabel": {
     "placeholders": {
       "n": {

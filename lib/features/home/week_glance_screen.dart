@@ -802,6 +802,8 @@ class _WStatusBanner extends StatelessWidget {
 
 // ── Week matrix ────────────────────────────────────────────────────────────────
 
+const double _kDayColW = 18.0;
+
 class _WWeekMatrix extends StatelessWidget {
   final List<ProductWeekSpread> products;
   final List<String> dayAbbrevs;
@@ -826,9 +828,10 @@ class _WWeekMatrix extends StatelessWidget {
         // Day header row
         Row(
           children: [
-            const SizedBox(width: 112),
+            const Expanded(child: SizedBox()),
             for (int i = 0; i < 7; i++)
-              Expanded(
+              SizedBox(
+                width: _kDayColW,
                 child: Center(
                   child: Text(
                     dayAbbrevs[i],
@@ -886,8 +889,7 @@ class _WMatrixRow extends StatelessWidget {
 
     return Row(
       children: [
-        SizedBox(
-          width: 112,
+        Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
@@ -909,14 +911,15 @@ class _WMatrixRow extends StatelessWidget {
           ),
         ),
         for (int i = 0; i < 7; i++)
-          Expanded(
+          SizedBox(
+            width: _kDayColW,
             child: Center(
               child: !spread.activeDays[i]
                   ? const SizedBox.shrink()
                   : spread.conflictDays.contains(i)
                       ? Container(
-                          width: 14,
-                          height: 14,
+                          width: 10,
+                          height: 10,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColors.error,
@@ -928,8 +931,8 @@ class _WMatrixRow extends StatelessWidget {
                           ),
                         )
                       : Container(
-                          width: 8,
-                          height: 8,
+                          width: 7,
+                          height: 7,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: slot == Slot.morning

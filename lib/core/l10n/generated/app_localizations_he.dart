@@ -1469,7 +1469,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get orderCtaMorning => 'אישור סדר הבוקר';
+  String get orderCtaMorning => 'נראה טוב, נמשיך לשגרת הערב';
 
   @override
   String get orderCtaFinish => 'סיום והצגת השגרה שלי';
@@ -1561,7 +1561,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String welcomeGraceLabel(int n) {
-    return 'נשארו $n \"אופס פיספסתי\" השבוע...';
+    return 'נשארו $n \"אופס פיספסתי...\" השבוע';
   }
 
   @override

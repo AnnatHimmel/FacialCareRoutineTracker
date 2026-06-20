@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../domain/services/streak_calculator.dart';
@@ -441,9 +441,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                     ),
                     // CSS: "margin-top: auto" on stats = Spacer above stats
                     const Spacer(),
-                    // ── STATS — CSS width 100%, max-width 340px ─────────
+                    // ── STATS — wider banner so the full grace sentence fits.
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 340),
+                      constraints: const BoxConstraints(maxWidth: 460),
                       child: _EntranceFade(
                       ctrl: _entranceCtrl,
                       start: 0.68,
@@ -468,7 +468,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     _statIconCircle(Icons.emoji_events, filled: true),
-                                    const SizedBox(width: 11),
+                                    const SizedBox(width: 10),
                                     Flexible(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,17 +476,24 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                                         children: [
                                           Text(
                                             l10n.welcomeDaysCount(best),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                             style: GoogleFonts.quicksand(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w700,
+                                              height: 1.1,
                                               color: Colors.white,
                                             ),
                                           ),
+                                          const SizedBox(height: 3),
                                           Text(
                                             l10n.welcomePersonalBestLabel,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                             style: GoogleFonts.quicksand(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w600,
+                                              height: 1.2,
                                               color: const Color(0xD0FFFFFF),
                                             ),
                                           ),
@@ -498,51 +505,47 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                               ),
                               Container(width: 1, color: const Color(0x38FFFFFF)),
                               const SizedBox(width: 12),
-                              // Second child = grace (LEFT in RTL)
+                              // Second child = grace (LEFT in RTL). Just the 3
+                              // hearts + the full label (no big heart circle).
                               Expanded(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    _statIconCircle(Icons.shield, filled: true),
-                                    const SizedBox(width: 11),
-                                    Flexible(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                    Semantics(
+                                      label: l10n.welcomeGraceMissedCount(3 - graceLeft),
+                                      child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Semantics(
-                                            label: l10n.welcomeGraceMissedCount(3 - graceLeft),
-                                            child: Row(
-                                              children: [
-                                                for (int i = 0; i < 3; i++)
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(left: 4),
-                                                    child: Container(
-                                                      width: 19, height: 19,
-                                                      decoration: BoxDecoration(
-                                                        shape: BoxShape.circle,
-                                                        color: i < graceLeft ? Colors.white : const Color(0x24FFFFFF),
-                                                        border: i < graceLeft ? null : Border.all(color: const Color(0x4DFFFFFF)),
-                                                      ),
-                                                      child: Icon(
-                                                        i < graceLeft ? Icons.favorite : Icons.favorite_border,
-                                                        size: 11,
-                                                        color: i < graceLeft ? const Color(0xFFF06B50) : const Color(0x8DFFFFFF),
-                                                      ),
-                                                    ),
-                                                  ),
-                                              ],
+                                          for (int i = 0; i < 3; i++)
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 3),
+                                              child: Container(
+                                                width: 16, height: 16,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: i < graceLeft ? Colors.white : const Color(0x24FFFFFF),
+                                                  border: i < graceLeft ? null : Border.all(color: const Color(0x4DFFFFFF)),
+                                                ),
+                                                child: Icon(
+                                                  i < graceLeft ? Icons.favorite : Icons.favorite_border,
+                                                  size: 10,
+                                                  color: i < graceLeft ? const Color(0xFFF06B50) : const Color(0x8DFFFFFF),
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                          Text(
-                                            l10n.welcomeGraceLabel(graceLeft),
-                                            style: GoogleFonts.quicksand(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
-                                              color: const Color(0xD0FFFFFF),
-                                            ),
-                                          ),
                                         ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      l10n.welcomeGraceLabel(graceLeft),
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.quicksand(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.25,
+                                        color: const Color(0xD0FFFFFF),
                                       ),
                                     ),
                                   ],
@@ -594,7 +597,14 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                                     ),
                                   ),
                                   const SizedBox(width: 6),
-                                  const Icon(Icons.arrow_back, size: 20, color: Color(0xFFC8482F)),
+                                  // textDirection.ltr suppresses RTL auto-mirror
+                                  // so the arrow keeps pointing left (like the reference).
+                                  const Icon(
+                                    Icons.arrow_back,
+                                    size: 20,
+                                    color: Color(0xFFC8482F),
+                                    textDirection: TextDirection.ltr,
+                                  ),
                                 ],
                               ),
                             ),

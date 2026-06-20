@@ -20,6 +20,7 @@ import '../../shared/widgets/pao_meter.dart';
 import '../../shared/widgets/pro_tag.dart';
 import '../../shared/widgets/product_thumb.dart' show userPhotoProvider;
 import '../../shared/widgets/upgrade_sheet.dart';
+import '../../core/config/feature_flags.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
   final String productId;
@@ -104,17 +105,19 @@ class ProductDetailScreen extends ConsumerWidget {
                         ),
 
                         // Lifecycle card — PRO gated
-                        if (isPro)
-                          _LifecycleCard(
-                            productId: productId,
-                            product: product,
-                            collectionItem: collectionItem,
-                            ref: ref,
-                          )
-                        else
-                          _LifecycleCardLocked(
-                            product: product,
-                          ),
+                        if (kProFeaturesEnabled) ...[
+                          if (isPro)
+                            _LifecycleCard(
+                              productId: productId,
+                              product: product,
+                              collectionItem: collectionItem,
+                              ref: ref,
+                            )
+                          else
+                            _LifecycleCardLocked(
+                              product: product,
+                            ),
+                        ],
 
                         const SizedBox(height: 20),
 

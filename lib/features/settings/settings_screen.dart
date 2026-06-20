@@ -10,6 +10,7 @@ import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
 import '../../shared/widgets/pro_tag.dart';
 import '../../shared/widgets/upgrade_sheet.dart';
+import '../../core/config/feature_flags.dart';
 
 final _userProfileProvider = FutureProvider<({String? name, String? gender})>(
   (ref) async {
@@ -44,14 +45,16 @@ class SettingsScreen extends ConsumerWidget {
             isPro: isPro,
           ),
 
-          const SizedBox(height: 16),
-          const _DemoModeCard(),
+          if (kProFeaturesEnabled) ...[
+            const SizedBox(height: 16),
+            const _DemoModeCard(),
+          ],
           const SizedBox(height: 16),
           const BackupReminderBanner(),
           const SizedBox(height: 16),
 
           // ── Gold PRO upsell card (hidden when PRO demo is active) ───────────
-          if (!isPro) ...[
+          if (!isPro && kProFeaturesEnabled) ...[
             GestureDetector(
               onTap: () => showUpgradeSheet(context),
               child: Container(
@@ -186,28 +189,30 @@ class _ProfileCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    if (isPro)
-                      Row(
-                        children: [
-                          Text(
-                            l.settingsAccountPro,
-                            style: AppTypography.labelSm.copyWith(
-                              color: AppColors.onSurfaceVariant,
-                              fontSize: 12,
+                    if (kProFeaturesEnabled) ...[
+                      if (isPro)
+                        Row(
+                          children: [
+                            Text(
+                              l.settingsAccountPro,
+                              style: AppTypography.labelSm.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                                fontSize: 12,
+                              ),
                             ),
+                            const SizedBox(width: 5),
+                            const ProTag(size: ProTagSize.small),
+                          ],
+                        )
+                      else
+                        Text(
+                          l.settingsAccountFree,
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                            fontSize: 12,
                           ),
-                          const SizedBox(width: 5),
-                          const ProTag(size: ProTagSize.small),
-                        ],
-                      )
-                    else
-                      Text(
-                        l.settingsAccountFree,
-                        style: AppTypography.labelSm.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                          fontSize: 12,
                         ),
-                      ),
+                    ],
                   ],
                 ),
               ),

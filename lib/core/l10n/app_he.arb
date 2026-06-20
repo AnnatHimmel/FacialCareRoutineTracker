@@ -752,7 +752,7 @@
       }
     }
   },
-  "orderCtaMorning": "אישור סדר הבוקר",
+  "orderCtaMorning": "נראה טוב, נמשיך לשגרת הערב",
   "orderCtaFinish": "סיום והצגת השגרה שלי",
   "eveningTransitionTitle": "עכשיו נעבור לשגרת הערב",
   "eveningTransitionBody": "נשתמש באותם מוצרים ונציע ימים וסדר שמתאימים לערב.",
@@ -814,7 +814,7 @@
   "welcomeStreakLabel": "ימים ברצף",
   "welcomeCta": "לשגרה של היום",
   "welcomeHint": "ממשיכים לשגרה אוטומטית · הקישו לדילוג",
-  "welcomeGraceLabel": "נשארו {n} \"אופס פיספסתי\" השבוע...",
+  "welcomeGraceLabel": "נשארו {n} \"אופס פיספסתי...\" השבוע",
   "@welcomeGraceLabel": {
     "placeholders": {
       "n": {

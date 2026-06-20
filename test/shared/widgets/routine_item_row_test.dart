@@ -180,6 +180,7 @@ void main() {
           product: product,
           isToggled: false,
           onToggle: () {},
+          isOwnershipContext: true,
         ),
       ));
 

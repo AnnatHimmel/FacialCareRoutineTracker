@@ -1488,7 +1488,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get orderCtaMorning => 'Confirm morning order';
+  String get orderCtaMorning => 'Looks good, continue to evening routine';
 
   @override
   String get orderCtaFinish => 'Finish and show my routine';
@@ -1582,7 +1582,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String welcomeGraceLabel(int n) {
-    return '$n \"oops I missed\" left this week...';
+    return '$n \"oops I missed...\" left this week';
   }
 
   @override

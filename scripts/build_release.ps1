@@ -91,7 +91,7 @@ Write-Host "Building release AAB ($displayVersion)..." -ForegroundColor Cyan
 Write-Host ""
 
 Push-Location $repoRoot
-flutter build appbundle --release
+flutter build appbundle --release --dart-define-from-file=credentials.json
 $buildExit = $LASTEXITCODE
 Pop-Location
 

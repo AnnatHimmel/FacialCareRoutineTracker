@@ -15,6 +15,7 @@ import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/pro_tag.dart';
+import '../../core/config/feature_flags.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
@@ -263,7 +264,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                   ),
                 ),
 
-                if (isPro ? nearExpiryIds.isNotEmpty : true)
+                if (kProFeaturesEnabled && (isPro ? nearExpiryIds.isNotEmpty : true))
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -279,7 +280,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (isPro) ...[
+                        if (isPro && kProFeaturesEnabled) ...[
                           const SizedBox(height: 4),
                           const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -421,7 +422,7 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                           stepNumber: index + 1,
                           isDone: isDone,
                           showName: _showNames,
-                          warn: isPro && nearExpiryIds.contains(product.id),
+                          warn: isPro && kProFeaturesEnabled && nearExpiryIds.contains(product.id),
                           onTap: record != null
                               ? () => _toggleProduct(record, product.id)
                               : null,

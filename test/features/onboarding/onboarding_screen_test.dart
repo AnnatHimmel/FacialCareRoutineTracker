@@ -673,7 +673,7 @@ void main() {
       await tester.tap(find.text('המשך לסדר המריחה'));
       await tester.pumpAndSettle();
       // amOrder — tap morning CTA
-      await tester.tap(find.text('אישור סדר הבוקר'));
+      await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
       await tester.pumpAndSettle();
 
       // Evening transition screen should appear
@@ -789,7 +789,7 @@ void main() {
 
       // amOrder
       expect(find.text('סדר המריחה בבוקר'), findsOneWidget);
-      await tester.tap(find.text('אישור סדר הבוקר'));
+      await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _handleFinish async continuation
 
@@ -844,7 +844,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // amOrder — tap finish
-      await tester.tap(find.text('אישור סדר הבוקר'));
+      await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _handleFinish async continuation
 

@@ -16,6 +16,7 @@ import '../../shared/widgets/pao_meter.dart';
 import '../../shared/widgets/pro_tag.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/upgrade_sheet.dart';
+import '../../core/config/feature_flags.dart';
 
 class CollectionScreen extends ConsumerStatefulWidget {
   const CollectionScreen({super.key});
@@ -132,76 +133,74 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           body: CustomScrollView(
             slivers: [
-              if (isPro) ...[
-                // ── Health card (PRO) ───────────────────────────────────────
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                    child: _HealthCardPro(
-                      totalCount: allDisplayProducts.length,
-                      attentionCount: attentionCount,
+              // ── Week Glance entry card (always visible, free feature) ────────
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+                  child: WeekGlanceEntryCard(),
+                ),
+              ),
+              if (kProFeaturesEnabled) ...[
+                if (isPro) ...[
+                  // ── Health card (PRO) ─────────────────────────────────────
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                      child: _HealthCardPro(
+                        totalCount: allDisplayProducts.length,
+                        attentionCount: attentionCount,
+                        l: l,
+                        onAttentionTap: () => setState(() => _selectedTab = 0),
+                      ),
+                    ),
+                  ),
+                  // ── Segmented tab control ─────────────────────────────────
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: _SegmentedTabs(
+                        selectedIndex: _selectedTab,
+                        inUseCount: inUseProducts.length,
+                        sealedCount: sealedProducts.length,
+                        archiveCount: archiveProducts.length,
+                        l: l,
+                        onTabSelected: (i) => setState(() => _selectedTab = i),
+                      ),
+                    ),
+                  ),
+                  // ── Tab body ──────────────────────────────────────────────
+                  if (_selectedTab == 0)
+                    _InUseSliver(
+                      products: inUseProducts,
+                      itemsByProductId: itemsByProductId,
+                      paoCalc: paoCalc,
                       l: l,
-                      onAttentionTap: () => setState(() => _selectedTab = 0),
+                      now: now,
+                    )
+                  else if (_selectedTab == 1)
+                    _SealedSliver(products: sealedProducts, l: l)
+                  else
+                    _ArchiveSliver(products: archiveProducts, l: l),
+                ] else ...[
+                  // ── Health card (FREE) ────────────────────────────────────
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                      child: _HealthCardFree(
+                        totalCount: allDisplayProducts.length,
+                        inRoutineCount: inUseProducts.length,
+                        l: l,
+                      ),
                     ),
                   ),
-                ),
-                // ── Week Glance entry card ──────────────────────────────────
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
-                    child: WeekGlanceEntryCard(),
-                  ),
-                ),
-                // ── Segmented tab control ───────────────────────────────────
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: _SegmentedTabs(
-                      selectedIndex: _selectedTab,
-                      inUseCount: inUseProducts.length,
-                      sealedCount: sealedProducts.length,
-                      archiveCount: archiveProducts.length,
-                      l: l,
-                      onTabSelected: (i) => setState(() => _selectedTab = i),
-                    ),
-                  ),
-                ),
-                // ── Tab body ────────────────────────────────────────────────
-                if (_selectedTab == 0)
-                  _InUseSliver(
-                    products: inUseProducts,
-                    itemsByProductId: itemsByProductId,
-                    paoCalc: paoCalc,
-                    l: l,
-                    now: now,
-                  )
-                else if (_selectedTab == 1)
-                  _SealedSliver(products: sealedProducts, l: l)
-                else
-                  _ArchiveSliver(products: archiveProducts, l: l),
+                  // ── Free product list ─────────────────────────────────────
+                  _FreeProductSliver(products: allDisplayProducts, l: l),
+                ],
               ] else ...[
-                // ── Health card (FREE) ──────────────────────────────────────
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                    child: _HealthCardFree(
-                      totalCount: allDisplayProducts.length,
-                      inRoutineCount: inUseProducts.length,
-                      l: l,
-                    ),
-                  ),
-                ),
-                // ── Week Glance entry card ──────────────────────────────────
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
-                    child: WeekGlanceEntryCard(),
-                  ),
-                ),
-                // ── Free product list ───────────────────────────────────────
+                // ── Pro features disabled: show flat product list ─────────────
                 _FreeProductSliver(products: allDisplayProducts, l: l),
               ],
               const SliverToBoxAdapter(child: SizedBox(height: 100)),

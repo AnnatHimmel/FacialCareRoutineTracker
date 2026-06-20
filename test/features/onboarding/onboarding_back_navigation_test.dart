@@ -386,7 +386,7 @@ void main() {
       await tester.tap(find.text('המשך לסדר המריחה'));
       await tester.pumpAndSettle();
       // amOrder → eveningTransition
-      await tester.tap(find.text('אישור סדר הבוקר'));
+      await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
       await tester.pumpAndSettle();
 
       expect(find.text('עכשיו נעבור לשגרת הערב'), findsOneWidget,

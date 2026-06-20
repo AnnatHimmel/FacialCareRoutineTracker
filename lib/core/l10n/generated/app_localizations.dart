@@ -2742,7 +2742,7 @@ abstract class AppLocalizations {
   /// No description provided for @orderCtaMorning.
   ///
   /// In he, this message translates to:
-  /// **'אישור סדר הבוקר'**
+  /// **'נראה טוב, נמשיך לשגרת הערב'**
   String get orderCtaMorning;
 
   /// No description provided for @orderCtaFinish.
@@ -2898,7 +2898,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeGraceLabel.
   ///
   /// In he, this message translates to:
-  /// **'נשארו {n} \"אופס פיספסתי\" השבוע...'**
+  /// **'נשארו {n} \"אופס פיספסתי...\" השבוע'**
   String welcomeGraceLabel(int n);
 
   /// No description provided for @welcomeGraceMissedCount.

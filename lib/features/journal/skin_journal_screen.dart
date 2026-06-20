@@ -11,6 +11,7 @@ import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
 import '../../shared/widgets/pro_tag.dart';
+import '../../core/config/feature_flags.dart';
 
 class SkinJournalScreen extends ConsumerWidget {
   const SkinJournalScreen({super.key});
@@ -298,7 +299,7 @@ class _JournalSectionHeader extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        const ProTag(),
+        if (kProFeaturesEnabled) const ProTag(),
       ],
     );
   }

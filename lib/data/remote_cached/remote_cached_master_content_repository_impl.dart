@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../domain/repositories/refreshable_repository.dart';
 import '../cache/master_content_cache.dart';
@@ -37,6 +38,7 @@ class RemoteCachedMasterContentRepositoryImpl
           0) {
         // Cache is at least as new as the bundled asset — use it.
         _inMemory = cached;
+        _debugLogContent('load:cache', cached);
         return cached;
       }
       // Bundled asset is newer (e.g. a new app release added fields like
@@ -45,6 +47,7 @@ class RemoteCachedMasterContentRepositoryImpl
     }
 
     _inMemory = bundled;
+    _debugLogContent('load:bundled', bundled);
     return bundled;
   }
 
@@ -67,13 +70,54 @@ class RemoteCachedMasterContentRepositoryImpl
     if (_isRefreshing) return;
     _isRefreshing = true;
     try {
-      final fresh = await _remote.fetchContent();
-      await _cache.write(fresh);
-      _inMemory = fresh;
-    } catch (_) {
+      debugPrint('[MasterContent] refresh: fetching from Supabase...');
+      final remote = await _remote.fetchContent();
+      _debugLogContent('refresh:remote', remote);
+      final bundled = await _bundled.load();
+      final merged = _mergeContent(remote, bundled);
+      _debugLogContent('refresh:merged', merged);
+      await _cache.write(merged);
+      _inMemory = merged;
+      debugPrint('[MasterContent] refresh: done ✓');
+    } catch (e) {
       // network unavailable — keep existing cache and in-memory state
+      debugPrint('[MasterContent] refresh: FAILED — $e');
     } finally {
       _isRefreshing = false;
     }
+  }
+
+  static void _debugLogContent(String source, MasterContent c) {
+    final withBrand = c.products.where((p) => p.brand != null).length;
+    final sample = c.products.take(3).map((p) => '${p.id}(brand=${p.brand})').join(', ');
+    debugPrint('[MasterContent] $source — ${c.products.length} products, '
+        '$withBrand with brand. Sample: $sample');
+  }
+
+  /// Merges [remote] (Supabase) with [bundled] (local JSON).
+  /// Remote wins for any item that exists in both (same ID), preserving all
+  /// remote fields (e.g. brand values). Items only in bundled are appended so
+  /// nothing is lost if Supabase lags behind a new build.
+  static MasterContent _mergeContent(
+      MasterContent remote, MasterContent bundled) {
+    return MasterContent(
+      categories: _mergeById(remote.categories, bundled.categories,
+          (c) => c.id),
+      subcategories: _mergeById(remote.subcategories, bundled.subcategories,
+          (s) => s.id),
+      products:
+          _mergeById(remote.products, bundled.products, (p) => p.id),
+      rules: _mergeById(remote.rules, bundled.rules, (r) => r.id),
+      manifest: remote.manifest,
+    );
+  }
+
+  static List<T> _mergeById<T>(
+      List<T> remote, List<T> local, String Function(T) getId) {
+    final remoteIds = {for (final item in remote) getId(item)};
+    return [
+      ...remote,
+      ...local.where((item) => !remoteIds.contains(getId(item))),
+    ];
   }
 }

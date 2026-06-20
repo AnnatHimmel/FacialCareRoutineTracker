@@ -1,0 +1,32 @@
+{
+  "skill_name": "release-prep",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're ready for a new release! Please prepare everything for the Google Play Store. Analyze what's changed since the last version bump, update the Play Store notes in doc/google_play_store_notes.md, check whether the privacy policy (web/privacy.html) needs updating, and propose the version bump. IMPORTANT: For this analysis, do NOT actually change pubspec.yaml and do NOT run flutter build — just do the analysis and file updates, then tell me what version you'd propose. Save a plain-text summary of your findings and proposed version to outputs/release_summary.txt.",
+      "expected_output": "Updated doc/google_play_store_notes.md with a new 'Next release' section containing What's New text (Hebrew first), an internal checklist, and any relevant Play Console action items. Privacy policy either updated generically or explicitly noted as not needing changes. A proposed version bump (MAJOR/MINOR/PATCH) with reasoning saved to outputs/release_summary.txt.",
+      "files": [],
+      "expectations": [
+        "doc/google_play_store_notes.md was updated with a new 'Next release' section",
+        "The What's New section in the notes includes Hebrew text",
+        "The internal checklist before submission is present in the notes",
+        "The privacy policy was explicitly assessed (either updated or noted as not requiring changes)",
+        "A version bump level (MAJOR, MINOR, or PATCH) was proposed with reasoning",
+        "outputs/release_summary.txt was created and contains the proposed version number"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Time to ship! Do the release prep for the app. Figure out what changed since last time and get all the release documents in order. Don't actually bump pubspec.yaml or build the AAB for this run — just prepare everything else and tell me what version bump you'd recommend. Put a summary in outputs/release_summary.txt.",
+      "expected_output": "Same quality as eval 1 but triggered by different, more casual phrasing. The skill should still go through all analysis phases: git log review, Play Store notes update, privacy policy check, version proposal.",
+      "files": [],
+      "expectations": [
+        "doc/google_play_store_notes.md was updated with release documentation",
+        "Git log was inspected to identify changes since the last version bump",
+        "A version bump level was proposed with reasoning about why that level was chosen",
+        "The privacy policy was assessed",
+        "outputs/release_summary.txt was created with a summary"
+      ]
+    }
+  ]
+}
