@@ -177,5 +177,47 @@ void main() {
           reason: 'Daily product restricted to {Wed,Fri} must appear on '
               'Wednesday');
     });
+
+    // Regression: root_providers passes midnight DateTimes (from parseDate).
+    // Midnight has hour=0 which is < 6, so a naive re-application of
+    // effectiveDate() inside the resolver would shift midnight Saturday back
+    // to Friday — causing Saturday (day=6) to match Friday (day=5) schedules.
+    group('midnight datetime regression (day must not shift to previous day)', () {
+      // 2024-06-15 is a Saturday; DateTime(2024, 6, 15) = midnight Saturday.
+      final midnightSaturday = DateTime(2024, 6, 15); // hour=0, weekday=6
+
+      test('Saturday midnight — product scheduled ONLY on Saturday appears', () {
+        final product = _dailyBiSlot('p');
+        final result = _resolver.resolve(
+          date: midnightSaturday,
+          slot: Slot.morning,
+          allProducts: [product],
+          categories: _cats,
+          selections: [_morningSelection('p')],
+          schedules: [_scheduleWithDays('p', Slot.morning, {6})], // Sat only
+          orderOverride: null,
+          boundary: _boundary,
+        );
+        expect(result, hasLength(1),
+            reason: 'Product on Saturday (day=6) must appear on Saturday; '
+                'midnight must not be re-interpreted as the previous day');
+      });
+
+      test('Saturday midnight — product scheduled ONLY on Sun/Tue/Thu does NOT appear', () {
+        final product = _dailyBiSlot('p');
+        final result = _resolver.resolve(
+          date: midnightSaturday,
+          slot: Slot.morning,
+          allProducts: [product],
+          categories: _cats,
+          selections: [_morningSelection('p')],
+          schedules: [_scheduleWithDays('p', Slot.morning, {0, 2, 4})],
+          orderOverride: null,
+          boundary: _boundary,
+        );
+        expect(result, isEmpty,
+            reason: 'Product on Sun/Tue/Thu must NOT appear on Saturday');
+      });
+    });
   });
 }

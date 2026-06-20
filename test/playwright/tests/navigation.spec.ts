@@ -41,16 +41,15 @@ test.describe('Main navigation', () => {
 
     // Settings
     await tapNavTab(page, 'Settings');
-    await expectTextContaining(page, 'Product Order');
+    await expectTextContaining(page, 'Language');
 
     // Back to My Day
     await tapNavTab(page, 'My Day');
     await expectText(page, 'Add Products');
   });
 
-  test('settings exposes the routine, data and info entry points', async ({ page }) => {
+  test('settings exposes the data and info entry points', async ({ page }) => {
     await tapNavTab(page, 'Settings');
-    await expectTextContaining(page, 'Product Order'); // routine
     await expectTextContaining(page, 'Export / Import'); // data
     await expectTextContaining(page, 'About'); // info
     await expectTextContaining(page, 'Language');

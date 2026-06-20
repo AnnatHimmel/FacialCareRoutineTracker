@@ -26,9 +26,10 @@ class RoutineResolver {
     required DayBoundaryService boundary,
     Map<String, String>? categoryOverrides,
   }) {
-    final effectiveDate = boundary.effectiveDate(date);
-    // Dart: Mon=1..Sun=7 → convert to Sun=0..Sat=6
-    final dayOfWeek = effectiveDate.weekday % 7;
+    // date is already the effective calendar date (midnight local); applying
+    // effectiveDate() again would shift midnight back by one day (hour=0 < 6).
+    // Dart weekday: Mon=1..Sun=7 → Sun=0..Sat=6
+    final dayOfWeek = date.weekday % 7;
 
     final selectedIds = selections
         .where((s) => s.slot == slot && s.isSelected)
