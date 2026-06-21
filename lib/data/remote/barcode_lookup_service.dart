@@ -354,7 +354,7 @@ class BarcodeProductLookupService {
   // Matches generic site/page titles that scrapers may return from Cloudflare
   // challenge pages or non-product search results.
   static final _siteNamePattern = RegExp(
-    r'(yesstyle|olive.?young|search|results|fashion|beauty)',
+    r'(yesstyle|olive.?young|iherb|search|results|fashion|beauty)',
     caseSensitive: false,
   );
 

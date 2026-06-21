@@ -305,7 +305,7 @@ void main() {
 
       await _advanceToAmSchedule(tester);
       // Advance to amOrder
-      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.tap(find.text('המשיכי לסדר המריחה'));
       await tester.pumpAndSettle();
 
       expect(find.text('סדר המריחה בבוקר'), findsOneWidget,
@@ -383,7 +383,7 @@ void main() {
 
       await _advanceToAmSchedule(tester);
       // amSchedule → amOrder
-      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.tap(find.text('המשיכי לסדר המריחה'));
       await tester.pumpAndSettle();
       // amOrder → eveningTransition
       await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));

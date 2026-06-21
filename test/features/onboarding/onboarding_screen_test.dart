@@ -587,7 +587,7 @@ void main() {
       // Morning context chip
       expect(find.text('שגרת בוקר'), findsOneWidget);
       // CTA label for onboarding schedule
-      expect(find.text('המשך לסדר המריחה'), findsOneWidget);
+      expect(find.text('המשיכי לסדר המריחה'), findsOneWidget);
     });
 
     testWidgets(
@@ -620,8 +620,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('המשך לבחירת ימים'));
       await tester.pumpAndSettle();
-      // On amSchedule — tap "המשך לסדר המריחה"
-      await tester.tap(find.text('המשך לסדר המריחה'));
+      // On amSchedule — tap "המשיכי לסדר המריחה"
+      await tester.tap(find.text('המשיכי לסדר המריחה'));
       await tester.pumpAndSettle();
 
       // Morning order header should be visible
@@ -677,7 +677,7 @@ void main() {
       await tester.tap(find.text('המשך לבחירת ימים'));
       await tester.pumpAndSettle();
       // amSchedule
-      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.tap(find.text('המשיכי לסדר המריחה'));
       await tester.pumpAndSettle();
       // amOrder — tap morning CTA
       await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
@@ -791,7 +791,7 @@ void main() {
 
       // amSchedule
       expect(find.text('תזמון שבועי'), findsOneWidget);
-      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.tap(find.text('המשיכי לסדר המריחה'));
       await tester.pumpAndSettle();
 
       // amOrder
@@ -847,7 +847,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // amSchedule
-      await tester.tap(find.text('המשך לסדר המריחה'));
+      await tester.tap(find.text('המשיכי לסדר המריחה'));
       await tester.pumpAndSettle();
 
       // amOrder — tap finish
