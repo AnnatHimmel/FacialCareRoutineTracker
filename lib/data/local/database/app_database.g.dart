@@ -2463,6 +2463,21 @@ class $UserCustomProductsTable extends UserCustomProducts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isDeprecatedMeta = const VerificationMeta(
+    'isDeprecated',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeprecated = GeneratedColumn<bool>(
+    'is_deprecated',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deprecated" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2478,6 +2493,7 @@ class $UserCustomProductsTable extends UserCustomProducts
     commentJson,
     brand,
     ingredients,
+    isDeprecated,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2595,6 +2611,15 @@ class $UserCustomProductsTable extends UserCustomProducts
         ),
       );
     }
+    if (data.containsKey('is_deprecated')) {
+      context.handle(
+        _isDeprecatedMeta,
+        isDeprecated.isAcceptableOrUnknown(
+          data['is_deprecated']!,
+          _isDeprecatedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2656,6 +2681,10 @@ class $UserCustomProductsTable extends UserCustomProducts
         DriftSqlType.string,
         data['${effectivePrefix}ingredients'],
       ),
+      isDeprecated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deprecated'],
+      )!,
     );
   }
 
@@ -2680,6 +2709,7 @@ class CustomProductRow extends DataClass
   final String? commentJson;
   final String? brand;
   final String? ingredients;
+  final bool isDeprecated;
   const CustomProductRow({
     required this.id,
     required this.name,
@@ -2694,6 +2724,7 @@ class CustomProductRow extends DataClass
     this.commentJson,
     this.brand,
     this.ingredients,
+    required this.isDeprecated,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2723,6 +2754,7 @@ class CustomProductRow extends DataClass
     if (!nullToAbsent || ingredients != null) {
       map['ingredients'] = Variable<String>(ingredients);
     }
+    map['is_deprecated'] = Variable<bool>(isDeprecated);
     return map;
   }
 
@@ -2753,6 +2785,7 @@ class CustomProductRow extends DataClass
       ingredients: ingredients == null && nullToAbsent
           ? const Value.absent()
           : Value(ingredients),
+      isDeprecated: Value(isDeprecated),
     );
   }
 
@@ -2775,6 +2808,7 @@ class CustomProductRow extends DataClass
       commentJson: serializer.fromJson<String?>(json['commentJson']),
       brand: serializer.fromJson<String?>(json['brand']),
       ingredients: serializer.fromJson<String?>(json['ingredients']),
+      isDeprecated: serializer.fromJson<bool>(json['isDeprecated']),
     );
   }
   @override
@@ -2794,6 +2828,7 @@ class CustomProductRow extends DataClass
       'commentJson': serializer.toJson<String?>(commentJson),
       'brand': serializer.toJson<String?>(brand),
       'ingredients': serializer.toJson<String?>(ingredients),
+      'isDeprecated': serializer.toJson<bool>(isDeprecated),
     };
   }
 
@@ -2811,6 +2846,7 @@ class CustomProductRow extends DataClass
     Value<String?> commentJson = const Value.absent(),
     Value<String?> brand = const Value.absent(),
     Value<String?> ingredients = const Value.absent(),
+    bool? isDeprecated,
   }) => CustomProductRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2829,6 +2865,7 @@ class CustomProductRow extends DataClass
     commentJson: commentJson.present ? commentJson.value : this.commentJson,
     brand: brand.present ? brand.value : this.brand,
     ingredients: ingredients.present ? ingredients.value : this.ingredients,
+    isDeprecated: isDeprecated ?? this.isDeprecated,
   );
   CustomProductRow copyWithCompanion(UserCustomProductsCompanion data) {
     return CustomProductRow(
@@ -2857,6 +2894,9 @@ class CustomProductRow extends DataClass
       ingredients: data.ingredients.present
           ? data.ingredients.value
           : this.ingredients,
+      isDeprecated: data.isDeprecated.present
+          ? data.isDeprecated.value
+          : this.isDeprecated,
     );
   }
 
@@ -2875,7 +2915,8 @@ class CustomProductRow extends DataClass
           ..write('lastModifiedMs: $lastModifiedMs, ')
           ..write('commentJson: $commentJson, ')
           ..write('brand: $brand, ')
-          ..write('ingredients: $ingredients')
+          ..write('ingredients: $ingredients, ')
+          ..write('isDeprecated: $isDeprecated')
           ..write(')'))
         .toString();
   }
@@ -2895,6 +2936,7 @@ class CustomProductRow extends DataClass
     commentJson,
     brand,
     ingredients,
+    isDeprecated,
   );
   @override
   bool operator ==(Object other) =>
@@ -2912,7 +2954,8 @@ class CustomProductRow extends DataClass
           other.lastModifiedMs == this.lastModifiedMs &&
           other.commentJson == this.commentJson &&
           other.brand == this.brand &&
-          other.ingredients == this.ingredients);
+          other.ingredients == this.ingredients &&
+          other.isDeprecated == this.isDeprecated);
 }
 
 class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
@@ -2929,6 +2972,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
   final Value<String?> commentJson;
   final Value<String?> brand;
   final Value<String?> ingredients;
+  final Value<bool> isDeprecated;
   final Value<int> rowid;
   const UserCustomProductsCompanion({
     this.id = const Value.absent(),
@@ -2944,6 +2988,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     this.commentJson = const Value.absent(),
     this.brand = const Value.absent(),
     this.ingredients = const Value.absent(),
+    this.isDeprecated = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UserCustomProductsCompanion.insert({
@@ -2960,6 +3005,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     this.commentJson = const Value.absent(),
     this.brand = const Value.absent(),
     this.ingredients = const Value.absent(),
+    this.isDeprecated = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2982,6 +3028,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     Expression<String>? commentJson,
     Expression<String>? brand,
     Expression<String>? ingredients,
+    Expression<bool>? isDeprecated,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2998,6 +3045,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
       if (commentJson != null) 'comment_json': commentJson,
       if (brand != null) 'brand': brand,
       if (ingredients != null) 'ingredients': ingredients,
+      if (isDeprecated != null) 'is_deprecated': isDeprecated,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3016,6 +3064,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     Value<String?>? commentJson,
     Value<String?>? brand,
     Value<String?>? ingredients,
+    Value<bool>? isDeprecated,
     Value<int>? rowid,
   }) {
     return UserCustomProductsCompanion(
@@ -3032,6 +3081,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
       commentJson: commentJson ?? this.commentJson,
       brand: brand ?? this.brand,
       ingredients: ingredients ?? this.ingredients,
+      isDeprecated: isDeprecated ?? this.isDeprecated,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3078,6 +3128,9 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     if (ingredients.present) {
       map['ingredients'] = Variable<String>(ingredients.value);
     }
+    if (isDeprecated.present) {
+      map['is_deprecated'] = Variable<bool>(isDeprecated.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3100,6 +3153,7 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
           ..write('commentJson: $commentJson, ')
           ..write('brand: $brand, ')
           ..write('ingredients: $ingredients, ')
+          ..write('isDeprecated: $isDeprecated, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5538,6 +5592,7 @@ typedef $$UserCustomProductsTableCreateCompanionBuilder =
       Value<String?> commentJson,
       Value<String?> brand,
       Value<String?> ingredients,
+      Value<bool> isDeprecated,
       Value<int> rowid,
     });
 typedef $$UserCustomProductsTableUpdateCompanionBuilder =
@@ -5555,6 +5610,7 @@ typedef $$UserCustomProductsTableUpdateCompanionBuilder =
       Value<String?> commentJson,
       Value<String?> brand,
       Value<String?> ingredients,
+      Value<bool> isDeprecated,
       Value<int> rowid,
     });
 
@@ -5629,6 +5685,11 @@ class $$UserCustomProductsTableFilterComposer
 
   ColumnFilters<String> get ingredients => $composableBuilder(
     column: $table.ingredients,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeprecated => $composableBuilder(
+    column: $table.isDeprecated,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -5706,6 +5767,11 @@ class $$UserCustomProductsTableOrderingComposer
     column: $table.ingredients,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get isDeprecated => $composableBuilder(
+    column: $table.isDeprecated,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UserCustomProductsTableAnnotationComposer
@@ -5767,6 +5833,11 @@ class $$UserCustomProductsTableAnnotationComposer
     column: $table.ingredients,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get isDeprecated => $composableBuilder(
+    column: $table.isDeprecated,
+    builder: (column) => column,
+  );
 }
 
 class $$UserCustomProductsTableTableManager
@@ -5822,6 +5893,7 @@ class $$UserCustomProductsTableTableManager
                 Value<String?> commentJson = const Value.absent(),
                 Value<String?> brand = const Value.absent(),
                 Value<String?> ingredients = const Value.absent(),
+                Value<bool> isDeprecated = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UserCustomProductsCompanion(
                 id: id,
@@ -5837,6 +5909,7 @@ class $$UserCustomProductsTableTableManager
                 commentJson: commentJson,
                 brand: brand,
                 ingredients: ingredients,
+                isDeprecated: isDeprecated,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5854,6 +5927,7 @@ class $$UserCustomProductsTableTableManager
                 Value<String?> commentJson = const Value.absent(),
                 Value<String?> brand = const Value.absent(),
                 Value<String?> ingredients = const Value.absent(),
+                Value<bool> isDeprecated = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UserCustomProductsCompanion.insert(
                 id: id,
@@ -5869,6 +5943,7 @@ class $$UserCustomProductsTableTableManager
                 commentJson: commentJson,
                 brand: brand,
                 ingredients: ingredients,
+                isDeprecated: isDeprecated,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

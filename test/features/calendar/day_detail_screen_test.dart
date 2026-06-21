@@ -34,9 +34,10 @@ class _FakeMCR implements MasterContentRepository {
 
 class _FakeUDR implements UserDataRepository {
   final Map<Slot, DayRecord?> records;
+  final List<UserCustomProduct> customProducts;
   bool updateCalled = false;
 
-  _FakeUDR({this.records = const {}});
+  _FakeUDR({this.records = const {}, this.customProducts = const []});
 
   @override
   Stream<DayRecord?> watchDayRecord(String date, Slot slot) =>
@@ -72,7 +73,7 @@ class _FakeUDR implements UserDataRepository {
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
   @override Future<void> clearRoutineData() async {}
-  @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
+  @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value(customProducts);
   @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
   @override Future<void> deleteCustomProduct(String id) async {}
   @override Stream<List<CollectionItem>> watchCollectionItems() => throw UnimplementedError();
@@ -92,6 +93,17 @@ final _product = MasterProduct(
   isDeprecated: false,
   addedInVersion: '1.0.0',
   morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+);
+
+final _customProduct = UserCustomProduct(
+  id: 'cp1',
+  name: 'סרום מותאם',
+  categoryId: 'cat1',
+  inMorning: true,
+  inEvening: false,
+  isDaily: true,
+  lastModified: DateTime(2024, 1, 15),
+  isDeprecated: true,
 );
 
 final _master = MasterContent(
@@ -194,6 +206,23 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('journal-2024-01-15'), findsOneWidget);
+    });
+
+    testWidgets(
+        'deprecated custom product in resolvedProductIds is shown in history',
+        (tester) async {
+      // A custom product that was subsequently "deleted" (isDeprecated = true)
+      // must still appear when viewing the calendar day where it was used.
+      final udr = _FakeUDR(
+        records: {
+          Slot.morning: _record(resolved: ['cp1'], recorded: ['cp1']),
+        },
+        customProducts: [_customProduct],
+      );
+      await tester.pumpWidget(_wrap(master: _master, udr: udr));
+      await tester.pumpAndSettle();
+
+      expect(find.text('סרום מותאם'), findsOneWidget);
     });
   });
 }

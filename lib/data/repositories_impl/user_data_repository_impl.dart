@@ -317,12 +317,34 @@ class UserDataRepositoryImpl implements UserDataRepository {
                 : null,
           ),
           ingredients: Value(p.ingredients),
+          isDeprecated: Value(p.isDeprecated),
         ),
       );
 
   @override
-  Future<void> deleteCustomProduct(String id) =>
-      _db.userCustomProductsDao.deleteById(id);
+  Future<void> deleteCustomProduct(String id) async {
+    final rows = await _db.userCustomProductsDao.watchAll().first;
+    final existing = rows.where((r) => r.id == id).firstOrNull;
+    if (existing == null) return;
+    await _db.userCustomProductsDao.upsert(
+      UserCustomProductsCompanion(
+        id: Value(existing.id),
+        brand: Value(existing.brand),
+        name: Value(existing.name),
+        photoKey: Value(existing.photoKey),
+        categoryId: Value(existing.categoryId),
+        subCategoryId: Value(existing.subCategoryId),
+        inMorning: Value(existing.inMorning),
+        inEvening: Value(existing.inEvening),
+        isDaily: Value(existing.isDaily),
+        maxTimesPerWeek: Value(existing.maxTimesPerWeek),
+        lastModifiedMs: Value(existing.lastModifiedMs),
+        commentJson: Value(existing.commentJson),
+        ingredients: Value(existing.ingredients),
+        isDeprecated: const Value(true),
+      ),
+    );
+  }
 
   // ── Collection items (product lifecycle) ──────────────────────────────────
 
@@ -534,6 +556,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
         lastModified: DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),
         comment: r.commentJson != null ? decodeComment(r.commentJson!) : null,
         ingredients: r.ingredients,
+        isDeprecated: r.isDeprecated,
       );
 
   CollectionItem _collectionItemFromRow(CollectionItemRow r) => CollectionItem(

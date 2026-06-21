@@ -33,6 +33,7 @@ import '../../data/remote/barcode_lookup_service.dart';
 import '../../data/remote/scrapers/open_beauty_facts_name_search_scraper.dart';
 import '../../data/remote/scrapers/incidecoder_scraper.dart';
 import '../../data/remote/scrapers/olive_young_global_scraper.dart';
+import '../../data/remote/scrapers/yes_style_scraper.dart';
 import '../../domain/services/day_boundary_service.dart';
 import '../../domain/services/export_import_service.dart';
 import '../../domain/services/incompatibility_checker.dart';
@@ -239,9 +240,10 @@ final customProductsProvider = StreamProvider<List<UserCustomProduct>>(
 final barcodeProductLookupServiceProvider = Provider<BarcodeProductLookupService>(
   (ref) => BarcodeProductLookupService(
     scrapers: [
-      IncidecoderScraper(),
       OpenBeautyFactsNameSearchScraper(),
       OliveYoungGlobalScraper(),
+      YesStyleScraper(),
+      IncidecoderScraper(), // last — fills ingredients/images when others miss, but lowest brand confidence
     ],
   ),
 );

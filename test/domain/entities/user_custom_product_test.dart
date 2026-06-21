@@ -251,6 +251,49 @@ void main() {
     });
   });
 
+  group('UserCustomProduct.toMasterProduct() comment passthrough', () {
+    UserCustomProduct withComment(Map<String, String>? comment) =>
+        UserCustomProduct(
+          id: 'ucp-cmt',
+          name: 'Pad',
+          categoryId: 'cat-exfoliate',
+          inMorning: false,
+          inEvening: true,
+          isDaily: false,
+          maxTimesPerWeek: 3,
+          lastModified: DateTime(2026),
+          comment: comment,
+        );
+
+    test('Hebrew comment shows for a Hebrew locale', () {
+      final master = withComment({'he': 'בדיקה'}).toMasterProduct();
+      expect(master.localizedComment('he'), 'בדיקה');
+    });
+
+    test('English-only comment shows for English and falls back in Hebrew', () {
+      final master = withComment({'en': 'note'}).toMasterProduct();
+      expect(master.localizedComment('en'), 'note');
+      expect(master.localizedComment('he'), 'note');
+    });
+
+    test('per-locale comments map to their own slots', () {
+      final master = withComment({'he': 'ה', 'en': 'e'}).toMasterProduct();
+      expect(master.localizedComment('he'), 'ה');
+      expect(master.localizedComment('en'), 'e');
+    });
+
+    test('he_MA locale key is treated as Hebrew-family', () {
+      final master = withComment({'he_MA': 'מרוקאי'}).toMasterProduct();
+      expect(master.localizedComment('he_MA'), 'מרוקאי');
+    });
+
+    test('null comment yields an empty localized comment', () {
+      final master = withComment(null).toMasterProduct();
+      expect(master.localizedComment('he'), '');
+      expect(master.localizedComment('en'), '');
+    });
+  });
+
   group('UserCustomProduct.toMasterProduct() brand passthrough', () {
     test(
         'should produce a MasterProduct with brand == "CeraVe" '
@@ -294,6 +337,94 @@ void main() {
 
       // Then
       expect(master.brand, isNull);
+    });
+  });
+
+  group('UserCustomProduct.isDeprecated', () {
+    test('should default to false when not provided', () {
+      final product = UserCustomProduct(
+        id: 'dep-1',
+        name: 'Serum',
+        categoryId: 'cat-serum',
+        inMorning: true,
+        inEvening: false,
+        isDaily: true,
+        lastModified: DateTime(2026),
+      );
+      expect(product.isDeprecated, isFalse);
+    });
+
+    test('should store true when constructed with isDeprecated: true', () {
+      final product = UserCustomProduct(
+        id: 'dep-2',
+        name: 'Old Serum',
+        categoryId: 'cat-serum',
+        inMorning: true,
+        inEvening: false,
+        isDaily: true,
+        lastModified: DateTime(2026),
+        isDeprecated: true,
+      );
+      expect(product.isDeprecated, isTrue);
+    });
+
+    test('should preserve isDeprecated through copyWith when not overridden', () {
+      final original = UserCustomProduct(
+        id: 'dep-3',
+        name: 'Toner',
+        categoryId: 'cat-toner',
+        inMorning: false,
+        inEvening: true,
+        isDaily: true,
+        lastModified: DateTime(2026),
+        isDeprecated: true,
+      );
+      final copy = original.copyWith(name: 'Old Toner');
+      expect(copy.isDeprecated, isTrue);
+    });
+
+    test('should allow copyWith to override isDeprecated', () {
+      final original = UserCustomProduct(
+        id: 'dep-4',
+        name: 'Moisturiser',
+        categoryId: 'cat-moisturiser',
+        inMorning: true,
+        inEvening: true,
+        isDaily: true,
+        lastModified: DateTime(2026),
+        isDeprecated: false,
+      );
+      final updated = original.copyWith(isDeprecated: true);
+      expect(updated.isDeprecated, isTrue);
+    });
+  });
+
+  group('UserCustomProduct.toMasterProduct() isDeprecated propagation', () {
+    test('produces MasterProduct.isDeprecated == false when not deprecated', () {
+      final custom = UserCustomProduct(
+        id: 'dep-mp-1',
+        name: 'Active Serum',
+        categoryId: 'cat-serum',
+        inMorning: true,
+        inEvening: false,
+        isDaily: true,
+        lastModified: DateTime(2026),
+      );
+      expect(custom.toMasterProduct().isDeprecated, isFalse);
+    });
+
+    test('produces MasterProduct.isDeprecated == true when deprecated', () {
+      final custom = UserCustomProduct(
+        id: 'dep-mp-2',
+        name: 'Deleted Serum',
+        categoryId: 'cat-serum',
+        inMorning: true,
+        inEvening: false,
+        isDaily: true,
+        lastModified: DateTime(2026),
+        isDeprecated: true,
+      );
+      expect(custom.toMasterProduct().isDeprecated, isTrue);
     });
   });
 }

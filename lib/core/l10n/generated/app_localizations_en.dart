@@ -1806,6 +1806,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'Separate ingredients with commas';
 
   @override
+  String get customProductSmartCompleteTitle => 'Smart completion from the web';
+
+  @override
+  String get customProductSmartCompleteBody =>
+      'We\'ll find a category, photo, ingredients and timing based on the product name. Every detail can be edited afterward.';
+
+  @override
+  String get customProductSmartCompleteButton => 'Find the details for me';
+
+  @override
+  String get customProductSmartCompleteManual =>
+      'I\'ll fill it in manually instead';
+
+  @override
+  String get customProductSmartCompleteLockNote =>
+      'The remaining fields will open after completion';
+
+  @override
+  String get customProductSmartCompleteSearching =>
+      'Searching for the details…';
+
+  @override
+  String get customProductSmartCompleteNotFound =>
+      'We couldn\'t find more details — you can fill them in manually.';
+
+  @override
   String get unsavedChangesTitle => 'Unsaved Changes';
 
   @override

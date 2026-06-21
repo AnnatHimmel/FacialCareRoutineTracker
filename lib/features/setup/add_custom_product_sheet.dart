@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +24,7 @@ import '../../domain/services/default_schedule.dart';
 import '../../domain/services/routine_scheduler.dart';
 import '../../domain/services/product_classifier.dart';
 import '../../shared/providers/root_providers.dart';
+import '../../shared/widgets/soft_icon_button.dart';
 
 const _uuid = Uuid();
 
@@ -39,6 +40,12 @@ class AddCustomProductSheet extends ConsumerStatefulWidget {
   final MasterProduct? viewProduct;
   final bool isUserProduct;
 
+  /// Test-only: skip the smart-completion gate so the full manual form is shown
+  /// immediately. Lets pre-gate tests exercise the form without first dismissing
+  /// the gate. Has no effect on scan/edit/view flows (never gated anyway).
+  @visibleForTesting
+  final bool startRevealed;
+
   const AddCustomProductSheet({
     super.key,
     this.initialProduct,
@@ -46,6 +53,7 @@ class AddCustomProductSheet extends ConsumerStatefulWidget {
     this.onScanAgain,
     this.viewProduct,
     this.isUserProduct = false,
+    this.startRevealed = false,
   });
 
   @override
@@ -98,6 +106,23 @@ class _AddCustomProductSheetState
   /// Whether the collapsible "more details" section is expanded.
   bool _detailsOpen = false;
 
+  /// When true, only the name + brand fields and the "smart completion" card are
+  /// shown; the rest of the form is dimmed and locked until the user either runs
+  /// the web lookup or chooses to fill it in manually. Set in [initState] for the
+  /// fresh manual-add flow only (scans / edits / views are never gated).
+  bool _gated = false;
+
+  /// True while the by-name web lookup is running (drives the card's spinner).
+  bool _lookingUp = false;
+
+  /// True after a lookup that returned nothing — shows a gentle "not found" note
+  /// once the form has been revealed for manual entry.
+  bool _lookupNotFound = false;
+
+  /// Category hint from a scan or web lookup, consulted by [_classifyName] as a
+  /// fallback when the on-device classifier can't resolve a sub-category.
+  String? _categoryHint;
+
   // True when editing (existing custom product or switched to edit from view mode).
   bool get _isEditing =>
       widget.initialProduct != null ||
@@ -106,6 +131,12 @@ class _AddCustomProductSheetState
   @override
   void initState() {
     super.initState();
+    // Gate the fresh manual-add flow only: scans, edits and views already carry
+    // data, so they go straight to the full (ungated) form.
+    _gated = !widget.startRevealed &&
+        widget.initialProduct == null &&
+        widget.viewProduct == null &&
+        widget.prefillFromScan == null;
     final p = widget.initialProduct;
     if (p != null) {
       _nameController.text = p.name;
@@ -127,6 +158,7 @@ class _AddCustomProductSheetState
       _nameController.text = vp.name;
       _brandController.text = vp.brand ?? '';
       _categoryId = vp.categoryId;
+      _subCategoryId = vp.subCategoryId;
       _inMorning = vp.morningConfig != null;
       _inEvening = vp.eveningConfig != null;
       final config = vp.morningConfig ?? vp.eveningConfig;
@@ -159,6 +191,7 @@ class _AddCustomProductSheetState
       }
       _candidateImageUrls = scan.imageUrls;
       _selectedImageUrl = scan.imageUrls.isEmpty ? null : scan.imageUrls.first;
+      _categoryHint = scan.categoryHint;
       if (kDebugMode) {
         debugPrint('[ScanPrefill] name="${scan.name}" → _nameController');
         debugPrint('[ScanPrefill] brand="${scan.brand}" → _brandController');
@@ -204,13 +237,12 @@ class _AddCustomProductSheetState
       }
       if (!_categoryManuallyChosen) {
         setState(() => _subCategoryId = null);
-        // categoryHint fallback: if scan provided one, use it
-        final scan = widget.prefillFromScan;
-        if (scan != null && _categoryId == null && scan.categoryHint != null) {
-          final hintId = categoryIdFromHint(scan.categoryHint, master);
+        // categoryHint fallback: if a scan or web lookup provided one, use it.
+        if (_categoryId == null && _categoryHint != null) {
+          final hintId = categoryIdFromHint(_categoryHint, master);
           if (hintId != null && master.categories.any((c) => c.id == hintId)) {
             if (kDebugMode) {
-              debugPrint('[Heuristic] categoryHint "${scan.categoryHint}" '
+              debugPrint('[Heuristic] categoryHint "$_categoryHint" '
                   '→ _categoryId=$hintId (categoryIdFromHint)');
             }
             setState(() => _categoryId = hintId);
@@ -264,6 +296,75 @@ class _AddCustomProductSheetState
           'isDaily=$_isDaily, maxTimesPerWeek=$_maxTimesPerWeek, '
           'inMorning=$_inMorning, inEvening=$_inEvening');
     }
+  }
+
+  /// Runs the by-name web lookup behind the "find the details for me" button.
+  /// On any result it prefills the empty fields, then reveals (un-gates) the
+  /// rest of the form. If nothing is found the form is still revealed for manual
+  /// entry, with a gentle "not found" note.
+  Future<void> _runSmartComplete() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty || _lookingUp) return;
+    setState(() {
+      _lookingUp = true;
+      _lookupNotFound = false;
+    });
+
+    ScannedProductInfo? result;
+    try {
+      final brand = _brandController.text.trim();
+      result = await ref.read(barcodeProductLookupServiceProvider).lookupByName(
+            name,
+            brand: brand.isEmpty ? null : brand,
+          );
+    } catch (_) {
+      result = null;
+    }
+    if (!mounted) return;
+
+    if (result != null) _applyLookupResult(result);
+    setState(() {
+      _lookingUp = false;
+      _gated = false;
+      _lookupNotFound = result == null;
+    });
+    // Re-run classification now that ingredients / category hint may be filled.
+    _classifyName();
+  }
+
+  /// Reveals the rest of the form for manual entry without running a lookup.
+  /// Classifies once from whatever name was already typed so the category can
+  /// still pre-fill (per-keystroke classification is skipped while gated).
+  void _fillManually() {
+    setState(() {
+      _gated = false;
+      _lookupNotFound = false;
+    });
+    _classifyName();
+  }
+
+  /// Applies a by-name lookup result without clobbering anything the user has
+  /// already typed — name stays as entered; brand, photo, ingredients and
+  /// comment only fill when currently empty.
+  void _applyLookupResult(ScannedProductInfo r) {
+    if (_brandController.text.trim().isEmpty && r.brand != null) {
+      _brandController.text = r.brand!;
+    }
+    if (_photoBytes == null && r.imageUrls.isNotEmpty) {
+      _candidateImageUrls = r.imageUrls;
+      _selectedImageUrl = r.imageUrls.first;
+    }
+    if (_ingredientsController.text.trim().isEmpty &&
+        (r.ingredients?.isNotEmpty ?? false)) {
+      _ingredientsController.text = r.ingredients!;
+      _detailsOpen = true;
+    }
+    if (_commentController.text.trim().isEmpty &&
+        (r.comment?.isNotEmpty ?? false)) {
+      _commentController.text = r.comment!;
+      _detailsOpen = true;
+    }
+    _categoryHint = r.categoryHint;
   }
 
   Future<void> _loadInitialPhoto(String photoKey) async {
@@ -832,6 +933,25 @@ class _AddCustomProductSheetState
       final deleteId =
           widget.initialProduct?.id ?? widget.viewProduct?.id;
       if (deleteId == null) return;
+
+      // Determine which slots to deselect. Prefer initialProduct (edit flow)
+      // over viewProduct (view flow); fall back to the loaded custom product.
+      final customProd = widget.initialProduct ??
+          (ref.read(customProductsProvider).valueOrNull ?? [])
+              .cast<UserCustomProduct?>()
+              .firstWhere((p) => p?.id == deleteId, orElse: () => null);
+      final scheduler = ref.read(routineSchedulerProvider);
+      if (customProd != null) {
+        if (customProd.inMorning) {
+          await scheduler.removeProduct(
+              productId: deleteId, slot: Slot.morning);
+        }
+        if (customProd.inEvening) {
+          await scheduler.removeProduct(
+              productId: deleteId, slot: Slot.evening);
+        }
+      }
+
       await ref
           .read(userDataRepositoryProvider)
           .deleteCustomProduct(deleteId);
@@ -945,7 +1065,7 @@ class _AddCustomProductSheetState
                       ),
                     // Edit pencil — shown in view mode; enabled for custom products only
                     if (widget.viewProduct != null && _readOnly) ...[
-                      _SoftIconButton(
+                      SoftIconButton(
                         icon: Icons.edit_rounded,
                         iconColor: widget.isUserProduct
                             ? AppColors.primary
@@ -958,7 +1078,7 @@ class _AddCustomProductSheetState
                       ),
                       const SizedBox(width: 8),
                     ],
-                    _SoftIconButton(
+                    SoftIconButton(
                       icon: Icons.close_rounded,
                       iconColor: AppColors.onSurfaceVariant,
                       onTap: () => Navigator.of(context).pop(),
@@ -1013,13 +1133,6 @@ class _AddCustomProductSheetState
                       const SizedBox(height: 16),
                     ],
 
-                    // Photo section: multi-image selection grid when the scan
-                    // returned several candidates, otherwise a single preview
-                    // (or the empty pill + camera picker).
-                    _buildPhotoSection(l),
-
-                    const SizedBox(height: 20),
-
                     // Name field
                     Text(
                       l.customProductNameLabel,
@@ -1033,14 +1146,18 @@ class _AddCustomProductSheetState
                       controller: _nameController,
                       hint: l.customProductNameHint,
                       enabled: !_readOnly,
+                      // While gated, only rebuild so the "find details" button
+                      // enables/disables — classification is deferred to the
+                      // button (or "fill manually"). Once revealed (or in the
+                      // ungated flows) classify as the name changes.
                       onChanged: _readOnly
                           ? null
                           : (_) {
                               setState(() {});
-                              _classifyName();
+                              if (!_gated) _classifyName();
                             },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
 
                     // Brand field
                     Column(
@@ -1061,7 +1178,43 @@ class _AddCustomProductSheetState
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
+
+                    // Smart-completion gate — shown only for the fresh manual-add
+                    // flow. Tapping "find the details" runs the by-name web
+                    // lookup; "fill manually" just reveals the locked fields.
+                    if (_gated) ...[
+                      _SmartCompleteCard(
+                        l: l,
+                        busy: _lookingUp,
+                        canSearch: _nameController.text.trim().isNotEmpty,
+                        onFind: _runSmartComplete,
+                        onManual: _fillManually,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
+                    // Everything below name/brand stays dimmed and locked until
+                    // the smart-completion gate is resolved (looked up or skipped).
+                    IgnorePointer(
+                      key: const ValueKey('manual-form-lock'),
+                      ignoring: _gated,
+                      child: Opacity(
+                        opacity: _gated ? 0.4 : 1.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (_lookupNotFound) ...[
+                              _LookupNotFoundNote(l: l),
+                              const SizedBox(height: 16),
+                            ],
+
+                    // Photo section: multi-image selection grid when the scan
+                    // returned several candidates, otherwise a single preview
+                    // (or the empty pill + camera picker).
+                    _buildPhotoSection(l),
+
+                    const SizedBox(height: 12),
 
                     // Category + sub-category: side-by-side row.
                     // Sub-category is always visible:
@@ -1146,7 +1299,7 @@ class _AddCustomProductSheetState
                     ),  // Row (category + sub-cat)
                       ),  // Opacity
                     ),  // AbsorbPointer
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
 
                     // Slot toggles
                     AbsorbPointer(
@@ -1254,7 +1407,7 @@ class _AddCustomProductSheetState
                         ),  // Column (frequency)
                       ),  // Opacity
                     ),  // AbsorbPointer
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
 
                     // Collapsible "more details" section (comment) — placed at
                     // the bottom, just before the add button.
@@ -1332,7 +1485,7 @@ class _AddCustomProductSheetState
                         ],
                       ),
                     ],
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
 
                     if (!_readOnly)
                       Row(
@@ -1374,6 +1527,10 @@ class _AddCustomProductSheetState
                           ),
                         ],
                       ),
+                          ], // locked-section Column children
+                        ), // Column
+                      ), // Opacity
+                    ), // IgnorePointer
                   ],
                   ),
                 ),
@@ -1428,42 +1585,230 @@ class _AddCustomProductSheetState
   }
 }
 
-/// A soft circular icon button matching the Radiant Dew aesthetic — rounded
-/// surface-low fill, no hard Material ripple. Used for the sheet's header
-/// edit/close actions. A null [onTap] renders a disabled (dimmed) button.
-class _SoftIconButton extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final VoidCallback? onTap;
-  final String? tooltip;
+/// The "smart completion from the web" card shown in the gated manual-add flow.
+/// Offers a one-tap by-name lookup and a "fill manually" escape hatch, plus a
+/// note that the rest of the form unlocks once the gate is resolved.
+class _SmartCompleteCard extends StatelessWidget {
+  final AppLocalizations l;
+  final bool busy;
+  final bool canSearch;
+  final VoidCallback onFind;
+  final VoidCallback onManual;
 
-  const _SoftIconButton({
-    required this.icon,
-    required this.iconColor,
-    this.onTap,
-    this.tooltip,
+  const _SmartCompleteCard({
+    required this.l,
+    required this.busy,
+    required this.canSearch,
+    required this.onFind,
+    required this.onManual,
   });
 
   @override
   Widget build(BuildContext context) {
-    final button = GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceLow,
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.outlineVariant, width: 1),
-        ),
-        alignment: Alignment.center,
-        child: Icon(icon, size: 20, color: iconColor),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primaryFixed.withAlpha(45),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primaryFixed.withAlpha(90)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
+                  color: AppColors.surface,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  l.customProductSmartCompleteTitle,
+                  style: AppTypography.labelMd.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            l.customProductSmartCompleteBody,
+            style: AppTypography.bodyMd.copyWith(
+              color: AppColors.onSurfaceVariant,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _SmartCompletePrimaryButton(
+            label: busy
+                ? l.customProductSmartCompleteSearching
+                : l.customProductSmartCompleteButton,
+            busy: busy,
+            enabled: canSearch && !busy,
+            onTap: onFind,
+          ),
+          const SizedBox(height: 6),
+          Center(
+            child: TextButton(
+              onPressed: busy ? null : onManual,
+              child: Text(
+                l.customProductSmartCompleteManual,
+                style: AppTypography.labelMd.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.lock_outline_rounded,
+                size: 13,
+                color: AppColors.onSurfaceVariant,
+              ),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  l.customProductSmartCompleteLockNote,
+                  style: AppTypography.bodyMd.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
-    if (tooltip != null) {
-      return Tooltip(message: tooltip!, child: button);
-    }
-    return button;
+  }
+}
+
+/// White pill button (peach content + outline) used as the primary action of
+/// [_SmartCompleteCard]. Shows a spinner in place of the icon while busy.
+class _SmartCompletePrimaryButton extends StatelessWidget {
+  final String label;
+  final bool busy;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _SmartCompletePrimaryButton({
+    required this.label,
+    required this.busy,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 150),
+      opacity: (enabled || busy) ? 1.0 : 0.5,
+      child: Material(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(9999),
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          borderRadius: BorderRadius.circular(9999),
+          child: Container(
+            height: 50,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(9999),
+              border: Border.all(
+                color: AppColors.primary.withAlpha(120),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (busy)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  )
+                else
+                  const Icon(
+                    Icons.travel_explore_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: AppTypography.labelMd.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Gentle "we couldn't find more details" note shown after a lookup that
+/// returned nothing, once the form has been revealed for manual entry.
+class _LookupNotFoundNote extends StatelessWidget {
+  final AppLocalizations l;
+
+  const _LookupNotFoundNote({required this.l});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLow,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            size: 16,
+            color: AppColors.onSurfaceVariant,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l.customProductSmartCompleteNotFound,
+              style: AppTypography.bodyMd.copyWith(
+                color: AppColors.onSurfaceVariant,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -1594,27 +1939,37 @@ class _CategoryDropdown extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.outlineVariant),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selected,
           isExpanded: true,
           hint: Text(
             l.customProductCategoryHint,
-            style: AppTypography.bodyMd.copyWith(
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: AppTypography.labelMd.copyWith(
               color: AppColors.outline.withAlpha(153),
+              fontWeight: FontWeight.w400,
             ),
           ),
           icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: AppColors.onSurfaceVariant),
-          style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+              color: AppColors.onSurfaceVariant, size: 18),
+          style: AppTypography.labelMd.copyWith(
+            color: AppColors.onSurface,
+            fontWeight: FontWeight.w500,
+          ),
           dropdownColor: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           items: [
             for (final cat in categories)
               DropdownMenuItem(
                 value: cat.id,
-                child: Text(cat.localizedName(locale)),
+                child: Text(
+                  cat.localizedName(locale),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
           ],
           onChanged: (v) {
@@ -1664,20 +2019,26 @@ class _SubCategoryDropdown extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.outlineVariant),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selected,
           isExpanded: true,
           hint: Text(
             hintText,
-            style: AppTypography.bodyMd.copyWith(
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: AppTypography.labelMd.copyWith(
               color: AppColors.outline.withAlpha(153),
+              fontWeight: FontWeight.w400,
             ),
           ),
           icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: AppColors.onSurfaceVariant),
-          style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+              color: AppColors.onSurfaceVariant, size: 18),
+          style: AppTypography.labelMd.copyWith(
+            color: AppColors.onSurface,
+            fontWeight: FontWeight.w500,
+          ),
           dropdownColor: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           items: isDisabled
@@ -1686,7 +2047,11 @@ class _SubCategoryDropdown extends StatelessWidget {
                   for (final sub in subcategories)
                     DropdownMenuItem(
                       value: sub.id,
-                      child: Text(sub.localizedName(locale)),
+                      child: Text(
+                        sub.localizedName(locale),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
                     ),
                 ],
           onChanged: isDisabled

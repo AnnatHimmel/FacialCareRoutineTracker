@@ -11,7 +11,10 @@ class _StubScraper implements RetailerSearchScraper {
   final ScannedProductInfo? _result;
   final List<String> queries = [];
 
-  _StubScraper(this._result);
+  @override
+  final bool supportsBarcodeSearch;
+
+  _StubScraper(this._result, {this.supportsBarcodeSearch = false});
 
   @override
   Future<ScannedProductInfo?> search(String query) async {
@@ -381,6 +384,51 @@ void main() {
       ]);
     });
 
+    test('augment: images deduped at address level (scheme/case/trailing-? insensitive)',
+        () async {
+      final client = MockClient((request) async {
+        if (request.url.host == 'world.openbeautyfacts.org') {
+          return http.Response(
+            jsonEncode({
+              'status': 1,
+              'product': {
+                'product_name': 'Some Product',
+                'brands': 'Brand',
+                'image_url': 'https://example.com/shared.jpg',
+              },
+            }),
+            200,
+          );
+        }
+        return http.Response('{}', 404);
+      });
+
+      // Scraper returns the same image with trivial address-level differences
+      // plus one genuinely new image.
+      final scraper = _StubScraper(
+        const ScannedProductInfo(
+          barcode: '',
+          imageUrls: [
+            'http://EXAMPLE.com/shared.jpg?', // same address, diff scheme/case/?
+            'https://example.com/unique.jpg',
+          ],
+        ),
+      );
+
+      final service = BarcodeProductLookupService(
+        client: client,
+        scrapers: [scraper],
+      );
+      final result = await service.lookup(testBarcode);
+
+      expect(result, isNotNull);
+      // The shared image appears once (base copy kept), unique one appended.
+      expect(result!.imageUrls, [
+        'https://example.com/shared.jpg',
+        'https://example.com/unique.jpg',
+      ]);
+    });
+
     test('augment: does not overwrite existing base fields', () async {
       final client = MockClient((request) async {
         if (request.url.host == 'world.openbeautyfacts.org') {
@@ -473,6 +521,234 @@ void main() {
 
       // Garbage site name must be filtered — overall result must be null
       expect(result, isNull);
+    });
+  });
+
+  group('barcode-capable scraper (queried by barcode)', () {
+    test('overrides barcode APIs for name/brand/image and is queried by barcode',
+        () async {
+      // OBF API returns data with a WRONG brand and its own name/image.
+      final client = MockClient((request) async {
+        if (request.url.host == 'world.openbeautyfacts.org') {
+          return http.Response(
+            jsonEncode({
+              'status': 1,
+              'product': {
+                'product_name': 'API Name',
+                'brands': 'WrongBrand',
+                'image_url': 'https://example.com/api.jpg',
+                'ingredients_text': 'Water, Glycerin',
+              },
+            }),
+            200,
+          );
+        }
+        return http.Response('{}', 404);
+      });
+
+      // YesStyle-style scraper that supports barcode search returns the truth.
+      final yesStyle = _StubScraper(
+        const ScannedProductInfo(
+          barcode: '',
+          name: 'Zero Pore Pad 2.0',
+          brand: 'medicube',
+          imageUrls: ['https://example.com/yesstyle.jpg'],
+        ),
+        supportsBarcodeSearch: true,
+      );
+
+      final service = BarcodeProductLookupService(
+        client: client,
+        scrapers: [yesStyle],
+      );
+      final result = await service.lookup(testBarcode);
+
+      expect(result, isNotNull);
+      // Tier 1 (barcode scrape) overrides the APIs for name/brand/image.
+      expect(result!.name, 'Zero Pore Pad 2.0');
+      expect(result.brand, 'medicube');
+      expect(result.imageUrl, 'https://example.com/yesstyle.jpg');
+      // API fills gaps the scrape didn't provide.
+      expect(result.ingredients, 'Water, Glycerin');
+      // The barcode-capable scraper was queried with the BARCODE, not a name.
+      expect(yesStyle.queries, [testBarcode]);
+    });
+
+    test('name-only scrapers still fill gaps the barcode scrape leaves', () async {
+      final client = MockClient((request) async => http.Response('{}', 404));
+
+      final yesStyle = _StubScraper(
+        const ScannedProductInfo(
+          barcode: '',
+          name: 'Zero Pore Pad 2.0',
+          brand: 'medicube',
+          imageUrls: ['https://example.com/yesstyle.jpg'],
+        ),
+        supportsBarcodeSearch: true,
+      );
+      // A name-only scraper that contributes ingredients.
+      final nameOnly = _StubScraper(
+        const ScannedProductInfo(
+          barcode: '',
+          name: 'Zero Pore Pad 2.0',
+          ingredients: 'Water, Lactic Acid, Salicylic Acid',
+        ),
+      );
+
+      final service = BarcodeProductLookupService(
+        client: client,
+        scrapers: [yesStyle, nameOnly],
+      );
+      final result = await service.lookup(testBarcode);
+
+      expect(result, isNotNull);
+      expect(result!.name, 'Zero Pore Pad 2.0');
+      expect(result.brand, 'medicube'); // from barcode scrape
+      expect(result.ingredients, 'Water, Lactic Acid, Salicylic Acid'); // gap-filled
+      // Barcode scrape queried by barcode; name-only scraper queried by name.
+      expect(yesStyle.queries, [testBarcode]);
+      expect(nameOnly.queries, ['Zero Pore Pad 2.0']);
+    });
+
+    test('site-level scrape name does not override real API data', () async {
+      final client = MockClient((request) async {
+        if (request.url.host == 'world.openbeautyfacts.org') {
+          return http.Response(
+            jsonEncode({
+              'status': 1,
+              'product': {
+                'product_name': 'Real Product',
+                'brands': 'RealBrand',
+              },
+            }),
+            200,
+          );
+        }
+        return http.Response('{}', 404);
+      });
+
+      // Simulates YesStyle Cloudflare challenge page title.
+      final yesStyle = _StubScraper(
+        const ScannedProductInfo(
+          barcode: '',
+          name: 'YesStyle - Fashion and Beauty',
+        ),
+        supportsBarcodeSearch: true,
+      );
+
+      final service = BarcodeProductLookupService(
+        client: client,
+        scrapers: [yesStyle],
+      );
+      final result = await service.lookup(testBarcode);
+
+      expect(result, isNotNull);
+      expect(result!.name, 'Real Product'); // garbage scrape rejected
+      expect(result.brand, 'RealBrand');
+    });
+  });
+
+  group('lookupByName', () {
+    test('queries scrapers with the product name and merges their data',
+        () async {
+      final scraper = _StubScraper(
+        const ScannedProductInfo(
+          barcode: '',
+          name: 'Niacinamide 10% + Zinc 1%',
+          brand: 'The Ordinary',
+          imageUrls: ['https://img.example.com/niacinamide.jpg'],
+          categoryHint: 'serum',
+          ingredients: 'Aqua, Niacinamide, Zinc PCA',
+        ),
+      );
+
+      final service = BarcodeProductLookupService(scrapers: [scraper]);
+      final result = await service.lookupByName('Niacinamide 10% + Zinc 1%');
+
+      expect(result, isNotNull);
+      expect(result!.barcode, ''); // no barcode for a name lookup
+      expect(result.name, 'Niacinamide 10% + Zinc 1%');
+      expect(result.brand, 'The Ordinary');
+      expect(result.imageUrl, 'https://img.example.com/niacinamide.jpg');
+      expect(result.categoryHint, 'serum');
+      expect(result.ingredients, 'Aqua, Niacinamide, Zinc PCA');
+      expect(scraper.queries, ['Niacinamide 10% + Zinc 1%']);
+    });
+
+    test('includes brand in the query when provided', () async {
+      final scraper = _StubScraper(
+        const ScannedProductInfo(barcode: '', name: 'BHA Salicylic'),
+      );
+
+      final service = BarcodeProductLookupService(scrapers: [scraper]);
+      await service.lookupByName('BHA Salicylic', brand: 'The Ordinary');
+
+      expect(scraper.queries, ['The Ordinary BHA Salicylic']);
+    });
+
+    test('fills missing fields from later scrapers and dedupes images',
+        () async {
+      final first = _StubScraper(
+        const ScannedProductInfo(
+          barcode: '',
+          name: 'Gentle Cleanser',
+          imageUrls: ['https://img.example.com/a.jpg'],
+        ),
+      );
+      final second = _StubScraper(
+        const ScannedProductInfo(
+          barcode: '',
+          name: 'Gentle Cleanser',
+          brand: 'CeraVe',
+          imageUrls: [
+            'https://img.example.com/a.jpg',
+            'https://img.example.com/b.jpg',
+          ],
+          ingredients: 'Aqua, Glycerin',
+        ),
+      );
+
+      final service =
+          BarcodeProductLookupService(scrapers: [first, second]);
+      final result = await service.lookupByName('Gentle Cleanser');
+
+      expect(result, isNotNull);
+      expect(result!.name, 'Gentle Cleanser');
+      expect(result.brand, 'CeraVe'); // filled from the second scraper
+      expect(result.ingredients, 'Aqua, Glycerin');
+      expect(result.imageUrls, [
+        'https://img.example.com/a.jpg',
+        'https://img.example.com/b.jpg',
+      ]);
+    });
+
+    test('returns null when no scraper has useful data', () async {
+      final service =
+          BarcodeProductLookupService(scrapers: [_StubScraper(null)]);
+      final result = await service.lookupByName('Unknown Product');
+      expect(result, isNull);
+    });
+
+    test('rejects site-level names as garbage', () async {
+      final scraper = _StubScraper(
+        const ScannedProductInfo(
+          barcode: '',
+          name: 'YesStyle - Fashion and Beauty',
+        ),
+      );
+      final service = BarcodeProductLookupService(scrapers: [scraper]);
+      final result = await service.lookupByName('something');
+      expect(result, isNull);
+    });
+
+    test('returns null for an empty name', () async {
+      final scraper = _StubScraper(
+        const ScannedProductInfo(barcode: '', name: 'X'),
+      );
+      final service = BarcodeProductLookupService(scrapers: [scraper]);
+      final result = await service.lookupByName('   ');
+      expect(result, isNull);
+      expect(scraper.queries, isEmpty); // never queried
     });
   });
 }

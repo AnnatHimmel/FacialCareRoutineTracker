@@ -17,6 +17,7 @@ class UserCustomProduct {
   /// User-authored notes per locale code, e.g. {"he": "...", "en": "..."}.
   final Map<String, String>? comment;
   final String? ingredients;
+  final bool isDeprecated;
 
   const UserCustomProduct({
     required this.id,
@@ -32,6 +33,7 @@ class UserCustomProduct {
     required this.lastModified,
     this.comment,
     this.ingredients,
+    this.isDeprecated = false,
   });
 
   /// Returns (text, sourceLocale) for the requested locale.
@@ -60,16 +62,33 @@ class UserCustomProduct {
             .toList() ??
         const [];
 
+    // Comment is stored as a locale-keyed map; MasterProduct has two flat slots
+    // (comment = Hebrew-family, commentEn = English). Map the 'en' entry to
+    // commentEn and the first non-empty non-'en' entry (covers 'he'/'he_MA')
+    // to comment.
+    final enComment = comment?['en'];
+    String? heComment;
+    if (comment != null) {
+      for (final e in comment!.entries) {
+        if (e.key != 'en' && e.value.isNotEmpty) {
+          heComment = e.value;
+          break;
+        }
+      }
+    }
+
     return MasterProduct(
       id: id,
       brand: brand,
       name: name,
       imageAsset: photoKey != null ? 'user_photo:$photoKey' : null,
+      comment: heComment,
+      commentEn: enComment,
       categoryId: categoryId,
       subCategoryId: subCategoryId,
       morningConfig: inMorning ? SlotConfig(order: 999, frequencyRule: rule) : null,
       eveningConfig: inEvening ? SlotConfig(order: 999, frequencyRule: rule) : null,
-      isDeprecated: false,
+      isDeprecated: isDeprecated,
       addedInVersion: 'custom',
       ingredients: ingredientsList,
     );
@@ -89,6 +108,7 @@ class UserCustomProduct {
     DateTime? lastModified,
     Map<String, String>? comment,
     Object? ingredients = _sentinel,
+    bool? isDeprecated,
   }) =>
       UserCustomProduct(
         id: id ?? this.id,
@@ -104,6 +124,7 @@ class UserCustomProduct {
         lastModified: lastModified ?? this.lastModified,
         comment: comment ?? this.comment,
         ingredients: ingredients == _sentinel ? this.ingredients : ingredients as String?,
+        isDeprecated: isDeprecated ?? this.isDeprecated,
       );
 }
 

@@ -22,6 +22,9 @@ class OliveYoungGlobalScraper implements RetailerSearchScraper {
       : _client = client ?? http.Client();
 
   @override
+  bool get supportsBarcodeSearch => false;
+
+  @override
   Future<ScannedProductInfo?> search(String query) async {
     if (kIsWeb) return null;
     try {

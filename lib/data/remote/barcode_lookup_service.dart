@@ -16,6 +16,86 @@ class BarcodeProductLookupService {
 
   Future<ScannedProductInfo?> lookup(String barcode) async {
     try {
+      // Run the two barcode-based tiers concurrently:
+      //  • Tier 1 — barcode-capable scrapers queried by the barcode (most
+      //    accurate; overrides the APIs for the fields it provides).
+      //  • Tier 2 — the 5 barcode-lookup APIs, merged among themselves.
+      final tiers = await Future.wait([
+        _scrapeByBarcode(barcode),
+        _lookupBarcodeApis(barcode),
+      ]);
+
+      // Tier 1 placed first → its non-null fields win over the APIs.
+      final base = _mergeInfos(barcode, [tiers[0], tiers[1]]);
+
+      // Tier 3 — name-based augmentation via the name-only scrapers fills gaps.
+      return _augmentWithScrapers(barcode, base);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Queries every barcode-capable scraper with the raw [barcode] and returns
+  /// the first result that carries useful, non-site-level data. The barcode is
+  /// an exact key, so no name-similarity check is needed.
+  Future<ScannedProductInfo?> _scrapeByBarcode(String barcode) async {
+    if (barcode.trim().isEmpty) return null;
+    final capable =
+        _scrapers.where((s) => s.supportsBarcodeSearch).toList();
+    if (capable.isEmpty) return null;
+
+    final results = await Future.wait(capable.map((s) => s.search(barcode)));
+
+    if (kDebugMode) {
+      for (var i = 0; i < results.length; i++) {
+        final r = results[i];
+        final label = capable[i].runtimeType.toString();
+        debugPrint('[Barcode:$barcode] $label(by-barcode): '
+            '${r == null ? '—' : '✓ name=${r.name} | brand=${r.brand}'}');
+      }
+    }
+
+    return results
+        .whereType<ScannedProductInfo>()
+        .where((r) => r.hasUsefulData && !_isSiteLevelName(r.name))
+        .firstOrNull;
+  }
+
+  /// Merges a priority-ordered list of [sources] into a single product:
+  /// first non-null value wins for each scalar field, images are concatenated
+  /// in order then deduped. Returns null when every source is null.
+  ScannedProductInfo? _mergeInfos(
+    String barcode,
+    List<ScannedProductInfo?> sources,
+  ) {
+    final present = sources.whereType<ScannedProductInfo>().toList();
+    if (present.isEmpty) return null;
+
+    String? pick(String? Function(ScannedProductInfo) sel) {
+      for (final s in present) {
+        final v = sel(s);
+        if (v != null) return v;
+      }
+      return null;
+    }
+
+    return ScannedProductInfo(
+      barcode: barcode,
+      name: pick((s) => s.name),
+      brand: pick((s) => s.brand),
+      imageUrls: _dedupImageUrls([for (final s in present) ...s.imageUrls]),
+      categoryHint: pick((s) => s.categoryHint),
+      ingredients: pick((s) => s.ingredients),
+      comment: pick((s) => s.comment),
+      quantity: pick((s) => s.quantity),
+    );
+  }
+
+  /// The 5 barcode-lookup APIs, merged among themselves (priority
+  /// OBF > OFF > UPC > InciBeauty > BarcodeSpider). Returns null when none
+  /// matched.
+  Future<ScannedProductInfo?> _lookupBarcodeApis(String barcode) async {
+    try {
       final results = await Future.wait([
         _lookupOpenBeautyFacts(barcode),
         _lookupOpenFoodFacts(barcode),
@@ -51,7 +131,7 @@ class BarcodeProductLookupService {
 
       if (obf == null && off == null && upc == null && inci == null && spider == null) {
         if (kDebugMode) debugPrint('[Barcode:$barcode] no source matched');
-        return _augmentWithScrapers(barcode, null);
+        return null;
       }
 
       // Priority: OBF > OFF > UPC > InciBeauty > BarcodeSpider
@@ -74,8 +154,8 @@ class BarcodeProductLookupService {
       }
 
       // Combine all candidate images across sources, priority OBF > OFF > UPC >
-      // InciBeauty, deduped (first occurrence wins).
-      final imageUrls = _dedupNonEmpty([
+      // InciBeauty, deduped at address level (first occurrence wins).
+      final imageUrls = _dedupImageUrls([
         ...?obf?.imageUrls,
         ...?off?.imageUrls,
         ...?upc?.imageUrls,
@@ -103,17 +183,92 @@ class BarcodeProductLookupService {
             'images(${merged.imageUrls.length})=${merged.imageUrls} | '
             'ingredients=${merged.ingredients} | comment=${merged.comment}');
       }
-      return _augmentWithScrapers(barcode, merged);
+      return merged;
     } catch (_) {
       return null;
     }
+  }
+
+  /// Looks a product up by its [name] (optionally narrowed by [brand]) instead
+  /// of a barcode — used by the manual "find the details for me" flow. The
+  /// barcode-only APIs can't help here, so this queries the [_scrapers] (which
+  /// include name-search sources) with a single combined query, then merges
+  /// their results the same way as the barcode path: first useful source wins
+  /// for each scalar field, later sources fill the gaps, and images are
+  /// appended deduped. Site-level / garbage names are rejected. Returns null
+  /// when nothing usable was found.
+  Future<ScannedProductInfo?> lookupByName(String name, {String? brand}) async {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty || _scrapers.isEmpty) return null;
+
+    final trimmedBrand = brand?.trim();
+    final query = (trimmedBrand != null && trimmedBrand.isNotEmpty)
+        ? '$trimmedBrand $trimmedName'
+        : trimmedName;
+
+    final results = await Future.wait(_scrapers.map((s) => s.search(query)));
+
+    if (kDebugMode) {
+      for (var i = 0; i < results.length; i++) {
+        final r = results[i];
+        final label = _scrapers[i].runtimeType.toString();
+        if (r == null) {
+          debugPrint('[ByName:"$query"] $label: —');
+        } else {
+          debugPrint('[ByName:"$query"] $label: ✓ '
+              'name=${r.name} | brand=${r.brand} | '
+              'images(${r.imageUrls.length})=${r.imageUrls} | '
+              'categoryHint=${r.categoryHint} | '
+              'ingredients=${r.ingredients} | comment=${r.comment}');
+        }
+      }
+    }
+
+    final useful = results
+        .whereType<ScannedProductInfo>()
+        .where((r) => r.hasUsefulData && !_isSiteLevelName(r.name))
+        .toList();
+    if (useful.isEmpty) return null;
+
+    String? mergedName;
+    String? mergedBrand;
+    String? categoryHint;
+    String? ingredients;
+    String? comment;
+    String? quantity;
+    final candidateImages = <String>[];
+
+    for (final r in useful) {
+      mergedName ??= r.name;
+      mergedBrand ??= r.brand;
+      categoryHint ??= r.categoryHint;
+      ingredients ??= r.ingredients;
+      comment ??= r.comment;
+      quantity ??= r.quantity;
+      candidateImages.addAll(r.imageUrls);
+    }
+
+    return ScannedProductInfo(
+      barcode: '',
+      name: mergedName,
+      brand: mergedBrand,
+      imageUrls: _dedupImageUrls(candidateImages),
+      categoryHint: categoryHint,
+      ingredients: ingredients,
+      comment: comment,
+      quantity: quantity,
+    );
   }
 
   Future<ScannedProductInfo?> _augmentWithScrapers(
     String barcode,
     ScannedProductInfo? base,
   ) async {
-    if (_scrapers.isEmpty) return base;
+    // Barcode-capable scrapers already ran by barcode in tier 1 — augment only
+    // with the name-only scrapers so we don't re-query them by a fuzzy name.
+    final nameScrapers =
+        _scrapers.where((s) => !s.supportsBarcodeSearch).toList();
+    if (nameScrapers.isEmpty) return base;
 
     final baseName = base != null && base.hasUsefulData ? base.name : null;
     final useNameQuery = baseName != null;
@@ -128,13 +283,13 @@ class BarcodeProductLookupService {
     }
 
     final scraperResults = await Future.wait(
-      _scrapers.map((s) => s.search(query)),
+      nameScrapers.map((s) => s.search(query)),
     );
 
     if (kDebugMode) {
       for (var i = 0; i < scraperResults.length; i++) {
         final r = scraperResults[i];
-        final label = _scrapers[i].runtimeType.toString();
+        final label = nameScrapers[i].runtimeType.toString();
         if (r == null) {
           debugPrint('[Barcode:$barcode] $label($query): —');
         } else {
@@ -158,7 +313,7 @@ class BarcodeProductLookupService {
         barcode: barcode,
         name: fallback.name,
         brand: fallback.brand,
-        imageUrls: fallback.imageUrls,
+        imageUrls: _dedupImageUrls(fallback.imageUrls),
         categoryHint: fallback.categoryHint,
         ingredients: fallback.ingredients,
         comment: fallback.comment,
@@ -166,13 +321,14 @@ class BarcodeProductLookupService {
       );
     }
 
-    // Augment: fill only null fields; append new images (deduped).
+    // Augment: fill only null fields; append scraper images after the base
+    // ones, deduped at address level (base copy of any shared image wins).
     String? brand = base.brand;
     String? categoryHint = base.categoryHint;
     String? ingredients = base.ingredients;
     String? comment = base.comment;
     String? quantity = base.quantity;
-    final imageUrls = List<String>.from(base.imageUrls);
+    final candidateImages = <String>[...base.imageUrls];
 
     for (final r in scraperResults.whereType<ScannedProductInfo>()) {
       brand ??= r.brand;
@@ -180,16 +336,14 @@ class BarcodeProductLookupService {
       ingredients ??= r.ingredients;
       comment ??= r.comment;
       quantity ??= r.quantity;
-      for (final url in r.imageUrls) {
-        if (!imageUrls.contains(url)) imageUrls.add(url);
-      }
+      candidateImages.addAll(r.imageUrls);
     }
 
     return ScannedProductInfo(
       barcode: barcode,
       name: base.name,
       brand: brand,
-      imageUrls: imageUrls,
+      imageUrls: _dedupImageUrls(candidateImages),
       categoryHint: categoryHint,
       ingredients: ingredients,
       comment: comment,
@@ -313,7 +467,7 @@ class BarcodeProductLookupService {
         barcode: barcode,
         name: name,
         brand: brand,
-        imageUrls: _dedupNonEmpty(images?.toList() ?? const []),
+        imageUrls: _dedupImageUrls(images?.toList() ?? const []),
         categoryHint: _nonEmpty(item['category'] as String?),
         // UPCItemDB's "description" is a marketing blurb, not INCI — treat it as
         // a comment, not ingredients.
@@ -429,15 +583,33 @@ class BarcodeProductLookupService {
   static String? _nonEmpty(String? s) =>
       (s == null || s.trim().isEmpty) ? null : s.trim();
 
-  /// Trims, drops empty/null entries, and dedupes preserving first occurrence.
-  static List<String> _dedupNonEmpty(List<String?> urls) {
+  /// Trims, drops empty/null entries, and dedupes image URLs at the **address
+  /// level** — preserving the first-seen original. Two URLs collapse when they
+  /// point at the same address ignoring scheme (http/https), host case, default
+  /// ports, an empty trailing `?`, and a trailing path slash. Distinct CDN size
+  /// variants (different paths) are intentionally kept.
+  static List<String> _dedupImageUrls(List<String?> urls) {
     final seen = <String>{};
     final result = <String>[];
     for (final raw in urls) {
       final url = _nonEmpty(raw);
-      if (url != null && seen.add(url)) result.add(url);
+      if (url != null && seen.add(_addressKey(url))) result.add(url);
     }
     return result;
+  }
+
+  /// Normalized comparison key for an image address (see [_dedupImageUrls]).
+  static String _addressKey(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) return url.toLowerCase();
+    final host = uri.host.toLowerCase();
+    final port = (uri.hasPort && uri.port != 80 && uri.port != 443)
+        ? ':${uri.port}'
+        : '';
+    var path = uri.path;
+    if (path.endsWith('/')) path = path.substring(0, path.length - 1);
+    // Scheme deliberately omitted so http/https fold together.
+    return '$host$port$path${uri.query.isEmpty ? '' : '?${uri.query}'}';
   }
 
   /// Gathers candidate image URLs from an Open(Beauty|Food)Facts product:
@@ -458,6 +630,6 @@ class BarcodeProductLookupService {
         }
       }
     }
-    return _dedupNonEmpty(urls);
+    return _dedupImageUrls(urls);
   }
 }

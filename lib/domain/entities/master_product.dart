@@ -125,7 +125,9 @@ class MasterProduct {
   }
 
   String localizedComment(String locale) =>
-      locale == 'en' ? (commentEn ?? comment ?? '') : (comment ?? '');
+      locale == 'en'
+          ? (commentEn ?? comment ?? '')
+          : (comment ?? commentEn ?? ''); // fall back to English when no Hebrew
 
   @override
   int get hashCode => Object.hash(

@@ -15,6 +15,9 @@ class IncidecoderScraper implements RetailerSearchScraper {
       : _client = client ?? http.Client();
 
   @override
+  bool get supportsBarcodeSearch => false;
+
+  @override
   Future<ScannedProductInfo?> search(String query) async {
     if (kIsWeb) return null;
     try {
@@ -38,12 +41,42 @@ class IncidecoderScraper implements RetailerSearchScraper {
           .timeout(const Duration(seconds: 8));
       if (productRes.statusCode != 200) return null;
 
-      return _parseProduct(productRes.body);
+      final result = _parseProduct(productRes.body);
+      if (result == null) return null;
+
+      // Reject false matches: if the parsed product name shares no word tokens
+      // with the original query, Incidecoder returned an unrelated product.
+      if (!_hasNameOverlap(query, result.name)) {
+        if (kDebugMode) {
+          debugPrint('[Incidecoder] false-match discarded '
+              '(query="$query", name=${result.name})');
+        }
+        return null;
+      }
+
+      return result;
     } catch (e) {
       if (kDebugMode) debugPrint('[Incidecoder] error: $e');
       return null;
     }
   }
+
+  /// Returns true if [productName] shares at least one meaningful word token
+  /// (length > 2) with [query], case-insensitively.
+  static bool _hasNameOverlap(String query, String? productName) {
+    if (productName == null) return false;
+    final queryTokens = _tokenize(query);
+    if (queryTokens.isEmpty) return true; // can't judge — allow
+    final nameTokens = _tokenize(productName);
+    return queryTokens.any(nameTokens.contains);
+  }
+
+  static Set<String> _tokenize(String s) => s
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^\w\s]'), ' ')
+      .split(RegExp(r'\s+'))
+      .where((t) => t.length > 2)
+      .toSet();
 
   /// First `/products/<slug>` href in the search results, skipping the
   /// "/products/create" call-to-action link.

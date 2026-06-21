@@ -21,6 +21,7 @@ import 'package:skincare_tracker/domain/repositories/master_content_repository.d
 import 'package:skincare_tracker/domain/entities/category_override.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
 import 'package:skincare_tracker/domain/services/product_classifier.dart';
+import 'package:skincare_tracker/data/remote/barcode_lookup_service.dart';
 import 'package:skincare_tracker/features/setup/add_custom_product_sheet.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
 
@@ -145,6 +146,52 @@ Widget _wrap({
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
       userDataRepositoryProvider.overrideWithValue(udr),
       productClassifierProvider.overrideWith((ref) async => classifier),
+    ],
+    child: MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('he'),
+      home: const Scaffold(
+        // These pre-gate tests exercise the full manual form directly; skip the
+        // smart-completion gate. The gate has its own dedicated test group.
+        body: AddCustomProductSheet(startRevealed: true),
+      ),
+    ),
+  );
+}
+
+/// Records by-name lookup calls and returns a fixed result. Used by the
+/// smart-completion gate tests.
+class _FakeLookupService extends BarcodeProductLookupService {
+  final ScannedProductInfo? result;
+  final List<String> nameQueries = [];
+  final List<String?> brandQueries = [];
+
+  _FakeLookupService(this.result);
+
+  @override
+  Future<ScannedProductInfo?> lookupByName(String name, {String? brand}) async {
+    nameQueries.add(name);
+    brandQueries.add(brand);
+    return result;
+  }
+}
+
+/// Mirror of [_wrap] but leaves the smart-completion gate ENABLED (the default
+/// production behavior) and optionally overrides the lookup service.
+Widget _wrapGated({
+  required MasterContent master,
+  required UserDataRepository udr,
+  required ProductClassifier classifier,
+  BarcodeProductLookupService? lookup,
+}) {
+  return ProviderScope(
+    overrides: [
+      masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
+      userDataRepositoryProvider.overrideWithValue(udr),
+      productClassifierProvider.overrideWith((ref) async => classifier),
+      if (lookup != null)
+        barcodeProductLookupServiceProvider.overrideWithValue(lookup),
     ],
     child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -1333,6 +1380,233 @@ void main() {
         findsNothing,
         reason: '"סריקה נוספת" must NOT appear in plain manual mode',
       );
+    });
+  });
+
+  // ── Group: smart-completion gate (manual add) ──────────────────────────────
+
+  group('smart-completion gate', () {
+    const findButton = 'מצאו לי את הפרטים';
+    const manualButton = 'אמלא ידנית במקום';
+    const cardTitle = 'השלמה חכמה מהאינטרנט';
+    const notFoundNote = 'לא מצאנו פרטים נוספים — אפשר למלא ידנית.';
+
+    testWidgets('fresh manual sheet shows the gate card and locks the form',
+        (tester) async {
+      await tester.pumpWidget(_wrapGated(
+        master: _masterWith([serumCat], []),
+        udr: _FakeUDR(),
+        classifier: _emptyClassifier(),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text(cardTitle), findsOneWidget);
+      expect(find.text(findButton), findsOneWidget);
+      expect(find.text(manualButton), findsOneWidget);
+      expect(find.text('שאר השדות ייפתחו אחרי ההשלמה'), findsOneWidget);
+      // The form below the gate is locked (non-interactive) while gated.
+      expect(
+        tester
+            .widget<IgnorePointer>(find.byKey(const ValueKey('manual-form-lock')))
+            .ignoring,
+        isTrue,
+      );
+    });
+
+    testWidgets('tapping "fill manually" reveals the form and hides the gate',
+        (tester) async {
+      await tester.pumpWidget(_wrapGated(
+        master: _masterWith([serumCat], []),
+        udr: _FakeUDR(),
+        classifier: _emptyClassifier(),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(manualButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text(cardTitle), findsNothing);
+      expect(find.text(findButton), findsNothing);
+      expect(
+        tester
+            .widget<IgnorePointer>(find.byKey(const ValueKey('manual-form-lock')))
+            .ignoring,
+        isFalse,
+        reason: 'the form must be interactive after revealing',
+      );
+    });
+
+    testWidgets(
+        '"find the details" runs the by-name lookup, prefills empty fields, '
+        'and reveals the form', (tester) async {
+      // No imageUrls here: the save path would otherwise try to fetch the
+      // remote image over the (unavailable) test network. Image prefill is
+      // covered by its own test below, which does not save.
+      final lookup = _FakeLookupService(const ScannedProductInfo(
+        barcode: '',
+        name: 'Generic SPF', // must NOT overwrite the typed name
+        brand: 'CeraVe',
+        categoryHint: 'sunscreen',
+        ingredients: 'Aqua, Avobenzone',
+      ));
+      final udr = _FakeUDR();
+
+      await tester.pumpWidget(_wrapGated(
+        master: _masterWith([spfCat], []),
+        udr: udr,
+        classifier: _emptyClassifier(),
+        lookup: lookup,
+      ));
+      await tester.pumpAndSettle();
+
+      // Type a name so the lookup button is enabled.
+      await tester.enterText(find.byType(TextField).first, 'Some SPF 50');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(findButton));
+      await tester.pumpAndSettle();
+
+      // The lookup was invoked with the typed name + brand (brand empty here).
+      expect(lookup.nameQueries, ['Some SPF 50']);
+      expect(lookup.brandQueries, [null]);
+
+      // Gate dismissed; form revealed.
+      expect(find.text(cardTitle), findsNothing);
+      // The user's typed name is preserved (not clobbered by the result).
+      expect(find.widgetWithText(TextField, 'Some SPF 50'), findsOneWidget);
+      // Brand was empty, so it gets prefilled from the lookup.
+      expect(find.widgetWithText(TextField, 'CeraVe'), findsOneWidget);
+
+      // Saving persists the looked-up ingredients and the hint-derived category.
+      await tester.scrollUntilVisible(
+        find.text('הוספה למדף'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('הוספה למדף'));
+      await tester.pumpAndSettle();
+
+      expect(udr.customUpserted, isNotEmpty);
+      final saved = udr.customUpserted.single;
+      expect(saved.name, 'Some SPF 50');
+      expect(saved.categoryId, 'cat-spf'); // resolved from categoryHint
+      expect(saved.ingredients, 'Aqua, Avobenzone');
+    });
+
+    testWidgets('a looked-up image is prefilled as a photo candidate',
+        (tester) async {
+      final lookup = _FakeLookupService(const ScannedProductInfo(
+        barcode: '',
+        name: 'Generic SPF',
+        imageUrls: ['https://e/spf.jpg'],
+      ));
+      await tester.pumpWidget(_wrapGated(
+        master: _masterWith([serumCat], []),
+        udr: _FakeUDR(),
+        classifier: _emptyClassifier(),
+        lookup: lookup,
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'Some SPF');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(findButton));
+      await tester.pumpAndSettle();
+
+      // The single-image preview (with replace/remove controls) is shown.
+      expect(find.text('החלפת תמונה'), findsOneWidget);
+      expect(find.text('הסרה'), findsOneWidget);
+    });
+
+    testWidgets('brand the user already typed is passed to the lookup query',
+        (tester) async {
+      final lookup = _FakeLookupService(null);
+      await tester.pumpWidget(_wrapGated(
+        master: _masterWith([serumCat], []),
+        udr: _FakeUDR(),
+        classifier: _emptyClassifier(),
+        lookup: lookup,
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'Niacinamide');
+      // Brand field is the second text field.
+      await tester.enterText(find.byType(TextField).at(1), 'The Ordinary');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(findButton));
+      await tester.pumpAndSettle();
+
+      expect(lookup.nameQueries, ['Niacinamide']);
+      expect(lookup.brandQueries, ['The Ordinary']);
+    });
+
+    testWidgets(
+        '"find the details" with no results reveals the form with a note',
+        (tester) async {
+      final lookup = _FakeLookupService(null);
+      await tester.pumpWidget(_wrapGated(
+        master: _masterWith([serumCat], []),
+        udr: _FakeUDR(),
+        classifier: _emptyClassifier(),
+        lookup: lookup,
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'Unknown Product');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(findButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text(cardTitle), findsNothing); // revealed
+      expect(find.text(notFoundNote), findsOneWidget);
+    });
+
+    testWidgets(
+        'classification is deferred while gated and runs once on "fill manually"',
+        (tester) async {
+      await tester.pumpWidget(_wrapGated(
+        master: _masterWith([exfoliateCat, serumCat], [salicylicSub]),
+        udr: _FakeUDR(),
+        classifier: _exfoliateClassifier(),
+      ));
+      await tester.pumpAndSettle();
+
+      // Typing a classifiable name must NOT resolve the category yet (no
+      // per-keystroke classification while the gate is up).
+      await tester.enterText(find.byType(TextField).first, 'salicylic serum');
+      await tester.pumpAndSettle();
+      expect(find.text('פילינג'), findsNothing,
+          reason: 'category must not auto-fill from typing while gated');
+
+      // Revealing via "fill manually" classifies once from the typed name.
+      await tester.tap(find.text(manualButton));
+      await tester.pumpAndSettle();
+      expect(find.text('פילינג'), findsOneWidget,
+          reason: 'category should resolve once the form is revealed');
+    });
+
+    testWidgets('"find the details" does nothing until a name is entered',
+        (tester) async {
+      final lookup = _FakeLookupService(
+        const ScannedProductInfo(barcode: '', name: 'X'),
+      );
+      await tester.pumpWidget(_wrapGated(
+        master: _masterWith([serumCat], []),
+        udr: _FakeUDR(),
+        classifier: _emptyClassifier(),
+        lookup: lookup,
+      ));
+      await tester.pumpAndSettle();
+
+      // No name typed → the button is disabled.
+      await tester.tap(find.text(findButton));
+      await tester.pumpAndSettle();
+
+      expect(lookup.nameQueries, isEmpty, reason: 'no lookup without a name');
+      expect(find.text(cardTitle), findsOneWidget, reason: 'still gated');
     });
   });
 }

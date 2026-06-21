@@ -11,6 +11,9 @@ class OpenBeautyFactsNameSearchScraper implements RetailerSearchScraper {
       : _client = client ?? http.Client();
 
   @override
+  bool get supportsBarcodeSearch => false;
+
+  @override
   Future<ScannedProductInfo?> search(String query) async {
     try {
       final uri = Uri.parse(

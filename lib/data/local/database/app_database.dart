@@ -53,7 +53,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -126,6 +126,10 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 14) {
             await m.createTable(productUseTimestamps);
+          }
+          if (from < 15) {
+            await m.addColumn(
+                userCustomProducts, userCustomProducts.isDeprecated);
           }
         },
       );

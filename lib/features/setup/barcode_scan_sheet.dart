@@ -14,6 +14,7 @@ import '../../domain/entities/scanned_product_info.dart';
 import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/product_thumb.dart';
+import '../../shared/widgets/soft_icon_button.dart';
 import 'add_custom_product_sheet.dart';
 
 enum _ScanState {
@@ -83,10 +84,10 @@ class BarcodeScanSheet extends StatelessWidget {
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded,
-                        color: AppColors.onSurfaceVariant),
-                    onPressed: () => Navigator.of(context).pop(),
+                  SoftIconButton(
+                    icon: Icons.close_rounded,
+                    iconColor: AppColors.onSurfaceVariant,
+                    onTap: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
@@ -1145,7 +1146,6 @@ class _ProductNotFoundState extends StatelessWidget {
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            height: 54,
             child: ElevatedButton.icon(
               onPressed: onAddManually,
               icon: const Icon(Icons.add_rounded, size: 20),
@@ -1160,6 +1160,8 @@ class _ProductNotFoundState extends StatelessWidget {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 elevation: 0,
+                minimumSize: const Size(double.infinity, 54),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(9999),
                 ),

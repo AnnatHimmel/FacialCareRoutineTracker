@@ -134,4 +134,45 @@ void main() {
     final row = rowWithName(rows, 'Cleanser');
     expect(row.ingredients, isNull);
   });
+
+  // REQ: isDeprecated column — soft-delete flag for user-added products.
+  // Products are never hard-deleted; instead they are marked deprecated so
+  // they disappear from active screens but remain visible in calendar history.
+
+  test('isDeprecated defaults to false for a new product', () async {
+    await db.userCustomProductsDao.upsert(
+      UserCustomProductsCompanion(
+        id: const Value('p7'),
+        name: const Value('New Serum'),
+        categoryId: const Value('cat-serum'),
+        inMorning: const Value(true),
+        inEvening: const Value(false),
+        isDaily: const Value(true),
+        lastModifiedMs: Value(DateTime(2026).millisecondsSinceEpoch),
+      ),
+    );
+
+    final rows = await db.userCustomProductsDao.watchAll().first;
+    final row = rowWithName(rows, 'New Serum');
+    expect(row.isDeprecated, isFalse);
+  });
+
+  test('isDeprecated round-trips a true value', () async {
+    await db.userCustomProductsDao.upsert(
+      UserCustomProductsCompanion(
+        id: const Value('p8'),
+        name: const Value('Deleted Product'),
+        categoryId: const Value('cat-serum'),
+        inMorning: const Value(true),
+        inEvening: const Value(false),
+        isDaily: const Value(true),
+        isDeprecated: const Value(true),
+        lastModifiedMs: Value(DateTime(2026).millisecondsSinceEpoch),
+      ),
+    );
+
+    final rows = await db.userCustomProductsDao.watchAll().first;
+    final row = rowWithName(rows, 'Deleted Product');
+    expect(row.isDeprecated, isTrue);
+  });
 }

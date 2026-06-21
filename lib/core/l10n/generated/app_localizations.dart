@@ -306,7 +306,7 @@ abstract class AppLocalizations {
   /// No description provided for @resetOrder.
   ///
   /// In he, this message translates to:
-  /// **'אפסי לסדר מומלץ'**
+  /// **'אפס לסדר מומלץ'**
   String get resetOrder;
 
   /// No description provided for @dataIntactConfirmation.
@@ -414,13 +414,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeNamesToggleHide.
   ///
   /// In he, this message translates to:
-  /// **'הסתירי שמות מוצרים'**
+  /// **'הסתר שמות מוצרים'**
   String get homeNamesToggleHide;
 
   /// No description provided for @homeNamesToggleShow.
   ///
   /// In he, this message translates to:
-  /// **'הציגי שמות מוצרים'**
+  /// **'הצג שמות מוצרים'**
   String get homeNamesToggleShow;
 
   /// No description provided for @homeNames.
@@ -924,7 +924,7 @@ abstract class AppLocalizations {
   /// No description provided for @catUsageSpf.
   ///
   /// In he, this message translates to:
-  /// **'כמות נדיבה (אורך אצבע) כשלב אחרון בבוקר, גם ביום מעונן.'**
+  /// **'כמות נדיבה (אורך אצבע - על שתי אצבעות) כשלב אחרון בבוקר, גם ביום מעונן.'**
   String get catUsageSpf;
 
   /// No description provided for @scheduleNoProducts.
@@ -1110,7 +1110,7 @@ abstract class AppLocalizations {
   /// No description provided for @orderInstruction.
   ///
   /// In he, this message translates to:
-  /// **'גררו את המוצרים כדי לסדר את השגרה שלכם'**
+  /// **'גררי את המוצרים כדי לסדר את השגרה שלך'**
   String get orderInstruction;
 
   /// No description provided for @orderNoProducts.
@@ -1356,7 +1356,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateBackupAction.
   ///
   /// In he, this message translates to:
-  /// **'גבה נתונים'**
+  /// **'גבי נתונים'**
   String get updateBackupAction;
 
   /// No description provided for @updateNewProducts.
@@ -2022,7 +2022,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcomeNeutral.
   ///
   /// In he, this message translates to:
-  /// **'ברוך הבא'**
+  /// **'ברוכה הבאה'**
   String get onboardingWelcomeNeutral;
 
   /// No description provided for @onboardingTellUsNeutral.
@@ -2592,7 +2592,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleContinueToOrder.
   ///
   /// In he, this message translates to:
-  /// **'המשך לסדר המריחה'**
+  /// **'המשיכי לסדר המריחה'**
   String get scheduleContinueToOrder;
 
   /// No description provided for @daySummaryNoteCount.
@@ -3266,6 +3266,48 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'מפרידים בפסיקים בין הרכיבים'**
   String get customProductIngredientsHelper;
+
+  /// No description provided for @customProductSmartCompleteTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השלמה חכמה מהאינטרנט'**
+  String get customProductSmartCompleteTitle;
+
+  /// No description provided for @customProductSmartCompleteBody.
+  ///
+  /// In he, this message translates to:
+  /// **'נמצא עבורכם קטגוריה, תמונה, רכיבים ותזמון לפי שם המוצר. כל פרט ניתן לעריכה אחר כך.'**
+  String get customProductSmartCompleteBody;
+
+  /// No description provided for @customProductSmartCompleteButton.
+  ///
+  /// In he, this message translates to:
+  /// **'מצאו לי את הפרטים'**
+  String get customProductSmartCompleteButton;
+
+  /// No description provided for @customProductSmartCompleteManual.
+  ///
+  /// In he, this message translates to:
+  /// **'אמלא ידנית במקום'**
+  String get customProductSmartCompleteManual;
+
+  /// No description provided for @customProductSmartCompleteLockNote.
+  ///
+  /// In he, this message translates to:
+  /// **'שאר השדות ייפתחו אחרי ההשלמה'**
+  String get customProductSmartCompleteLockNote;
+
+  /// No description provided for @customProductSmartCompleteSearching.
+  ///
+  /// In he, this message translates to:
+  /// **'מחפשים את הפרטים…'**
+  String get customProductSmartCompleteSearching;
+
+  /// No description provided for @customProductSmartCompleteNotFound.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מצאנו פרטים נוספים — אפשר למלא ידנית.'**
+  String get customProductSmartCompleteNotFound;
 
   /// No description provided for @unsavedChangesTitle.
   ///

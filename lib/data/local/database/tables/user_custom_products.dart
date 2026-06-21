@@ -15,6 +15,8 @@ class UserCustomProducts extends Table {
   TextColumn get commentJson => text().nullable()();
   TextColumn get brand => text().nullable()();
   TextColumn get ingredients => text().nullable()();
+  BoolColumn get isDeprecated =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
