@@ -1,40 +1,44 @@
 {
   "contentVersion": "1.1.0",
   "categories": [
-    {"id":"cat-cleanser-step1","name":{"he":"ניקוי שלב 1","en":"Cleanse — Step 1"},"order":1,"icon":"soap"},
-    {"id":"cat-cleanser-step2","name":{"he":"ניקוי שלב 2","en":"Cleanse — Step 2"},"order":2,"icon":"bubble_chart"},
-    {"id":"cat-exfoliate","name":{"he":"פילינג / חומצות","en":"Exfoliate"},"order":3,"icon":"grain"},
-    {"id":"cat-toner","name":{"he":"טונר / אסנס","en":"Toner / Essence"},"order":4,"icon":"water_drop"},
-    {"id":"cat-retinoid","name":{"he":"רטינואידים","en":"Retinoid"},"order":5,"icon":"science"},
-    {"id":"cat-serum","name":{"he":"סרום / טיפול","en":"Serum / Active"},"order":6,"icon":"auto_awesome"},
-    {"id":"cat-moisturizer","name":{"he":"לחות","en":"Moisturizer"},"order":7,"icon":"opacity"},
-    {"id":"cat-oil","name":{"he":"שמנים","en":"Face Oil"},"order":8,"icon":"spa"},
-    {"id":"cat-spf","name":{"he":"הגנה","en":"Protect (SPF)"},"order":9,"icon":"wb_sunny"}
+    {"id":"cat-cleanser","name":{"he":"ניקוי","en":"Cleanser"},"order":1,"icon":"soap"},
+    {"id":"cat-exfoliate","name":{"he":"פילינג / חומצות","en":"Exfoliate"},"order":2,"icon":"grain"},
+    {"id":"cat-toner","name":{"he":"טונר / אסנס","en":"Toner / Essence"},"order":3,"icon":"water_drop"},
+    {"id":"cat-retinoid","name":{"he":"רטינואידים","en":"Retinoid"},"order":4,"icon":"science"},
+    {"id":"cat-serum","name":{"he":"סרום / טיפול","en":"Serum / Active"},"order":5,"icon":"auto_awesome"},
+    {"id":"cat-moisturizer","name":{"he":"לחות","en":"Moisturizer"},"order":6,"icon":"opacity"},
+    {"id":"cat-oil","name":{"he":"שמנים","en":"Face Oil"},"order":7,"icon":"spa"},
+    {"id":"cat-spf","name":{"he":"הגנה","en":"Protect (SPF)"},"order":8,"icon":"wb_sunny"}
   ],
   "subcategories": [
     {
-      "id": "sub-oil-cleanser",
+      "id": "sub-first-cleanser",
       "name": {
-        "he": "ניקוי שמן",
-        "en": "Oil cleanser"
+        "he": "ניקוי שלב 1",
+        "en": "First Cleanse"
       },
-      "categoryId": "cat-cleanser-step1",
+      "categoryId": "cat-cleanser",
       "order": 1,
       "keywords": [
         "שמן ניקוי",
         "oil cleanser",
         "cleansing oil",
-        "cleansing balm"
+        "cleansing balm",
+        "balm cleanser",
+        "micellar water",
+        "cleansing water",
+        "מים מיצלריים",
+        "מסיר איפור"
       ]
     },
     {
-      "id": "sub-water-cleanser",
+      "id": "sub-second-cleanser",
       "name": {
-        "he": "ניקוי מים",
-        "en": "Water cleanser"
+        "he": "ניקוי שלב 2",
+        "en": "Second Cleanse"
       },
-      "categoryId": "cat-cleanser-step2",
-      "order": 1,
+      "categoryId": "cat-cleanser",
+      "order": 2,
       "keywords": [
         "סבון פנים",
         "water cleanser",
@@ -157,7 +161,18 @@
         "en": "Toner / Essence"
       },
       "categoryId": "cat-toner",
-      "order": 2
+      "order": 2,
+      "keywords": [
+        "toner",
+        "tonic",
+        "essence",
+        "first essence",
+        "mist",
+        "טונר",
+        "אסנס",
+        "מהות",
+        "lotion toner"
+      ]
     },
     {
       "id": "sub-retinoid",
@@ -487,7 +502,7 @@
       "id": "prod-039",
       "name": "Generic Cleansing Gel",
       "imageAsset": "assets/images/products/generic_cleansing_gel.jpg",
-      "categoryId": "cat-cleanser-step2",
+      "categoryId": "cat-cleanser",
       "comment": {
         "he": "ג'ל ניקוי פנים עדין על בסיס מים לניקוי יסודי של העור, הסרת שאריות לכלוך ורענון מבלי לייבש",
         "en": "Gentle water-based facial cleansing gel for thorough cleansing, removing dirt residue and refreshing without drying"
@@ -526,7 +541,7 @@
       "id": "prod-008",
       "name": "All Clean Balm",
       "imageAsset": "assets/images/products/heimish_all_clean_balm.jpg",
-      "categoryId": "cat-cleanser-step1",
+      "categoryId": "cat-cleanser",
       "comment": {
         "he": "באלם ניקוי להסרת איפור ומסנני הגנה",
         "en": "Cleansing balm for removing makeup and sunscreen"
@@ -545,7 +560,7 @@
       "id": "prod-009",
       "name": "All Clean Green Foam",
       "imageAsset": "assets/images/products/heimish_all_clean_green_foam.jpg",
-      "categoryId": "cat-cleanser-step2",
+      "categoryId": "cat-cleanser",
       "comment": {
         "he": "סבון פנים עדין ומאזן לחומציות מומלצת",
         "en": "Gentle, pH-balancing facial cleanser"

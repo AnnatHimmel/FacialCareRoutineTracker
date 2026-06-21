@@ -38,6 +38,7 @@ dependencies:
   mobile_scanner: ^7.2.0
   supabase_flutter: ^2.14.2
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
 
 dev_dependencies:
   flutter_test:

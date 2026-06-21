@@ -831,6 +831,12 @@ abstract class AppLocalizations {
   /// **'ניקוי פנים יומיומי ועדין.'**
   String get catHintCleanser2;
 
+  /// No description provided for @catHintCleanser.
+  ///
+  /// In he, this message translates to:
+  /// **'ניקוי פנים – שמן/באלם לשלב ראשון, ג׳ל/קצף לשלב שני. ערב בלבד.'**
+  String get catHintCleanser;
+
   /// No description provided for @catHintRetinoid.
   ///
   /// In he, this message translates to:
@@ -878,6 +884,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הקציפי עם מעט מים, עסי בעדינות בתנועות מעגליות ושטפי.'**
   String get catUsageCleanser2;
+
+  /// No description provided for @catUsageCleanser.
+  ///
+  /// In he, this message translates to:
+  /// **'שלב ראשון: עסי על עור יבש, המסי, שטפי. שלב שני: הקציפי עם מים ועסי בעדינות.'**
+  String get catUsageCleanser;
 
   /// No description provided for @catUsageRetinoid.
   ///
@@ -1686,7 +1698,7 @@ abstract class AppLocalizations {
   /// No description provided for @customProductSlotLabel.
   ///
   /// In he, this message translates to:
-  /// **'זמן שגרה'**
+  /// **'מתי משתמשים בו?'**
   String get customProductSlotLabel;
 
   /// No description provided for @customProductSlotBoth.
@@ -1698,14 +1710,20 @@ abstract class AppLocalizations {
   /// No description provided for @customProductFrequencyLabel.
   ///
   /// In he, this message translates to:
-  /// **'תדירות'**
+  /// **'תדירות שימוש'**
   String get customProductFrequencyLabel;
 
   /// No description provided for @customProductFrequencyWeekly.
   ///
   /// In he, this message translates to:
-  /// **'לא יומי'**
+  /// **'שבועי'**
   String get customProductFrequencyWeekly;
+
+  /// No description provided for @customProductFrequencyDaily.
+  ///
+  /// In he, this message translates to:
+  /// **'כל יום'**
+  String get customProductFrequencyDaily;
 
   /// No description provided for @customProductTimesPerWeekLabel.
   ///
@@ -1716,7 +1734,7 @@ abstract class AppLocalizations {
   /// No description provided for @customProductSave.
   ///
   /// In he, this message translates to:
-  /// **'הוספה לשגרה שלי'**
+  /// **'הוספה למדף'**
   String get customProductSave;
 
   /// No description provided for @customProductEditButton.
@@ -2037,6 +2055,18 @@ abstract class AppLocalizations {
   /// **'המוצר שלך לא ברשימה?'**
   String get addCustomProductCtaSub;
 
+  /// No description provided for @productSelManualCardTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספה ידנית'**
+  String get productSelManualCardTitle;
+
+  /// No description provided for @productSelManualCardSub.
+  ///
+  /// In he, this message translates to:
+  /// **'הזינו מוצר שלא נמצא בחיפוש'**
+  String get productSelManualCardSub;
+
   /// No description provided for @myProductsSearchHint.
   ///
   /// In he, this message translates to:
@@ -2052,7 +2082,7 @@ abstract class AppLocalizations {
   /// No description provided for @barcodeScanHint.
   ///
   /// In he, this message translates to:
-  /// **'כוונו את המצלמה לברקוד שעל האריזה'**
+  /// **'כוונו את הברקוד למסגרת לזיהוי אוטומטי'**
   String get barcodeScanHint;
 
   /// No description provided for @barcodeScanFound.
@@ -2138,6 +2168,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'כבר בשגרה שלך'**
   String get barcodeScanAlreadyInRoutine;
+
+  /// No description provided for @barcodeScanFromGallery.
+  ///
+  /// In he, this message translates to:
+  /// **'סריקה מתמונה בגלריה'**
+  String get barcodeScanFromGallery;
+
+  /// No description provided for @barcodeScanAnalyzing.
+  ///
+  /// In he, this message translates to:
+  /// **'מנתח תמונה…'**
+  String get barcodeScanAnalyzing;
 
   /// No description provided for @homeViewWeek.
   ///
@@ -3068,6 +3110,186 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'עריכת שגרת {slot}'**
   String weekGlanceEditRoutine(String slot);
+
+  /// No description provided for @customProductBrandLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'מותג'**
+  String get customProductBrandLabel;
+
+  /// No description provided for @customProductBrandHint.
+  ///
+  /// In he, this message translates to:
+  /// **'לדוגמה: The Ordinary'**
+  String get customProductBrandHint;
+
+  /// No description provided for @customProductCategoryHint.
+  ///
+  /// In he, this message translates to:
+  /// **'בחרו קטגוריה...'**
+  String get customProductCategoryHint;
+
+  /// No description provided for @customProductSubCategoryLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'תת־קטגוריה'**
+  String get customProductSubCategoryLabel;
+
+  /// No description provided for @customProductSubCategoryHint.
+  ///
+  /// In he, this message translates to:
+  /// **'בחרו תת־קטגוריה...'**
+  String get customProductSubCategoryHint;
+
+  /// No description provided for @customProductMoreDetails.
+  ///
+  /// In he, this message translates to:
+  /// **'פרטים נוספים (רשות)'**
+  String get customProductMoreDetails;
+
+  /// No description provided for @customProductScanTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מצאנו את המוצר!'**
+  String get customProductScanTitle;
+
+  /// No description provided for @customProductScanSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מילאנו את הפרטים מהסריקה — בדקו, התאימו במידת הצורך ואשרו הוספה למדף.'**
+  String get customProductScanSubtitle;
+
+  /// No description provided for @customProductAutofillBanner.
+  ///
+  /// In he, this message translates to:
+  /// **'מולא אוטומטית מהסריקה'**
+  String get customProductAutofillBanner;
+
+  /// No description provided for @customProductAutofillBannerSub.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר לערוך כל פרט לפני ההוספה'**
+  String get customProductAutofillBannerSub;
+
+  /// No description provided for @customProductReplacePhoto.
+  ///
+  /// In he, this message translates to:
+  /// **'החלפת תמונה'**
+  String get customProductReplacePhoto;
+
+  /// No description provided for @customProductRemovePhoto.
+  ///
+  /// In he, this message translates to:
+  /// **'הסרה'**
+  String get customProductRemovePhoto;
+
+  /// No description provided for @customProductScanAgain.
+  ///
+  /// In he, this message translates to:
+  /// **'סריקה נוספת'**
+  String get customProductScanAgain;
+
+  /// No description provided for @customProductScanImagesHeading.
+  ///
+  /// In he, this message translates to:
+  /// **'נמצאו {count} תמונות לבחירה — בחרו אחת לשמירה'**
+  String customProductScanImagesHeading(int count);
+
+  /// No description provided for @customProductScanImagesHint.
+  ///
+  /// In he, this message translates to:
+  /// **'התמונה שתבחרו תישמר עם המוצר. אפשר גם להעלות תמונה משלכם.'**
+  String get customProductScanImagesHint;
+
+  /// No description provided for @customProductScanOwnPhoto.
+  ///
+  /// In he, this message translates to:
+  /// **'תמונה משלי'**
+  String get customProductScanOwnPhoto;
+
+  /// No description provided for @barcodeScanWebTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'סריקה ממצלמה אינה זמינה בדפדפן'**
+  String get barcodeScanWebTitle;
+
+  /// No description provided for @barcodeScanWebSub.
+  ///
+  /// In he, this message translates to:
+  /// **'בחרו תמונה עם ברקוד מהגלריה'**
+  String get barcodeScanWebSub;
+
+  /// No description provided for @customProductFormSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מלאו את פרטי המוצר. שדות עם * הם חובה.'**
+  String get customProductFormSubtitle;
+
+  /// No description provided for @customProductWhenLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'מתי משתמשים בו?'**
+  String get customProductWhenLabel;
+
+  /// No description provided for @customProductSubCategoryDisabledHint.
+  ///
+  /// In he, this message translates to:
+  /// **'בחרו קטגוריה תחילה'**
+  String get customProductSubCategoryDisabledHint;
+
+  /// No description provided for @customProductSubCategoryNone.
+  ///
+  /// In he, this message translates to:
+  /// **'ללא'**
+  String get customProductSubCategoryNone;
+
+  /// No description provided for @customProductNotesLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'הערות'**
+  String get customProductNotesLabel;
+
+  /// No description provided for @customProductIngredientsLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'רכיבים (INCI)'**
+  String get customProductIngredientsLabel;
+
+  /// No description provided for @customProductIngredientsHint.
+  ///
+  /// In he, this message translates to:
+  /// **'Aqua, Glycerin, Niacinamide...'**
+  String get customProductIngredientsHint;
+
+  /// No description provided for @customProductIngredientsHelper.
+  ///
+  /// In he, this message translates to:
+  /// **'מפרידים בפסיקים בין הרכיבים'**
+  String get customProductIngredientsHelper;
+
+  /// No description provided for @unsavedChangesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שינויים לא שמורים'**
+  String get unsavedChangesTitle;
+
+  /// No description provided for @unsavedChangesMessage.
+  ///
+  /// In he, this message translates to:
+  /// **'האם לשמור את השינויים לפני יציאה?'**
+  String get unsavedChangesMessage;
+
+  /// No description provided for @discardChangesAction.
+  ///
+  /// In he, this message translates to:
+  /// **'בטל שינויים'**
+  String get discardChangesAction;
+
+  /// No description provided for @productDetailViewDetails.
+  ///
+  /// In he, this message translates to:
+  /// **'לפרטים המלאים'**
+  String get productDetailViewDetails;
 }
 
 class _AppLocalizationsDelegate

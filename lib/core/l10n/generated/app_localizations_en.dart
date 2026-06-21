@@ -408,6 +408,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get catHintCleanser2 => 'Gentle daily face cleanse.';
 
   @override
+  String get catHintCleanser =>
+      'Cleanse face — oil/balm for first cleanse, gel/foam for second. Evening only.';
+
+  @override
   String get catHintRetinoid => 'Skin renewal. Evening only, gradually.';
 
   @override
@@ -433,6 +437,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get catUsageCleanser2 =>
       'Lather with a little water, gently massage in circular motions and rinse.';
+
+  @override
+  String get catUsageCleanser =>
+      'Step 1: massage onto dry skin, dissolve, rinse. Step 2: lather with water, gently massage.';
 
   @override
   String get catUsageRetinoid =>
@@ -897,22 +905,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customProductCategoryLabel => 'Category';
 
   @override
-  String get customProductSlotLabel => 'Routine time';
+  String get customProductSlotLabel => 'When is it used?';
 
   @override
   String get customProductSlotBoth => 'Morning + Evening';
 
   @override
-  String get customProductFrequencyLabel => 'Frequency';
+  String get customProductFrequencyLabel => 'Usage frequency';
 
   @override
-  String get customProductFrequencyWeekly => 'Non Daily';
+  String get customProductFrequencyWeekly => 'Weekly';
+
+  @override
+  String get customProductFrequencyDaily => 'Every day';
 
   @override
   String get customProductTimesPerWeekLabel => 'Times per week:';
 
   @override
-  String get customProductSave => 'Add to my routine';
+  String get customProductSave => 'Add to shelf';
 
   @override
   String get customProductEditButton => 'Edit product';
@@ -1096,6 +1107,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addCustomProductCtaSub => 'Your product not in the list?';
 
   @override
+  String get productSelManualCardTitle => 'Add manually';
+
+  @override
+  String get productSelManualCardSub => 'Enter a product not found in search';
+
+  @override
   String get myProductsSearchHint => 'Search products...';
 
   @override
@@ -1103,7 +1120,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get barcodeScanHint =>
-      'Aim camera at the barcode on the product packaging';
+      'Align the barcode within the frame for automatic detection';
 
   @override
   String get barcodeScanFound => 'Barcode detected';
@@ -1147,6 +1164,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get barcodeScanAlreadyInRoutine => 'Already in your routine';
+
+  @override
+  String get barcodeScanFromGallery => 'Scan from gallery';
+
+  @override
+  String get barcodeScanAnalyzing => 'Analyzing image…';
 
   @override
   String get homeViewWeek => 'This Week';
@@ -1695,4 +1718,103 @@ class AppLocalizationsEn extends AppLocalizations {
   String weekGlanceEditRoutine(String slot) {
     return 'Edit $slot routine';
   }
+
+  @override
+  String get customProductBrandLabel => 'Brand';
+
+  @override
+  String get customProductBrandHint => 'e.g. The Ordinary';
+
+  @override
+  String get customProductCategoryHint => 'Choose a category...';
+
+  @override
+  String get customProductSubCategoryLabel => 'Sub-category';
+
+  @override
+  String get customProductSubCategoryHint => 'Choose a sub-category...';
+
+  @override
+  String get customProductMoreDetails => 'More details (optional)';
+
+  @override
+  String get customProductScanTitle => 'We found the product!';
+
+  @override
+  String get customProductScanSubtitle =>
+      'We filled in the details from the scan — review, adjust if needed, and confirm adding to your shelf.';
+
+  @override
+  String get customProductAutofillBanner => 'Auto-filled from scan';
+
+  @override
+  String get customProductAutofillBannerSub =>
+      'You can edit any detail before adding';
+
+  @override
+  String get customProductReplacePhoto => 'Replace photo';
+
+  @override
+  String get customProductRemovePhoto => 'Remove';
+
+  @override
+  String get customProductScanAgain => 'Scan another';
+
+  @override
+  String customProductScanImagesHeading(int count) {
+    return '$count images found — pick one to keep';
+  }
+
+  @override
+  String get customProductScanImagesHint =>
+      'The image you pick will be saved with the product. You can also upload your own.';
+
+  @override
+  String get customProductScanOwnPhoto => 'My own photo';
+
+  @override
+  String get barcodeScanWebTitle => 'Camera scan isn\'t available on web';
+
+  @override
+  String get barcodeScanWebSub =>
+      'Pick a photo with a barcode from your gallery';
+
+  @override
+  String get customProductFormSubtitle =>
+      'Fill in the product details. Fields marked with * are required.';
+
+  @override
+  String get customProductWhenLabel => 'When is it used?';
+
+  @override
+  String get customProductSubCategoryDisabledHint => 'Choose a category first';
+
+  @override
+  String get customProductSubCategoryNone => 'None';
+
+  @override
+  String get customProductNotesLabel => 'Notes';
+
+  @override
+  String get customProductIngredientsLabel => 'Ingredients (INCI)';
+
+  @override
+  String get customProductIngredientsHint => 'Aqua, Glycerin, Niacinamide...';
+
+  @override
+  String get customProductIngredientsHelper =>
+      'Separate ingredients with commas';
+
+  @override
+  String get unsavedChangesTitle => 'Unsaved Changes';
+
+  @override
+  String get unsavedChangesMessage =>
+      'Do you want to save your changes before leaving?';
+
+  @override
+  String get discardChangesAction => 'Discard';
+
+  @override
+  String get productDetailViewDetails => 'View full details';
 }

@@ -40,10 +40,10 @@ class _FakeDataSource implements RemoteContentDataSource {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-MasterContent _content(String contentVersion) => MasterContent(
+MasterContent _content(String contentVersion, {String? productId}) => MasterContent(
       products: [
         MasterProduct(
-          id: 'p-$contentVersion',
+          id: productId ?? 'p-$contentVersion',
           name: 'Product $contentVersion',
           categoryId: 'cat-1',
           isDeprecated: false,
@@ -126,10 +126,13 @@ void main() {
     });
 
     test('refresh updates in-memory and cache', () async {
-      final fresh = _content('fresh');
+      // Remote and bundled describe the same catalog (shared product ID);
+      // remote is the newer version. The merge keeps remote's product, so the
+      // refreshed content is exactly `fresh`.
+      final fresh = _content('fresh', productId: 'p-shared');
       final cache = SharedPrefsMasterContentCache();
       final repo = _makeRepo(
-        bundled: _content('bundled'),
+        bundled: _content('bundled', productId: 'p-shared'),
         remote: _FakeDataSource(response: fresh),
         cache: cache,
       );
@@ -176,9 +179,10 @@ void main() {
     });
 
     test('after refresh, load returns fresh content', () async {
-      final fresh = _content('fresh');
+      // Shared product ID so the remote-wins merge yields exactly `fresh`.
+      final fresh = _content('fresh', productId: 'p-shared');
       final repo = _makeRepo(
-        bundled: _content('bundled'),
+        bundled: _content('bundled', productId: 'p-shared'),
         remote: _FakeDataSource(response: fresh),
         cache: SharedPrefsMasterContentCache(),
       );

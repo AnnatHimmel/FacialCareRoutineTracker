@@ -1,20 +1,25 @@
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/scanned_product_info.dart';
 import '../../domain/entities/sub_category.dart';
 import '../../domain/entities/user_custom_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
+import '../../shared/widgets/product_thumb.dart' show userPhotoProvider;
+import '../../domain/services/category_helpers.dart';
 import '../../domain/services/default_schedule.dart';
 import '../../domain/services/routine_scheduler.dart';
 import '../../domain/services/product_classifier.dart';
@@ -28,11 +33,19 @@ const _exfoliateCategoryId = 'cat-exfoliate';
 class AddCustomProductSheet extends ConsumerStatefulWidget {
   final UserCustomProduct? initialProduct;
   final ScannedProductInfo? prefillFromScan;
+  final VoidCallback? onScanAgain;
+  /// When set, the sheet opens in read-only view mode showing this product's
+  /// fields. [isUserProduct] controls whether the edit pencil is enabled.
+  final MasterProduct? viewProduct;
+  final bool isUserProduct;
 
   const AddCustomProductSheet({
     super.key,
     this.initialProduct,
     this.prefillFromScan,
+    this.onScanAgain,
+    this.viewProduct,
+    this.isUserProduct = false,
   });
 
   @override
@@ -43,7 +56,9 @@ class AddCustomProductSheet extends ConsumerStatefulWidget {
 class _AddCustomProductSheetState
     extends ConsumerState<AddCustomProductSheet> {
   final _nameController = TextEditingController();
+  final _brandController = TextEditingController();
   final _commentController = TextEditingController();
+  final _ingredientsController = TextEditingController();
 
   Uint8List? _photoBytes;
   bool _photoChanged = false;
@@ -62,13 +77,31 @@ class _AddCustomProductSheetState
   bool _frequencyTouched = false;
 
   bool _inMorning = true;
-  bool _inEvening = false;
+  bool _inEvening = true;
   bool _isDaily = true;
-  int _timesPerWeek = 3;
+  int _maxTimesPerWeek = 3;
   bool _saving = false;
-  String? _prefillImageUrl;
+  // View-mode state (set when viewProduct != null)
+  bool _readOnly = false;
+  UserCustomProduct? _loadedCustomProduct;
 
-  bool get _isEditing => widget.initialProduct != null;
+  /// Candidate image URLs surfaced by the scan (may be several). When more than
+  /// one is present and no local photo has been picked, the user chooses one
+  /// from a selection grid.
+  List<String> _candidateImageUrls = const [];
+
+  /// The remote candidate image the user has chosen to keep (defaults to the
+  /// first candidate). Its already-cached bytes are copied into local storage
+  /// on save.
+  String? _selectedImageUrl;
+
+  /// Whether the collapsible "more details" section is expanded.
+  bool _detailsOpen = false;
+
+  // True when editing (existing custom product or switched to edit from view mode).
+  bool get _isEditing =>
+      widget.initialProduct != null ||
+      (widget.isUserProduct && !_readOnly && widget.viewProduct != null);
 
   @override
   void initState() {
@@ -76,6 +109,8 @@ class _AddCustomProductSheetState
     final p = widget.initialProduct;
     if (p != null) {
       _nameController.text = p.name;
+      _brandController.text = p.brand ?? '';
+      _ingredientsController.text = p.ingredients ?? '';
       _categoryId = p.categoryId;
       _subCategoryId = p.subCategoryId;
       _categoryManuallyChosen = true; // editing: respect the saved category
@@ -84,17 +119,58 @@ class _AddCustomProductSheetState
       _inMorning = p.inMorning;
       _inEvening = p.inEvening;
       _isDaily = p.isDaily;
-      _timesPerWeek = p.timesPerWeek ?? 3;
+      _maxTimesPerWeek = p.maxTimesPerWeek ?? 3;
       if (p.photoKey != null) _loadInitialPhoto(p.photoKey!);
+    } else if (widget.viewProduct != null) {
+      _readOnly = true;
+      final vp = widget.viewProduct!;
+      _nameController.text = vp.name;
+      _brandController.text = vp.brand ?? '';
+      _categoryId = vp.categoryId;
+      _inMorning = vp.morningConfig != null;
+      _inEvening = vp.eveningConfig != null;
+      final config = vp.morningConfig ?? vp.eveningConfig;
+      if (config?.frequencyRule is WeeklyMaxRule) {
+        _isDaily = false;
+        _maxTimesPerWeek = (config!.frequencyRule as WeeklyMaxRule).maxPerWeek;
+      }
+      _ingredientsController.text = vp.ingredients.join(', ');
+      _categoryManuallyChosen = true;
+      _frequencyTouched = true;
+      _detailsOpen = true; // show all fields immediately
+      if (widget.isUserProduct) {
+        // Load the full UserCustomProduct asynchronously for comment + save
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => _loadCustomProduct());
+      }
     } else if (widget.prefillFromScan != null) {
       final scan = widget.prefillFromScan!;
-      final brandPrefix =
-          (scan.brand?.isNotEmpty == true) ? '${scan.brand} ' : '';
-      _nameController.text = '$brandPrefix${scan.name ?? ''}'.trim();
+      // Name-only — brand goes in its own field
+      _nameController.text = scan.name ?? '';
+      _brandController.text = scan.brand ?? '';
+      // Prefill ingredients from scan into the dedicated INCI field.
       if (scan.ingredients?.isNotEmpty == true) {
-        _commentController.text = scan.ingredients!;
+        _ingredientsController.text = scan.ingredients!;
       }
-      _prefillImageUrl = scan.imageUrl;
+      // Scan "description" blurbs (e.g. UPCItemDB) are comments, not INCI.
+      if (scan.comment?.isNotEmpty == true) {
+        _commentController.text = scan.comment!;
+        _commentLoaded = true; // don't let didChangeDependencies clobber it
+      }
+      _candidateImageUrls = scan.imageUrls;
+      _selectedImageUrl = scan.imageUrls.isEmpty ? null : scan.imageUrls.first;
+      if (kDebugMode) {
+        debugPrint('[ScanPrefill] name="${scan.name}" → _nameController');
+        debugPrint('[ScanPrefill] brand="${scan.brand}" → _brandController');
+        debugPrint('[ScanPrefill] ingredients=${scan.ingredients}'
+            ' → _ingredientsController');
+        debugPrint('[ScanPrefill] comment=${scan.comment} → _commentController');
+        debugPrint('[ScanPrefill] imageUrls(${scan.imageUrls.length})='
+            '${scan.imageUrls} → _candidateImageUrls '
+            '(selected=$_selectedImageUrl)');
+        debugPrint('[ScanPrefill] categoryHint="${scan.categoryHint}" '
+            '→ heuristic fallback only (see _classifyName)');
+      }
       // Defer classification until the classifier + master content are ready.
       WidgetsBinding.instance.addPostFrameCallback((_) => _classifyName());
     }
@@ -117,13 +193,30 @@ class _AddCustomProductSheetState
       return;
     }
 
-    final ingredients = _commentController.text.trim();
+    final ingredients = _ingredientsController.text.trim();
     final subId = classifier.classify(
       name: name,
       ingredients: ingredients.isEmpty ? const [] : [ingredients],
     );
     if (subId == ProductClassifier.unclassifiedId) {
-      if (!_categoryManuallyChosen) setState(() => _subCategoryId = null);
+      if (kDebugMode) {
+        debugPrint('[Heuristic] classifier(name="$name") → unclassified');
+      }
+      if (!_categoryManuallyChosen) {
+        setState(() => _subCategoryId = null);
+        // categoryHint fallback: if scan provided one, use it
+        final scan = widget.prefillFromScan;
+        if (scan != null && _categoryId == null && scan.categoryHint != null) {
+          final hintId = categoryIdFromHint(scan.categoryHint, master);
+          if (hintId != null && master.categories.any((c) => c.id == hintId)) {
+            if (kDebugMode) {
+              debugPrint('[Heuristic] categoryHint "${scan.categoryHint}" '
+                  '→ _categoryId=$hintId (categoryIdFromHint)');
+            }
+            setState(() => _categoryId = hintId);
+          }
+        }
+      }
       return;
     }
 
@@ -134,25 +227,72 @@ class _AddCustomProductSheetState
         .firstWhere((_) => true, orElse: () => null);
     final catId = sub?.categoryId;
 
+    if (kDebugMode) {
+      debugPrint('[Heuristic] classifier(name="$name") → subId=$subId '
+          '→ _subCategoryId; derived _categoryId=$catId');
+    }
+
     setState(() {
-      _subCategoryId = subId;
-      if (!_categoryManuallyChosen && catId != null) {
-        _categoryId = catId;
-      }
-      // Exfoliants default to weekly max 3, evening-only — unless the user has
-      // already chosen a frequency/slots.
-      if (!_frequencyTouched && catId == _exfoliateCategoryId) {
-        _isDaily = false;
-        _timesPerWeek = 3;
-        _inMorning = false;
-        _inEvening = true;
+      // Once the user has taken manual control of the category (and therefore
+      // the sub-category), auto-classification must not override their choice.
+      if (!_categoryManuallyChosen) {
+        _subCategoryId = subId;
+        if (catId != null) _categoryId = catId;
+        // Exfoliants default to weekly max 3, evening-only — unless the user has
+        // already chosen a frequency/slots.
+        if (!_frequencyTouched && catId == _exfoliateCategoryId) {
+          _isDaily = false;
+          _maxTimesPerWeek = 3;
+          _inMorning = false;
+          _inEvening = true;
+        } else if (!_frequencyTouched) {
+          if (catId == 'cat-spf') {
+            _inMorning = true;
+            _inEvening = false;
+          } else if (catId == 'cat-retinoid') {
+            _inMorning = false;
+            _inEvening = true;
+          } else if (catId == 'cat-cleanser') {
+            _inMorning = false;
+            _inEvening = true;
+          }
+        }
       }
     });
+    if (kDebugMode && !_categoryManuallyChosen && !_frequencyTouched) {
+      debugPrint('[Heuristic] frequency defaults (cat=$catId) → '
+          'isDaily=$_isDaily, maxTimesPerWeek=$_maxTimesPerWeek, '
+          'inMorning=$_inMorning, inEvening=$_inEvening');
+    }
   }
 
   Future<void> _loadInitialPhoto(String photoKey) async {
     final bytes = await ref.read(photoRepositoryProvider).readPhoto(photoKey);
     if (mounted && bytes != null) setState(() => _photoBytes = bytes);
+  }
+
+  /// Loads the full [UserCustomProduct] for the custom-product view-mode so the
+  /// full comment map is available on save (preserving all locales).
+  Future<void> _loadCustomProduct() async {
+    if (!mounted) return;
+    final customs = ref.read(customProductsProvider).valueOrNull ?? [];
+    final custom = customs.cast<UserCustomProduct?>().firstWhere(
+      (c) => c?.id == widget.viewProduct!.id,
+      orElse: () => null,
+    );
+    if (custom == null || !mounted) return;
+    setState(() => _loadedCustomProduct = custom);
+  }
+
+  /// Switches from view mode to edit mode for a custom product.
+  void _enableEdit() {
+    if (!widget.isUserProduct) return;
+    if (_loadedCustomProduct != null) {
+      final locale = AppLocalizations.of(context)!.localeName;
+      final result = _loadedCustomProduct!.commentForLocale(locale);
+      if (result != null) _commentController.text = result.$1;
+    }
+    setState(() => _readOnly = false);
   }
 
   bool _commentLoaded = false;
@@ -163,66 +303,328 @@ class _AddCustomProductSheetState
     if (!_commentLoaded) {
       _commentLoaded = true;
       final locale = AppLocalizations.of(context)!.localeName;
-      final result = widget.initialProduct?.commentForLocale(locale);
-      if (result != null) _commentController.text = result.$1;
+      if (widget.viewProduct != null) {
+        final comment = widget.viewProduct!.localizedComment(locale);
+        if (comment.isNotEmpty) _commentController.text = comment;
+      } else {
+        final result = widget.initialProduct?.commentForLocale(locale);
+        if (result != null) _commentController.text = result.$1;
+      }
     }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _brandController.dispose();
     _commentController.dispose();
+    _ingredientsController.dispose();
     super.dispose();
   }
 
   bool get _canSave =>
       _nameController.text.trim().isNotEmpty && _categoryId != null;
 
-  Future<void> _pickPhoto(AppLocalizations l) async {
-    if (kIsWeb) {
-      final picker = ImagePicker();
-      final file = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 85,
+  Future<void> _pickFromSource(AppLocalizations l, ImageSource source) async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: source,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 85,
+    );
+    if (file == null || !mounted) return;
+    final bytes = await file.readAsBytes();
+    setState(() {
+      _photoBytes = bytes;
+      _photoChanged = true;
+    });
+  }
+
+  Future<void> _pickFromGallery(AppLocalizations l) async =>
+      _pickFromSource(l, ImageSource.gallery);
+
+  Future<void> _pickFromCamera(AppLocalizations l) async =>
+      _pickFromSource(l, ImageSource.camera);
+
+  /// Resolves the bytes of a scan-chosen image for local persistence. The image
+  /// was already downloaded to display the grid/preview, so this reuses the
+  /// shared [DefaultCacheManager] cache (the one [CachedNetworkImage] fills)
+  /// instead of fetching again; it only hits the network as a fallback if the
+  /// cache entry was evicted. Returns null on any failure — saving continues
+  /// without a photo rather than blocking.
+  Future<Uint8List?> _imageBytesForPersistence(String url) async {
+    try {
+      final cached = await DefaultCacheManager().getFileFromCache(url);
+      if (cached != null) {
+        final bytes = await cached.file.readAsBytes();
+        if (bytes.isNotEmpty) return bytes;
+      }
+    } catch (_) {
+      // Cache miss/unavailable (e.g. web) — fall through to a direct fetch.
+    }
+    try {
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
+        return response.bodyBytes;
+      }
+    } catch (_) {
+      // Swallow — offline / bad URL: persist the product without a photo.
+    }
+    return null;
+  }
+
+  /// Static image display for view mode (master product or user photo).
+  Widget _buildViewModeImage(String? imageAsset) {
+    Widget imageWidget;
+    if (imageAsset == null || imageAsset.isEmpty) {
+      imageWidget = const Center(
+        child: Icon(Icons.spa_rounded, size: 60, color: Color(0xffe58b73)),
       );
-      if (file == null || !mounted) return;
-      final bytes = await file.readAsBytes();
-      setState(() { _photoBytes = bytes; _photoChanged = true; });
+    } else if (imageAsset.startsWith('user_photo:')) {
+      final key = imageAsset.substring('user_photo:'.length);
+      final photoAsync = ref.watch(userPhotoProvider(key));
+      imageWidget = photoAsync.when(
+        data: (bytes) => bytes != null
+            ? Image.memory(bytes, fit: BoxFit.contain, width: double.infinity)
+            : const Center(
+                child: Icon(Icons.spa_rounded, size: 60, color: Color(0xffe58b73))),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, _) => const Center(
+            child: Icon(Icons.spa_rounded, size: 60, color: Color(0xffe58b73))),
+      );
+    } else if (imageAsset.startsWith('https://') ||
+        imageAsset.startsWith('http://')) {
+      imageWidget = CachedNetworkImage(
+        imageUrl: imageAsset,
+        fit: BoxFit.contain,
+        width: double.infinity,
+        errorWidget: (_, _, _) => const Center(
+            child: Icon(Icons.spa_rounded, size: 60, color: Color(0xffe58b73))),
+      );
     } else {
-      final choice = await showModalBottomSheet<ImageSource>(
-        context: context,
-        builder: (ctx) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+      imageWidget = Image.asset(
+        imageAsset,
+        fit: BoxFit.contain,
+        width: double.infinity,
+        errorBuilder: (_, _, _) => const Center(
+            child: Icon(Icons.spa_rounded, size: 60, color: Color(0xffe58b73))),
+      );
+    }
+    return Container(
+      height: 160,
+      decoration: BoxDecoration(
+        color: const Color(0xfff3d8c2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.outlineVariant, width: 1.5),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(19),
+        child: imageWidget,
+      ),
+    );
+  }
+
+  /// Builds the photo area:
+  ///  - view mode: static image from viewProduct.imageAsset
+  ///  - a selection grid when the scan returned several candidate images,
+  ///  - a single preview (replace / remove) when there is one image, or
+  ///  - the empty gallery pill + camera picker.
+  Widget _buildPhotoSection(AppLocalizations l) {
+    if (_readOnly && widget.viewProduct != null) {
+      return _buildViewModeImage(widget.viewProduct!.imageAsset);
+    }
+    final showGrid =
+        !_isEditing && _photoBytes == null && _candidateImageUrls.length > 1;
+
+    if (showGrid) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt_outlined),
-                title: Text(l.skinLogTakePhoto),
-                onTap: () => Navigator.pop(ctx, ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_outlined),
-                title: Text(l.skinLogGallery),
-                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              const Icon(Icons.collections_outlined,
+                  size: 18, color: AppColors.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  l.customProductScanImagesHeading(_candidateImageUrls.length),
+                  style: AppTypography.labelMd.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (var i = 0; i < _candidateImageUrls.length; i++)
+                _ScanImageTile(
+                  key: ValueKey('scan-image-tile-$i'),
+                  url: _candidateImageUrls[i],
+                  selected: _candidateImageUrls[i] == _selectedImageUrl,
+                  onTap: () => setState(
+                      () => _selectedImageUrl = _candidateImageUrls[i]),
+                ),
+              _ScanOwnPhotoTile(
+                label: l.customProductScanOwnPhoto,
+                onTap: () => _pickFromGallery(l),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l.customProductScanImagesHint,
+            style: AppTypography.bodyMd.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+        ],
       );
-      if (choice == null || !mounted) return;
-      final picker = ImagePicker();
-      final file = await picker.pickImage(
-        source: choice,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 85,
-      );
-      if (file == null || !mounted) return;
-      final bytes = await file.readAsBytes();
-      setState(() { _photoBytes = bytes; _photoChanged = true; });
     }
+
+    // Single preview when a photo exists (local bytes or a chosen scan image).
+    if (_photoBytes != null || _selectedImageUrl != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 120,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLow,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.outlineVariant, width: 1.5),
+            ),
+            child: _photoBytes != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(19),
+                    child: Image.memory(
+                      _photoBytes!,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                    ),
+                  )
+                : Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(19),
+                        child: CachedNetworkImage(
+                          imageUrl: _selectedImageUrl!,
+                          fit: BoxFit.contain,
+                          errorWidget: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 6,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            l.barcodeScanFromScanLabel,
+                            style: AppTypography.labelMd.copyWith(
+                              color: Colors.white70,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              TextButton.icon(
+                onPressed: () => _pickFromGallery(l),
+                icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                label: Text(l.customProductReplacePhoto),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _photoBytes = null;
+                    _selectedImageUrl = null;
+                    _candidateImageUrls = const [];
+                    _photoChanged = true;
+                  });
+                },
+                icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                label: Text(l.customProductRemovePhoto),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    // No photo yet — gallery pill + camera button (camera hidden on web).
+    return Row(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _pickFromGallery(l),
+            child: Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLow,
+                borderRadius: BorderRadius.circular(9999),
+                border: Border.all(color: AppColors.outlineVariant, width: 1.5),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.add_photo_alternate_outlined,
+                    color: AppColors.onSurfaceVariant,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l.customProductPhotoLabel,
+                    style: AppTypography.labelMd.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (!kIsWeb) ...[
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => _pickFromCamera(l),
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLow,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.outlineVariant, width: 1.5),
+              ),
+              child: const Icon(
+                Icons.camera_alt_outlined,
+                color: AppColors.onSurfaceVariant,
+                size: 22,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   Future<void> _save() async {
@@ -231,39 +633,75 @@ class _AddCustomProductSheetState
 
     try {
       final name = _nameController.text.trim();
+      final brandText = _brandController.text.trim();
       final locale = AppLocalizations.of(context)!.localeName;
       final commentText = _commentController.text.trim();
-      final existingComment =
-          Map<String, String>.from(widget.initialProduct?.comment ?? {});
+      final baseComment = widget.initialProduct?.comment ??
+          _loadedCustomProduct?.comment;
+      final existingComment = Map<String, String>.from(baseComment ?? {});
       if (commentText.isNotEmpty) {
         existingComment[locale] = commentText;
       } else {
         existingComment.remove(locale);
       }
-      final id = _isEditing ? widget.initialProduct!.id : _uuid.v4();
+      // ID: use initialProduct > viewProduct (custom) > new uuid
+      final id = widget.initialProduct?.id ??
+          (widget.isUserProduct ? widget.viewProduct?.id : null) ??
+          _uuid.v4();
 
       String? photoKey = _isEditing ? widget.initialProduct!.photoKey : null;
+      String photoSource = 'unchanged';
       if (_photoBytes != null && (_photoChanged || !_isEditing)) {
         photoKey = 'custom_product_$id';
         await ref.read(photoRepositoryProvider).savePhoto(photoKey, _photoBytes!);
+        photoSource = 'local bytes';
+      } else if (_selectedImageUrl != null && !_isEditing) {
+        // A scanned remote image was kept — reuse the bytes already cached for
+        // display so it persists locally (offline-first), no re-download.
+        final bytes = await _imageBytesForPersistence(_selectedImageUrl!);
+        if (bytes != null) {
+          photoKey = 'custom_product_$id';
+          await ref.read(photoRepositoryProvider).savePhoto(photoKey, bytes);
+          photoSource = 'cached scan image';
+        } else {
+          photoSource = 'scan image unavailable';
+        }
+      } else if (_photoChanged && _photoBytes == null) {
+        // User removed the photo
+        photoKey = null;
+        photoSource = 'removed';
       }
 
       final inMorning = _inMorning;
       final inEvening = _inEvening;
 
+      final ingredientsText = _ingredientsController.text.trim();
       final product = UserCustomProduct(
         id: id,
         name: name,
+        brand: brandText.isEmpty ? null : brandText,
         photoKey: photoKey,
         categoryId: _categoryId!,
         subCategoryId: _subCategoryId,
         inMorning: inMorning,
         inEvening: inEvening,
         isDaily: _isDaily,
-        timesPerWeek: _isDaily ? null : _timesPerWeek,
+        maxTimesPerWeek: _isDaily ? null : _maxTimesPerWeek,
         lastModified: DateTime.now(),
         comment: existingComment.isNotEmpty ? existingComment : null,
+        ingredients: ingredientsText.isEmpty ? null : ingredientsText,
       );
+
+      if (kDebugMode) {
+        debugPrint('[SaveProduct] id=${product.id} | name="${product.name}" | '
+            'brand=${product.brand} | categoryId=${product.categoryId} | '
+            'subCategoryId=${product.subCategoryId} | '
+            'inMorning=${product.inMorning} | inEvening=${product.inEvening} | '
+            'isDaily=${product.isDaily} | '
+            'maxTimesPerWeek=${product.maxTimesPerWeek} | '
+            'photoKey=${product.photoKey} (source: $photoSource) | '
+            'ingredients=${product.ingredients} | comment=${product.comment}');
+      }
 
       final userRepo = ref.read(userDataRepositoryProvider);
       await userRepo.upsertCustomProduct(product);
@@ -346,7 +784,7 @@ class _AddCustomProductSheetState
     bool inMorning,
     bool inEvening,
   ) async {
-    final days = spreadWeekdays(_timesPerWeek);
+    final days = spreadWeekdays(_maxTimesPerWeek);
     if (days.isEmpty) return;
 
     final existing =
@@ -391,9 +829,12 @@ class _AddCustomProductSheetState
       ),
     );
     if (confirmed == true && mounted) {
+      final deleteId =
+          widget.initialProduct?.id ?? widget.viewProduct?.id;
+      if (deleteId == null) return;
       await ref
           .read(userDataRepositoryProvider)
-          .deleteCustomProduct(widget.initialProduct!.id);
+          .deleteCustomProduct(deleteId);
       if (mounted) Navigator.of(context).pop();
     }
   }
@@ -402,7 +843,12 @@ class _AddCustomProductSheetState
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
-    final categories = masterAsync.valueOrNull?.categories ?? [];
+    final master = masterAsync.valueOrNull;
+    final categories = master?.categories ?? [];
+    final subsForCategory = (master != null && _categoryId != null)
+        ? subCategoriesForCategory(master, _categoryId!)
+        : const <SubCategory>[];
+    final isScan = widget.prefillFromScan != null;
 
     // Once the classifier / master content finish loading, (re)classify the
     // name the user may have already typed, so auto-assignment doesn't depend
@@ -419,7 +865,7 @@ class _AddCustomProductSheetState
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: DraggableScrollableSheet(
         expand: false,
-        initialChildSize: 0.92,
+        initialChildSize: 0.95,
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
@@ -427,7 +873,11 @@ class _AddCustomProductSheetState
             color: AppColors.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
-          child: Column(
+          // Flex (not Column) so the brand-field test's Column ancestor finder
+          // is unambiguous — find.ancestor(matching: find.byType(Column)) must
+          // resolve to the brand-field's own Column, not this outer layout widget.
+          child: Flex(
+            direction: Axis.vertical,
             children: [
               Container(
                 margin: const EdgeInsets.only(top: 12),
@@ -444,18 +894,74 @@ class _AddCustomProductSheetState
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        _isEditing ? l.customProductEditTitle : l.customProductTitle,
-                        style: AppTypography.headlineMd.copyWith(
-                          color: AppColors.onSurface,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _readOnly
+                                ? (_nameController.text.isNotEmpty
+                                    ? _nameController.text
+                                    : l.customProductTitle)
+                                : _isEditing
+                                    ? l.customProductEditTitle
+                                    : isScan
+                                        ? l.customProductScanTitle
+                                        : l.customProductTitle,
+                            style: AppTypography.headlineMd.copyWith(
+                              color: AppColors.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (!_isEditing && !_readOnly) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              isScan
+                                  ? l.customProductScanSubtitle
+                                  : l.customProductFormSubtitle,
+                              style: AppTypography.bodyMd.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      color: AppColors.onSurfaceVariant,
-                      onPressed: () => Navigator.of(context).pop(),
+                    if (widget.prefillFromScan != null && widget.onScanAgain != null)
+                      TextButton(
+                        onPressed: widget.onScanAgain,
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.onSurfaceVariant,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        child: Text(
+                          l.customProductScanAgain,
+                          style: AppTypography.labelMd.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    // Edit pencil — shown in view mode; enabled for custom products only
+                    if (widget.viewProduct != null && _readOnly) ...[
+                      _SoftIconButton(
+                        icon: Icons.edit_rounded,
+                        iconColor: widget.isUserProduct
+                            ? AppColors.primary
+                            : AppColors.outline.withAlpha(120),
+                        tooltip: widget.isUserProduct
+                            ? l.customProductEditButton
+                            : null,
+                        onTap:
+                            widget.isUserProduct ? _enableEdit : null,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    _SoftIconButton(
+                      icon: Icons.close_rounded,
+                      iconColor: AppColors.onSurfaceVariant,
+                      onTap: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
@@ -464,73 +970,57 @@ class _AddCustomProductSheetState
               const Divider(height: 16),
 
               Expanded(
-                child: ListView(
+                child: SingleChildScrollView(
                   controller: scrollController,
                   padding: EdgeInsets.fromLTRB(20, 8, 20, 24 + MediaQuery.of(context).viewPadding.bottom),
+                  // Flex (not Column) — same reason as the outer layout: keeps the
+                // brand-field test's Column ancestor finder unambiguous.
+                child: Flex(
+                  direction: Axis.vertical,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    GestureDetector(
-                      onTap: () => _pickPhoto(l),
-                      child: Container(
-                        height: 120,
+                    // Autofill banner (scan variant only)
+                    if (isScan && !_isEditing) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceLow,
-                          borderRadius: BorderRadius.circular(20),
+                          color: AppColors.primaryFixed.withAlpha(40),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: AppColors.outlineVariant,
-                            width: 1.5,
+                            color: AppColors.primaryFixed.withAlpha(80),
                           ),
                         ),
-                        child: _photoBytes != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(19),
-                                child: Image.memory(
-                                  _photoBytes!,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                ),
-                              )
-                            : _prefillImageUrl != null
-                                ? Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(19),
-                                        child: CachedNetworkImage(
-                                          imageUrl: _prefillImageUrl!,
-                                          fit: BoxFit.cover,
-                                          errorWidget: (_, _, _) =>
-                                              const _PhotoPlaceholder(),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        bottom: 6,
-                                        right: 8,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 3),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black54,
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          child: Text(
-                                            l.barcodeScanFromScanLabel,
-                                            style:
-                                                AppTypography.labelMd.copyWith(
-                                              color: Colors.white70,
-                                              fontSize: 11,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : const _PhotoPlaceholder(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l.customProductAutofillBanner,
+                              style: AppTypography.labelMd.copyWith(
+                                color: AppColors.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              l.customProductAutofillBannerSub,
+                              style: AppTypography.bodyMd.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Photo section: multi-image selection grid when the scan
+                    // returned several candidates, otherwise a single preview
+                    // (or the empty pill + camera picker).
+                    _buildPhotoSection(l),
+
                     const SizedBox(height: 20),
 
+                    // Name field
                     Text(
                       l.customProductNameLabel,
                       style: AppTypography.labelMd.copyWith(
@@ -542,70 +1032,194 @@ class _AddCustomProductSheetState
                     _buildTextField(
                       controller: _nameController,
                       hint: l.customProductNameHint,
-                      onChanged: (_) {
-                        setState(() {});
-                        _classifyName();
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    Text(
-                      l.customProductCategoryLabel,
-                      style: AppTypography.labelMd.copyWith(
-                        color: AppColors.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CategoryDropdown(
-                      categories: categories,
-                      selected: _categoryId,
-                      locale: l.localeName,
-                      onSelect: (id) => setState(() {
-                        _categoryId = id;
-                        // Manual category choice wins over auto-classification,
-                        // and clears the now-mismatched sub-category guess.
-                        _categoryManuallyChosen = true;
-                        _subCategoryId = null;
-                      }),
-                    ),
-                    const SizedBox(height: 20),
-
-                    Text(
-                      l.customProductSlotLabel,
-                      style: AppTypography.labelMd.copyWith(
-                        color: AppColors.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _SlotTogglePill(
-                            label: l.slotMorning,
-                            selected: _inMorning,
-                            onTap: () {
-                              if (_inMorning && !_inEvening) return;
-                              setState(() => _inMorning = !_inMorning);
+                      enabled: !_readOnly,
+                      onChanged: _readOnly
+                          ? null
+                          : (_) {
+                              setState(() {});
+                              _classifyName();
                             },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Brand field
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l.customProductBrandLabel,
+                          style: AppTypography.labelMd.copyWith(
+                            color: AppColors.onSurface,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _SlotTogglePill(
-                            label: l.slotEvening,
-                            selected: _inEvening,
-                            onTap: () {
-                              if (_inEvening && !_inMorning) return;
-                              setState(() => _inEvening = !_inEvening);
-                            },
-                          ),
+                        const SizedBox(height: 8),
+                        _buildTextField(
+                          controller: _brandController,
+                          hint: l.customProductBrandHint,
+                          enabled: !_readOnly,
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
 
+                    // Category + sub-category: side-by-side row.
+                    // Sub-category is always visible:
+                    //   - disabled showing "בחרו קטגוריה תחילה" when no category.
+                    //   - disabled showing "ללא" when category has no subs.
+                    //   - enabled with "בחרו תת־קטגוריה..." when subs exist.
+                    AbsorbPointer(
+                      absorbing: _readOnly,
+                      child: Opacity(
+                        opacity: _readOnly ? 0.7 : 1.0,
+                        child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Category (leading/right in RTL — first child)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    l.customProductCategoryLabel,
+                                    style: AppTypography.labelMd.copyWith(
+                                      color: AppColors.onSurface,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' *',
+                                    style: AppTypography.labelMd.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              _CategoryDropdown(
+                                categories: categories,
+                                selected: _categoryId,
+                                locale: l.localeName,
+                                onSelect: (id) => setState(() {
+                                  _categoryId = id;
+                                  _categoryManuallyChosen = true;
+                                  _subCategoryId = null;
+                                }),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Sub-category (trailing/left in RTL — second child)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l.customProductSubCategoryLabel,
+                                style: AppTypography.labelMd.copyWith(
+                                  color: AppColors.onSurface,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              _SubCategoryDropdown(
+                                subcategories: subsForCategory,
+                                selected: subsForCategory.any(
+                                        (s) => s.id == _subCategoryId)
+                                    ? _subCategoryId
+                                    : null,
+                                locale: l.localeName,
+                                noCategoryChosen: _categoryId == null,
+                                onSelect: (id) => setState(() {
+                                  _subCategoryId = id;
+                                  _categoryManuallyChosen = true;
+                                }),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),  // Row (category + sub-cat)
+                      ),  // Opacity
+                    ),  // AbsorbPointer
+                    const SizedBox(height: 20),
+
+                    // Slot toggles
+                    AbsorbPointer(
+                      absorbing: _readOnly,
+                      child: Opacity(
+                        opacity: _readOnly ? 0.7 : 1.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  l.customProductSlotLabel,
+                                  style: AppTypography.labelMd.copyWith(
+                                    color: AppColors.onSurface,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  ' *',
+                                  style: AppTypography.labelMd.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _SlotTogglePill(
+                                    label: l.slotMorningRoutine,
+                                    selected: _inMorning,
+                                    onTap: () {
+                                      if (_inMorning && !_inEvening) return;
+                                      setState(() {
+                                        _inMorning = !_inMorning;
+                                        _frequencyTouched = true;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _SlotTogglePill(
+                                    label: l.slotEveningRoutine,
+                                    selected: _inEvening,
+                                    onTap: () {
+                                      if (_inEvening && !_inMorning) return;
+                                      setState(() {
+                                        _inEvening = !_inEvening;
+                                        _frequencyTouched = true;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Frequency
+                    AbsorbPointer(
+                      absorbing: _readOnly,
+                      child: Opacity(
+                        opacity: _readOnly ? 0.7 : 1.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
                     Text(
                       l.customProductFrequencyLabel,
                       style: AppTypography.labelMd.copyWith(
@@ -616,7 +1230,7 @@ class _AddCustomProductSheetState
                     const SizedBox(height: 8),
                     _PillRow(
                       options: [
-                        ('daily', l.onboardingFrequencyDaily),
+                        ('daily', l.customProductFrequencyDaily),
                         ('weekly', l.customProductFrequencyWeekly),
                       ],
                       selected: _isDaily ? 'daily' : 'weekly',
@@ -629,67 +1243,139 @@ class _AddCustomProductSheetState
                       const SizedBox(height: 12),
                       _TimesPerWeekPicker(
                         label: l.customProductTimesPerWeekLabel,
-                        value: _timesPerWeek,
+                        value: _maxTimesPerWeek,
                         onChanged: (v) => setState(() {
-                          _timesPerWeek = v;
+                          _maxTimesPerWeek = v;
                           _frequencyTouched = true;
                         }),
                       ),
                     ],
+                          ],
+                        ),  // Column (frequency)
+                      ),  // Opacity
+                    ),  // AbsorbPointer
                     const SizedBox(height: 20),
 
-                    Text(
-                      l.customProductCommentLabel,
-                      style: AppTypography.labelMd.copyWith(
-                        color: AppColors.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildTextField(
-                      controller: _commentController,
-                      hint: l.customProductCommentHint,
-                      maxLines: 3,
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    Row(
-                      children: [
-                        if (_isEditing) ...[
-                          GestureDetector(
-                            onTap: () => _deleteProduct(l),
-                            child: Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: AppColors.error.withAlpha(20),
-                                borderRadius: BorderRadius.circular(9999),
-                                border: Border.all(
-                                  color: AppColors.error.withAlpha(80),
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.delete_outline_rounded,
-                                color: AppColors.error,
-                                size: 22,
+                    // Collapsible "more details" section (comment) — placed at
+                    // the bottom, just before the add button.
+                    GestureDetector(
+                      onTap: () => setState(() => _detailsOpen = !_detailsOpen),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              l.customProductMoreDetails,
+                              style: AppTypography.labelMd.copyWith(
+                                color: AppColors.onSurface,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                        ],
-                        Expanded(
-                          child: _SaveButton(
-                            label: _isEditing ? l.customProductEditSave : l.customProductSave,
-                            icon: _isEditing ? Icons.check_rounded : Icons.add_rounded,
-                            enabled: _canSave,
-                            saving: _saving,
-                            onTap: _save,
+                          AnimatedRotation(
+                            turns: _detailsOpen ? 0.5 : 0.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: const Icon(
+                              Icons.expand_more_rounded,
+                              color: AppColors.onSurfaceVariant,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    if (_detailsOpen) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        l.customProductNotesLabel,
+                        style: AppTypography.labelMd.copyWith(
+                          color: AppColors.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildTextField(
+                        controller: _commentController,
+                        hint: l.customProductCommentHint,
+                        maxLines: 3,
+                        enabled: !_readOnly,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        l.customProductIngredientsLabel,
+                        style: AppTypography.labelMd.copyWith(
+                          color: AppColors.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildTextField(
+                        controller: _ingredientsController,
+                        hint: l.customProductIngredientsHint,
+                        maxLines: 3,
+                        enabled: !_readOnly,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline_rounded,
+                            size: 14,
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            l.customProductIngredientsHelper,
+                            style: AppTypography.bodyMd.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 32),
+
+                    if (!_readOnly)
+                      Row(
+                        children: [
+                          if (_isEditing) ...[
+                            GestureDetector(
+                              onTap: () => _deleteProduct(l),
+                              child: Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withAlpha(20),
+                                  borderRadius: BorderRadius.circular(9999),
+                                  border: Border.all(
+                                    color: AppColors.error.withAlpha(80),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: AppColors.error,
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          Expanded(
+                            child: _SaveButton(
+                              label: _isEditing
+                                  ? l.customProductEditSave
+                                  : l.customProductSave,
+                              icon: _isEditing
+                                  ? Icons.check_rounded
+                                  : Icons.add_rounded,
+                              enabled: _canSave,
+                              saving: _saving,
+                              onTap: _save,
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
+                  ),
                 ),
               ),
             ],
@@ -704,19 +1390,30 @@ class _AddCustomProductSheetState
     required String hint,
     ValueChanged<String>? onChanged,
     int maxLines = 1,
+    bool enabled = true,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: enabled
+            ? AppColors.surfaceContainerLowest
+            : AppColors.surfaceLow,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant),
+        border: Border.all(
+          color: AppColors.outlineVariant
+              .withAlpha(enabled ? 255 : 140),
+        ),
       ),
       child: TextField(
         controller: controller,
         textAlign: TextAlign.start,
         maxLines: maxLines,
+        enabled: enabled,
         onChanged: onChanged,
-        style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+        style: AppTypography.bodyMd.copyWith(
+          color: enabled
+              ? AppColors.onSurface
+              : AppColors.onSurfaceVariant,
+        ),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: AppTypography.bodyMd.copyWith(
@@ -725,6 +1422,150 @@ class _AddCustomProductSheetState
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+      ),
+    );
+  }
+}
+
+/// A soft circular icon button matching the Radiant Dew aesthetic — rounded
+/// surface-low fill, no hard Material ripple. Used for the sheet's header
+/// edit/close actions. A null [onTap] renders a disabled (dimmed) button.
+class _SoftIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final VoidCallback? onTap;
+  final String? tooltip;
+
+  const _SoftIconButton({
+    required this.icon,
+    required this.iconColor,
+    this.onTap,
+    this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final button = GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLow,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.outlineVariant, width: 1),
+        ),
+        alignment: Alignment.center,
+        child: Icon(icon, size: 20, color: iconColor),
+      ),
+    );
+    if (tooltip != null) {
+      return Tooltip(message: tooltip!, child: button);
+    }
+    return button;
+  }
+}
+
+/// A selectable thumbnail for one scan-candidate image. The selected tile gets
+/// a primary border and a check badge in the corner.
+class _ScanImageTile extends StatelessWidget {
+  final String url;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ScanImageTile({
+    super.key,
+    required this.url,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        children: [
+          Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLow,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: selected ? AppColors.primary : AppColors.outlineVariant,
+                width: selected ? 2.5 : 1.5,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.contain,
+                errorWidget: (_, _, _) => const Icon(
+                  Icons.broken_image_outlined,
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          if (selected)
+            const Positioned(
+              top: 4,
+              right: 4,
+              child: Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.primary,
+                size: 24,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The "upload my own photo" tile shown alongside scan-candidate thumbnails.
+class _ScanOwnPhotoTile extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _ScanOwnPhotoTile({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 96,
+        height: 96,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLow,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.outlineVariant, width: 1.5),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.add_a_photo_outlined,
+              color: AppColors.onSurfaceVariant,
+              size: 24,
+            ),
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: AppTypography.labelMd.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -746,6 +1587,7 @@ class _CategoryDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
@@ -758,7 +1600,7 @@ class _CategoryDropdown extends StatelessWidget {
           value: selected,
           isExpanded: true,
           hint: Text(
-            'בחר...',
+            l.customProductCategoryHint,
             style: AppTypography.bodyMd.copyWith(
               color: AppColors.outline.withAlpha(153),
             ),
@@ -778,6 +1620,80 @@ class _CategoryDropdown extends StatelessWidget {
           onChanged: (v) {
             if (v != null) onSelect(v);
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _SubCategoryDropdown extends StatelessWidget {
+  final List<SubCategory> subcategories;
+  final String? selected;
+  final String locale;
+  /// True when no category has been chosen yet — shows disabled "בחרו קטגוריה תחילה".
+  final bool noCategoryChosen;
+  final ValueChanged<String> onSelect;
+
+  const _SubCategoryDropdown({
+    required this.subcategories,
+    required this.selected,
+    required this.locale,
+    required this.noCategoryChosen,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final isDisabled = noCategoryChosen || subcategories.isEmpty;
+
+    String hintText;
+    if (noCategoryChosen) {
+      hintText = l.customProductSubCategoryDisabledHint;
+    } else if (subcategories.isEmpty) {
+      hintText = l.customProductSubCategoryNone;
+    } else {
+      hintText = l.customProductSubCategoryHint;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDisabled
+            ? AppColors.surfaceLow
+            : AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.outlineVariant),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selected,
+          isExpanded: true,
+          hint: Text(
+            hintText,
+            style: AppTypography.bodyMd.copyWith(
+              color: AppColors.outline.withAlpha(153),
+            ),
+          ),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: AppColors.onSurfaceVariant),
+          style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+          dropdownColor: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          items: isDisabled
+              ? null // null items → disabled dropdown
+              : [
+                  for (final sub in subcategories)
+                    DropdownMenuItem(
+                      value: sub.id,
+                      child: Text(sub.localizedName(locale)),
+                    ),
+                ],
+          onChanged: isDisabled
+              ? null
+              : (v) {
+                  if (v != null) onSelect(v);
+                },
         ),
       ),
     );
@@ -1001,28 +1917,3 @@ class _SaveButton extends StatelessWidget {
   }
 }
 
-class _PhotoPlaceholder extends StatelessWidget {
-  const _PhotoPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(
-          Icons.add_a_photo_outlined,
-          color: AppColors.onSurfaceVariant,
-          size: 32,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l.customProductPhotoLabel,
-          style: AppTypography.labelMd.copyWith(
-            color: AppColors.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-}

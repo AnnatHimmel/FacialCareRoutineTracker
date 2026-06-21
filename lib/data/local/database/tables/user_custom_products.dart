@@ -10,9 +10,11 @@ class UserCustomProducts extends Table {
   BoolColumn get inMorning => boolean()();
   BoolColumn get inEvening => boolean()();
   BoolColumn get isDaily => boolean()();
-  IntColumn get timesPerWeek => integer().nullable()();
+  IntColumn get maxTimesPerWeek => integer().nullable().named('times_per_week')();
   IntColumn get lastModifiedMs => integer()();
   TextColumn get commentJson => text().nullable()();
+  TextColumn get brand => text().nullable()();
+  TextColumn get ingredients => text().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

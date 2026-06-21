@@ -29,8 +29,7 @@ import 'barcode_scan_sheet.dart';
 const _uuid = Uuid();
 
 const _catIcon = <String, IconData>{
-  'cat-cleanser-step1': Icons.wash,
-  'cat-cleanser-step2': Icons.soap,
+  'cat-cleanser': Icons.soap,
   'cat-retinoid': Icons.biotech,
   'cat-toner': Icons.water_drop,
   'cat-serum': Icons.science,
@@ -41,8 +40,7 @@ const _catIcon = <String, IconData>{
 
 
 String? _getCatHint(String catId, AppLocalizations l) => switch (catId) {
-  'cat-cleanser-step1' => l.catHintCleanser1,
-  'cat-cleanser-step2' => l.catHintCleanser2,
+  'cat-cleanser' => l.catHintCleanser,
   'cat-retinoid' => l.catHintRetinoid,
   'cat-toner' => l.catHintToner,
   'cat-serum' => l.catHintSerum,
@@ -53,8 +51,7 @@ String? _getCatHint(String catId, AppLocalizations l) => switch (catId) {
 };
 
 String _getCatUsage(String catId, AppLocalizations l) => switch (catId) {
-  'cat-cleanser-step1' => l.catUsageCleanser1,
-  'cat-cleanser-step2' => l.catUsageCleanser2,
+  'cat-cleanser' => l.catUsageCleanser,
   'cat-retinoid' => l.catUsageRetinoid,
   'cat-toner' => l.catUsageToner,
   'cat-serum' => l.catUsageSerum,
@@ -326,6 +323,18 @@ class _ProductSelectionScreenState
     ));
   }
 
+  void _openProductDetail(BuildContext context, MasterProduct product) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AddCustomProductSheet(
+        viewProduct: product,
+        isUserProduct: product.addedInVersion == 'custom',
+      ),
+    );
+  }
+
   void _editCustomProduct(BuildContext context, MasterProduct product) {
     final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
     final UserCustomProduct? customProd = customProds
@@ -504,6 +513,7 @@ class _ProductSelectionScreenState
                       onTimingChange: (p, slot, enabled) =>
                           _setTiming(p, slot, enabled, morning, evening),
                       onEdit: (p) => _editCustomProduct(context, p),
+                      onOpenDetail: (p) => _openProductDetail(context, p),
                       l: l,
                       locale: l.localeName,
                     );
@@ -587,11 +597,6 @@ class _ProductSelectionScreenState
                     _v3Tab = t;
                     if (t == 'search') _searchController.clear();
                   });
-                  if (t == 'scan') {
-                    WidgetsBinding.instance.addPostFrameCallback(
-                      (_) => _showBarcodeScan(context),
-                    );
-                  }
                 },
               ),
             ],
@@ -604,23 +609,19 @@ class _ProductSelectionScreenState
                   controller: _searchController,
                   searchHint: l.productSelV3SearchHint,
                   popularLabel: l.productSelV3Popular,
-                  addManualLabel: l.productSelV3AddManual,
-                  products:
-                      searchResults != null ? searchResults : popularProducts,
+                  products: searchResults ?? popularProducts,
                   isSearchResult: searchResults != null,
                   selMap: selMap,
-                  onToggle: (p) =>
-                      _toggleProduct(p, selMap, morning, evening),
+                  onToggle: (p) => _toggleProduct(p, selMap, morning, evening),
                   onAddCustom: () => showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
                     builder: (_) => const AddCustomProductSheet(),
                   ),
+                  onOpenDetail: (p) => _openProductDetail(context, p),
                 )
-              : _V3ScanPane(
-                  onOpenScan: () => _showBarcodeScan(context),
-                ),
+              : const _V3ScanPane(),
         ),
         // ── Bottom tray ───────────────────────────────────────────────────
         _V3BottomTray(
@@ -746,27 +747,28 @@ class _V3SearchPane extends StatelessWidget {
   final TextEditingController controller;
   final String searchHint;
   final String popularLabel;
-  final String addManualLabel;
   final List<MasterProduct> products;
   final bool isSearchResult;
   final Map<String, Set<Slot>> selMap;
   final Future<void> Function(MasterProduct) onToggle;
   final VoidCallback onAddCustom;
+  final void Function(MasterProduct) onOpenDetail;
 
   const _V3SearchPane({
     required this.controller,
     required this.searchHint,
     required this.popularLabel,
-    required this.addManualLabel,
     required this.products,
     required this.isSearchResult,
     required this.selMap,
     required this.onToggle,
     required this.onAddCustom,
+    required this.onOpenDetail,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         // Search field
@@ -808,6 +810,15 @@ class _V3SearchPane extends StatelessWidget {
             ),
           ),
         ),
+        // Manual-add card — prominent, directly under search field
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+          child: _AddCustomProductCTA(
+            title: l.productSelManualCardTitle,
+            subtitle: l.productSelManualCardSub,
+            onTap: onAddCustom,
+          ),
+        ),
         // Section label
         if (!isSearchResult)
           Padding(
@@ -832,15 +843,8 @@ class _V3SearchPane extends StatelessWidget {
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            itemCount: products.length + 1,
+            itemCount: products.length,
             itemBuilder: (context, i) {
-              if (i == products.length) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: _AddManualLink(
-                      label: addManualLabel, onTap: onAddCustom),
-                );
-              }
               final p = products[i];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -849,6 +853,7 @@ class _V3SearchPane extends StatelessWidget {
                   product: p,
                   isSelected: selMap.containsKey(p.id),
                   onTap: () => onToggle(p),
+                  onOpenDetail: () => onOpenDetail(p),
                 ),
               );
             },
@@ -859,108 +864,90 @@ class _V3SearchPane extends StatelessWidget {
   }
 }
 
-class _AddManualLink extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _AddManualLink({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 44,
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.add_rounded, size: 16, color: AppColors.primary),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: AppTypography.labelMd.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // ── V3 Finder row (simplified — name + brand, checkbox, no slot chips) ───────
 
 class _V3FinderRow extends StatelessWidget {
   final MasterProduct product;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback? onOpenDetail;
 
   const _V3FinderRow({
     super.key,
     required this.product,
     required this.isSelected,
     required this.onTap,
+    this.onOpenDetail,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryFixed.withAlpha(180)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: AppColors.glowSm,
-          border: isSelected
-              ? Border.all(
-                  color: AppColors.primary.withAlpha(80), width: 1)
-              : null,
-        ),
-        child: Row(
-          children: [
-            ProductThumb(imageAsset: product.imageAsset, size: 50),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.primaryFixed.withAlpha(180)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: AppColors.glowSm,
+        border: isSelected
+            ? Border.all(
+                color: AppColors.primary.withAlpha(80), width: 1)
+            : null,
+      ),
+      child: Row(
+        children: [
+          // Left: product info — opens detail screen
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onOpenDetail,
+              child: Row(
                 children: [
-                  Text(
-                    product.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.bodyMd.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13.5,
-                      color: AppColors.onSurface,
+                  ProductThumb(imageAsset: product.imageAsset, size: 50),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          product.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.bodyMd.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        if (product.brand != null &&
+                            product.brand!.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            product.brand!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.labelSm.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  if (product.brand != null &&
-                      product.brand!.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      product.brand!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.labelSm.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                        fontSize: 11.5,
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            AnimatedContainer(
+          ),
+          // Right: selection checkbox — toggles selection
+          const SizedBox(width: 8),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               width: 24,
               height: 24,
@@ -979,126 +966,6 @@ class _V3FinderRow extends StatelessWidget {
                       size: 14, color: Colors.white)
                   : null,
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── V3 Scan pane ──────────────────────────────────────────────────────────────
-
-class _V3ScanPane extends StatefulWidget {
-  final VoidCallback onOpenScan;
-
-  const _V3ScanPane({
-    required this.onOpenScan,
-  });
-
-  @override
-  State<_V3ScanPane> createState() => _V3ScanPaneState();
-}
-
-class _V3ScanPaneState extends State<_V3ScanPane>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _scanLine;
-
-  @override
-  void initState() {
-    super.initState();
-    _scanLine = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _scanLine.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-      child: Column(
-        children: [
-          // Viewfinder
-          GestureDetector(
-            onTap: widget.onOpenScan,
-            child: Container(
-              height: 280,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color(0xFF241510),
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: Stack(
-                  children: [
-                    // Animated peach scan line
-                    AnimatedBuilder(
-                      animation: _scanLine,
-                      builder: (_, __) => Positioned(
-                        top: 32 + _scanLine.value * 188,
-                        left: 36,
-                        right: 36,
-                        child: Container(
-                          height: 2,
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.transparent,
-                                Color(0xFFFF8B71),
-                                Color(0xFFFF8B71),
-                                Colors.transparent,
-                              ],
-                              stops: [0.0, 0.3, 0.7, 1.0],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Corner brackets
-                    for (final pos in [
-                      Alignment.topRight,
-                      Alignment.topLeft,
-                      Alignment.bottomRight,
-                      Alignment.bottomLeft,
-                    ])
-                      Align(
-                        alignment: pos,
-                        child: Padding(
-                          padding: const EdgeInsets.all(28),
-                          child: SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: CustomPaint(
-                                painter: _CornerPainter(alignment: pos)),
-                          ),
-                        ),
-                      ),
-                    // Hint at bottom
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 18),
-                        child: Text(
-                          l.barcodeScanHint,
-                          style: AppTypography.labelSm.copyWith(
-                            color: Colors.white54,
-                            fontSize: 11.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ],
       ),
@@ -1106,31 +973,19 @@ class _V3ScanPaneState extends State<_V3ScanPane>
   }
 }
 
-class _CornerPainter extends CustomPainter {
-  final Alignment alignment;
-  const _CornerPainter({required this.alignment});
+// ── V3 Scan pane (inline live scanner) ────────────────────────────────────────
+
+/// Embeds the real [BarcodeScanView] directly in the guided scan tab so the
+/// camera starts scanning right away — a single screen, no separate sheet.
+class _V3ScanPane extends StatelessWidget {
+  const _V3ScanPane();
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withAlpha(200)
-      ..strokeWidth = 2.5
-      ..style = PaintingStyle.stroke;
-    const len = 18.0;
-    final r = Rect.fromLTWH(0, 0, size.width, size.height);
-    // Draw two lines forming a corner based on alignment
-    final isTop = alignment == Alignment.topLeft || alignment == Alignment.topRight;
-    final isLeft = alignment == Alignment.topLeft || alignment == Alignment.bottomLeft;
-    final x = isLeft ? r.left : r.right;
-    final y = isTop ? r.top : r.bottom;
-    final dx = isLeft ? len : -len;
-    final dy = isTop ? len : -len;
-    canvas.drawLine(Offset(x, y), Offset(x + dx, y), paint);
-    canvas.drawLine(Offset(x, y), Offset(x, y + dy), paint);
+  Widget build(BuildContext context) {
+    // Cream layout — BarcodeScanView owns the bounded viewfinder card, the
+    // animated laser, the in-card hint, and the below-card gallery button.
+    return const BarcodeScanView();
   }
-
-  @override
-  bool shouldRepaint(_CornerPainter oldDelegate) => false;
 }
 
 // ── V3 Bottom tray ────────────────────────────────────────────────────────────
@@ -1383,6 +1238,7 @@ class _CategorySection extends StatelessWidget {
   final Future<void> Function(MasterProduct) onToggle;
   final Future<void> Function(MasterProduct, Slot, bool) onTimingChange;
   final void Function(MasterProduct) onEdit;
+  final void Function(MasterProduct)? onOpenDetail;
   final AppLocalizations l;
   final String locale;
 
@@ -1396,6 +1252,7 @@ class _CategorySection extends StatelessWidget {
     required this.onToggle,
     required this.onTimingChange,
     required this.onEdit,
+    this.onOpenDetail,
     required this.l,
     required this.locale,
   });
@@ -1448,6 +1305,9 @@ class _CategorySection extends StatelessWidget {
               onTimingChange: (slot, enabled) =>
                   onTimingChange(products[i], slot, enabled),
               onEdit: () => onEdit(products[i]),
+              onViewDetail: onOpenDetail != null
+                  ? () => onOpenDetail!(products[i])
+                  : null,
               l: l,
             ),
           ),
@@ -1555,6 +1415,7 @@ class _SelectRow extends StatefulWidget {
   final VoidCallback onToggle;
   final void Function(Slot slot, bool enabled) onTimingChange;
   final VoidCallback? onEdit;
+  final VoidCallback? onViewDetail;
   final AppLocalizations l;
 
   const _SelectRow({
@@ -1565,6 +1426,7 @@ class _SelectRow extends StatefulWidget {
     required this.onToggle,
     required this.onTimingChange,
     this.onEdit,
+    this.onViewDetail,
     required this.l,
   });
 
@@ -1790,6 +1652,30 @@ class _SelectRowState extends State<_SelectRow> {
                       ),
                     ),
                   ],
+                  if (widget.onViewDetail != null) ...[
+                    const SizedBox(height: 10),
+                    const Divider(height: 1, color: AppColors.outlineVariant),
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: widget.onViewDetail,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const Icon(Icons.open_in_new_rounded,
+                              size: 14, color: AppColors.onSurfaceVariant),
+                          const SizedBox(width: 4),
+                          Text(
+                            l.productDetailViewDetails,
+                            style: AppTypography.labelSm.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -1942,12 +1828,16 @@ class _TimingPill extends StatelessWidget {
 
 class _AddCustomProductCTA extends StatelessWidget {
   final VoidCallback onTap;
+  final String? title;
+  final String? subtitle;
 
-  const _AddCustomProductCTA({required this.onTap});
+  const _AddCustomProductCTA({required this.onTap, this.title, this.subtitle});
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final displayTitle = title ?? l.addCustomProductCtaTitle;
+    final displaySubtitle = subtitle ?? l.addCustomProductCtaSub;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1981,7 +1871,7 @@ class _AddCustomProductCTA extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l.addCustomProductCtaTitle,
+                    displayTitle,
                     style: AppTypography.labelMd.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w700,
@@ -1990,7 +1880,7 @@ class _AddCustomProductCTA extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    l.addCustomProductCtaSub,
+                    displaySubtitle,
                     style: AppTypography.labelSm.copyWith(
                       color: AppColors.onSurfaceVariant,
                       fontSize: 12,

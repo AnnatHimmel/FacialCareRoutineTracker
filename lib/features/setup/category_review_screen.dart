@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
@@ -12,6 +13,7 @@ import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/product_thumb.dart';
+import 'add_custom_product_sheet.dart';
 
 class CategoryReviewScreen extends ConsumerStatefulWidget {
   final VoidCallback onBack;
@@ -134,6 +136,17 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
                               }),
                               onReassign: (catId) =>
                                   _reassign(product.id, catId),
+                              onOpenDetail: () =>
+                                  showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (_) => AddCustomProductSheet(
+                                      viewProduct: product,
+                                      isUserProduct:
+                                          product.addedInVersion == 'custom',
+                                    ),
+                                  ),
                             ),
                           ),
                       // "Add more products" — returns to product selection
@@ -234,6 +247,7 @@ class _ProductReviewCard extends StatelessWidget {
   final String locale;
   final VoidCallback onEditToggle;
   final ValueChanged<String> onReassign;
+  final VoidCallback? onOpenDetail;
 
   const _ProductReviewCard({
     super.key,
@@ -244,6 +258,7 @@ class _ProductReviewCard extends StatelessWidget {
     required this.locale,
     required this.onEditToggle,
     required this.onReassign,
+    this.onOpenDetail,
   });
 
   @override
@@ -268,48 +283,52 @@ class _ProductReviewCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Main row
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-            child: Row(
-              children: [
-                ProductThumb(imageAsset: product.imageAsset, size: 46),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Product name — now spans the full line width
-                      Text(
-                        product.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.bodyMd.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13.5,
-                          color: AppColors.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      // Bottom line: current category chip + change-category action.
-                      // Wrap lets the two pieces fall onto a second line on narrow
-                      // screens instead of overflowing the row.
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 6,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          _CalmCategoryChip(catName: catName),
-                          _ChangeCategoryButton(
-                            isEditing: isEditing,
-                            onTap: onEditToggle,
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onOpenDetail,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              child: Row(
+                children: [
+                  ProductThumb(imageAsset: product.imageAsset, size: 46),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Product name — now spans the full line width
+                        Text(
+                          product.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.bodyMd.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
+                            color: AppColors.onSurface,
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(height: 6),
+                        // Bottom line: current category chip + change-category action.
+                        // Wrap lets the two pieces fall onto a second line on narrow
+                        // screens instead of overflowing the row.
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            _CalmCategoryChip(catName: catName),
+                            _ChangeCategoryButton(
+                              isEditing: isEditing,
+                              onTap: onEditToggle,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           // Inline category picker (expanded state)

@@ -406,6 +406,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get catHintCleanser2 => 'ניקוי פנים יומיומי ועדין.';
 
   @override
+  String get catHintCleanser =>
+      'ניקוי פנים – שמן/באלם לשלב ראשון, ג׳ל/קצף לשלב שני. ערב בלבד.';
+
+  @override
   String get catHintRetinoid => 'חידוש העור. ערב בלבד, בהדרגה.';
 
   @override
@@ -430,6 +434,10 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get catUsageCleanser2 =>
       'הקציפי עם מעט מים, עסי בעדינות בתנועות מעגליות ושטפי.';
+
+  @override
+  String get catUsageCleanser =>
+      'שלב ראשון: עסי על עור יבש, המסי, שטפי. שלב שני: הקציפי עם מים ועסי בעדינות.';
 
   @override
   String get catUsageRetinoid =>
@@ -886,22 +894,25 @@ class AppLocalizationsHe extends AppLocalizations {
   String get customProductCategoryLabel => 'קטגוריה';
 
   @override
-  String get customProductSlotLabel => 'זמן שגרה';
+  String get customProductSlotLabel => 'מתי משתמשים בו?';
 
   @override
   String get customProductSlotBoth => 'בוקר + ערב';
 
   @override
-  String get customProductFrequencyLabel => 'תדירות';
+  String get customProductFrequencyLabel => 'תדירות שימוש';
 
   @override
-  String get customProductFrequencyWeekly => 'לא יומי';
+  String get customProductFrequencyWeekly => 'שבועי';
+
+  @override
+  String get customProductFrequencyDaily => 'כל יום';
 
   @override
   String get customProductTimesPerWeekLabel => 'פעמים בשבוע:';
 
   @override
-  String get customProductSave => 'הוספה לשגרה שלי';
+  String get customProductSave => 'הוספה למדף';
 
   @override
   String get customProductEditButton => 'עריכת מוצר';
@@ -1084,13 +1095,19 @@ class AppLocalizationsHe extends AppLocalizations {
   String get addCustomProductCtaSub => 'המוצר שלך לא ברשימה?';
 
   @override
+  String get productSelManualCardTitle => 'הוספה ידנית';
+
+  @override
+  String get productSelManualCardSub => 'הזינו מוצר שלא נמצא בחיפוש';
+
+  @override
   String get myProductsSearchHint => 'חיפוש מוצרים...';
 
   @override
   String get barcodeScan => 'סריקת ברקוד';
 
   @override
-  String get barcodeScanHint => 'כוונו את המצלמה לברקוד שעל האריזה';
+  String get barcodeScanHint => 'כוונו את הברקוד למסגרת לזיהוי אוטומטי';
 
   @override
   String get barcodeScanFound => 'ברקוד זוהה';
@@ -1133,6 +1150,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get barcodeScanAlreadyInRoutine => 'כבר בשגרה שלך';
+
+  @override
+  String get barcodeScanFromGallery => 'סריקה מתמונה בגלריה';
+
+  @override
+  String get barcodeScanAnalyzing => 'מנתח תמונה…';
 
   @override
   String get homeViewWeek => 'השבוע';
@@ -1672,6 +1695,101 @@ class AppLocalizationsHe extends AppLocalizations {
   String weekGlanceEditRoutine(String slot) {
     return 'עריכת שגרת $slot';
   }
+
+  @override
+  String get customProductBrandLabel => 'מותג';
+
+  @override
+  String get customProductBrandHint => 'לדוגמה: The Ordinary';
+
+  @override
+  String get customProductCategoryHint => 'בחרו קטגוריה...';
+
+  @override
+  String get customProductSubCategoryLabel => 'תת־קטגוריה';
+
+  @override
+  String get customProductSubCategoryHint => 'בחרו תת־קטגוריה...';
+
+  @override
+  String get customProductMoreDetails => 'פרטים נוספים (רשות)';
+
+  @override
+  String get customProductScanTitle => 'מצאנו את המוצר!';
+
+  @override
+  String get customProductScanSubtitle =>
+      'מילאנו את הפרטים מהסריקה — בדקו, התאימו במידת הצורך ואשרו הוספה למדף.';
+
+  @override
+  String get customProductAutofillBanner => 'מולא אוטומטית מהסריקה';
+
+  @override
+  String get customProductAutofillBannerSub => 'אפשר לערוך כל פרט לפני ההוספה';
+
+  @override
+  String get customProductReplacePhoto => 'החלפת תמונה';
+
+  @override
+  String get customProductRemovePhoto => 'הסרה';
+
+  @override
+  String get customProductScanAgain => 'סריקה נוספת';
+
+  @override
+  String customProductScanImagesHeading(int count) {
+    return 'נמצאו $count תמונות לבחירה — בחרו אחת לשמירה';
+  }
+
+  @override
+  String get customProductScanImagesHint =>
+      'התמונה שתבחרו תישמר עם המוצר. אפשר גם להעלות תמונה משלכם.';
+
+  @override
+  String get customProductScanOwnPhoto => 'תמונה משלי';
+
+  @override
+  String get barcodeScanWebTitle => 'סריקה ממצלמה אינה זמינה בדפדפן';
+
+  @override
+  String get barcodeScanWebSub => 'בחרו תמונה עם ברקוד מהגלריה';
+
+  @override
+  String get customProductFormSubtitle =>
+      'מלאו את פרטי המוצר. שדות עם * הם חובה.';
+
+  @override
+  String get customProductWhenLabel => 'מתי משתמשים בו?';
+
+  @override
+  String get customProductSubCategoryDisabledHint => 'בחרו קטגוריה תחילה';
+
+  @override
+  String get customProductSubCategoryNone => 'ללא';
+
+  @override
+  String get customProductNotesLabel => 'הערות';
+
+  @override
+  String get customProductIngredientsLabel => 'רכיבים (INCI)';
+
+  @override
+  String get customProductIngredientsHint => 'Aqua, Glycerin, Niacinamide...';
+
+  @override
+  String get customProductIngredientsHelper => 'מפרידים בפסיקים בין הרכיבים';
+
+  @override
+  String get unsavedChangesTitle => 'שינויים לא שמורים';
+
+  @override
+  String get unsavedChangesMessage => 'האם לשמור את השינויים לפני יציאה?';
+
+  @override
+  String get discardChangesAction => 'בטל שינויים';
+
+  @override
+  String get productDetailViewDetails => 'לפרטים המלאים';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -1832,6 +1950,10 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get catHintCleanser2 => 'ניקוי פנים יומיומי ועדין.';
 
   @override
+  String get catHintCleanser =>
+      'ניקוי פנים – שמן/באלם לשלב ראשון, ג׳ל/קצף לשלב שני. ערב בלבד.';
+
+  @override
   String get catHintRetinoid => 'חידוש העור. ערב בלבד, בהדרגה.';
 
   @override
@@ -1856,6 +1978,10 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   @override
   String get catUsageCleanser2 =>
       'הקצף עם מעט מים, עסה בעדינות בתנועות מעגליות ושטוף.';
+
+  @override
+  String get catUsageCleanser =>
+      'שלב ראשון: עסה על עור יבש, המס, שטוף. שלב שני: הקצף עם מים ועסה בעדינות.';
 
   @override
   String get catUsageRetinoid =>
@@ -2104,22 +2230,25 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get customProductCategoryLabel => 'קטגוריה';
 
   @override
-  String get customProductSlotLabel => 'זמן שגרה';
+  String get customProductSlotLabel => 'מתי משתמשים בו?';
 
   @override
   String get customProductSlotBoth => 'בוקר + ערב';
 
   @override
-  String get customProductFrequencyLabel => 'תדירות';
+  String get customProductFrequencyLabel => 'תדירות שימוש';
 
   @override
-  String get customProductFrequencyWeekly => 'כמה פעמים בשבוע';
+  String get customProductFrequencyWeekly => 'שבועי';
+
+  @override
+  String get customProductFrequencyDaily => 'כל יום';
 
   @override
   String get customProductTimesPerWeekLabel => 'פעמים בשבוע:';
 
   @override
-  String get customProductSave => 'הוספה לשגרה שלי';
+  String get customProductSave => 'הוספה למדף';
 
   @override
   String get customProductEditButton => 'עריכת מוצר';
@@ -2294,13 +2423,19 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get addCustomProductCtaSub => 'המוצר שלך לא ברשימה?';
 
   @override
+  String get productSelManualCardTitle => 'הוספה ידנית';
+
+  @override
+  String get productSelManualCardSub => 'הזינו מוצר שלא נמצא בחיפוש';
+
+  @override
   String get myProductsSearchHint => 'חיפוש מוצרים...';
 
   @override
   String get barcodeScan => 'סריקת ברקוד';
 
   @override
-  String get barcodeScanHint => 'כוון את המצלמה לברקוד שעל האריזה';
+  String get barcodeScanHint => 'כוון את הברקוד למסגרת לזיהוי אוטומטי';
 
   @override
   String get barcodeScanFound => 'ברקוד זוהה';
@@ -2325,5 +2460,94 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get barcodeScanAlreadyInRoutine => 'כבר בשגרה שלך';
 
   @override
+  String get barcodeScanFromGallery => 'סריקה מתמונה בגלריה';
+
+  @override
+  String get barcodeScanAnalyzing => 'מנתח תמונה…';
+
+  @override
   String get categoryReviewCTA => 'המשך לבחירת ימים';
+
+  @override
+  String get customProductBrandLabel => 'מותג';
+
+  @override
+  String get customProductBrandHint => 'לדוגמה: The Ordinary';
+
+  @override
+  String get customProductCategoryHint => 'בחרו קטגוריה...';
+
+  @override
+  String get customProductSubCategoryLabel => 'תת־קטגוריה';
+
+  @override
+  String get customProductSubCategoryHint => 'בחרו תת־קטגוריה...';
+
+  @override
+  String get customProductMoreDetails => 'פרטים נוספים (רשות)';
+
+  @override
+  String get customProductScanTitle => 'מצאנו את המוצר!';
+
+  @override
+  String get customProductScanSubtitle =>
+      'מילאנו את הפרטים מהסריקה — בדקו, התאימו במידת הצורך ואשרו הוספה למדף.';
+
+  @override
+  String get customProductAutofillBanner => 'מולא אוטומטית מהסריקה';
+
+  @override
+  String get customProductAutofillBannerSub => 'אפשר לערוך כל פרט לפני ההוספה';
+
+  @override
+  String get customProductReplacePhoto => 'החלפת תמונה';
+
+  @override
+  String get customProductRemovePhoto => 'הסרה';
+
+  @override
+  String get customProductScanAgain => 'סריקה נוספת';
+
+  @override
+  String customProductScanImagesHeading(int count) {
+    return 'נמצאו $count תמונות לבחירה — בחרו אחת לשמירה';
+  }
+
+  @override
+  String get customProductScanImagesHint =>
+      'התמונה שתבחרו תישמר עם המוצר. אפשר גם להעלות תמונה משלכם.';
+
+  @override
+  String get customProductScanOwnPhoto => 'תמונה משלי';
+
+  @override
+  String get barcodeScanWebTitle => 'סריקה ממצלמה אינה זמינה בדפדפן';
+
+  @override
+  String get barcodeScanWebSub => 'בחרו תמונה עם ברקוד מהגלריה';
+
+  @override
+  String get customProductFormSubtitle =>
+      'מלאו את פרטי המוצר. שדות עם * הם חובה.';
+
+  @override
+  String get customProductWhenLabel => 'מתי משתמשים בו?';
+
+  @override
+  String get customProductSubCategoryDisabledHint => 'בחרו קטגוריה תחילה';
+
+  @override
+  String get customProductSubCategoryNone => 'ללא';
+
+  @override
+  String get customProductNotesLabel => 'הערות';
+
+  @override
+  String get customProductIngredientsLabel => 'רכיבים (INCI)';
+
+  @override
+  String get customProductIngredientsHint => 'Aqua, Glycerin, Niacinamide...';
+
+  @override
+  String get customProductIngredientsHelper => 'מפרידים בפסיקים בין הרכיבים';
 }

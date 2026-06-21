@@ -90,7 +90,7 @@ Delegate each phase to the matching specialized subagent to protect the main con
 | GREEN | `coder` | Implementing minimal code to pass the failing test |
 | REFACTOR | `refactorer` | Cleaning up after green — behavior must not change |
 | Verify | `test-runner` | Running existing tests to confirm pass/fail |
-| Explore | `Explore` | Any broad codebase search spanning 3+ queries |
+| Explore | `smart-research` | Any broad codebase search spanning 3+ queries |
 
 Hand each subagent a self-contained prompt: the requirement text, the relevant file paths, and what the previous phase produced. Do not re-derive in the main context what a subagent already found.
 

@@ -1,6 +1,6 @@
 ---
 name: refactorer
-model: haiku
+model: sonnet
 supervisor: supervisor-sonnet
 maxRetries: 2
 color: cyan

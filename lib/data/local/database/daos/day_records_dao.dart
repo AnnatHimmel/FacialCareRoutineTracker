@@ -24,6 +24,8 @@ class DayRecordsDao extends DatabaseAccessor<AppDatabase>
 
   Stream<List<DayRecordRow>> watchAll() => select(dayRecords).watch();
 
+  Future<List<DayRecordRow>> getAll() => select(dayRecords).get();
+
   Future<void> upsert(DayRecordsCompanion entry) =>
       into(dayRecords).insertOnConflictUpdate(entry);
 

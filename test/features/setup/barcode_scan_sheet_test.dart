@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/data/remote/barcode_lookup_service.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
@@ -121,6 +122,7 @@ Widget _wrap({
   required _TrackingLookupService lookup,
   _CapturingUDR? udr,
   required String testBarcode,
+  void Function(ScannedProductInfo info)? onExternalProductFound,
 }) =>
     ProviderScope(
       overrides: [
@@ -133,7 +135,10 @@ Widget _wrap({
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('he'),
         home: Scaffold(
-          body: BarcodeScanSheet(testBarcodeToScan: testBarcode),
+          body: BarcodeScanSheet(
+            testBarcodeToScan: testBarcode,
+            onExternalProductFound: onExternalProductFound,
+          ),
         ),
       ),
     );
@@ -329,25 +334,42 @@ void main() {
     });
 
     testWidgets(
-        'no master match + external returns data → shows productFound state',
+        'no master match + external returns data → '
+        'calls onExternalProductFound spy with info; '
+        'intermediate "מוצר נמצא" card is NOT shown',
         (tester) async {
+      // Given: external lookup returns product info
+      // When:  barcode is not in master list AND onExternalProductFound is provided
+      // Then:  spy is called exactly once with the scanned info;
+      //        the intermediate "מוצר נמצא" card never renders
       final lookup = _TrackingLookupService()
         ..stubbedResult = ScannedProductInfo(
           barcode: 'unknown-barcode-999',
           name: 'External Product',
           brand: 'Some Brand',
-          imageUrl: null,
         );
+
+      ScannedProductInfo? capturedInfo;
+      int spyCallCount = 0;
 
       await tester.pumpWidget(_wrap(
         master: _contentWith([_bothSlotsProduct]),
         lookup: lookup,
         testBarcode: 'unknown-barcode-999',
+        onExternalProductFound: (info) {
+          spyCallCount++;
+          capturedInfo = info;
+        },
       ));
       await tester.pumpAndSettle();
 
       expect(lookup.callCount, 1);
-      expect(find.text('מוצר נמצא'), findsOneWidget);
+      expect(spyCallCount, 1, reason: 'spy must be called exactly once');
+      expect(capturedInfo, isNotNull);
+      expect(capturedInfo!.barcode, 'unknown-barcode-999');
+      expect(capturedInfo!.name, 'External Product');
+      expect(find.text('מוצר נמצא'), findsNothing,
+          reason: 'intermediate card must not be shown when callback fires');
       expect(find.text('מוצר מוכר'), findsNothing);
     });
 
@@ -506,6 +528,228 @@ void main() {
       expect(udr.captured.length, 2);
       final ids = udr.captured.map((s) => s.id).toSet();
       expect(ids.length, 2, reason: 'each selection must have a distinct UUID');
+    });
+  });
+
+  // ── Gallery scan tests ────────────────────────────────────────────────────────
+  //
+  // These tests exercise the NEW `testGalleryResult` seam on BarcodeScanSheet.
+  // The seam does NOT exist yet — this file will not compile until the coder
+  // adds:
+  //   @visibleForTesting final ({String? code})? testGalleryResult;
+  // to BarcodeScanSheet and wires up the gallery-decode path.
+
+  Widget _wrapGallery({
+    required MasterContent master,
+    required _TrackingLookupService lookup,
+    _CapturingUDR? udr,
+    required ({String? code})? galleryResult,
+    void Function(ScannedProductInfo info)? onExternalProductFound,
+  }) =>
+      ProviderScope(
+        overrides: [
+          masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
+          barcodeProductLookupServiceProvider.overrideWithValue(lookup),
+          userDataRepositoryProvider.overrideWithValue(udr ?? _CapturingUDR()),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('he'),
+          home: Scaffold(
+            body: BarcodeScanSheet(
+              testGalleryResult: galleryResult,
+              onExternalProductFound: onExternalProductFound,
+            ),
+          ),
+        ),
+      );
+
+  group('BarcodeScanSheet — gallery scan', () {
+    testWidgets(
+        'gallery decode of a barcode that matches a master product '
+        'shows "מוצר מוכר" with product name; external lookup NOT called',
+        (tester) async {
+      // Given: master list contains a product whose barcode matches the gallery decode
+      // When:  widget receives testGalleryResult: (code: _matchingBarcode)
+      // Then:  masterProductFound state is shown; external lookup is never called
+      final lookup = _TrackingLookupService();
+
+      await tester.pumpWidget(_wrapGallery(
+        master: _contentWith([_bothSlotsProduct]),
+        lookup: lookup,
+        galleryResult: (code: _matchingBarcode),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('מוצר מוכר'), findsOneWidget);
+      expect(find.text('Rice Toner'), findsOneWidget);
+      expect(lookup.callCount, 0,
+          reason: 'master match must short-circuit external lookup');
+    });
+
+    testWidgets(
+        'gallery decode of unknown barcode + external returns data '
+        'calls onExternalProductFound spy with info; '
+        '"מוצר נמצא" intermediate card is NOT shown; '
+        'external lookup called exactly once',
+        (tester) async {
+      // Given: barcode is NOT in the master list; external service returns data;
+      //        onExternalProductFound callback is provided
+      // When:  widget receives testGalleryResult: (code: 'unknown-gallery-barcode')
+      // Then:  spy fires once with the returned info;
+      //        intermediate "מוצר נמצא" card is never rendered;
+      //        external lookup called exactly once
+      final lookup = _TrackingLookupService()
+        ..stubbedResult = ScannedProductInfo(
+          barcode: 'unknown-gallery-barcode',
+          name: 'Gallery External Product',
+          brand: 'Gallery Brand',
+        );
+
+      ScannedProductInfo? capturedInfo;
+      int spyCallCount = 0;
+
+      await tester.pumpWidget(_wrapGallery(
+        master: _contentWith([_bothSlotsProduct]),
+        lookup: lookup,
+        galleryResult: (code: 'unknown-gallery-barcode'),
+        onExternalProductFound: (info) {
+          spyCallCount++;
+          capturedInfo = info;
+        },
+      ));
+      await tester.pumpAndSettle();
+
+      expect(lookup.callCount, 1,
+          reason: 'external lookup must be called for unknown barcode');
+      expect(spyCallCount, 1, reason: 'spy must be called exactly once');
+      expect(capturedInfo, isNotNull);
+      expect(capturedInfo!.barcode, 'unknown-gallery-barcode');
+      expect(capturedInfo!.name, 'Gallery External Product');
+      expect(find.text('מוצר נמצא'), findsNothing,
+          reason: 'intermediate card must not be shown when callback fires');
+      expect(find.text('מוצר מוכר'), findsNothing);
+    });
+
+    testWidgets(
+        'gallery decode of an unknown barcode + external returns null '
+        'shows "המוצר לא נמצא במאגרים"; external lookup called exactly once',
+        (tester) async {
+      // Given: barcode is NOT in master list; external service returns null
+      // When:  widget receives testGalleryResult: (code: 'unknown-gallery-barcode-404')
+      // Then:  productNotFound state is shown; external lookup called once
+      final lookup = _TrackingLookupService(); // stubbedResult = null by default
+
+      await tester.pumpWidget(_wrapGallery(
+        master: _contentWith([_bothSlotsProduct]),
+        lookup: lookup,
+        galleryResult: (code: 'unknown-gallery-barcode-404'),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('המוצר לא נמצא במאגרים'), findsOneWidget);
+      expect(find.text('מוצר מוכר'), findsNothing);
+      expect(lookup.callCount, 1,
+          reason: 'external lookup must be called for unknown barcode');
+    });
+
+    testWidgets(
+        'gallery image with no decodable barcode (code: null) '
+        'shows "המוצר לא נמצא במאגרים"; external lookup NOT called',
+        (tester) async {
+      // Given: the gallery image contained no readable barcode
+      // When:  widget receives testGalleryResult: (code: null)
+      // Then:  productNotFound state is shown immediately; external lookup skipped
+      final lookup = _TrackingLookupService();
+
+      await tester.pumpWidget(_wrapGallery(
+        master: _contentWith([_bothSlotsProduct]),
+        lookup: lookup,
+        galleryResult: (code: null),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('המוצר לא נמצא במאגרים'), findsOneWidget);
+      expect(lookup.callCount, 0,
+          reason: 'no barcode decoded — external lookup must not be called');
+    });
+  });
+
+  // ── Web/camera-unavailable scanning tests ─────────────────────────────────
+  //
+  // These tests exercise the NEW `testForceCameraUnavailable` seam on
+  // BarcodeScanSheet.  The seam does NOT exist yet — this file will not
+  // compile until the coder adds:
+  //   @visibleForTesting final bool testForceCameraUnavailable;  // default false
+  // to BarcodeScanSheet and wires up the camera-unavailable (web) path so that
+  // the scanning state shows a gallery-first view instead of launching the
+  // MobileScannerController.
+
+  Widget _wrapScanningWeb({
+    MasterContent? master,
+    _TrackingLookupService? lookup,
+    _CapturingUDR? udr,
+    void Function(ScannedProductInfo info)? onExternalProductFound,
+  }) =>
+      ProviderScope(
+        overrides: [
+          masterContentRepositoryProvider.overrideWithValue(
+              _FakeMCR(master ?? _contentWith([_bothSlotsProduct]))),
+          barcodeProductLookupServiceProvider
+              .overrideWithValue(lookup ?? _TrackingLookupService()),
+          userDataRepositoryProvider
+              .overrideWithValue(udr ?? _CapturingUDR()),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('he'),
+          home: Scaffold(
+            body: BarcodeScanSheet(
+              // NEW seam — does not exist yet; compile will fail = RED
+              testForceCameraUnavailable: true,
+              onExternalProductFound: onExternalProductFound,
+            ),
+          ),
+        ),
+      );
+
+  group('BarcodeScanSheet — web/camera-unavailable scanning', () {
+    testWidgets(
+        'with testForceCameraUnavailable:true renders without throwing '
+        'and shows gallery button "סריקה מתמונה בגלריה"', (tester) async {
+      // Given: camera is forced-unavailable via test seam (simulates web)
+      // When:  the sheet is built with testForceCameraUnavailable: true
+      //        and no testBarcodeToScan / testGalleryResult provided
+      // Then:  the widget renders without error and shows the gallery-first
+      //        button labelled "סריקה מתמונה בגלריה"
+      await tester.pumpWidget(_wrapScanningWeb());
+      await tester.pumpAndSettle();
+
+      // The gallery button label is the existing l10n key barcodeScanFromGallery.
+      expect(
+        find.text('סריקה מתמונה בגלריה'),
+        findsOneWidget,
+        reason: 'camera-unavailable view must show gallery-first button',
+      );
+    });
+
+    testWidgets(
+        'with testForceCameraUnavailable:true the live-camera MobileScanner '
+        'widget is NOT present in the tree', (tester) async {
+      // Given: camera is forced-unavailable via test seam
+      // When:  the sheet is built with testForceCameraUnavailable: true
+      // Then:  no MobileScanner widget is rendered — the uninitialized
+      //        MobileScannerController must never be touched
+      await tester.pumpWidget(_wrapScanningWeb());
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byType(MobileScanner),
+        findsNothing,
+        reason: 'MobileScanner must NOT be rendered when camera is unavailable',
+      );
     });
   });
 }

@@ -17,6 +17,7 @@ import '../../shared/widgets/pro_tag.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/upgrade_sheet.dart';
 import '../../core/config/feature_flags.dart';
+import '../setup/add_custom_product_sheet.dart';
 
 class CollectionScreen extends ConsumerStatefulWidget {
   const CollectionScreen({super.key});
@@ -72,6 +73,23 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ...customAsMaster,
         ];
 
+        // Resolves a product's "Category · Sub-category" chip label (or just the
+        // category when there is no sub-category). Returns null when neither is
+        // known.
+        final catById = {for (final c in master.categories) c.id: c};
+        final subById = {for (final s in master.subcategories) s.id: s};
+        String? categoryLabel(MasterProduct p) {
+          final catName = catById[p.categoryId]?.localizedName(l.localeName);
+          final subName = p.subCategoryId == null
+              ? null
+              : subById[p.subCategoryId]?.localizedName(l.localeName);
+          final cn = (catName != null && catName.isNotEmpty) ? catName : null;
+          final sn = (subName != null && subName.isNotEmpty) ? subName : null;
+          if (cn == null) return sn;
+          if (sn == null) return cn;
+          return '$cn · $sn';
+        }
+
         // Build a fast lookup map: productId -> CollectionItem
         final itemsByProductId = <String, CollectionItem>{
           for (final item in collectionItems) item.productId: item,
@@ -113,7 +131,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           backgroundColor: AppColors.surface,
           appBar: GlowAppBar(title: l.navCollection),
           floatingActionButton: FloatingActionButton.extended(
-                  onPressed: () => context.push('/add-product'),
+                  onPressed: () => context.push('/products'),
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   elevation: 4,
@@ -179,11 +197,20 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       paoCalc: paoCalc,
                       l: l,
                       now: now,
+                      categoryLabel: categoryLabel,
                     )
                   else if (_selectedTab == 1)
-                    _SealedSliver(products: sealedProducts, l: l)
+                    _SealedSliver(
+                      products: sealedProducts,
+                      l: l,
+                      categoryLabel: categoryLabel,
+                    )
                   else
-                    _ArchiveSliver(products: archiveProducts, l: l),
+                    _ArchiveSliver(
+                      products: archiveProducts,
+                      l: l,
+                      categoryLabel: categoryLabel,
+                    ),
                 ] else ...[
                   // ── Health card (FREE) ────────────────────────────────────
                   SliverToBoxAdapter(
@@ -197,11 +224,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     ),
                   ),
                   // ── Free product list ─────────────────────────────────────
-                  _FreeProductSliver(products: allDisplayProducts, l: l),
+                  _FreeProductSliver(
+                    products: allDisplayProducts,
+                    l: l,
+                    categoryLabel: categoryLabel,
+                  ),
                 ],
               ] else ...[
                 // ── Pro features disabled: show flat product list ─────────────
-                _FreeProductSliver(products: allDisplayProducts, l: l),
+                _FreeProductSliver(
+                  products: allDisplayProducts,
+                  l: l,
+                  categoryLabel: categoryLabel,
+                ),
               ],
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
@@ -403,6 +438,7 @@ class _InUseSliver extends StatelessWidget {
   final PaoCalculator paoCalc;
   final AppLocalizations l;
   final DateTime now;
+  final String? Function(MasterProduct) categoryLabel;
 
   const _InUseSliver({
     required this.products,
@@ -410,6 +446,7 @@ class _InUseSliver extends StatelessWidget {
     required this.paoCalc,
     required this.l,
     required this.now,
+    required this.categoryLabel,
   });
 
   @override
@@ -448,7 +485,16 @@ class _InUseSliver extends StatelessWidget {
               product: product,
               progress: progress,
               l: l,
-              onTap: () => context.push('/collection/${product.id}'),
+              categoryLabel: categoryLabel(product),
+              onTap: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => AddCustomProductSheet(
+                  viewProduct: product,
+                  isUserProduct: product.addedInVersion == 'custom',
+                ),
+              ),
             ),
           );
         }, childCount: products.length),
@@ -463,12 +509,14 @@ class _CollectionRow extends StatelessWidget {
   final MasterProduct product;
   final PaoProgress progress;
   final AppLocalizations l;
+  final String? categoryLabel;
   final VoidCallback onTap;
 
   const _CollectionRow({
     required this.product,
     required this.progress,
     required this.l,
+    required this.categoryLabel,
     required this.onTap,
   });
 
@@ -518,6 +566,13 @@ class _CollectionRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
+                  if (categoryLabel != null) ...[
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: _CategoryChip(label: categoryLabel!),
+                    ),
+                  ],
                   const SizedBox(height: 4),
                   if (progress.isOpened) ...[
                     PaoMeter(
@@ -590,8 +645,13 @@ class _CollectionRow extends StatelessWidget {
 class _SealedSliver extends StatelessWidget {
   final List<MasterProduct> products;
   final AppLocalizations l;
+  final String? Function(MasterProduct) categoryLabel;
 
-  const _SealedSliver({required this.products, required this.l});
+  const _SealedSliver({
+    required this.products,
+    required this.l,
+    required this.categoryLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -622,7 +682,16 @@ class _SealedSliver extends StatelessWidget {
             child: _SealedRow(
               product: product,
               l: l,
-              onTap: () => context.push('/collection/${product.id}'),
+              categoryLabel: categoryLabel(product),
+              onTap: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => AddCustomProductSheet(
+                  viewProduct: product,
+                  isUserProduct: product.addedInVersion == 'custom',
+                ),
+              ),
             ),
           );
         }, childCount: products.length),
@@ -636,11 +705,13 @@ class _SealedSliver extends StatelessWidget {
 class _SealedRow extends StatelessWidget {
   final MasterProduct product;
   final AppLocalizations l;
+  final String? categoryLabel;
   final VoidCallback onTap;
 
   const _SealedRow({
     required this.product,
     required this.l,
+    required this.categoryLabel,
     required this.onTap,
   });
 
@@ -692,6 +763,13 @@ class _SealedRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
+                  if (categoryLabel != null) ...[
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: _CategoryChip(label: categoryLabel!),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -723,8 +801,13 @@ class _SealedRow extends StatelessWidget {
 class _ArchiveSliver extends StatelessWidget {
   final List<MasterProduct> products;
   final AppLocalizations l;
+  final String? Function(MasterProduct) categoryLabel;
 
-  const _ArchiveSliver({required this.products, required this.l});
+  const _ArchiveSliver({
+    required this.products,
+    required this.l,
+    required this.categoryLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -755,7 +838,16 @@ class _ArchiveSliver extends StatelessWidget {
             child: _ArchiveRow(
               product: product,
               l: l,
-              onTap: () => context.push('/collection/${product.id}'),
+              categoryLabel: categoryLabel(product),
+              onTap: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => AddCustomProductSheet(
+                  viewProduct: product,
+                  isUserProduct: product.addedInVersion == 'custom',
+                ),
+              ),
             ),
           );
         }, childCount: products.length),
@@ -953,13 +1045,48 @@ class _StatCell extends StatelessWidget {
   }
 }
 
+// ── Category · Sub-category chip ──────────────────────────────────────────────
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+
+  const _CategoryChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.primaryFixed.withAlpha(90),
+        borderRadius: BorderRadius.circular(9999),
+      ),
+      child: Text(
+        label,
+        textDirection: TextDirection.rtl,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+}
+
 // ── Free Product Sliver ───────────────────────────────────────────────────────
 
 class _FreeProductSliver extends StatelessWidget {
   final List<MasterProduct> products;
   final AppLocalizations l;
+  final String? Function(MasterProduct) categoryLabel;
 
-  const _FreeProductSliver({required this.products, required this.l});
+  const _FreeProductSliver({
+    required this.products,
+    required this.l,
+    required this.categoryLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1024,7 +1151,16 @@ class _FreeProductSliver extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
                 child: _FreeRow(
                   product: product,
-                  onTap: () => context.push('/collection/${product.id}'),
+                  categoryLabel: categoryLabel(product),
+                  onTap: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => AddCustomProductSheet(
+                  viewProduct: product,
+                  isUserProduct: product.addedInVersion == 'custom',
+                ),
+              ),
                 ),
               );
             }),
@@ -1038,9 +1174,14 @@ class _FreeProductSliver extends StatelessWidget {
 
 class _FreeRow extends StatelessWidget {
   final MasterProduct product;
+  final String? categoryLabel;
   final VoidCallback onTap;
 
-  const _FreeRow({required this.product, required this.onTap});
+  const _FreeRow({
+    required this.product,
+    required this.categoryLabel,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1088,6 +1229,13 @@ class _FreeRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
+                  if (categoryLabel != null) ...[
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: _CategoryChip(label: categoryLabel!),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -1190,11 +1338,13 @@ class WeekGlanceEntryCard extends StatelessWidget {
 class _ArchiveRow extends StatelessWidget {
   final MasterProduct product;
   final AppLocalizations l;
+  final String? categoryLabel;
   final VoidCallback onTap;
 
   const _ArchiveRow({
     required this.product,
     required this.l,
+    required this.categoryLabel,
     required this.onTap,
   });
 
@@ -1245,6 +1395,13 @@ class _ArchiveRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
+                  if (categoryLabel != null) ...[
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: _CategoryChip(label: categoryLabel!),
+                    ),
+                  ],
                 ],
               ),
             ),

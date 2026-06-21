@@ -148,6 +148,7 @@ Estimated: [N] sequential tasks minimum
 id: TASK-001
 phase: Foundation
 type: setup | test | implementation | integration | polish
+agent: test-writer | coder | refactorer | test-runner | smart-research
 complexity: simple | medium | complex
 depends_on: []
 blocks: [TASK-002, TASK-003]
@@ -156,6 +157,17 @@ architecture_ref: Section 2.1
 ui_ref: null (or Section 3.1 if UI task)
 estimated_files: 1-2
 ```
+
+> **Agent assignment rules:**
+> | Task type / TDD phase | Agent |
+> |---|---|
+> | RED (write failing test) | `test-writer` |
+> | GREEN (implement to pass) | `coder` |
+> | REFACTOR (clean up) | `refactorer` |
+> | Run/verify tests | `test-runner` |
+> | Broad codebase search | `smart-research` |
+> | Setup / infrastructure | `coder` |
+> | Integration | `coder` |
 
 #### Context (What agent receives)
 ```markdown
@@ -204,9 +216,9 @@ function_name(param: Type) -> ReturnType
 
 #### TDD Breakdown (for implementation tasks)
 ```
-RED: Write test for [specific behavior]
-GREEN: Implement [specific function/class]
-REFACTOR: [Specific improvement if obvious, or "Evaluate"]
+RED   [agent: test-writer]  Write test for [specific behavior]
+GREEN [agent: coder]        Implement [specific function/class]
+REFACTOR [agent: refactorer] [Specific improvement if obvious, or "Evaluate"]
 ```
 
 ---

@@ -1,0 +1,207 @@
+Analyzing FacialCareRoutineTracker...                           
+
+warning - Unused import: '../theme/app_layout.dart'. Try removing the import directive - lib\core\routing\app_router.dart:4:8 - unused_import
+warning - 'TableMigration' is experimental and could be removed or changed at any time - lib\data\local\database\app_database.dart:64:15 - experimental_member_use
+warning - The type argument(s) of the function 'rpc' can't be inferred. Use explicit type argument(s) for 'rpc' - lib\data\remote\supabase_master_content_data_source.dart:13:44 - inference_failure_on_function_invocation
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._bundled') to initialize the field - lib\data\remote_cached\remote_cached_master_content_repository_impl.dart:20:9 - prefer_initializing_formals
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._remote') to initialize the field - lib\data\remote_cached\remote_cached_master_content_repository_impl.dart:21:9 - prefer_initializing_formals
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._cache') to initialize the field - lib\data\remote_cached\remote_cached_master_content_repository_impl.dart:22:9 - prefer_initializing_formals
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._userRepo') to initialize the field - lib\domain\services\export_import_service.dart:59:9 - prefer_initializing_formals
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._photoRepo') to initialize the field - lib\domain\services\export_import_service.dart:60:9 - prefer_initializing_formals
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\setup\order_customization_screen.dart:190:31 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\setup\order_customization_screen.dart:812:13 - prefer_const_constructors
+warning - The declaration '_getCatHint' isn't referenced. Try removing the declaration of '_getCatHint' - lib\features\setup\product_selection_screen.dart:43:9 - unused_element
+warning - The value of the local variable 'selectedPids' isn't used. Try removing the variable or using it - lib\features\setup\product_selection_screen.dart:530:11 - unused_local_variable
+   info - Use the '??' operator rather than '?:' when testing for 'null'. Try rewriting the code to use '??' - lib\features\setup\product_selection_screen.dart:609:23 - prefer_if_null_operators
+   info - Unnecessary use of multiple underscores. Try using '_' - lib\features\setup\product_selection_screen.dart:1045:36 - unnecessary_underscores
+warning - The declaration '_ProgressBar' isn't referenced. Try removing the declaration of '_ProgressBar' - lib\features\setup\product_selection_screen.dart:1489:7 - unused_element
+warning - The declaration '_openAndScrollToProduct' isn't referenced. Try removing the declaration of '_openAndScrollToProduct' - lib\features\setup\schedule_setup_screen.dart:257:8 - unused_element
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\setup\schedule_setup_screen.dart:602:37 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\setup\schedule_setup_screen.dart:649:41 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\setup\schedule_setup_screen.dart:1755:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\setup\schedule_setup_screen.dart:1923:15 - prefer_const_constructors
+warning - The declaration '_ConflictPairCard' isn't referenced. Try removing the declaration of '_ConflictPairCard' - lib\features\setup\schedule_setup_screen.dart:2109:7 - unused_element
+warning - The declaration '_OverFreqRow' isn't referenced. Try removing the declaration of '_OverFreqRow' - lib\features\setup\schedule_setup_screen.dart:2357:7 - unused_element
+warning - A value for optional parameter 'size' isn't ever given. Try removing the unused parameter - lib\features\setup\schedule_setup_screen.dart:2805:54 - unused_element_parameter
+   info - 'anonKey' is deprecated and shouldn't be used. Use publishableKey instead. anonKey will be removed in a future major version. Try replacing the use of the deprecated member with the replacement - lib\main.dart:15:5 - deprecated_member_use
+   info - Unnecessary use of multiple underscores. Try using '_' - lib\shared\widgets\product_thumb.dart:48:26 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - lib\shared\widgets\product_thumb.dart:53:29 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - lib\shared\widgets\product_thumb.dart:53:33 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - lib\shared\widgets\product_thumb.dart:55:26 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - lib\shared\widgets\product_thumb.dart:55:30 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\shared\widgets\routine_item_row.dart:186:37 - deprecated_member_use
+   info - Unnecessary use of multiple underscores. Try using '_' - lib\shared\widgets\routine_item_row.dart:425:20 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\shared\widgets\routine_item_row.dart:450:25 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\shared\widgets\streak_widget.dart:54:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\shared\widgets\streak_widget.dart:65:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\shared\widgets\streak_widget.dart:158:45 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\data\cache\master_content_serializer_test.dart:108:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\data\cache\master_content_serializer_test.dart:138:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\data\cache\master_content_serializer_test.dart:210:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\data\cache\master_content_serializer_test.dart:279:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\data\cache\master_content_serializer_test.dart:333:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\data\cache\master_content_serializer_test.dart:362:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\data\cache\shared_prefs_master_content_cache_test.dart:10:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\data\cache\shared_prefs_master_content_cache_test.dart:69:22 - prefer_const_constructors
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\data\remote\barcode_lookup_service_test.dart:30:72 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\data\remote\barcode_lookup_service_test.dart:142:53 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\domain\export_import_service_test.dart:451:23 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\domain\export_import_service_test.dart:452:22 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\domain\export_import_service_test.dart:453:22 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\domain\export_import_service_test.dart:454:23 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\domain\export_import_service_test.dart:455:21 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\domain\export_import_service_test.dart:456:27 - inference_failure_on_collection_literal
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\conflict_resolver_test.dart:40:20 - prefer_const_constructors
+warning - The value of the local variable 'bha' isn't used. Try removing the variable or using it - test\domain\services\conflict_resolver_test.dart:320:13 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:16:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:32:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:48:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:64:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:83:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:100:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:117:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:136:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:153:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:173:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\pao_calculator_test.dart:190:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\routine_resolver_category_override_test.dart:21:22 - prefer_const_constructors
+warning - The declaration '_date' isn't referenced. Try removing the declaration of '_date' - test\domain\services\routine_resolver_schedule_test.dart:11:7 - unused_element
+warning - The declaration '_cat' isn't referenced. Try removing the declaration of '_cat' - test\domain\services\routine_resolver_schedule_test.dart:16:10 - unused_element
+warning - The declaration '_dailyMorningOnly' isn't referenced. Try removing the declaration of '_dailyMorningOnly' - test\domain\services\routine_resolver_schedule_test.dart:28:15 - unused_element
+warning - Unused import: 'package:skincare_tracker/domain/entities/sub_category.dart'. Try removing the import directive - test\domain\services\routine_scheduler_test.dart:13:8 - unused_import
+warning - Unused import: 'package:skincare_tracker/domain/services/conflict_resolver.dart'. Try removing the import directive - test\domain\services\routine_scheduler_test.dart:18:8 - unused_import
+warning - Unused import: 'package:skincare_tracker/domain/services/incompatibility_checker.dart'. Try removing the import directive - test\domain\services\routine_scheduler_test.dart:20:8 - unused_import
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:104:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:137:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:167:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:198:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:206:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:238:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:244:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:276:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:330:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:387:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:421:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:438:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:479:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:503:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:524:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:530:26 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:535:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:568:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:612:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:645:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:662:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\domain\services\week_glance_builder_test.dart:701:25 - prefer_const_constructors
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\calendar\calendar_screen_test.dart:78:22 - unnecessary_underscores
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\calendar\day_detail_screen_test.dart:88:18 - prefer_const_constructors
+warning - Unused import: 'package:skincare_tracker/domain/entities/master_product.dart'. Try removing the import directive - test\features\collection\collection_screen_add_product_test.dart:9:8 - unused_import
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\collection\collection_screen_add_product_test.dart:100:17 - prefer_const_constructors
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\collection\collection_screen_add_product_test.dart:117:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\collection\collection_screen_add_product_test.dart:121:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\collection\week_glance_entry_card_test.dart:13:43 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\collection\week_glance_entry_card_test.dart:16:22 - unnecessary_underscores
+warning - A value for optional parameter 'eveningSelections' isn't ever given. Try removing the unused parameter - test\features\home\daily_home_screen_test.dart:75:10 - unused_element_parameter
+warning - A value for optional parameter 'eveningRecord' isn't ever given. Try removing the unused parameter - test\features\home\daily_home_screen_test.dart:77:10 - unused_element_parameter
+   info - Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?' - test\features\home\daily_home_screen_test.dart:97:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?' - test\features\home\daily_home_screen_test.dart:98:9 - use_null_aware_elements
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\home\daily_home_screen_test.dart:161:25 - prefer_const_constructors
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\home\daily_home_screen_test.dart:209:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\home\daily_home_screen_test.dart:218:22 - unnecessary_underscores
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\home\week_glance_screen_test.dart:176:33 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\home\week_glance_screen_test.dart:185:34 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\home\week_glance_screen_test.dart:194:34 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\home\week_glance_screen_test.dart:210:5 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\home\week_glance_screen_test.dart:212:16 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\home\week_glance_screen_test.dart:213:16 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\home\week_glance_screen_test.dart:256:12 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\home\week_glance_screen_test.dart:260:13 - prefer_const_constructors
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\journal\skin_journal_screen_test.dart:95:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\journal\skin_journal_screen_test.dart:99:22 - unnecessary_underscores
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\journal\skin_log_entry_test.dart:146:14 - prefer_const_constructors
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._morning') to initialize the field - test\features\onboarding\onboarding_back_navigation_test.dart:43:9 - prefer_initializing_formals
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._evening') to initialize the field - test\features\onboarding\onboarding_back_navigation_test.dart:44:9 - prefer_initializing_formals
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\onboarding\onboarding_back_navigation_test.dart:180:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\onboarding\onboarding_back_navigation_test.dart:184:22 - unnecessary_underscores
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\onboarding\onboarding_back_navigation_test.dart:328:29 - prefer_const_constructors
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\onboarding\onboarding_back_navigation_test.dart:362:26 - unnecessary_underscores
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._morning') to initialize the field - test\features\onboarding\onboarding_screen_test.dart:43:9 - prefer_initializing_formals
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._evening') to initialize the field - test\features\onboarding\onboarding_screen_test.dart:44:9 - prefer_initializing_formals
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\onboarding\onboarding_screen_test.dart:200:22 - unnecessary_underscores
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\onboarding\onboarding_screen_test.dart:628:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\onboarding\onboarding_screen_test.dart:686:30 - prefer_const_constructors
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\settings\export_import_screen_test.dart:16:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\settings\export_import_screen_test.dart:20:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\settings\merge_conflict_screen_test.dart:121:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\settings\merge_conflict_screen_test.dart:125:22 - unnecessary_underscores
+warning - Unused import: 'package:skincare_tracker/domain/entities/master_list_manifest.dart'. Try removing the import directive - test\features\settings\update_review_screen_test.dart:7:8 - unused_import
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\settings\update_review_screen_test.dart:138:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\settings\update_review_screen_test.dart:142:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\settings\update_review_screen_test.dart:146:22 - unnecessary_underscores
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\add_custom_product_sheet_test.dart:148:12 - prefer_const_constructors
+warning - The declaration '_pmProduct' isn't referenced. Try removing the declaration of '_pmProduct' - test\features\setup\add_product_flow_screen_test.dart:124:15 - unused_element
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\setup\add_product_flow_screen_test.dart:166:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\setup\add_product_flow_screen_test.dart:170:22 - unnecessary_underscores
+   info - Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' - test\features\setup\add_product_flow_screen_test.dart:189:3 - prefer_const_declarations
+   info - Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' - test\features\setup\add_product_flow_screen_test.dart:190:3 - prefer_const_declarations
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\add_product_flow_screen_test.dart:219:26 - prefer_const_constructors
+warning - The value of the local variable 'cta' isn't used. Try removing the variable or using it - test\features\setup\add_product_flow_screen_test.dart:303:13 - unused_local_variable
+   info - The local variable '_navigateToSlotStep' starts with an underscore. Try renaming the variable to not start with an underscore - test\features\setup\add_product_flow_screen_test.dart:315:18 - no_leading_underscores_for_local_identifiers
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\barcode_scan_sheet_test.dart:157:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\barcode_scan_sheet_test.dart:169:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\barcode_scan_sheet_test.dart:181:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\barcode_scan_sheet_test.dart:276:16 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\barcode_scan_sheet_test.dart:280:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\barcode_scan_sheet_test.dart:281:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\barcode_scan_sheet_test.dart:345:27 - prefer_const_constructors
+   info - The local variable '_tapAddAndSettle' starts with an underscore. Try renaming the variable to not start with an underscore - test\features\setup\barcode_scan_sheet_test.dart:395:27 - no_leading_underscores_for_local_identifiers
+   info - The local variable '_wrapGallery' starts with an underscore. Try renaming the variable to not start with an underscore - test\features\setup\barcode_scan_sheet_test.dart:542:10 - no_leading_underscores_for_local_identifiers
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\barcode_scan_sheet_test.dart:604:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\conflict_panel_test.dart:175:14 - prefer_const_constructors
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\setup\conflict_panel_test.dart:462:40 - unnecessary_underscores
+warning - A value for optional parameter 'eveningOverride' isn't ever given. Try removing the unused parameter - test\features\setup\order_customization_screen_test.dart:52:10 - unused_element_parameter
+warning - A value for optional parameter 'eveningPerDayOverrides' isn't ever given. Try removing the unused parameter - test\features\setup\order_customization_screen_test.dart:54:10 - unused_element_parameter
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\setup\order_customization_screen_test.dart:224:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\setup\order_customization_screen_test.dart:228:22 - unnecessary_underscores
+   info - The local variable '_wrapOnboarding' starts with an underscore. Try renaming the variable to not start with an underscore - test\features\setup\order_customization_screen_test.dart:375:12 - no_leading_underscores_for_local_identifiers
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\setup\product_selection_screen_test.dart:243:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\setup\product_selection_screen_test.dart:258:22 - unnecessary_underscores
+   info - Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' - test\features\setup\product_selection_screen_test.dart:278:3 - prefer_const_declarations
+   info - Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' - test\features\setup\product_selection_screen_test.dart:279:3 - prefer_const_declarations
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\product_selection_screen_test.dart:712:26 - prefer_const_constructors
+   info - Unnecessary use of multiple underscores. Try using '_' - test\features\setup\schedule_setup_screen_test.dart:165:22 - unnecessary_underscores
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:199:12 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:318:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:320:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:321:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:376:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:384:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:392:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:400:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:413:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:415:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:416:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:420:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:422:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:423:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:477:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:518:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:562:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:564:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:565:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\features\setup\schedule_setup_screen_test.dart:623:23 - prefer_const_constructors
+warning - Unused import: 'package:skincare_tracker/domain/services/day_boundary_service.dart'. Try removing the import directive - test\features\welcome\welcome_screen_test.dart:19:8 - unused_import
+warning - The value of the local variable 'callbackCalled' isn't used. Try removing the variable or using it - test\features\welcome\welcome_screen_test.dart:180:12 - unused_local_variable
+warning - The value of the local variable 'callbackCalled' isn't used. Try removing the variable or using it - test\features\welcome\welcome_screen_test.dart:200:12 - unused_local_variable
+warning - The value of the local variable 'callbackCalled' isn't used. Try removing the variable or using it - test\features\welcome\welcome_screen_test.dart:238:12 - unused_local_variable
+warning - The value of the local variable 'callbackCalled' isn't used. Try removing the variable or using it - test\features\welcome\welcome_screen_test.dart:353:12 - unused_local_variable
+warning - The value of the local variable 'callbackCalled' isn't used. Try removing the variable or using it - test\features\welcome\welcome_screen_test.dart:375:12 - unused_local_variable
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._language') to initialize the field - test\shared\providers\language_locale_provider_test.dart:11:9 - prefer_initializing_formals
+   info - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._gender') to initialize the field - test\shared\providers\language_locale_provider_test.dart:12:9 - prefer_initializing_formals
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\shared\widgets\backup_reminder_banner_test.dart:54:14 - prefer_const_constructors
+warning - Unused import: 'package:skincare_tracker/domain/enums/slot.dart'. Try removing the import directive - test\shared\widgets\routine_item_row_test.dart:5:8 - unused_import
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\shared\widgets\routine_item_row_test.dart:169:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\shared\widgets\soft_warning_banner_test.dart:47:9 - prefer_const_constructors
+warning - A value for optional parameter 'initial' isn't ever given. Try removing the unused parameter - test\shared\widgets\weekday_picker_test.dart:9:30 - unused_element_parameter
+
+203 issues found. (ran in 14.4s)

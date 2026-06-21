@@ -467,6 +467,13 @@ void main() {
     testWidgets('Step 3 shows V3 product selection UI with all products',
         (tester) async {
       // V3: unified search+scan — all products visible in "popular" list by default.
+      // The V3 list is a lazy ListView; with the onboarding scaffold chrome the
+      // default 800×600 viewport pushes the last product off-screen, so use a
+      // tall surface to lay out all rows (matches product_selection_screen_test).
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       final master = _masterWith(
         [
           _product('p1', 'קרם לחות', 'cat1'),

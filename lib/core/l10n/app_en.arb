@@ -195,6 +195,7 @@
   "productSelListHint": "Tap a product to add it to your list, or add a new product",
   "catHintCleanser1": "Removes makeup and sunscreen, usually in the evening.",
   "catHintCleanser2": "Gentle daily face cleanse.",
+  "catHintCleanser": "Cleanse face — oil/balm for first cleanse, gel/foam for second. Evening only.",
   "catHintRetinoid": "Skin renewal. Evening only, gradually.",
   "catHintToner": "Balances skin and preps it for the next steps.",
   "catHintSerum": "Your active ingredients. Choose as many as you like.",
@@ -203,6 +204,7 @@
   "catHintSpf": "Sun protection, the last morning step. Essential.",
   "catUsageCleanser1": "Massage onto dry skin to dissolve makeup and sunscreen, then rinse with lukewarm water.",
   "catUsageCleanser2": "Lather with a little water, gently massage in circular motions and rinse.",
+  "catUsageCleanser": "Step 1: massage onto dry skin, dissolve, rinse. Step 2: lather with water, gently massage.",
   "catUsageRetinoid": "Pea-sized amount on dry skin, avoid the eye area. Evening only, gradually.",
   "catUsageToner": "Pat a few drops into your palms onto clean skin, before serums.",
   "catUsageSerum": "A few drops on clean skin. Wait for absorption before the next step.",
@@ -440,12 +442,13 @@
   "customProductNameLabel": "Product name",
   "customProductNameHint": "e.g. Personal moisturising serum",
   "customProductCategoryLabel": "Category",
-  "customProductSlotLabel": "Routine time",
+  "customProductSlotLabel": "When is it used?",
   "customProductSlotBoth": "Morning + Evening",
-  "customProductFrequencyLabel": "Frequency",
-  "customProductFrequencyWeekly": "Non Daily",
+  "customProductFrequencyLabel": "Usage frequency",
+  "customProductFrequencyWeekly": "Weekly",
+  "customProductFrequencyDaily": "Every day",
   "customProductTimesPerWeekLabel": "Times per week:",
-  "customProductSave": "Add to my routine",
+  "customProductSave": "Add to shelf",
   "customProductEditButton": "Edit product",
   "customProductEditTitle": "Edit Product",
   "customProductEditSave": "Save changes",
@@ -554,9 +557,11 @@
   "continueActionNeutral": "Continue",
   "addCustomProductCtaTitle": "Add New Product",
   "addCustomProductCtaSub": "Your product not in the list?",
+  "productSelManualCardTitle": "Add manually",
+  "productSelManualCardSub": "Enter a product not found in search",
   "myProductsSearchHint": "Search products...",
   "barcodeScan": "Scan Barcode",
-  "barcodeScanHint": "Aim camera at the barcode on the product packaging",
+  "barcodeScanHint": "Align the barcode within the frame for automatic detection",
   "barcodeScanFound": "Barcode detected",
   "barcodeScanLookingUp": "Searching product databases…",
   "barcodeScanProductFound": "Product found",
@@ -571,6 +576,14 @@
   "barcodeScanMasterProductFound": "Recognized product",
   "barcodeScanAddToRoutine": "Add to Routine",
   "barcodeScanAlreadyInRoutine": "Already in your routine",
+  "barcodeScanFromGallery": "Scan from gallery",
+  "@barcodeScanFromGallery": {
+    "description": "Button label to pick an image from the gallery and decode its barcode"
+  },
+  "barcodeScanAnalyzing": "Analyzing image…",
+  "@barcodeScanAnalyzing": {
+    "description": "Progress message shown while decoding a barcode from a gallery image"
+  },
   "homeViewWeek": "This Week",
   "homeWeekGlanceTitle": "My Week",
   "collectionHealthCard": "Shelf Health",
@@ -928,5 +941,94 @@
         "type": "String"
       }
     }
-  }
+  },
+  "customProductBrandLabel": "Brand",
+  "@customProductBrandLabel": {
+    "description": "Label for the brand input field in the add-custom-product sheet"
+  },
+  "customProductBrandHint": "e.g. The Ordinary",
+  "@customProductBrandHint": {
+    "description": "Hint text for the brand input field in the add-custom-product sheet"
+  },
+  "customProductCategoryHint": "Choose a category...",
+  "@customProductCategoryHint": {
+    "description": "Hint text shown in the category dropdown when no category is selected"
+  },
+  "customProductSubCategoryLabel": "Sub-category",
+  "@customProductSubCategoryLabel": {
+    "description": "Label for the sub-category dropdown in the add-custom-product sheet"
+  },
+  "customProductSubCategoryHint": "Choose a sub-category...",
+  "@customProductSubCategoryHint": {
+    "description": "Hint text shown in the sub-category dropdown when none is selected"
+  },
+  "customProductMoreDetails": "More details (optional)",
+  "@customProductMoreDetails": {
+    "description": "Header for the collapsible more-details section in the add-custom-product sheet"
+  },
+  "customProductScanTitle": "We found the product!",
+  "@customProductScanTitle": {
+    "description": "Sheet title shown in the scan-prefill variant of the add-custom-product sheet"
+  },
+  "customProductScanSubtitle": "We filled in the details from the scan — review, adjust if needed, and confirm adding to your shelf.",
+  "@customProductScanSubtitle": {
+    "description": "Subtitle shown under the scan-variant title"
+  },
+  "customProductAutofillBanner": "Auto-filled from scan",
+  "@customProductAutofillBanner": {
+    "description": "Bold heading of the autofill banner shown at the top of the scan-prefill form"
+  },
+  "customProductAutofillBannerSub": "You can edit any detail before adding",
+  "@customProductAutofillBannerSub": {
+    "description": "Secondary line of the autofill banner"
+  },
+  "customProductReplacePhoto": "Replace photo",
+  "@customProductReplacePhoto": {
+    "description": "Action label to replace the scan-prefilled photo"
+  },
+  "customProductRemovePhoto": "Remove",
+  "@customProductRemovePhoto": {
+    "description": "Action label to remove the scan-prefilled photo"
+  },
+  "customProductScanAgain": "Scan another",
+  "@customProductScanAgain": {
+    "description": "Action label to scan another barcode from the add-custom-product sheet"
+  },
+  "customProductScanImagesHeading": "{count} images found — pick one to keep",
+  "@customProductScanImagesHeading": {
+    "description": "Heading above the grid of candidate images returned from a barcode scan",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "customProductScanImagesHint": "The image you pick will be saved with the product. You can also upload your own.",
+  "@customProductScanImagesHint": {
+    "description": "Helper text under the scan image selection grid"
+  },
+  "customProductScanOwnPhoto": "My own photo",
+  "@customProductScanOwnPhoto": {
+    "description": "Label for the tile that lets the user upload their own photo instead of a scanned candidate"
+  },
+  "barcodeScanWebTitle": "Camera scan isn't available on web",
+  "@barcodeScanWebTitle": {
+    "description": "Title shown in the gallery-only scan view when camera is unavailable (web)"
+  },
+  "barcodeScanWebSub": "Pick a photo with a barcode from your gallery",
+  "@barcodeScanWebSub": {
+    "description": "Subtitle shown in the gallery-only scan view when camera is unavailable (web)"
+  },
+  "customProductFormSubtitle": "Fill in the product details. Fields marked with * are required.",
+  "customProductWhenLabel": "When is it used?",
+  "customProductSubCategoryDisabledHint": "Choose a category first",
+  "customProductSubCategoryNone": "None",
+  "customProductNotesLabel": "Notes",
+  "customProductIngredientsLabel": "Ingredients (INCI)",
+  "customProductIngredientsHint": "Aqua, Glycerin, Niacinamide...",
+  "customProductIngredientsHelper": "Separate ingredients with commas",
+  "unsavedChangesTitle": "Unsaved Changes",
+  "unsavedChangesMessage": "Do you want to save your changes before leaving?",
+  "discardChangesAction": "Discard",
+  "productDetailViewDetails": "View full details"
 }

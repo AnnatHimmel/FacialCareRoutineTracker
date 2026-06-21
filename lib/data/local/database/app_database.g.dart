@@ -2410,11 +2410,11 @@ class $UserCustomProductsTable extends UserCustomProducts
       'CHECK ("is_daily" IN (0, 1))',
     ),
   );
-  static const VerificationMeta _timesPerWeekMeta = const VerificationMeta(
-    'timesPerWeek',
+  static const VerificationMeta _maxTimesPerWeekMeta = const VerificationMeta(
+    'maxTimesPerWeek',
   );
   @override
-  late final GeneratedColumn<int> timesPerWeek = GeneratedColumn<int>(
+  late final GeneratedColumn<int> maxTimesPerWeek = GeneratedColumn<int>(
     'times_per_week',
     aliasedName,
     true,
@@ -2443,6 +2443,26 @@ class $UserCustomProductsTable extends UserCustomProducts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _brandMeta = const VerificationMeta('brand');
+  @override
+  late final GeneratedColumn<String> brand = GeneratedColumn<String>(
+    'brand',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ingredientsMeta = const VerificationMeta(
+    'ingredients',
+  );
+  @override
+  late final GeneratedColumn<String> ingredients = GeneratedColumn<String>(
+    'ingredients',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2453,9 +2473,11 @@ class $UserCustomProductsTable extends UserCustomProducts
     inMorning,
     inEvening,
     isDaily,
-    timesPerWeek,
+    maxTimesPerWeek,
     lastModifiedMs,
     commentJson,
+    brand,
+    ingredients,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2531,10 +2553,10 @@ class $UserCustomProductsTable extends UserCustomProducts
     }
     if (data.containsKey('times_per_week')) {
       context.handle(
-        _timesPerWeekMeta,
-        timesPerWeek.isAcceptableOrUnknown(
+        _maxTimesPerWeekMeta,
+        maxTimesPerWeek.isAcceptableOrUnknown(
           data['times_per_week']!,
-          _timesPerWeekMeta,
+          _maxTimesPerWeekMeta,
         ),
       );
     }
@@ -2555,6 +2577,21 @@ class $UserCustomProductsTable extends UserCustomProducts
         commentJson.isAcceptableOrUnknown(
           data['comment_json']!,
           _commentJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('brand')) {
+      context.handle(
+        _brandMeta,
+        brand.isAcceptableOrUnknown(data['brand']!, _brandMeta),
+      );
+    }
+    if (data.containsKey('ingredients')) {
+      context.handle(
+        _ingredientsMeta,
+        ingredients.isAcceptableOrUnknown(
+          data['ingredients']!,
+          _ingredientsMeta,
         ),
       );
     }
@@ -2599,7 +2636,7 @@ class $UserCustomProductsTable extends UserCustomProducts
         DriftSqlType.bool,
         data['${effectivePrefix}is_daily'],
       )!,
-      timesPerWeek: attachedDatabase.typeMapping.read(
+      maxTimesPerWeek: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}times_per_week'],
       ),
@@ -2610,6 +2647,14 @@ class $UserCustomProductsTable extends UserCustomProducts
       commentJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}comment_json'],
+      ),
+      brand: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}brand'],
+      ),
+      ingredients: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ingredients'],
       ),
     );
   }
@@ -2630,9 +2675,11 @@ class CustomProductRow extends DataClass
   final bool inMorning;
   final bool inEvening;
   final bool isDaily;
-  final int? timesPerWeek;
+  final int? maxTimesPerWeek;
   final int lastModifiedMs;
   final String? commentJson;
+  final String? brand;
+  final String? ingredients;
   const CustomProductRow({
     required this.id,
     required this.name,
@@ -2642,9 +2689,11 @@ class CustomProductRow extends DataClass
     required this.inMorning,
     required this.inEvening,
     required this.isDaily,
-    this.timesPerWeek,
+    this.maxTimesPerWeek,
     required this.lastModifiedMs,
     this.commentJson,
+    this.brand,
+    this.ingredients,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2661,12 +2710,18 @@ class CustomProductRow extends DataClass
     map['in_morning'] = Variable<bool>(inMorning);
     map['in_evening'] = Variable<bool>(inEvening);
     map['is_daily'] = Variable<bool>(isDaily);
-    if (!nullToAbsent || timesPerWeek != null) {
-      map['times_per_week'] = Variable<int>(timesPerWeek);
+    if (!nullToAbsent || maxTimesPerWeek != null) {
+      map['times_per_week'] = Variable<int>(maxTimesPerWeek);
     }
     map['last_modified_ms'] = Variable<int>(lastModifiedMs);
     if (!nullToAbsent || commentJson != null) {
       map['comment_json'] = Variable<String>(commentJson);
+    }
+    if (!nullToAbsent || brand != null) {
+      map['brand'] = Variable<String>(brand);
+    }
+    if (!nullToAbsent || ingredients != null) {
+      map['ingredients'] = Variable<String>(ingredients);
     }
     return map;
   }
@@ -2685,13 +2740,19 @@ class CustomProductRow extends DataClass
       inMorning: Value(inMorning),
       inEvening: Value(inEvening),
       isDaily: Value(isDaily),
-      timesPerWeek: timesPerWeek == null && nullToAbsent
+      maxTimesPerWeek: maxTimesPerWeek == null && nullToAbsent
           ? const Value.absent()
-          : Value(timesPerWeek),
+          : Value(maxTimesPerWeek),
       lastModifiedMs: Value(lastModifiedMs),
       commentJson: commentJson == null && nullToAbsent
           ? const Value.absent()
           : Value(commentJson),
+      brand: brand == null && nullToAbsent
+          ? const Value.absent()
+          : Value(brand),
+      ingredients: ingredients == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ingredients),
     );
   }
 
@@ -2709,9 +2770,11 @@ class CustomProductRow extends DataClass
       inMorning: serializer.fromJson<bool>(json['inMorning']),
       inEvening: serializer.fromJson<bool>(json['inEvening']),
       isDaily: serializer.fromJson<bool>(json['isDaily']),
-      timesPerWeek: serializer.fromJson<int?>(json['timesPerWeek']),
+      maxTimesPerWeek: serializer.fromJson<int?>(json['maxTimesPerWeek']),
       lastModifiedMs: serializer.fromJson<int>(json['lastModifiedMs']),
       commentJson: serializer.fromJson<String?>(json['commentJson']),
+      brand: serializer.fromJson<String?>(json['brand']),
+      ingredients: serializer.fromJson<String?>(json['ingredients']),
     );
   }
   @override
@@ -2726,9 +2789,11 @@ class CustomProductRow extends DataClass
       'inMorning': serializer.toJson<bool>(inMorning),
       'inEvening': serializer.toJson<bool>(inEvening),
       'isDaily': serializer.toJson<bool>(isDaily),
-      'timesPerWeek': serializer.toJson<int?>(timesPerWeek),
+      'maxTimesPerWeek': serializer.toJson<int?>(maxTimesPerWeek),
       'lastModifiedMs': serializer.toJson<int>(lastModifiedMs),
       'commentJson': serializer.toJson<String?>(commentJson),
+      'brand': serializer.toJson<String?>(brand),
+      'ingredients': serializer.toJson<String?>(ingredients),
     };
   }
 
@@ -2741,9 +2806,11 @@ class CustomProductRow extends DataClass
     bool? inMorning,
     bool? inEvening,
     bool? isDaily,
-    Value<int?> timesPerWeek = const Value.absent(),
+    Value<int?> maxTimesPerWeek = const Value.absent(),
     int? lastModifiedMs,
     Value<String?> commentJson = const Value.absent(),
+    Value<String?> brand = const Value.absent(),
+    Value<String?> ingredients = const Value.absent(),
   }) => CustomProductRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2755,9 +2822,13 @@ class CustomProductRow extends DataClass
     inMorning: inMorning ?? this.inMorning,
     inEvening: inEvening ?? this.inEvening,
     isDaily: isDaily ?? this.isDaily,
-    timesPerWeek: timesPerWeek.present ? timesPerWeek.value : this.timesPerWeek,
+    maxTimesPerWeek: maxTimesPerWeek.present
+        ? maxTimesPerWeek.value
+        : this.maxTimesPerWeek,
     lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
     commentJson: commentJson.present ? commentJson.value : this.commentJson,
+    brand: brand.present ? brand.value : this.brand,
+    ingredients: ingredients.present ? ingredients.value : this.ingredients,
   );
   CustomProductRow copyWithCompanion(UserCustomProductsCompanion data) {
     return CustomProductRow(
@@ -2773,15 +2844,19 @@ class CustomProductRow extends DataClass
       inMorning: data.inMorning.present ? data.inMorning.value : this.inMorning,
       inEvening: data.inEvening.present ? data.inEvening.value : this.inEvening,
       isDaily: data.isDaily.present ? data.isDaily.value : this.isDaily,
-      timesPerWeek: data.timesPerWeek.present
-          ? data.timesPerWeek.value
-          : this.timesPerWeek,
+      maxTimesPerWeek: data.maxTimesPerWeek.present
+          ? data.maxTimesPerWeek.value
+          : this.maxTimesPerWeek,
       lastModifiedMs: data.lastModifiedMs.present
           ? data.lastModifiedMs.value
           : this.lastModifiedMs,
       commentJson: data.commentJson.present
           ? data.commentJson.value
           : this.commentJson,
+      brand: data.brand.present ? data.brand.value : this.brand,
+      ingredients: data.ingredients.present
+          ? data.ingredients.value
+          : this.ingredients,
     );
   }
 
@@ -2796,9 +2871,11 @@ class CustomProductRow extends DataClass
           ..write('inMorning: $inMorning, ')
           ..write('inEvening: $inEvening, ')
           ..write('isDaily: $isDaily, ')
-          ..write('timesPerWeek: $timesPerWeek, ')
+          ..write('maxTimesPerWeek: $maxTimesPerWeek, ')
           ..write('lastModifiedMs: $lastModifiedMs, ')
-          ..write('commentJson: $commentJson')
+          ..write('commentJson: $commentJson, ')
+          ..write('brand: $brand, ')
+          ..write('ingredients: $ingredients')
           ..write(')'))
         .toString();
   }
@@ -2813,9 +2890,11 @@ class CustomProductRow extends DataClass
     inMorning,
     inEvening,
     isDaily,
-    timesPerWeek,
+    maxTimesPerWeek,
     lastModifiedMs,
     commentJson,
+    brand,
+    ingredients,
   );
   @override
   bool operator ==(Object other) =>
@@ -2829,9 +2908,11 @@ class CustomProductRow extends DataClass
           other.inMorning == this.inMorning &&
           other.inEvening == this.inEvening &&
           other.isDaily == this.isDaily &&
-          other.timesPerWeek == this.timesPerWeek &&
+          other.maxTimesPerWeek == this.maxTimesPerWeek &&
           other.lastModifiedMs == this.lastModifiedMs &&
-          other.commentJson == this.commentJson);
+          other.commentJson == this.commentJson &&
+          other.brand == this.brand &&
+          other.ingredients == this.ingredients);
 }
 
 class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
@@ -2843,9 +2924,11 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
   final Value<bool> inMorning;
   final Value<bool> inEvening;
   final Value<bool> isDaily;
-  final Value<int?> timesPerWeek;
+  final Value<int?> maxTimesPerWeek;
   final Value<int> lastModifiedMs;
   final Value<String?> commentJson;
+  final Value<String?> brand;
+  final Value<String?> ingredients;
   final Value<int> rowid;
   const UserCustomProductsCompanion({
     this.id = const Value.absent(),
@@ -2856,9 +2939,11 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     this.inMorning = const Value.absent(),
     this.inEvening = const Value.absent(),
     this.isDaily = const Value.absent(),
-    this.timesPerWeek = const Value.absent(),
+    this.maxTimesPerWeek = const Value.absent(),
     this.lastModifiedMs = const Value.absent(),
     this.commentJson = const Value.absent(),
+    this.brand = const Value.absent(),
+    this.ingredients = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UserCustomProductsCompanion.insert({
@@ -2870,9 +2955,11 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     required bool inMorning,
     required bool inEvening,
     required bool isDaily,
-    this.timesPerWeek = const Value.absent(),
+    this.maxTimesPerWeek = const Value.absent(),
     required int lastModifiedMs,
     this.commentJson = const Value.absent(),
+    this.brand = const Value.absent(),
+    this.ingredients = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2890,9 +2977,11 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     Expression<bool>? inMorning,
     Expression<bool>? inEvening,
     Expression<bool>? isDaily,
-    Expression<int>? timesPerWeek,
+    Expression<int>? maxTimesPerWeek,
     Expression<int>? lastModifiedMs,
     Expression<String>? commentJson,
+    Expression<String>? brand,
+    Expression<String>? ingredients,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2904,9 +2993,11 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
       if (inMorning != null) 'in_morning': inMorning,
       if (inEvening != null) 'in_evening': inEvening,
       if (isDaily != null) 'is_daily': isDaily,
-      if (timesPerWeek != null) 'times_per_week': timesPerWeek,
+      if (maxTimesPerWeek != null) 'times_per_week': maxTimesPerWeek,
       if (lastModifiedMs != null) 'last_modified_ms': lastModifiedMs,
       if (commentJson != null) 'comment_json': commentJson,
+      if (brand != null) 'brand': brand,
+      if (ingredients != null) 'ingredients': ingredients,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2920,9 +3011,11 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     Value<bool>? inMorning,
     Value<bool>? inEvening,
     Value<bool>? isDaily,
-    Value<int?>? timesPerWeek,
+    Value<int?>? maxTimesPerWeek,
     Value<int>? lastModifiedMs,
     Value<String?>? commentJson,
+    Value<String?>? brand,
+    Value<String?>? ingredients,
     Value<int>? rowid,
   }) {
     return UserCustomProductsCompanion(
@@ -2934,9 +3027,11 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
       inMorning: inMorning ?? this.inMorning,
       inEvening: inEvening ?? this.inEvening,
       isDaily: isDaily ?? this.isDaily,
-      timesPerWeek: timesPerWeek ?? this.timesPerWeek,
+      maxTimesPerWeek: maxTimesPerWeek ?? this.maxTimesPerWeek,
       lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
       commentJson: commentJson ?? this.commentJson,
+      brand: brand ?? this.brand,
+      ingredients: ingredients ?? this.ingredients,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2968,14 +3063,20 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
     if (isDaily.present) {
       map['is_daily'] = Variable<bool>(isDaily.value);
     }
-    if (timesPerWeek.present) {
-      map['times_per_week'] = Variable<int>(timesPerWeek.value);
+    if (maxTimesPerWeek.present) {
+      map['times_per_week'] = Variable<int>(maxTimesPerWeek.value);
     }
     if (lastModifiedMs.present) {
       map['last_modified_ms'] = Variable<int>(lastModifiedMs.value);
     }
     if (commentJson.present) {
       map['comment_json'] = Variable<String>(commentJson.value);
+    }
+    if (brand.present) {
+      map['brand'] = Variable<String>(brand.value);
+    }
+    if (ingredients.present) {
+      map['ingredients'] = Variable<String>(ingredients.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -2994,9 +3095,11 @@ class UserCustomProductsCompanion extends UpdateCompanion<CustomProductRow> {
           ..write('inMorning: $inMorning, ')
           ..write('inEvening: $inEvening, ')
           ..write('isDaily: $isDaily, ')
-          ..write('timesPerWeek: $timesPerWeek, ')
+          ..write('maxTimesPerWeek: $maxTimesPerWeek, ')
           ..write('lastModifiedMs: $lastModifiedMs, ')
           ..write('commentJson: $commentJson, ')
+          ..write('brand: $brand, ')
+          ..write('ingredients: $ingredients, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3808,6 +3911,291 @@ class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
   }
 }
 
+class $ProductUseTimestampsTable extends ProductUseTimestamps
+    with TableInfo<$ProductUseTimestampsTable, ProductUseTimestampRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProductUseTimestampsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _productIdMeta = const VerificationMeta(
+    'productId',
+  );
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+    'product_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _firstUsedAtMsMeta = const VerificationMeta(
+    'firstUsedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> firstUsedAtMs = GeneratedColumn<int>(
+    'first_used_at_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastUsedAtMsMeta = const VerificationMeta(
+    'lastUsedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> lastUsedAtMs = GeneratedColumn<int>(
+    'last_used_at_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    productId,
+    firstUsedAtMs,
+    lastUsedAtMs,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'product_use_timestamps';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ProductUseTimestampRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('product_id')) {
+      context.handle(
+        _productIdMeta,
+        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('first_used_at_ms')) {
+      context.handle(
+        _firstUsedAtMsMeta,
+        firstUsedAtMs.isAcceptableOrUnknown(
+          data['first_used_at_ms']!,
+          _firstUsedAtMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_firstUsedAtMsMeta);
+    }
+    if (data.containsKey('last_used_at_ms')) {
+      context.handle(
+        _lastUsedAtMsMeta,
+        lastUsedAtMs.isAcceptableOrUnknown(
+          data['last_used_at_ms']!,
+          _lastUsedAtMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastUsedAtMsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {productId};
+  @override
+  ProductUseTimestampRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProductUseTimestampRow(
+      productId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_id'],
+      )!,
+      firstUsedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}first_used_at_ms'],
+      )!,
+      lastUsedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_used_at_ms'],
+      )!,
+    );
+  }
+
+  @override
+  $ProductUseTimestampsTable createAlias(String alias) {
+    return $ProductUseTimestampsTable(attachedDatabase, alias);
+  }
+}
+
+class ProductUseTimestampRow extends DataClass
+    implements Insertable<ProductUseTimestampRow> {
+  final String productId;
+  final int firstUsedAtMs;
+  final int lastUsedAtMs;
+  const ProductUseTimestampRow({
+    required this.productId,
+    required this.firstUsedAtMs,
+    required this.lastUsedAtMs,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['product_id'] = Variable<String>(productId);
+    map['first_used_at_ms'] = Variable<int>(firstUsedAtMs);
+    map['last_used_at_ms'] = Variable<int>(lastUsedAtMs);
+    return map;
+  }
+
+  ProductUseTimestampsCompanion toCompanion(bool nullToAbsent) {
+    return ProductUseTimestampsCompanion(
+      productId: Value(productId),
+      firstUsedAtMs: Value(firstUsedAtMs),
+      lastUsedAtMs: Value(lastUsedAtMs),
+    );
+  }
+
+  factory ProductUseTimestampRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProductUseTimestampRow(
+      productId: serializer.fromJson<String>(json['productId']),
+      firstUsedAtMs: serializer.fromJson<int>(json['firstUsedAtMs']),
+      lastUsedAtMs: serializer.fromJson<int>(json['lastUsedAtMs']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'productId': serializer.toJson<String>(productId),
+      'firstUsedAtMs': serializer.toJson<int>(firstUsedAtMs),
+      'lastUsedAtMs': serializer.toJson<int>(lastUsedAtMs),
+    };
+  }
+
+  ProductUseTimestampRow copyWith({
+    String? productId,
+    int? firstUsedAtMs,
+    int? lastUsedAtMs,
+  }) => ProductUseTimestampRow(
+    productId: productId ?? this.productId,
+    firstUsedAtMs: firstUsedAtMs ?? this.firstUsedAtMs,
+    lastUsedAtMs: lastUsedAtMs ?? this.lastUsedAtMs,
+  );
+  ProductUseTimestampRow copyWithCompanion(ProductUseTimestampsCompanion data) {
+    return ProductUseTimestampRow(
+      productId: data.productId.present ? data.productId.value : this.productId,
+      firstUsedAtMs: data.firstUsedAtMs.present
+          ? data.firstUsedAtMs.value
+          : this.firstUsedAtMs,
+      lastUsedAtMs: data.lastUsedAtMs.present
+          ? data.lastUsedAtMs.value
+          : this.lastUsedAtMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductUseTimestampRow(')
+          ..write('productId: $productId, ')
+          ..write('firstUsedAtMs: $firstUsedAtMs, ')
+          ..write('lastUsedAtMs: $lastUsedAtMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(productId, firstUsedAtMs, lastUsedAtMs);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProductUseTimestampRow &&
+          other.productId == this.productId &&
+          other.firstUsedAtMs == this.firstUsedAtMs &&
+          other.lastUsedAtMs == this.lastUsedAtMs);
+}
+
+class ProductUseTimestampsCompanion
+    extends UpdateCompanion<ProductUseTimestampRow> {
+  final Value<String> productId;
+  final Value<int> firstUsedAtMs;
+  final Value<int> lastUsedAtMs;
+  final Value<int> rowid;
+  const ProductUseTimestampsCompanion({
+    this.productId = const Value.absent(),
+    this.firstUsedAtMs = const Value.absent(),
+    this.lastUsedAtMs = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProductUseTimestampsCompanion.insert({
+    required String productId,
+    required int firstUsedAtMs,
+    required int lastUsedAtMs,
+    this.rowid = const Value.absent(),
+  }) : productId = Value(productId),
+       firstUsedAtMs = Value(firstUsedAtMs),
+       lastUsedAtMs = Value(lastUsedAtMs);
+  static Insertable<ProductUseTimestampRow> custom({
+    Expression<String>? productId,
+    Expression<int>? firstUsedAtMs,
+    Expression<int>? lastUsedAtMs,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (productId != null) 'product_id': productId,
+      if (firstUsedAtMs != null) 'first_used_at_ms': firstUsedAtMs,
+      if (lastUsedAtMs != null) 'last_used_at_ms': lastUsedAtMs,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProductUseTimestampsCompanion copyWith({
+    Value<String>? productId,
+    Value<int>? firstUsedAtMs,
+    Value<int>? lastUsedAtMs,
+    Value<int>? rowid,
+  }) {
+    return ProductUseTimestampsCompanion(
+      productId: productId ?? this.productId,
+      firstUsedAtMs: firstUsedAtMs ?? this.firstUsedAtMs,
+      lastUsedAtMs: lastUsedAtMs ?? this.lastUsedAtMs,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (firstUsedAtMs.present) {
+      map['first_used_at_ms'] = Variable<int>(firstUsedAtMs.value);
+    }
+    if (lastUsedAtMs.present) {
+      map['last_used_at_ms'] = Variable<int>(lastUsedAtMs.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductUseTimestampsCompanion(')
+          ..write('productId: $productId, ')
+          ..write('firstUsedAtMs: $firstUsedAtMs, ')
+          ..write('lastUsedAtMs: $lastUsedAtMs, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3827,6 +4215,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $CategoryOverridesTable categoryOverrides =
       $CategoryOverridesTable(this);
+  late final $ProductUseTimestampsTable productUseTimestamps =
+      $ProductUseTimestampsTable(this);
   late final SelectionsDao selectionsDao = SelectionsDao(this as AppDatabase);
   late final SchedulesDao schedulesDao = SchedulesDao(this as AppDatabase);
   late final OrderOverridesDao orderOverridesDao = OrderOverridesDao(
@@ -3845,6 +4235,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final CategoryOverridesDao categoryOverridesDao = CategoryOverridesDao(
     this as AppDatabase,
   );
+  late final ProductUseTimestampsDao productUseTimestampsDao =
+      ProductUseTimestampsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3859,6 +4251,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     userCustomProducts,
     collectionItems,
     categoryOverrides,
+    productUseTimestamps,
   ];
 }
 
@@ -5140,9 +5533,11 @@ typedef $$UserCustomProductsTableCreateCompanionBuilder =
       required bool inMorning,
       required bool inEvening,
       required bool isDaily,
-      Value<int?> timesPerWeek,
+      Value<int?> maxTimesPerWeek,
       required int lastModifiedMs,
       Value<String?> commentJson,
+      Value<String?> brand,
+      Value<String?> ingredients,
       Value<int> rowid,
     });
 typedef $$UserCustomProductsTableUpdateCompanionBuilder =
@@ -5155,9 +5550,11 @@ typedef $$UserCustomProductsTableUpdateCompanionBuilder =
       Value<bool> inMorning,
       Value<bool> inEvening,
       Value<bool> isDaily,
-      Value<int?> timesPerWeek,
+      Value<int?> maxTimesPerWeek,
       Value<int> lastModifiedMs,
       Value<String?> commentJson,
+      Value<String?> brand,
+      Value<String?> ingredients,
       Value<int> rowid,
     });
 
@@ -5210,8 +5607,8 @@ class $$UserCustomProductsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get timesPerWeek => $composableBuilder(
-    column: $table.timesPerWeek,
+  ColumnFilters<int> get maxTimesPerWeek => $composableBuilder(
+    column: $table.maxTimesPerWeek,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5222,6 +5619,16 @@ class $$UserCustomProductsTableFilterComposer
 
   ColumnFilters<String> get commentJson => $composableBuilder(
     column: $table.commentJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get brand => $composableBuilder(
+    column: $table.brand,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ingredients => $composableBuilder(
+    column: $table.ingredients,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -5275,8 +5682,8 @@ class $$UserCustomProductsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get timesPerWeek => $composableBuilder(
-    column: $table.timesPerWeek,
+  ColumnOrderings<int> get maxTimesPerWeek => $composableBuilder(
+    column: $table.maxTimesPerWeek,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5287,6 +5694,16 @@ class $$UserCustomProductsTableOrderingComposer
 
   ColumnOrderings<String> get commentJson => $composableBuilder(
     column: $table.commentJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get brand => $composableBuilder(
+    column: $table.brand,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ingredients => $composableBuilder(
+    column: $table.ingredients,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -5328,8 +5745,8 @@ class $$UserCustomProductsTableAnnotationComposer
   GeneratedColumn<bool> get isDaily =>
       $composableBuilder(column: $table.isDaily, builder: (column) => column);
 
-  GeneratedColumn<int> get timesPerWeek => $composableBuilder(
-    column: $table.timesPerWeek,
+  GeneratedColumn<int> get maxTimesPerWeek => $composableBuilder(
+    column: $table.maxTimesPerWeek,
     builder: (column) => column,
   );
 
@@ -5340,6 +5757,14 @@ class $$UserCustomProductsTableAnnotationComposer
 
   GeneratedColumn<String> get commentJson => $composableBuilder(
     column: $table.commentJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get brand =>
+      $composableBuilder(column: $table.brand, builder: (column) => column);
+
+  GeneratedColumn<String> get ingredients => $composableBuilder(
+    column: $table.ingredients,
     builder: (column) => column,
   );
 }
@@ -5392,9 +5817,11 @@ class $$UserCustomProductsTableTableManager
                 Value<bool> inMorning = const Value.absent(),
                 Value<bool> inEvening = const Value.absent(),
                 Value<bool> isDaily = const Value.absent(),
-                Value<int?> timesPerWeek = const Value.absent(),
+                Value<int?> maxTimesPerWeek = const Value.absent(),
                 Value<int> lastModifiedMs = const Value.absent(),
                 Value<String?> commentJson = const Value.absent(),
+                Value<String?> brand = const Value.absent(),
+                Value<String?> ingredients = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UserCustomProductsCompanion(
                 id: id,
@@ -5405,9 +5832,11 @@ class $$UserCustomProductsTableTableManager
                 inMorning: inMorning,
                 inEvening: inEvening,
                 isDaily: isDaily,
-                timesPerWeek: timesPerWeek,
+                maxTimesPerWeek: maxTimesPerWeek,
                 lastModifiedMs: lastModifiedMs,
                 commentJson: commentJson,
+                brand: brand,
+                ingredients: ingredients,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5420,9 +5849,11 @@ class $$UserCustomProductsTableTableManager
                 required bool inMorning,
                 required bool inEvening,
                 required bool isDaily,
-                Value<int?> timesPerWeek = const Value.absent(),
+                Value<int?> maxTimesPerWeek = const Value.absent(),
                 required int lastModifiedMs,
                 Value<String?> commentJson = const Value.absent(),
+                Value<String?> brand = const Value.absent(),
+                Value<String?> ingredients = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UserCustomProductsCompanion.insert(
                 id: id,
@@ -5433,9 +5864,11 @@ class $$UserCustomProductsTableTableManager
                 inMorning: inMorning,
                 inEvening: inEvening,
                 isDaily: isDaily,
-                timesPerWeek: timesPerWeek,
+                maxTimesPerWeek: maxTimesPerWeek,
                 lastModifiedMs: lastModifiedMs,
                 commentJson: commentJson,
+                brand: brand,
+                ingredients: ingredients,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -5915,6 +6348,188 @@ typedef $$CategoryOverridesTableProcessedTableManager =
       CategoryOverrideRow,
       PrefetchHooks Function()
     >;
+typedef $$ProductUseTimestampsTableCreateCompanionBuilder =
+    ProductUseTimestampsCompanion Function({
+      required String productId,
+      required int firstUsedAtMs,
+      required int lastUsedAtMs,
+      Value<int> rowid,
+    });
+typedef $$ProductUseTimestampsTableUpdateCompanionBuilder =
+    ProductUseTimestampsCompanion Function({
+      Value<String> productId,
+      Value<int> firstUsedAtMs,
+      Value<int> lastUsedAtMs,
+      Value<int> rowid,
+    });
+
+class $$ProductUseTimestampsTableFilterComposer
+    extends Composer<_$AppDatabase, $ProductUseTimestampsTable> {
+  $$ProductUseTimestampsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get firstUsedAtMs => $composableBuilder(
+    column: $table.firstUsedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastUsedAtMs => $composableBuilder(
+    column: $table.lastUsedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ProductUseTimestampsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProductUseTimestampsTable> {
+  $$ProductUseTimestampsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get firstUsedAtMs => $composableBuilder(
+    column: $table.firstUsedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastUsedAtMs => $composableBuilder(
+    column: $table.lastUsedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ProductUseTimestampsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProductUseTimestampsTable> {
+  $$ProductUseTimestampsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<int> get firstUsedAtMs => $composableBuilder(
+    column: $table.firstUsedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastUsedAtMs => $composableBuilder(
+    column: $table.lastUsedAtMs,
+    builder: (column) => column,
+  );
+}
+
+class $$ProductUseTimestampsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ProductUseTimestampsTable,
+          ProductUseTimestampRow,
+          $$ProductUseTimestampsTableFilterComposer,
+          $$ProductUseTimestampsTableOrderingComposer,
+          $$ProductUseTimestampsTableAnnotationComposer,
+          $$ProductUseTimestampsTableCreateCompanionBuilder,
+          $$ProductUseTimestampsTableUpdateCompanionBuilder,
+          (
+            ProductUseTimestampRow,
+            BaseReferences<
+              _$AppDatabase,
+              $ProductUseTimestampsTable,
+              ProductUseTimestampRow
+            >,
+          ),
+          ProductUseTimestampRow,
+          PrefetchHooks Function()
+        > {
+  $$ProductUseTimestampsTableTableManager(
+    _$AppDatabase db,
+    $ProductUseTimestampsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProductUseTimestampsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProductUseTimestampsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ProductUseTimestampsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> productId = const Value.absent(),
+                Value<int> firstUsedAtMs = const Value.absent(),
+                Value<int> lastUsedAtMs = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ProductUseTimestampsCompanion(
+                productId: productId,
+                firstUsedAtMs: firstUsedAtMs,
+                lastUsedAtMs: lastUsedAtMs,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String productId,
+                required int firstUsedAtMs,
+                required int lastUsedAtMs,
+                Value<int> rowid = const Value.absent(),
+              }) => ProductUseTimestampsCompanion.insert(
+                productId: productId,
+                firstUsedAtMs: firstUsedAtMs,
+                lastUsedAtMs: lastUsedAtMs,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ProductUseTimestampsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ProductUseTimestampsTable,
+      ProductUseTimestampRow,
+      $$ProductUseTimestampsTableFilterComposer,
+      $$ProductUseTimestampsTableOrderingComposer,
+      $$ProductUseTimestampsTableAnnotationComposer,
+      $$ProductUseTimestampsTableCreateCompanionBuilder,
+      $$ProductUseTimestampsTableUpdateCompanionBuilder,
+      (
+        ProductUseTimestampRow,
+        BaseReferences<
+          _$AppDatabase,
+          $ProductUseTimestampsTable,
+          ProductUseTimestampRow
+        >,
+      ),
+      ProductUseTimestampRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5937,4 +6552,6 @@ class $AppDatabaseManager {
       $$CollectionItemsTableTableManager(_db, _db.collectionItems);
   $$CategoryOverridesTableTableManager get categoryOverrides =>
       $$CategoryOverridesTableTableManager(_db, _db.categoryOverrides);
+  $$ProductUseTimestampsTableTableManager get productUseTimestamps =>
+      $$ProductUseTimestampsTableTableManager(_db, _db.productUseTimestamps);
 }

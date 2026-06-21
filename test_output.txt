@@ -1,0 +1,831 @@
+[ +399 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[        ] executing: [C:\Workspace\utilities\flutter/] git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[  +33 ms] Exit code 0 from: git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[        ] 2026-05-15 14:13:13 -0700
+[   +8 ms] Found 5 files which will be executed as Widget Tests.
+[   +2 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +1 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[  +24 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[   +8 ms] Skipping pub get: version match.
+[ +110 ms] Found plugin url_launcher at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +2 ms] Found plugin url_launcher_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +2 ms] Found plugin url_launcher_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.3\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[   +1 ms] Found plugin url_launcher_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +1 ms] Found plugin url_launcher_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.1\
+[   +1 ms] Found plugin url_launcher_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.32\
+[  +12 ms] Found plugin shared_preferences at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.5\
+[   +1 ms] Found plugin shared_preferences_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +2 ms] Found plugin path_provider_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[        ] Found plugin path_provider_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.26\
+[        ] Found plugin path_provider at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +4 ms] Found plugin path_provider_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.3.1\
+[   +1 ms] Found plugin jni_flutter at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.1\
+[   +1 ms] Found plugin jni at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.0.0\
+[   +1 ms] Found plugin app_links at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links-7.1.2\
+[        ] Found plugin app_links_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_web-1.0.4\
+[   +1 ms] Found plugin app_links_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_linux-1.0.3\
+[        ] Found plugin gtk at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\gtk-2.2.0\
+[        ] Found plugin sqlite3_flutter_libs at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[        ] Found plugin share_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-10.1.4\
+[   +4 ms] Found plugin package_info_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-8.3.1\
+[   +2 ms] Found plugin mobile_scanner at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-7.2.0\
+[   +3 ms] Found plugin image_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.2\
+[   +1 ms] Found plugin image_picker_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +1 ms] Found plugin file_selector_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[        ] Found plugin image_picker_for_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[        ] Found plugin image_picker_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+19\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.35\
+[   +4 ms] Found plugin flutter_image_compress at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress-2.4.0\
+[   +1 ms] Found plugin flutter_image_compress_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_web-0.1.5\
+[   +1 ms] Found plugin flutter_image_compress_ohos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_ohos-0.0.3\
+[        ] Found plugin flutter_image_compress_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_macos-1.0.3\
+[        ] Found plugin flutter_image_compress_common at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_common-1.0.6\
+[        ] Found plugin file_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-8.3.7\
+[   +4 ms] Found plugin sqflite at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.3\
+[   +5 ms] Found plugin sqflite_darwin at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.3\
+[   +1 ms] Found plugin sqflite_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.3\
+[  +76 ms] Found plugin url_launcher at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[        ] Found plugin url_launcher_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +1 ms] Found plugin url_launcher_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.3\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +1 ms] Found plugin url_launcher_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.1\
+[        ] Found plugin url_launcher_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.32\
+[  +12 ms] Found plugin shared_preferences at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.5\
+[        ] Found plugin shared_preferences_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +2 ms] Found plugin path_provider_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.26\
+[        ] Found plugin path_provider at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +2 ms] Found plugin path_provider_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.3.1\
+[        ] Found plugin jni_flutter at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.1\
+[        ] Found plugin jni at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.0.0\
+[        ] Found plugin app_links at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links-7.1.2\
+[        ] Found plugin app_links_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_web-1.0.4\
+[        ] Found plugin app_links_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_linux-1.0.3\
+[        ] Found plugin gtk at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\gtk-2.2.0\
+[        ] Found plugin sqlite3_flutter_libs at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[        ] Found plugin share_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-10.1.4\
+[   +3 ms] Found plugin package_info_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-8.3.1\
+[   +1 ms] Found plugin mobile_scanner at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-7.2.0\
+[   +2 ms] Found plugin image_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.2\
+[        ] Found plugin image_picker_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +1 ms] Found plugin file_selector_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[        ] Found plugin image_picker_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[        ] Found plugin image_picker_for_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[        ] Found plugin image_picker_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+19\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.35\
+[   +2 ms] Found plugin flutter_image_compress at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress-2.4.0\
+[   +1 ms] Found plugin flutter_image_compress_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_web-0.1.5\
+[   +1 ms] Found plugin flutter_image_compress_ohos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_ohos-0.0.3\
+[        ] Found plugin flutter_image_compress_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_macos-1.0.3\
+[        ] Found plugin flutter_image_compress_common at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_common-1.0.6\
+[        ] Found plugin file_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-8.3.7\
+[   +2 ms] Found plugin sqflite at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.3\
+[   +1 ms] Found plugin sqflite_darwin at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.3\
+[        ] Found plugin sqflite_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.3\
+[   +7 ms] Skipping generating web_plugin_registrant.dart because it is up-to-date.
+[  +56 ms] Found plugin url_launcher at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[        ] Found plugin url_launcher_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +1 ms] Found plugin url_launcher_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.3\
+[        ] Found plugin url_launcher_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.1\
+[        ] Found plugin url_launcher_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.32\
+[   +7 ms] Found plugin shared_preferences at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.5\
+[        ] Found plugin shared_preferences_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[        ] Found plugin path_provider_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +1 ms] Found plugin shared_preferences_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[        ] Found plugin path_provider_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[        ] Found plugin shared_preferences_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.26\
+[        ] Found plugin path_provider at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +2 ms] Found plugin path_provider_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.3.1\
+[        ] Found plugin jni_flutter at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.1\
+[        ] Found plugin jni at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.0.0\
+[        ] Found plugin app_links at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links-7.1.2\
+[        ] Found plugin app_links_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_web-1.0.4\
+[   +1 ms] Found plugin app_links_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_linux-1.0.3\
+[        ] Found plugin gtk at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\gtk-2.2.0\
+[        ] Found plugin sqlite3_flutter_libs at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[        ] Found plugin share_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-10.1.4\
+[   +3 ms] Found plugin package_info_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-8.3.1\
+[   +1 ms] Found plugin mobile_scanner at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-7.2.0\
+[   +1 ms] Found plugin image_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.2\
+[        ] Found plugin image_picker_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +1 ms] Found plugin file_selector_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[        ] Found plugin image_picker_for_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[        ] Found plugin image_picker_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+19\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.35\
+[   +2 ms] Found plugin flutter_image_compress at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress-2.4.0\
+[        ] Found plugin flutter_image_compress_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_web-0.1.5\
+[   +1 ms] Found plugin flutter_image_compress_ohos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_ohos-0.0.3\
+[        ] Found plugin flutter_image_compress_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_macos-1.0.3\
+[        ] Found plugin flutter_image_compress_common at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_common-1.0.6\
+[        ] Found plugin file_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-8.3.7\
+[   +2 ms] Found plugin sqflite at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.3\
+[   +1 ms] Found plugin sqflite_darwin at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.3\
+[        ] Found plugin sqflite_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.3\
+[   +4 ms] Generating C:\Workspace\FacialCareRoutineTracker\android\app\src\main\java\io\flutter\plugins\GeneratedPluginRegistrant.java
+[        ] Skipping generating GeneratedPluginRegistrant.java because it is up-to-date.
+[   +2 ms] Skipping generating generated_plugin_registrant.h because it is up-to-date.
+[        ] Skipping generating generated_plugin_registrant.cc because it is up-to-date.
+[        ] Skipping generating generated_plugins.cmake because it is up-to-date.
+[   +2 ms] Skipping generating generated_plugin_registrant.h because it is up-to-date.
+[        ] Skipping generating generated_plugin_registrant.cc because it is up-to-date.
+[        ] Skipping generating generated_plugins.cmake because it is up-to-date.
+[   +1 ms] Skipping generating GeneratedPluginRegistrant.h because it is up-to-date.
+[        ] Skipping generating GeneratedPluginRegistrant.m because it is up-to-date.
+[        ] Skipping generating GeneratedPluginRegistrant.swift because it is up-to-date.
+[  +95 ms] executing: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[ +154 ms] Exit code 0 from: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[        ] []
+[        ] executing: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.VCTools Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[ +150 ms] Exit code 0 from: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.VCTools Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[        ] []
+[        ] executing: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -prerelease -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[ +150 ms] Exit code 0 from: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -prerelease -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[        ] []
+[        ] executing: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -prerelease -requires Microsoft.VisualStudio.Workload.VCTools Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[ +150 ms] Exit code 0 from: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -prerelease -requires Microsoft.VisualStudio.Workload.VCTools Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[        ] []
+[        ] executing: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -prerelease -all
+[ +147 ms] Exit code 0 from: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -prerelease -all
+[        ] [
+             {
+               "instanceId": "360e9d75",
+               "installDate": "2023-11-13T21:25:53Z",
+               "installationName": "VisualStudio/17.7.6+34221.43",
+               "installationPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community",
+               "installationVersion": "17.7.34221.43",
+               "productId": "Microsoft.VisualStudio.Product.Community",
+               "productPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe",
+               "state": 4294967295,
+               "isComplete": true,
+               "isLaunchable": true,
+               "isPrerelease": false,
+               "isRebootRequired": false,
+               "displayName": "Visual Studio Community 2022",
+               "description": "Powerful IDE, free for students, open-source contributors, and individuals",
+               "channelId": "VisualStudio.17.Release",
+               "channelUri": "https://aka.ms/vs/17/release/channel",
+               "enginePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\resources\\app\\ServiceHub\\Services\\Microsoft.VisualStudio.Setup.Service",
+               "installedChannelId": "VisualStudio.17.Release",
+               "installedChannelUri": "https://aka.ms/vs/17/release/channel",
+               "releaseNotes": "https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes-v17.7#17.7.6",
+               "thirdPartyNotices": "https://go.microsoft.com/fwlink/?LinkId=661288",
+               "updateDate": "2023-11-13T21:25:53.8920598Z",
+               "catalog": {
+                 "buildBranch": "d17.7",
+                 "buildVersion": "17.7.34221.43",
+                 "id": "VisualStudio/17.7.6+34221.43",
+                 "localBuild": "build-lab",
+                 "manifestName": "VisualStudio",
+                 "manifestType": "installer",
+                 "productDisplayVersion": "17.7.6",
+                 "productLine": "Dev17",
+                 "productLineVersion": "2022",
+                 "productMilestone": "RTW",
+                 "productMilestoneIsPreRelease": "False",
+                 "productName": "Visual Studio",
+                 "productPatchVersion": "6",
+                 "productPreReleaseMilestoneSuffix": "1.0",
+                 "productSemanticVersion": "17.7.6+34221.43",
+                 "requiredEngineVersion": "3.7.2181.36443"
+               },
+               "properties": {
+                 "campaignId": "2030:81576c7d541c4e719ac902840d798e11",
+                 "channelManifestId": "VisualStudio.17.Release/17.7.6+34221.43",
+                 "nickname": "",
+                 "setupEngineFilePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\setup.exe"
+               }
+             }
+           ]
+[   +2 ms] Building native assets for windows_x64.
+[  +42 ms] input.json contents:
+           {
+             "assets": {},
+             "config": {
+               "build_asset_types": [
+                 "code_assets/code"
+               ],
+               "extensions": {
+                 "code_assets": {
+                   "link_mode_preference": "dynamic",
+                   "target_architecture": "x64",
+                   "target_os": "windows"
+                 }
+               },
+               "linking_enabled": false
+             },
+             "out_dir_shared": "C:\\Workspace\\FacialCareRoutineTracker\\.dart_tool\\hooks_runner\\shared\\objective_c\\build\\",
+             "out_file": "C:\\Workspace\\FacialCareRoutineTracker\\.dart_tool\\hooks_runner\\objective_c\\8e04c28b44\\output.json",
+             "package_name": "objective_c",
+             "package_root": "C:\\Users\\annat\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\objective_c-9.4.1\\",
+             "user_defines": {}
+           }
+[   +3 ms] output.json contents:
+           {
+             "assets_for_linking": {},
+             "status": "success",
+             "timestamp": "2026-06-21 01:22:30.000"
+           }
+[   +3 ms] Skipping build for objective_c in C:\Workspace\FacialCareRoutineTracker\.dart_tool\hooks_runner\objective_c\8e04c28b44\. Last build on 2026-06-21 01:22:30.000.
+[   +2 ms] Building native assets for windows_x64 done.
+[   +4 ms] Writing native assets json to file:///C:/Workspace/FacialCareRoutineTracker/build/native_assets/windows/native_assets.json.
+[   +1 ms] Writing C:\Workspace\FacialCareRoutineTracker\build\native_assets\windows\native_assets.json done.
+[ +129 ms] Manifest contained wildcard assets. Inserting missing file into build graph to force rerun. for more information see #56466.
+[  +18 ms] running test package with arguments: [--no-color, --chain-stack-traces, --, file:///C:/Workspace/FacialCareRoutineTracker/test/features/setup/add_custom_product_sheet_test.dart?, file:///C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart?, file:///C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart?, file:///C:/Workspace/FacialCareRoutineTracker/test/domain/entities/user_custom_product_test.dart?, file:///C:/Workspace/FacialCareRoutineTracker/test/data/user_custom_products_dao_test.dart?]
+00:00 +0: loading C:/Workspace/FacialCareRoutineTracker/test/features/setup/add_custom_product_sheet_test.dart
+[ +157 ms] test 0: starting test C:/Workspace/FacialCareRoutineTracker/test/features/setup/add_custom_product_sheet_test.dart
+[   +5 ms] Stopping scan for flutter_test_config.dart; found project root at C:\Workspace\FacialCareRoutineTracker
+[   +3 ms] Compiler will use the following file as its incremental dill file: C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_compiler.aed0ebb4\output.dill
+[        ] Listening to compiler controller...
+[   +4 ms] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.77cbb80/listener.dart
+[   +6 ms] test 1: starting test C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart
+[   +1 ms] Stopping scan for flutter_test_config.dart; found project root at C:\Workspace\FacialCareRoutineTracker
+[   +1 ms] test 2: starting test C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart
+[   +1 ms] Stopping scan for flutter_test_config.dart; found project root at C:\Workspace\FacialCareRoutineTracker
+[   +2 ms] test 3: starting test C:/Workspace/FacialCareRoutineTracker/test/domain/entities/user_custom_product_test.dart
+[   +1 ms] Stopping scan for flutter_test_config.dart; found project root at C:\Workspace\FacialCareRoutineTracker
+[        ] test 4: starting test C:/Workspace/FacialCareRoutineTracker/test/data/user_custom_products_dao_test.dart
+[   +1 ms] Stopping scan for flutter_test_config.dart; found project root at C:\Workspace\FacialCareRoutineTracker
+[  +45 ms] Found plugin url_launcher at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[        ] Found plugin url_launcher_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +2 ms] Found plugin url_launcher_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.3\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +1 ms] Found plugin url_launcher_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.1\
+[        ] Found plugin url_launcher_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.32\
+[   +5 ms] Found plugin shared_preferences at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.5\
+[        ] Found plugin shared_preferences_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[        ] Found plugin path_provider_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.26\
+[        ] Found plugin path_provider at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +2 ms] Found plugin path_provider_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.3.1\
+[        ] Found plugin jni_flutter at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.1\
+[        ] Found plugin jni at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.0.0\
+[        ] Found plugin app_links at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links-7.1.2\
+[        ] Found plugin app_links_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_web-1.0.4\
+[        ] Found plugin app_links_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_linux-1.0.3\
+[        ] Found plugin gtk at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\gtk-2.2.0\
+[        ] Found plugin sqlite3_flutter_libs at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[        ] Found plugin share_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-10.1.4\
+[   +4 ms] Found plugin package_info_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-8.3.1\
+[   +2 ms] Found plugin mobile_scanner at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-7.2.0\
+[   +1 ms] Found plugin image_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.2\
+[   +1 ms] Found plugin image_picker_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +1 ms] Found plugin file_selector_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[        ] Found plugin image_picker_for_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[        ] Found plugin image_picker_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+19\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.35\
+[   +3 ms] Found plugin flutter_image_compress at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress-2.4.0\
+[        ] Found plugin flutter_image_compress_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_web-0.1.5\
+[   +1 ms] Found plugin flutter_image_compress_ohos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_ohos-0.0.3\
+[        ] Found plugin flutter_image_compress_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_macos-1.0.3\
+[        ] Found plugin flutter_image_compress_common at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_common-1.0.6\
+[        ] Found plugin file_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-8.3.7\
+[   +3 ms] Found plugin sqflite at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.3\
+[   +1 ms] Found plugin sqflite_darwin at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.3\
+[        ] Found plugin sqflite_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.3\
+[   +3 ms] Skipping generating dart_plugin_registrant.dart because it is up-to-date.
+[   +2 ms] C:\Workspace\utilities\flutter\bin\cache\dart-sdk\bin\dartaotruntime.exe C:\Workspace\utilities\flutter\bin\cache\dart-sdk\bin\snapshots\frontend_server_aot.dart.snapshot --sdk-root C:\Workspace\utilities\flutter\bin\cache\artifacts\engine\common\flutter_patched_sdk/ --incremental --no-print-incremental-dependencies --target=flutter --experimental-emit-debug-metadata -DFLUTTER_VERSION=3.44.0 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=559ffa3f75 -DFLUTTER_ENGINE_REVISION=4c525dac5e -DFLUTTER_DART_VERSION=3.12.0 --output-dill C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_compiler.aed0ebb4\output.dill --packages C:\Workspace\FacialCareRoutineTracker\.dart_tool\package_config.json -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --initialize-from-dill C:\Workspace\FacialCareRoutineTracker\build\test_cache\build\e526d636a6238c5a01b25d33d78dd941.cache.dill.track.dill --verbosity=error --enable-experiment=alternative-invalidation-strategy
+[   +6 ms] <- compile file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.77cbb80/listener.dart
+[+1489 ms] <- accept
+[        ] <- reset
+[        ] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.77cbb80/listener.dart took 1625ms
+[        ] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.8ff0066c/listener.dart
+[   +1 ms] test 0: starting test device
+[   +2 ms] test 0: awaiting connection to test device
+[   +4 ms] test 0: VM Service uri is not available
+[   +2 ms] test 0: test harness socket server is running at port:62492
+[   +1 ms] Using this directory for fonts configuration: C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_fonts.4b920aec
+[   +1 ms] test 0: Starting flutter_tester process with command=[C:\Workspace\utilities\flutter\bin\cache\artifacts\engine\windows-x64\flutter_tester.exe, --disable-vm-service, --enable-checked-mode, --verify-entry-points, --enable-software-rendering, --skia-deterministic-rendering, --enable-dart-profiling, --non-interactive, --use-test-fonts, --disable-asset-fonts, --packages=C:\Workspace\FacialCareRoutineTracker\.dart_tool\package_config.json, --flutter-assets-dir=C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_listener.77cbb80\listener.dart.dill], environment={FLUTTER_TEST: true, FONTCONFIG_FILE: C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_fonts.4b920aec/fonts.conf, SERVER_PORT: 62492, APP_NAME: skincare_tracker, UNIT_TEST_ASSETS: C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, PATH: C:\Workspace\FacialCareRoutineTracker\build\native_assets\windows\;C:\Users\annat\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\annat\bin;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Users\annat\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\PyCharm 2023.2.4\bin;C:\Users\annat\AppData\Local\Programs\Python\Python310;C:\Users\annat\AppData\Local\Programs\Microsoft VS Code\bin;C:\workspace\utilities\flutter\bin;C:\Program Files\Android\Android Studio\jbr\bin;C:\Users\annat\AppData\Local\Android\Sdk\platform-tools;C:\Users\annat\AppData\Roaming\npm;C:\Program Files\nodejs;C:\Users\annat\.local\bin;C:\Users\annat\AppData\Roaming\Claude\claude-code\2.1.156;C:\Users\annat\AppData\Local\PowerToys\DSCModules;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\code-simplifier\1.0.0\bin;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\skill-creator\unknown\bin}
+[   +6 ms] test 0: Started flutter_tester process at pid 12056
+[  +66 ms] Found plugin url_launcher at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[        ] Found plugin url_launcher_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +1 ms] Found plugin url_launcher_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.3\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.1\
+[   +1 ms] Found plugin url_launcher_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.32\
+[   +8 ms] Found plugin shared_preferences at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.5\
+[        ] Found plugin shared_preferences_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +2 ms] Found plugin path_provider_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[        ] Found plugin path_provider_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.26\
+[        ] Found plugin path_provider at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +2 ms] Found plugin path_provider_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.3.1\
+[        ] Found plugin jni_flutter at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.1\
+[        ] Found plugin jni at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.0.0\
+[        ] Found plugin app_links at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links-7.1.2\
+[        ] Found plugin app_links_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_web-1.0.4\
+[   +1 ms] Found plugin app_links_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_linux-1.0.3\
+[        ] Found plugin gtk at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\gtk-2.2.0\
+[   +2 ms] Found plugin sqlite3_flutter_libs at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[        ] Found plugin share_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-10.1.4\
+[   +2 ms] Found plugin package_info_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-8.3.1\
+[   +1 ms] Found plugin mobile_scanner at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-7.2.0\
+[   +1 ms] Found plugin image_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.2\
+[        ] Found plugin image_picker_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +1 ms] Found plugin file_selector_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[   +1 ms] Found plugin file_selector_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[   +1 ms] Found plugin image_picker_for_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+19\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.35\
+[   +3 ms] Found plugin flutter_image_compress at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress-2.4.0\
+[        ] Found plugin flutter_image_compress_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_web-0.1.5\
+[   +1 ms] Found plugin flutter_image_compress_ohos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_ohos-0.0.3\
+[        ] Found plugin flutter_image_compress_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_macos-1.0.3\
+[        ] Found plugin flutter_image_compress_common at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_common-1.0.6\
+[        ] Found plugin file_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-8.3.7\
+[   +3 ms] Found plugin sqflite at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.3\
+[   +1 ms] Found plugin sqflite_darwin at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.3\
+[        ] Found plugin sqflite_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.3\
+[   +3 ms] Skipping generating dart_plugin_registrant.dart because it is up-to-date.
+[   +1 ms] <- recompile file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.8ff0066c/listener.dart c3e3e846-3d34-44e9-bf51-8a6191083f2f
+[        ] file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.8ff0066c/listener.dart
+[        ] file:///C:/Workspace/FacialCareRoutineTracker/.dart_tool/flutter_build/dart_plugin_registrant.dart
+[        ] <- c3e3e846-3d34-44e9-bf51-8a6191083f2f
+[ +137 ms] test 0: connected to test device, now awaiting test result
+[        ] test 0: Waiting for test harness or tests to finish
+00:00 +0: C:/Workspace/FacialCareRoutineTracker/test/features/setup/add_custom_product_sheet_test.dart: adding a classified exfoliant assigns subCategoryId and seeds a spread schedule
+[ +158 ms] <- accept
+[        ] <- reset
+[        ] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.8ff0066c/listener.dart took 456ms
+[        ] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.5f69292b/listener.dart
+[   +1 ms] test 1: starting test device
+[        ] test 1: awaiting connection to test device
+[   +3 ms] test 1: VM Service uri is not available
+[        ] test 1: test harness socket server is running at port:62494
+[        ] test 1: Starting flutter_tester process with command=[C:\Workspace\utilities\flutter\bin\cache\artifacts\engine\windows-x64\flutter_tester.exe, --disable-vm-service, --enable-checked-mode, --verify-entry-points, --enable-software-rendering, --skia-deterministic-rendering, --enable-dart-profiling, --non-interactive, --use-test-fonts, --disable-asset-fonts, --packages=C:\Workspace\FacialCareRoutineTracker\.dart_tool\package_config.json, --flutter-assets-dir=C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_listener.8ff0066c\listener.dart.dill], environment={FLUTTER_TEST: true, FONTCONFIG_FILE: C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_fonts.4b920aec/fonts.conf, SERVER_PORT: 62494, APP_NAME: skincare_tracker, UNIT_TEST_ASSETS: C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, PATH: C:\Workspace\FacialCareRoutineTracker\build\native_assets\windows\;C:\Users\annat\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\annat\bin;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Users\annat\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\PyCharm 2023.2.4\bin;C:\Users\annat\AppData\Local\Programs\Python\Python310;C:\Users\annat\AppData\Local\Programs\Microsoft VS Code\bin;C:\workspace\utilities\flutter\bin;C:\Program Files\Android\Android Studio\jbr\bin;C:\Users\annat\AppData\Local\Android\Sdk\platform-tools;C:\Users\annat\AppData\Roaming\npm;C:\Program Files\nodejs;C:\Users\annat\.local\bin;C:\Users\annat\AppData\Roaming\Claude\claude-code\2.1.156;C:\Users\annat\AppData\Local\PowerToys\DSCModules;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\code-simplifier\1.0.0\bin;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\skill-creator\unknown\bin}
+[   +5 ms] test 1: Started flutter_tester process at pid 32220
+[  +57 ms] Found plugin url_launcher at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +1 ms] Found plugin url_launcher_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +1 ms] Found plugin url_launcher_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.3\
+[        ] Found plugin url_launcher_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.1\
+[        ] Found plugin url_launcher_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.32\
+[   +9 ms] Found plugin shared_preferences at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.5\
+[        ] Found plugin shared_preferences_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +1 ms] Found plugin shared_preferences_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[        ] Found plugin path_provider_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.26\
+[        ] Found plugin path_provider at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +3 ms] Found plugin path_provider_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.3.1\
+[        ] Found plugin jni_flutter at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.1\
+[        ] Found plugin jni at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.0.0\
+[        ] Found plugin app_links at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links-7.1.2\
+[        ] Found plugin app_links_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_web-1.0.4\
+[   +1 ms] Found plugin app_links_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_linux-1.0.3\
+[   +2 ms] Found plugin gtk at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\gtk-2.2.0\
+[   +1 ms] Found plugin sqlite3_flutter_libs at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[   +1 ms] Found plugin share_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-10.1.4\
+[   +2 ms] Found plugin package_info_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-8.3.1\
+[   +1 ms] Found plugin mobile_scanner at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-7.2.0\
+[   +1 ms] Found plugin image_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.2\
+[        ] Found plugin image_picker_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +1 ms] Found plugin file_selector_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +2 ms] Found plugin image_picker_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +1 ms] Found plugin file_selector_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[   +1 ms] Found plugin image_picker_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[   +1 ms] Found plugin image_picker_for_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+19\
+[   +1 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.35\
+[   +3 ms] Found plugin flutter_image_compress at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress-2.4.0\
+[   +1 ms] Found plugin flutter_image_compress_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_web-0.1.5\
+[   +1 ms] Found plugin flutter_image_compress_ohos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_ohos-0.0.3\
+[        ] Found plugin flutter_image_compress_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_macos-1.0.3\
+[        ] Found plugin flutter_image_compress_common at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_common-1.0.6\
+[        ] Found plugin file_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-8.3.7\
+[   +6 ms] Found plugin sqflite at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.3\
+[   +2 ms] Found plugin sqflite_darwin at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.3\
+[        ] Found plugin sqflite_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.3\
+[   +3 ms] Skipping generating dart_plugin_registrant.dart because it is up-to-date.
+[        ] <- recompile file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.5f69292b/listener.dart 534d9c01-439e-4dcd-8040-df4262337a0f
+[        ] file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.5f69292b/listener.dart
+[        ] file:///C:/Workspace/FacialCareRoutineTracker/.dart_tool/flutter_build/dart_plugin_registrant.dart
+[        ] <- 534d9c01-439e-4dcd-8040-df4262337a0f
+[ +139 ms] test 1: connected to test device, now awaiting test result
+[        ] test 1: Waiting for test harness or tests to finish
+[ +126 ms] <- accept
+[        ] <- reset
+[        ] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.5f69292b/listener.dart took 413ms
+[        ] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.f89971c8/listener.dart
+[        ] test 2: starting test device
+[        ] test 2: awaiting connection to test device
+[   +7 ms] test 2: VM Service uri is not available
+[        ] test 2: test harness socket server is running at port:62496
+[        ] test 2: Starting flutter_tester process with command=[C:\Workspace\utilities\flutter\bin\cache\artifacts\engine\windows-x64\flutter_tester.exe, --disable-vm-service, --enable-checked-mode, --verify-entry-points, --enable-software-rendering, --skia-deterministic-rendering, --enable-dart-profiling, --non-interactive, --use-test-fonts, --disable-asset-fonts, --packages=C:\Workspace\FacialCareRoutineTracker\.dart_tool\package_config.json, --flutter-assets-dir=C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_listener.5f69292b\listener.dart.dill], environment={FLUTTER_TEST: true, FONTCONFIG_FILE: C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_fonts.4b920aec/fonts.conf, SERVER_PORT: 62496, APP_NAME: skincare_tracker, UNIT_TEST_ASSETS: C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, PATH: C:\Workspace\FacialCareRoutineTracker\build\native_assets\windows\;C:\Users\annat\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\annat\bin;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Users\annat\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\PyCharm 2023.2.4\bin;C:\Users\annat\AppData\Local\Programs\Python\Python310;C:\Users\annat\AppData\Local\Programs\Microsoft VS Code\bin;C:\workspace\utilities\flutter\bin;C:\Program Files\Android\Android Studio\jbr\bin;C:\Users\annat\AppData\Local\Android\Sdk\platform-tools;C:\Users\annat\AppData\Roaming\npm;C:\Program Files\nodejs;C:\Users\annat\.local\bin;C:\Users\annat\AppData\Roaming\Claude\claude-code\2.1.156;C:\Users\annat\AppData\Local\PowerToys\DSCModules;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\code-simplifier\1.0.0\bin;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\skill-creator\unknown\bin}
+[   +5 ms] test 2: Started flutter_tester process at pid 56152
+[  +60 ms] Found plugin url_launcher at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[        ] Found plugin url_launcher_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +1 ms] Found plugin url_launcher_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.3\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.1\
+[        ] Found plugin url_launcher_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.32\
+[  +10 ms] Found plugin shared_preferences at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.5\
+[   +1 ms] Found plugin shared_preferences_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms] Found plugin shared_preferences_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[        ] Found plugin path_provider_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.26\
+[   +1 ms] Found plugin path_provider at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[   +1 ms] Found plugin path_provider_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +3 ms] Found plugin path_provider_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.3.1\
+[        ] Found plugin jni_flutter at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.1\
+[        ] Found plugin jni at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.0.0\
+[        ] Found plugin app_links at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links-7.1.2\
+[        ] Found plugin app_links_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_web-1.0.4\
+[   +1 ms] Found plugin app_links_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_linux-1.0.3\
+[        ] Found plugin gtk at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\gtk-2.2.0\
+[        ] Found plugin sqlite3_flutter_libs at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[        ] Found plugin share_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-10.1.4\
+[   +2 ms] Found plugin package_info_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-8.3.1\
+[   +2 ms] Found plugin mobile_scanner at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-7.2.0\
+[   +2 ms] Found plugin image_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.2\
+[        ] Found plugin image_picker_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +2 ms] Found plugin file_selector_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[        ] Found plugin image_picker_for_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[        ] Found plugin image_picker_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+19\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.35\
+[   +2 ms] Found plugin flutter_image_compress at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress-2.4.0\
+[   +1 ms] Found plugin flutter_image_compress_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_web-0.1.5\
+[   +1 ms] Found plugin flutter_image_compress_ohos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_ohos-0.0.3\
+[        ] Found plugin flutter_image_compress_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_macos-1.0.3\
+[        ] Found plugin flutter_image_compress_common at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_common-1.0.6\
+[        ] Found plugin file_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-8.3.7\
+[   +3 ms] Found plugin sqflite at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.3\
+[   +1 ms] Found plugin sqflite_darwin at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.3\
+[        ] Found plugin sqflite_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.3\
+[   +2 ms] Skipping generating dart_plugin_registrant.dart because it is up-to-date.
+[        ] <- recompile file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.f89971c8/listener.dart a7d99aff-72d6-4887-b0ce-e34d9c477167
+[        ] file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.f89971c8/listener.dart
+[        ] file:///C:/Workspace/FacialCareRoutineTracker/.dart_tool/flutter_build/dart_plugin_registrant.dart
+[        ] <- a7d99aff-72d6-4887-b0ce-e34d9c477167
+[ +169 ms] <- accept
+[        ] <- reset
+[        ] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.f89971c8/listener.dart took 318ms
+[        ] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.7ad95e22/listener.dart
+[        ] test 3: starting test device
+[        ] test 3: awaiting connection to test device
+[   +3 ms] test 3: VM Service uri is not available
+[        ] test 3: test harness socket server is running at port:62498
+[        ] test 3: Starting flutter_tester process with command=[C:\Workspace\utilities\flutter\bin\cache\artifacts\engine\windows-x64\flutter_tester.exe, --disable-vm-service, --enable-checked-mode, --verify-entry-points, --enable-software-rendering, --skia-deterministic-rendering, --enable-dart-profiling, --non-interactive, --use-test-fonts, --disable-asset-fonts, --packages=C:\Workspace\FacialCareRoutineTracker\.dart_tool\package_config.json, --flutter-assets-dir=C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_listener.f89971c8\listener.dart.dill], environment={FLUTTER_TEST: true, FONTCONFIG_FILE: C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_fonts.4b920aec/fonts.conf, SERVER_PORT: 62498, APP_NAME: skincare_tracker, UNIT_TEST_ASSETS: C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, PATH: C:\Workspace\FacialCareRoutineTracker\build\native_assets\windows\;C:\Users\annat\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\annat\bin;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Users\annat\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\PyCharm 2023.2.4\bin;C:\Users\annat\AppData\Local\Programs\Python\Python310;C:\Users\annat\AppData\Local\Programs\Microsoft VS Code\bin;C:\workspace\utilities\flutter\bin;C:\Program Files\Android\Android Studio\jbr\bin;C:\Users\annat\AppData\Local\Android\Sdk\platform-tools;C:\Users\annat\AppData\Roaming\npm;C:\Program Files\nodejs;C:\Users\annat\.local\bin;C:\Users\annat\AppData\Roaming\Claude\claude-code\2.1.156;C:\Users\annat\AppData\Local\PowerToys\DSCModules;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\code-simplifier\1.0.0\bin;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\skill-creator\unknown\bin}
+[   +6 ms] test 3: Started flutter_tester process at pid 4480
+[   +1 ms] test 2: connected to test device, now awaiting test result
+[        ] test 2: Waiting for test harness or tests to finish
+[  +58 ms] Found plugin url_launcher at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +1 ms] Found plugin url_launcher_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +1 ms] Found plugin url_launcher_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.3\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.1\
+[        ] Found plugin url_launcher_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.32\
+[   +9 ms] Found plugin shared_preferences at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.5\
+[   +1 ms] Found plugin shared_preferences_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +2 ms] Found plugin path_provider_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +1 ms] Found plugin path_provider_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.26\
+[        ] Found plugin path_provider at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +4 ms] Found plugin path_provider_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.3.1\
+[   +1 ms] Found plugin jni_flutter at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.1\
+[        ] Found plugin jni at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.0.0\
+[        ] Found plugin app_links at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links-7.1.2\
+[        ] Found plugin app_links_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_web-1.0.4\
+[   +1 ms] Found plugin app_links_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\app_links_linux-1.0.3\
+[        ] Found plugin gtk at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\gtk-2.2.0\
+[        ] Found plugin sqlite3_flutter_libs at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[        ] Found plugin share_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-10.1.4\
+[   +2 ms] Found plugin package_info_plus at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-8.3.1\
+[   +1 ms] Found plugin mobile_scanner at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-7.2.0\
+[        ] Found plugin image_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.2\
+[        ] Found plugin image_picker_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +1 ms] Found plugin file_selector_windows at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +4 ms] Found plugin image_picker_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +1 ms] Found plugin image_picker_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +1 ms] Found plugin file_selector_linux at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[   +1 ms] Found plugin image_picker_ios at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[        ] Found plugin image_picker_for_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+19\
+[   +1 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.35\
+[   +1 ms] Found plugin flutter_image_compress at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress-2.4.0\
+[        ] Found plugin flutter_image_compress_web at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_web-0.1.5\
+[   +1 ms] Found plugin flutter_image_compress_ohos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_ohos-0.0.3\
+[        ] Found plugin flutter_image_compress_macos at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_macos-1.0.3\
+[        ] Found plugin flutter_image_compress_common at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_image_compress_common-1.0.6\
+[        ] Found plugin file_picker at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-8.3.7\
+[   +3 ms] Found plugin sqflite at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.3\
+[   +1 ms] Found plugin sqflite_darwin at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.3\
+[        ] Found plugin sqflite_android at C:\Users\annat\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.3\
+[   +3 ms] Skipping generating dart_plugin_registrant.dart because it is up-to-date.
+[        ] <- recompile file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.7ad95e22/listener.dart 024bc45d-7c57-4608-93c4-699371d78782
+[        ] file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.7ad95e22/listener.dart
+[        ] file:///C:/Workspace/FacialCareRoutineTracker/.dart_tool/flutter_build/dart_plugin_registrant.dart
+[        ] <- 024bc45d-7c57-4608-93c4-699371d78782
+[ +176 ms] <- accept
+[        ] <- reset
+[        ] Compiling file:///C:/Users/annat/AppData/Local/Temp/flutter_tools.e0edbd5c/flutter_test_listener.7ad95e22/listener.dart took 324ms
+[        ] test 4: starting test device
+[        ] test 4: awaiting connection to test device
+[        ] test 4: VM Service uri is not available
+[        ] test 4: test harness socket server is running at port:62501
+[        ] test 4: Starting flutter_tester process with command=[C:\Workspace\utilities\flutter\bin\cache\artifacts\engine\windows-x64\flutter_tester.exe, --disable-vm-service, --enable-checked-mode, --verify-entry-points, --enable-software-rendering, --skia-deterministic-rendering, --enable-dart-profiling, --non-interactive, --use-test-fonts, --disable-asset-fonts, --packages=C:\Workspace\FacialCareRoutineTracker\.dart_tool\package_config.json, --flutter-assets-dir=C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_listener.7ad95e22\listener.dart.dill], environment={FLUTTER_TEST: true, FONTCONFIG_FILE: C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_fonts.4b920aec/fonts.conf, SERVER_PORT: 62501, APP_NAME: skincare_tracker, UNIT_TEST_ASSETS: C:\Workspace\FacialCareRoutineTracker\build\unit_test_assets, PATH: C:\Workspace\FacialCareRoutineTracker\build\native_assets\windows\;C:\Users\annat\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\annat\bin;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\workspace\utilities\flutter\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Users\annat\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\PyCharm 2023.2.4\bin;C:\Users\annat\AppData\Local\Programs\Python\Python310;C:\Users\annat\AppData\Local\Programs\Microsoft VS Code\bin;C:\workspace\utilities\flutter\bin;C:\Program Files\Android\Android Studio\jbr\bin;C:\Users\annat\AppData\Local\Android\Sdk\platform-tools;C:\Users\annat\AppData\Roaming\npm;C:\Program Files\nodejs;C:\Users\annat\.local\bin;C:\Users\annat\AppData\Roaming\Claude\claude-code\2.1.156;C:\Users\annat\AppData\Local\PowerToys\DSCModules;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\code-simplifier\1.0.0\bin;C:\Users\annat\.claude\plugins\cache\claude-plugins-official\skill-creator\unknown\bin}
+[   +5 ms] test 4: Started flutter_tester process at pid 30936
+[  +18 ms] test 3: connected to test device, now awaiting test result
+[        ] test 3: Waiting for test harness or tests to finish
+00:01 +1: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode matching a master product shows recognized-product UI and does NOT call external lookup service
+00:01 +2: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode matching a master product shows recognized-product UI and does NOT call external lookup service
+00:01 +3: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode matching a master product shows recognized-product UI and does NOT call external lookup service
+00:01 +4: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode matching a master product shows recognized-product UI and does NOT call external lookup service
+00:01 +5: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode matching a master product shows recognized-product UI and does NOT call external lookup service
+00:01 +6: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode matching a master product shows recognized-product UI and does NOT call external lookup service
+00:01 +7: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode matching a master product shows recognized-product UI and does NOT call external lookup service
+00:01 +8: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode matching a master product shows recognized-product UI and does NOT call external lookup service
+00:01 +9: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode matching a master product shows recognized-product UI and does NOT call external lookup service
+[ +111 ms] test 3: Test harness is no longer needed by test process
+[        ] test 3: finished
+[   +1 ms] test 3: cleaning up...
+[        ] test 3: ensuring test device is terminated.
+[        ] test 3: Terminating flutter_tester process
+[        ] test 3: Shutting down DevTools server
+[        ] test 3: Test process is no longer needed by test harness
+[   +1 ms] test 3: Shutting down test harness socket server
+[  +15 ms] test 3: flutter_tester process at pid 4480 exited with code=-1
+[        ] test 3: deleting temporary directory
+[   +9 ms] test 3: finished
+[Barcode:8809968130239] master check: ✓ matched prod-both (1/1 products have barcodes)
+00:01 +10: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +10: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching barcode NOT in master product list falls through to external lookup
+[Barcode:unknown-barcode-999] master check: no match (1/1 products have barcodes)
+00:01 +11: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +11: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching deprecated product with matching barcode is NOT matched — falls through to external lookup
+[Barcode:8809968130239] master check: no match (1/1 products have barcodes)
+00:01 +12: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +13: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+[ +207 ms] test 4: connected to test device, now awaiting test result
+[        ] test 4: Waiting for test harness or tests to finish
+00:01 +13: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching master product with empty barcodes list is never matched — simulates stale cache before barcodes migration
+[Barcode:8809968130239] master check: no match (0/1 products have barcodes)
+00:01 +14: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +14: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching master content load failure falls through to external lookup
+[Barcode:8809968130239] master content unavailable, skipping master check
+00:01 +15: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +15: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching product with multiple barcodes — second barcode in list is also matched
+[Barcode:1234567890000] master check: ✓ matched prod-both (1/1 products have barcodes)
+00:01 +16: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +17: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +18: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +18: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching multiple products in content — only the product whose barcode matches is returned
+[Barcode:8809968130239] master check: ✓ matched prod-both (2/2 products have barcodes)
+00:01 +19: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +20: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +21: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+[ +196 ms] test 4: Test harness is no longer needed by test process
+[        ] test 4: finished
+[        ] test 4: cleaning up...
+[        ] test 4: ensuring test device is terminated.
+[        ] test 4: Terminating flutter_tester process
+[        ] test 4: Shutting down DevTools server
+[        ] test 4: Test process is no longer needed by test harness
+[        ] test 4: Shutting down test harness socket server
+[  +17 ms] test 4: flutter_tester process at pid 30936 exited with code=-1
+[        ] test 4: deleting temporary directory
+[  +10 ms] test 4: finished
+00:01 +22: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +22: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching no master match + external returns data → calls onExternalProductFound spy with info; intermediate "מוצר נמצא" card is NOT shown
+[Barcode:unknown-barcode-999] master check: no match (1/1 products have barcodes)
+00:01 +23: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +23: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — master product matching no master match + external returns null → shows productNotFound state
+[Barcode:unknown-barcode-999] master check: no match (1/1 products have barcodes)
+00:01 +24: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +25: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +25: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — add to routine morning-only product → upserts only morning selection
+[Barcode:8809968130239] master check: ✓ matched prod-morning (1/1 products have barcodes)
+00:01 +26: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +27: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step shows all products in guided step (V3 unified view)
+00:01 +28: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — add to routine evening-only product → upserts only evening selection
+[Barcode:8809968130239] master check: ✓ matched prod-evening (1/1 products have barcodes)
+00:02 +29: C:/Workspace/FacialCareRoutineTracker/test/features/setup/add_custom_product_sheet_test.dart: scan prefill variant should auto-fill category from categoryHint when classifier returns nothing
+00:02 +30: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step search tab is active by default with tab toggle visible
+00:02 +30: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — add to routine both-slot product → upserts morning and evening selections
+[Barcode:8809968130239] master check: ✓ matched prod-both (1/1 products have barcodes)
+00:02 +31: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — add to routine both-slot product → upserts morning and evening selections
+00:02 +32: C:/Workspace/FacialCareRoutineTracker/test/features/setup/add_custom_product_sheet_test.dart: more details section should show collapsible section header, hide comment field by default, and reveal it after tapping the header
+00:02 +32: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — add to routine product already selected in morning → only evening is upserted
+[Barcode:8809968130239] master check: ✓ matched prod-both (1/1 products have barcodes)
+00:02 +33: C:/Workspace/FacialCareRoutineTracker/test/features/setup/add_custom_product_sheet_test.dart: more details section should show collapsible section header, hide comment field by default, and reveal it after tapping the header
+00:02 +34: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step tapping product row calls upsertSelection
+00:02 +35: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — add to routine product already selected in evening → only morning is upserted
+[Barcode:8809968130239] master check: ✓ matched prod-both (1/1 products have barcodes)
+00:02 +36: C:/Workspace/FacialCareRoutineTracker/test/features/setup/add_custom_product_sheet_test.dart: category hint l10n should show the updated category dropdown hint and not the old one
+00:02 +37: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step fixed AM product shows "בוקר בלבד" chip in browse mode
+[ +520 ms] test 0: Test harness is no longer needed by test process
+[        ] test 0: finished
+[        ] test 0: cleaning up...
+[        ] test 0: ensuring test device is terminated.
+[        ] test 0: Terminating flutter_tester process
+[        ] test 0: Shutting down DevTools server
+[        ] test 0: Test process is no longer needed by test harness
+[        ] test 0: Shutting down test harness socket server
+[  +22 ms] test 0: flutter_tester process at pid 12056 exited with code=-1
+[        ] test 0: deleting temporary directory
+[  +12 ms] test 0: finished
+00:02 +37: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — add to routine product already selected in both slots → "already in routine" badge shown, add button hidden, nothing upserted
+[Barcode:8809968130239] master check: ✓ matched prod-both (1/1 products have barcodes)
+00:02 +38: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step fixed AM product shows "בוקר בלבד" chip in browse mode
+00:02 +39: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — add to routine product with isSelected=false in morning is treated as not-in-routine and gets re-added
+[Barcode:8809968130239] master check: ✓ matched prod-both (1/1 products have barcodes)
+00:02 +40: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step fixed PM product shows "ערב בלבד" chip in browse mode
+00:02 +41: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — add to routine each upserted selection has a unique UUID id
+[Barcode:8809968130239] master check: ✓ matched prod-both (1/1 products have barcodes)
+00:02 +42: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step flexible product shows no fixed-slot chip
+00:02 +42: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — gallery scan gallery decode of a barcode that matches a master product shows "מוצר מוכר" with product name; external lookup NOT called
+[Barcode:8809968130239] master check: ✓ matched prod-both (1/1 products have barcodes)
+00:02 +43: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — guided step flexible product shows no fixed-slot chip
+00:02 +44: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — gallery scan gallery decode of unknown barcode + external returns data calls onExternalProductFound spy with info; "מוצר נמצא" intermediate card is NOT shown; external lookup called exactly once
+[Barcode:unknown-gallery-barcode] master check: no match (1/1 products have barcodes)
+00:02 +45: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — last step navigation "סידור המדף שלי" is the CTA in guided step view
+00:02 +46: C:/Workspace/FacialCareRoutineTracker/test/features/setup/barcode_scan_sheet_test.dart: BarcodeScanSheet — gallery scan gallery decode of an unknown barcode + external returns null shows "המוצר לא נמצא במאגרים"; external lookup called exactly once
+[Barcode:unknown-gallery-barcode-404] master check: no match (1/1 products have barcodes)
+00:02 +47: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — last step navigation tapping "סידור המדף שלי" with fromSetup navigates to /setup/schedule?from=setup
+00:02 +48: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — last step navigation tapping "סידור המדף שלי" with fromSetup navigates to /setup/schedule?from=setup
+[ +289 ms] test 1: Test harness is no longer needed by test process
+[        ] test 1: finished
+[        ] test 1: cleaning up...
+[        ] test 1: ensuring test device is terminated.
+[        ] test 1: Terminating flutter_tester process
+[        ] test 1: Shutting down DevTools server
+[        ] test 1: Test process is no longer needed by test harness
+[        ] test 1: Shutting down test harness socket server
+[  +27 ms] test 1: flutter_tester process at pid 32220 exited with code=-1
+[        ] test 1: deleting temporary directory
+[  +11 ms] test 1: finished
+00:02 +49: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — last step navigation first step of multi-category flow does NOT show "המשיכי לתזמון"
+00:02 +50: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — duplicate-record deselection deselecting updates every duplicate record
+00:02 +51: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — add custom product CTA add manual link is visible in guided step view
+00:02 +52: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — add custom product CTA old small icon-only add button is NOT in guided bottom bar
+00:02 +53: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — shell integration isTabDestination: true → no standalone GlassBottomNav
+00:02 +54: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — shell integration isTabDestination: false → no standalone GlassBottomNav
+00:02 +55: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode renders shows search field when isTabDestination
+00:03 +56: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode renders shows slot filter chips in browse mode
+00:03 +57: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode renders all products across multiple categories visible at once
+00:03 +58: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode renders guided step-by-step view is NOT shown when isTabDestination
+00:03 +59: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode renders add custom product CTA is visible in browse mode
+00:03 +60: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode search search query filters products by name
+00:03 +61: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode search search is case-insensitive for Latin brand names
+00:03 +62: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode search empty search shows all products
+00:03 +63: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode search no-match search shows empty state
+00:03 +64: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode slot filter morning filter hides evening-only products
+00:03 +65: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode slot filter evening filter hides morning-only products
+00:03 +66: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode slot filter tapping active morning chip again returns to "all"
+00:03 +67: C:/Workspace/FacialCareRoutineTracker/test/features/setup/product_selection_screen_test.dart: ProductSelectionScreen — browse mode slot filter deprecated products are hidden in browse mode
+[+1250 ms] test 2: Test harness is no longer needed by test process
+[        ] test 2: finished
+[        ] test 2: cleaning up...
+[        ] test 2: ensuring test device is terminated.
+[        ] test 2: Terminating flutter_tester process
+[        ] test 2: Shutting down DevTools server
+[        ] test 2: Test process is no longer needed by test harness
+[        ] test 2: Shutting down test harness socket server
+[  +23 ms] test 2: flutter_tester process at pid 56152 exited with code=-1
+[        ] test 2: deleting temporary directory
+[   +7 ms] test 2: finished
+00:03 +68: All tests passed!
+[   +5 ms] Deleting C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_compiler.aed0ebb4...
+[  +10 ms] killing pid 16760
+[  +48 ms] Deleting C:\Users\annat\AppData\Local\Temp\flutter_tools.e0edbd5c\flutter_test_fonts.4b920aec...
+[   +2 ms] test package returned with exit code 0
+[        ] Runtime for phase TestRunner: Wall-clock: 0:00:06.152255; combined: 0:00:06.152267.
+[        ] Runtime for phase Compile: Wall-clock: 0:00:03.139486; combined: 0:00:03.139528.
+[        ] Runtime for phase Run: Wall-clock: 0:00:04.247135; combined: 0:00:09.540466.
+[        ] Runtime for phase CoverageTotal: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase CoverageCollect: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase CoverageParseJson: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase CoverageAddHitmap: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase CoverageDataCollect: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase WatcherFinishedTest: Wall-clock: 0:00:00.000858; combined: 0:00:00.000862.
+[        ] "flutter test" took 7,719ms.
+[  +51 ms] Running 7 shutdown hooks
+[   +1 ms] Shutdown hooks complete
+[  +64 ms] exiting with code 0

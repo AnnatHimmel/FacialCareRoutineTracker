@@ -108,6 +108,8 @@ final _master = MasterContent(
   ),
 );
 
+/// Updated helper: registers BOTH /add-product AND /products routes.
+/// Test A asserts that tapping the FAB navigates to /products (not /add-product).
 Widget _wrap() {
   final router = GoRouter(
     initialLocation: '/collection',
@@ -119,6 +121,10 @@ Widget _wrap() {
       GoRoute(
         path: '/add-product',
         builder: (_, __) => const Scaffold(body: Text('add-product-screen')),
+      ),
+      GoRoute(
+        path: '/products',
+        builder: (_, __) => const Scaffold(body: Text('products-screen')),
       ),
     ],
   );
@@ -148,7 +154,9 @@ void main() {
       expect(find.byIcon(Icons.add_rounded), findsOneWidget);
     });
 
-    testWidgets('tapping add-product icon navigates to /add-product',
+    /// REQ: tapping the + FAB must navigate to /products (guided selection),
+    /// NOT to /add-product (old direct-add sheet route).
+    testWidgets('tapping + FAB navigates to /products (guided selection screen)',
         (tester) async {
       await tester.pumpWidget(_wrap());
       await tester.pumpAndSettle();
@@ -156,7 +164,11 @@ void main() {
       await tester.tap(find.byIcon(Icons.add_rounded));
       await tester.pumpAndSettle();
 
-      expect(find.text('add-product-screen'), findsOneWidget);
+      // Must land on the /products route
+      expect(find.text('products-screen'), findsOneWidget);
+
+      // Must NOT have navigated to the old /add-product route
+      expect(find.text('add-product-screen'), findsNothing);
     });
   });
 }

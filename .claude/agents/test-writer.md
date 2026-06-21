@@ -1,6 +1,6 @@
 ---
 name: test-writer
-model: haiku
+model: sonnet
 supervisor: supervisor-sonnet
 maxRetries: 2
 color: red

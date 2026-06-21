@@ -12,6 +12,7 @@ import '../../core/theme/app_colors.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/collection_item.dart';
 import '../../domain/entities/master_product.dart';
+import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/collection_status.dart';
 import '../../domain/services/pao_calculator.dart';
 import '../../shared/providers/root_providers.dart';
@@ -21,122 +22,326 @@ import '../../shared/widgets/pro_tag.dart';
 import '../../shared/widgets/product_thumb.dart' show userPhotoProvider;
 import '../../shared/widgets/upgrade_sheet.dart';
 import '../../core/config/feature_flags.dart';
+import '../setup/add_custom_product_sheet.dart';
 
-class ProductDetailScreen extends ConsumerWidget {
+class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
   const ProductDetailScreen({super.key, required this.productId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final masterAsync = ref.watch(masterContentProvider);
-    final collectionAsync = ref.watch(collectionItemsProvider);
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
+}
 
-    final isPro = ref.watch(isProDemoProvider);
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
+  CollectionItem? _originalItem;
+  CollectionItem? _draftItem;
+  bool _initialized = false;
 
-    return masterAsync.when(
-      loading: () => const Scaffold(
-        backgroundColor: AppColors.surface,
-        appBar: GlowAppBar(showBack: true),
-        body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (e, _) => Scaffold(
-        backgroundColor: AppColors.surface,
-        appBar: const GlowAppBar(showBack: true),
-        body: Center(child: Text(e.toString())),
-      ),
-      data: (master) {
-        final product = master.products.firstWhere(
-          (p) => p.id == productId,
-          orElse: () => master.products.first,
-        );
-        Category? category;
-        try {
-          category = master.categories.firstWhere(
-            (c) => c.id == product.categoryId,
-          );
-        } catch (_) {
-          category = null;
-        }
-        final categoryName = category?.name ?? '';
+  // Compare meaningful fields only — ignore lastModified (always updated on any change).
+  bool get _hasChanges {
+    final d = _draftItem;
+    final o = _originalItem;
+    if (d == null && o == null) return false;
+    if (d == null || o == null) return true;
+    return d.openedDate != o.openedDate ||
+        d.notificationsEnabled != o.notificationsEnabled ||
+        d.status != o.status ||
+        d.paoMonths != o.paoMonths;
+  }
 
-        // Find the collection item for this product (may be null).
-        CollectionItem? collectionItem;
-        collectionAsync.whenData((items) {
-          try {
-            collectionItem = items.firstWhere((i) => i.productId == productId);
-          } catch (_) {
-            collectionItem = null;
-          }
-        });
+  void _initDraft(CollectionItem? item) {
+    if (_initialized) return;
+    _initialized = true;
+    _originalItem = item;
+    _draftItem = item;
+  }
 
-        return Scaffold(
-          backgroundColor: AppColors.surface,
-          appBar: const GlowAppBar(showBack: true),
-          body: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // ── Hero image ──────────────────────────────────────────────
-                _DetailHero(
-                  product: product,
-                  categoryName: categoryName,
-                  ref: ref,
-                ),
+  void _updateDraft(CollectionItem updated) {
+    setState(() => _draftItem = updated);
+  }
 
-                // ── Content card ─────────────────────────────────────────────
-                Transform.translate(
-                  offset: const Offset(0, -8),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(44),
-                        topRight: Radius.circular(44),
-                      ),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _HeaderBlock(
-                          categoryName: categoryName,
-                          productName: product.name,
-                          brand: product.brand,
-                        ),
+  Future<void> _save() async {
+    final draft = _draftItem;
+    if (draft == null) return;
+    await ref.read(userDataRepositoryProvider).upsertCollectionItem(draft);
+    if (mounted) setState(() => _originalItem = draft);
+  }
 
-                        // Lifecycle card — PRO gated
-                        if (kProFeaturesEnabled) ...[
-                          if (isPro)
-                            _LifecycleCard(
-                              productId: productId,
-                              product: product,
-                              collectionItem: collectionItem,
-                              ref: ref,
-                            )
-                          else
-                            _LifecycleCardLocked(
-                              product: product,
-                            ),
-                        ],
-
-                        const SizedBox(height: 20),
-
-                        _RoutineInfoGrid(product: product),
-
-                        // Ingredients section
-                        if (product.ingredients.isNotEmpty) ...[
-                          const SizedBox(height: 20),
-                          _IngredientsSection(ingredients: product.ingredients),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+  // Returns 'save', 'discard', or null (cancelled — stay on screen).
+  Future<String?> _showSaveDialog(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.unsavedChangesTitle),
+        content: Text(l.unsavedChangesMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: Text(l.cancelAction),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop('discard'),
+            child: Text(
+              l.discardChangesAction,
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
-        );
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop('save'),
+            child: Text(l.saveAction),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final masterAsync = ref.watch(masterContentProvider);
+    final collectionAsync = ref.watch(collectionItemsProvider);
+    final customAsync = ref.watch(customProductsProvider);
+    final isPro = ref.watch(isProDemoProvider);
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        if (!_hasChanges) {
+          if (mounted) Navigator.of(context).pop();
+          return;
+        }
+        final action = await _showSaveDialog(context);
+        if (!mounted) return;
+        if (action == 'save') {
+          await _save();
+          if (mounted) Navigator.of(context).pop();
+        } else if (action == 'discard') {
+          Navigator.of(context).pop();
+        }
+        // null = stay on screen
       },
+      child: masterAsync.when(
+        loading: () => Scaffold(
+          backgroundColor: AppColors.surface,
+          appBar: const GlowAppBar(showBack: true),
+          body: const Center(child: CircularProgressIndicator()),
+        ),
+        error: (e, _) => Scaffold(
+          backgroundColor: AppColors.surface,
+          appBar: const GlowAppBar(showBack: true),
+          body: Center(child: Text(e.toString())),
+        ),
+        data: (master) {
+          // Look up product — master first, then custom.
+          MasterProduct? product = master.products.cast<MasterProduct?>()
+              .firstWhere((p) => p?.id == widget.productId, orElse: () => null);
+
+          bool isCustom = false;
+          UserCustomProduct? customProduct;
+          if (product == null) {
+            final customs = customAsync.valueOrNull ?? [];
+            customProduct = customs.cast<UserCustomProduct?>().firstWhere(
+              (c) => c?.id == widget.productId,
+              orElse: () => null,
+            );
+            if (customProduct != null) {
+              product = customProduct.toMasterProduct();
+              isCustom = true;
+            }
+          }
+
+          if (product == null) {
+            return Scaffold(
+              backgroundColor: AppColors.surface,
+              appBar: const GlowAppBar(showBack: true),
+              body: Center(child: Text(l.genericError('Product not found'))),
+            );
+          }
+
+          // Resolve category name.
+          Category? category;
+          try {
+            category = master.categories
+                .firstWhere((c) => c.id == product!.categoryId);
+          } catch (_) {
+            category = null;
+          }
+          final categoryName = category?.name ?? '';
+
+          // Initialize draft from collection items on first data arrival.
+          CollectionItem? collectionItem;
+          collectionAsync.whenData((items) {
+            collectionItem = items.cast<CollectionItem?>().firstWhere(
+              (i) => i?.productId == widget.productId,
+              orElse: () => null,
+            );
+          });
+          _initDraft(collectionItem);
+
+          final appBarAction = _hasChanges
+              ? GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () async {
+                    await _save();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l.saveAction),
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    }
+                  },
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Text(
+                      l.saveAction,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                )
+              : null;
+
+          return Scaffold(
+            backgroundColor: AppColors.surface,
+            appBar: GlowAppBar(showBack: true, action: appBarAction),
+            body: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _DetailHero(
+                    product: product,
+                    categoryName: categoryName,
+                    ref: ref,
+                  ),
+
+                  Transform.translate(
+                    offset: const Offset(0, -8),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(44),
+                          topRight: Radius.circular(44),
+                        ),
+                      ),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _HeaderBlock(
+                            categoryName: categoryName,
+                            productName: product.name,
+                            brand: product.brand,
+                          ),
+
+                          // Product description / usage comment
+                          if (product
+                              .localizedComment(l.localeName)
+                              .isNotEmpty) ...[
+                            const SizedBox(height: 14),
+                            Text(
+                              product.localizedComment(l.localeName),
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.quicksand(
+                                fontSize: 13.5,
+                                color: AppColors.onSurfaceVariant,
+                                height: 1.65,
+                              ),
+                            ),
+                          ],
+
+                          // Custom product edit shortcut
+                          if (isCustom && customProduct != null) ...[
+                            const SizedBox(height: 12),
+                            _EditCustomProductButton(
+                              customProduct: customProduct,
+                            ),
+                          ],
+
+                          // Lifecycle card — PRO gated
+                          if (kProFeaturesEnabled) ...[
+                            if (isPro)
+                              _LifecycleCard(
+                                productId: widget.productId,
+                                product: product,
+                                draft: _draftItem,
+                                onDraftChanged: _updateDraft,
+                              )
+                            else
+                              _LifecycleCardLocked(product: product),
+                          ],
+
+                          const SizedBox(height: 20),
+
+                          _RoutineInfoGrid(product: product),
+
+                          if (product.ingredients.isNotEmpty) ...[
+                            const SizedBox(height: 20),
+                            _IngredientsSection(
+                                ingredients: product.ingredients),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ── Edit custom product shortcut ───────────────────────────────────────────────
+
+class _EditCustomProductButton extends ConsumerWidget {
+  final UserCustomProduct customProduct;
+  const _EditCustomProductButton({required this.customProduct});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    return GestureDetector(
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => AddCustomProductSheet(initialProduct: customProduct),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.primaryFixed.withAlpha(102),
+          borderRadius: BorderRadius.circular(9999),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.edit_outlined,
+                size: 16, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(
+              l.customProductEditButton,
+              style: GoogleFonts.quicksand(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -312,20 +517,19 @@ class _HeaderBlock extends StatelessWidget {
 
 // ── Lifecycle card (functional PRO) ───────────────────────────────────────────
 
-class _LifecycleCard extends StatelessWidget {
+class _LifecycleCard extends ConsumerWidget {
   final String productId;
   final MasterProduct product;
-  final CollectionItem? collectionItem;
-  final WidgetRef ref;
+  final CollectionItem? draft;
+  final ValueChanged<CollectionItem> onDraftChanged;
 
   const _LifecycleCard({
     required this.productId,
     required this.product,
-    required this.collectionItem,
-    required this.ref,
+    required this.draft,
+    required this.onDraftChanged,
   });
 
-  /// Format a date like "2 בפברואר" (Hebrew) or "February 2" (English).
   String _formatDate(BuildContext context, DateTime date) {
     final locale = Localizations.localeOf(context).languageCode;
     if (locale == 'en') {
@@ -338,12 +542,12 @@ class _LifecycleCard extends StatelessWidget {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: collectionItem?.openedDate ?? now,
+      initialDate: draft?.openedDate ?? now,
       firstDate: now.subtract(const Duration(days: 365 * 3)),
       lastDate: now,
     );
     if (picked == null) return;
-    final item = collectionItem;
+    final item = draft;
     final updated = item == null
         ? CollectionItem(
             id: const Uuid().v4(),
@@ -359,56 +563,28 @@ class _LifecycleCard extends StatelessWidget {
             status: CollectionStatus.inUse,
             lastModified: DateTime.now(),
           );
-    await ref.read(userDataRepositoryProvider).upsertCollectionItem(updated);
+    onDraftChanged(updated);
   }
 
-  Future<void> _toggleNotify(bool value) async {
-    final item = collectionItem;
+  void _toggleNotify(bool value) {
+    final item = draft;
     if (item == null) return;
-    await ref.read(userDataRepositoryProvider).upsertCollectionItem(
-          item.copyWith(
-            notificationsEnabled: value,
-            lastModified: DateTime.now(),
-          ),
-        );
+    onDraftChanged(
+        item.copyWith(notificationsEnabled: value, lastModified: DateTime.now()));
   }
 
-  Future<void> _archive(BuildContext context) async {
-    final item = collectionItem;
+  void _setStatus(CollectionStatus status) {
+    final item = draft;
     if (item == null) return;
-    await ref.read(userDataRepositoryProvider).upsertCollectionItem(
-          item.copyWith(
-            status: CollectionStatus.archive,
-            lastModified: DateTime.now(),
-          ),
-        );
-  }
-
-  Future<void> _discard(BuildContext context) async {
-    final item = collectionItem;
-    if (item == null) return;
-    await ref.read(userDataRepositoryProvider).upsertCollectionItem(
-          item.copyWith(
-            status: CollectionStatus.archive,
-            lastModified: DateTime.now(),
-          ),
-        );
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.lifecycleDiscarded),
-        ),
-      );
-    }
+    onDraftChanged(item.copyWith(status: status, lastModified: DateTime.now()));
   }
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final item = collectionItem;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final item = draft;
     final hasOpenedDate = item != null && item.openedDate != null;
 
-    // PAO values — always computed so the meter is always visible.
     final paoMonths = item?.paoMonths ?? defaultPaoMonths(product.categoryId);
     final progress = ref.read(paoCalculatorProvider).compute(
           openedDate: item?.openedDate,
@@ -440,7 +616,7 @@ class _LifecycleCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                l10n.lifecycleTitle,
+                l.lifecycleTitle,
                 style: GoogleFonts.quicksand(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -452,7 +628,7 @@ class _LifecycleCard extends StatelessWidget {
               if (hasOpenedDate) ...[
                 const Spacer(),
                 Text(
-                  l10n.lifecycleInUse,
+                  l.lifecycleInUse,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -470,7 +646,7 @@ class _LifecycleCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                l10n.lifecycleOpenedDate,
+                l.lifecycleOpenedDate,
                 style: GoogleFonts.quicksand(
                   fontSize: 13.5,
                   color: AppColors.onSurfaceVariant,
@@ -491,17 +667,14 @@ class _LifecycleCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(
-                        Icons.edit,
-                        size: 14,
-                        color: AppColors.onSurfaceVariant,
-                      ),
+                      const Icon(Icons.edit,
+                          size: 14, color: AppColors.onSurfaceVariant),
                     ],
                   ),
                 )
               else
                 Text(
-                  l10n.lifecycleNotOpened,
+                  l.lifecycleNotOpened,
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -511,7 +684,7 @@ class _LifecycleCard extends StatelessWidget {
             ],
           ),
 
-          // ── PAO meter — always visible ─────────────────────────────────
+          // ── PAO meter ─────────────────────────────────────────────────
           const SizedBox(height: 10),
           PaoMeter(
             value: progress.fraction.clamp(0.0, 1.0),
@@ -523,7 +696,7 @@ class _LifecycleCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                l10n.lifecyclePao(paoMonths.toString()),
+                l.lifecyclePao(paoMonths.toString()),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   color: AppColors.onSurfaceVariant,
@@ -531,10 +704,9 @@ class _LifecycleCard extends StatelessWidget {
               ),
               Text(
                 isExpired
-                    ? l10n.lifecycleExpired
-                    : l10n.lifecycleMonthsLeft(
-                        progress.monthsRemaining.toString(),
-                      ),
+                    ? l.lifecycleExpired
+                    : l.lifecycleMonthsLeft(
+                        progress.monthsRemaining.toString()),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -555,11 +727,10 @@ class _LifecycleCard extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
+                      borderRadius: BorderRadius.circular(999)),
                 ),
                 child: Text(
-                  l10n.lifecycleSetOpenedDate,
+                  l.lifecycleSetOpenedDate,
                   style: GoogleFonts.plusJakartaSans(
                     color: AppColors.onPrimary,
                     fontWeight: FontWeight.w700,
@@ -573,13 +744,11 @@ class _LifecycleCard extends StatelessWidget {
           // ── In-use: notify + actions ───────────────────────────────────
           if (hasOpenedDate) ...[
             const SizedBox(height: 12),
-
-            // Notification toggle row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  l10n.lifecycleNotify,
+                  l.lifecycleNotify,
                   style: GoogleFonts.quicksand(
                     fontSize: 13.5,
                     color: AppColors.onSurface,
@@ -588,14 +757,13 @@ class _LifecycleCard extends StatelessWidget {
                 Switch(
                   value: item.notificationsEnabled,
                   activeThumbColor: AppColors.primary,
-                  onChanged: (v) => _toggleNotify(v),
+                  onChanged: _toggleNotify,
                 ),
               ],
             ),
 
             const SizedBox(height: 4),
 
-            // Divider + action buttons
             const Divider(height: 1, color: Color(0xffeddfb8)),
             const SizedBox(height: 4),
 
@@ -603,14 +771,11 @@ class _LifecycleCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextButton.icon(
-                    onPressed: () => _archive(context),
-                    icon: const Icon(
-                      Icons.task_alt,
-                      size: 16,
-                      color: AppColors.onSurfaceVariant,
-                    ),
+                    onPressed: () => _setStatus(CollectionStatus.archive),
+                    icon: const Icon(Icons.task_alt,
+                        size: 16, color: AppColors.onSurfaceVariant),
                     label: Text(
-                      l10n.lifecycleFinished,
+                      l.lifecycleFinished,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         color: AppColors.onSurfaceVariant,
@@ -627,14 +792,11 @@ class _LifecycleCard extends StatelessWidget {
                 ),
                 Expanded(
                   child: TextButton.icon(
-                    onPressed: () => _discard(context),
-                    icon: const Icon(
-                      Icons.delete,
-                      size: 16,
-                      color: AppColors.onSurfaceVariant,
-                    ),
+                    onPressed: () => _setStatus(CollectionStatus.archive),
+                    icon: const Icon(Icons.delete,
+                        size: 16, color: AppColors.onSurfaceVariant),
                     label: Text(
-                      l10n.lifecycleDiscarded,
+                      l.lifecycleDiscarded,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         color: AppColors.onSurfaceVariant,
@@ -659,7 +821,7 @@ class _LifecycleCardLocked extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context)!;
 
     return CustomPaint(
       painter: _DashedRoundedBorderPainter(),
@@ -673,11 +835,10 @@ class _LifecycleCardLocked extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Title row ────────────────────────────────────────────────
             Row(
               children: [
                 Text(
-                  l10n.lifecycleTitle,
+                  l.lifecycleTitle,
                   style: GoogleFonts.quicksand(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -687,24 +848,20 @@ class _LifecycleCardLocked extends StatelessWidget {
                 const SizedBox(width: 8),
                 const ProTag(),
                 const Spacer(),
-                const Icon(
-                  Icons.lock_rounded,
-                  size: 18,
-                  color: Color(0xffa8821f),
-                ),
+                const Icon(Icons.lock_rounded,
+                    size: 18, color: Color(0xffa8821f)),
               ],
             ),
 
             const SizedBox(height: 12),
 
-            // ── Dimmed opened-date row ────────────────────────────────────
             Opacity(
               opacity: 0.6,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.lifecycleOpenedDate,
+                    l.lifecycleOpenedDate,
                     style: GoogleFonts.quicksand(
                       fontSize: 13.5,
                       color: AppColors.onSurfaceVariant,
@@ -724,7 +881,6 @@ class _LifecycleCardLocked extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            // ── Dimmed empty PAO meter ────────────────────────────────────
             const Opacity(
               opacity: 0.5,
               child: PaoMeter(value: 0, tone: PaoTone.ok, height: 8),
@@ -732,7 +888,6 @@ class _LifecycleCardLocked extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ── Pitch text ────────────────────────────────────────────────
             Text(
               'מתי נפתח? כמה זמן נשאר? עקבי אחרי חיי מדף, תוקף והתראות, עם Glow PRO.',
               style: GoogleFonts.quicksand(
@@ -743,7 +898,6 @@ class _LifecycleCardLocked extends StatelessWidget {
 
             const SizedBox(height: 14),
 
-            // ── "נסי את PRO" gold gradient button ────────────────────────
             SizedBox(
               width: double.infinity,
               height: 44,
@@ -756,11 +910,8 @@ class _LifecycleCardLocked extends StatelessWidget {
                 ),
                 child: TextButton.icon(
                   onPressed: () => showUpgradeSheet(context),
-                  icon: const Icon(
-                    Icons.workspace_premium,
-                    size: 18,
-                    color: Colors.white,
-                  ),
+                  icon: const Icon(Icons.workspace_premium,
+                      size: 18, color: Colors.white),
                   label: Text(
                     'נסי את PRO',
                     style: GoogleFonts.plusJakartaSans(
@@ -795,7 +946,8 @@ class _DashedRoundedBorderPainter extends CustomPainter {
 
     const half = _strokeWidth / 2;
     final rrect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(half, half, size.width - _strokeWidth, size.height - _strokeWidth),
+      Rect.fromLTWH(
+          half, half, size.width - _strokeWidth, size.height - _strokeWidth),
       const Radius.circular(_radius),
     );
 
@@ -807,7 +959,8 @@ class _DashedRoundedBorderPainter extends CustomPainter {
         final segLen = draw ? _dashLen : _gapLen;
         if (draw) {
           canvas.drawPath(
-            metric.extractPath(distance, min(distance + segLen, metric.length)),
+            metric.extractPath(
+                distance, min(distance + segLen, metric.length)),
             paint,
           );
         }
@@ -829,12 +982,12 @@ class _IngredientsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          l10n.detailIngredients,
+          l.detailIngredients,
           style: GoogleFonts.quicksand(
             fontSize: 15,
             fontWeight: FontWeight.w700,

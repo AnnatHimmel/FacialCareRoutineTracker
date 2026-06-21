@@ -20,6 +20,7 @@ import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 import 'package:skincare_tracker/domain/entities/category_override.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
+import 'package:skincare_tracker/features/setup/add_custom_product_sheet.dart';
 import 'package:skincare_tracker/features/setup/product_selection_screen.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
 
@@ -320,8 +321,14 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, udr: udr));
       await tester.pumpAndSettle();
 
-      // Tap the product row (identified by its text)
-      await tester.tap(find.text('קרם לחות'));
+      // Tap the selection checkbox (right side of the V3FinderRow).
+      // The product name area triggers detail navigation, not selection.
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('v3_row_p1')),
+          matching: find.byType(GestureDetector),
+        ).last,
+      );
       await tester.pumpAndSettle();
 
       expect(udr.upsertCalled, isTrue);
@@ -432,9 +439,14 @@ void main() {
       await tester.pumpWidget(_wrap(master: master, udr: udr));
       await tester.pumpAndSettle();
 
-      // Tap the product row in the guided view — it should be shown selected
-      // (both duplicates contribute isSelected:true to selMap)
-      await tester.tap(find.text('שמן לילה'));
+      // Tap the selection checkbox (right side of the V3FinderRow).
+      // The product name area triggers detail navigation, not selection.
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('v3_row_p1')),
+          matching: find.byType(GestureDetector),
+        ).last,
+      );
       await tester.pumpAndSettle();
 
       // Both duplicate records must have been deselected
@@ -446,14 +458,63 @@ void main() {
   });
 
   group('ProductSelectionScreen — add custom product CTA', () {
-    testWidgets('add manual link is visible in guided step view', (tester) async {
-      final master =
-          _masterWith([_amProduct('p1', 'קרם לחות', 'cat-serum')], [cat1]);
+    /// REQ-B: The manual-add card must show title "הוספה ידנית" and subtitle
+    /// "הזינו מוצר שלא נמצא בחיפוש" directly under the search field in the
+    /// guided flow's search pane. The old footer link label is gone.
+    testWidgets(
+        'manual-add card with title "הוספה ידנית" is visible in guided search pane',
+        (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם לחות', 'cat-serum'),
+        _amProduct('p2', 'סרום ויטמין C', 'cat-serum'),
+      ], [cat1]);
+
+      // Guided flow: isTabDestination defaults to false
+      await tester.pumpWidget(_wrap(master: master));
+      await tester.pumpAndSettle();
+
+      // Card title must be present
+      expect(find.text('הוספה ידנית'), findsOneWidget);
+      // Card subtitle must be present
+      expect(
+          find.text('הזינו מוצר שלא נמצא בחיפוש'), findsOneWidget);
+    });
+
+    testWidgets(
+        'manual-add card appears near top — visible without scrolling; old footer label absent',
+        (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם לחות', 'cat-serum'),
+        _amProduct('p2', 'סרום ויטמין C', 'cat-serum'),
+      ], [cat1]);
 
       await tester.pumpWidget(_wrap(master: master));
       await tester.pumpAndSettle();
 
-      expect(find.text('לא מצאתם? הוסיפו ידנית'), findsOneWidget);
+      // Card is immediately visible (no scrolling required)
+      expect(find.text('הוספה ידנית'), findsOneWidget);
+
+      // Old buried footer link must be gone
+      expect(find.text('לא מצאתם? הוסיפו ידנית'), findsNothing);
+    });
+
+    testWidgets(
+        'tapping manual-add card opens AddCustomProductSheet',
+        (tester) async {
+      final master = _masterWith([
+        _amProduct('p1', 'קרם לחות', 'cat-serum'),
+        _amProduct('p2', 'סרום ויטמין C', 'cat-serum'),
+      ], [cat1]);
+
+      await tester.pumpWidget(_wrap(master: master));
+      await tester.pumpAndSettle();
+
+      // Tap the card title to trigger onAddCustom
+      await tester.tap(find.text('הוספה ידנית'));
+      await tester.pumpAndSettle();
+
+      // AddCustomProductSheet must have been pushed as a modal bottom sheet
+      expect(find.byType(AddCustomProductSheet), findsOneWidget);
     });
 
     testWidgets('old small icon-only add button is NOT in guided bottom bar',

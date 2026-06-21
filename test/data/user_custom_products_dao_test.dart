@@ -54,4 +54,84 @@ void main() {
     final row = rowWithName(rows, 'Cleanser');
     expect(row.subCategoryId, isNull);
   });
+
+  // REQ: brand column — nullable text, round-trip through the DAO layer.
+
+  test('brand round-trips a non-null value', () async {
+    await db.userCustomProductsDao.upsert(
+      UserCustomProductsCompanion(
+        id: const Value('p3'),
+        name: const Value('Toner'),
+        categoryId: const Value('cat-toners'),
+        inMorning: const Value(true),
+        inEvening: const Value(false),
+        isDaily: const Value(true),
+        brand: const Value('The Ordinary'),
+        lastModifiedMs: Value(DateTime(2026).millisecondsSinceEpoch),
+      ),
+    );
+
+    final rows = await db.userCustomProductsDao.watchAll().first;
+    final row = rowWithName(rows, 'Toner');
+    expect(row.brand, 'The Ordinary');
+  });
+
+  test('brand round-trips a null value', () async {
+    await db.userCustomProductsDao.upsert(
+      UserCustomProductsCompanion(
+        id: const Value('p4'),
+        name: const Value('Moisturiser'),
+        categoryId: const Value('cat-moisturisers'),
+        inMorning: const Value(true),
+        inEvening: const Value(true),
+        isDaily: const Value(true),
+        brand: const Value(null),
+        lastModifiedMs: Value(DateTime(2026).millisecondsSinceEpoch),
+      ),
+    );
+
+    final rows = await db.userCustomProductsDao.watchAll().first;
+    final row = rowWithName(rows, 'Moisturiser');
+    expect(row.brand, isNull);
+  });
+
+  // REQ: ingredients column — nullable text, round-trip through the DAO layer.
+
+  test('ingredients round-trips a non-null value', () async {
+    await db.userCustomProductsDao.upsert(
+      UserCustomProductsCompanion(
+        id: const Value('p5'),
+        name: const Value('Niacinamide'),
+        categoryId: const Value('cat-serums'),
+        inMorning: const Value(false),
+        inEvening: const Value(true),
+        isDaily: const Value(true),
+        ingredients: const Value('Aqua, Niacinamide, Zinc PCA'),
+        lastModifiedMs: Value(DateTime(2026).millisecondsSinceEpoch),
+      ),
+    );
+
+    final rows = await db.userCustomProductsDao.watchAll().first;
+    final row = rowWithName(rows, 'Niacinamide');
+    expect(row.ingredients, 'Aqua, Niacinamide, Zinc PCA');
+  });
+
+  test('ingredients round-trips a null value', () async {
+    await db.userCustomProductsDao.upsert(
+      UserCustomProductsCompanion(
+        id: const Value('p6'),
+        name: const Value('Cleanser'),
+        categoryId: const Value('cat-cleansers'),
+        inMorning: const Value(true),
+        inEvening: const Value(true),
+        isDaily: const Value(true),
+        ingredients: const Value(null),
+        lastModifiedMs: Value(DateTime(2026).millisecondsSinceEpoch),
+      ),
+    );
+
+    final rows = await db.userCustomProductsDao.watchAll().first;
+    final row = rowWithName(rows, 'Cleanser');
+    expect(row.ingredients, isNull);
+  });
 }

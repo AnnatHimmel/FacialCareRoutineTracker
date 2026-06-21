@@ -2,8 +2,7 @@ import '../enums/pao_tone.dart';
 
 int defaultPaoMonths(String categoryId) => switch (categoryId) {
       'cat-toner' => 18,
-      'cat-cleanser-step1' ||
-      'cat-cleanser-step2' ||
+      'cat-cleanser' ||
       'cat-retinoid' ||
       'cat-serum' ||
       'cat-moisturizer' ||

@@ -9,6 +9,7 @@ import 'tables/muted_conflicts.dart';
 import 'tables/user_custom_products.dart';
 import 'tables/collection_items.dart';
 import 'tables/category_overrides.dart';
+import 'tables/product_use_timestamps.dart';
 import 'daos/selections_dao.dart';
 import 'daos/schedules_dao.dart';
 import 'daos/order_overrides_dao.dart';
@@ -18,6 +19,7 @@ import 'daos/muted_conflicts_dao.dart';
 import 'daos/user_custom_products_dao.dart';
 import 'daos/collection_items_dao.dart';
 import 'daos/category_overrides_dao.dart';
+import 'daos/product_use_timestamps_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -32,6 +34,7 @@ part 'app_database.g.dart';
     UserCustomProducts,
     CollectionItems,
     CategoryOverrides,
+    ProductUseTimestamps,
   ],
   daos: [
     SelectionsDao,
@@ -43,13 +46,14 @@ part 'app_database.g.dart';
     UserCustomProductsDao,
     CollectionItemsDao,
     CategoryOverridesDao,
+    ProductUseTimestampsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -94,6 +98,34 @@ class AppDatabase extends _$AppDatabase {
           if (from < 9) {
             await m.addColumn(
                 userCustomProducts, userCustomProducts.subCategoryId);
+          }
+          if (from < 10) {
+            await m.addColumn(userCustomProducts, userCustomProducts.brand);
+          }
+          if (from < 11) {
+            // Merge cat-cleanser-step1 and cat-cleanser-step2 into cat-cleanser.
+            await customStatement(
+              "UPDATE user_custom_products SET category_id = 'cat-cleanser' "
+              "WHERE category_id IN ('cat-cleanser-step1', 'cat-cleanser-step2')",
+            );
+            // Rename sub-oil-cleanser → sub-first-cleanser.
+            await customStatement(
+              "UPDATE user_custom_products SET sub_category_id = 'sub-first-cleanser' "
+              "WHERE sub_category_id = 'sub-oil-cleanser'",
+            );
+          }
+          if (from < 12) {
+            // Rename sub-water-cleanser → sub-second-cleanser.
+            await customStatement(
+              "UPDATE user_custom_products SET sub_category_id = 'sub-second-cleanser' "
+              "WHERE sub_category_id = 'sub-water-cleanser'",
+            );
+          }
+          if (from < 13) {
+            await m.addColumn(userCustomProducts, userCustomProducts.ingredients);
+          }
+          if (from < 14) {
+            await m.createTable(productUseTimestamps);
           }
         },
       );
