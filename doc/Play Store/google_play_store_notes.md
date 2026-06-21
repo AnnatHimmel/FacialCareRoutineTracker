@@ -53,13 +53,13 @@ The barcode (EAN/UPC) and the product name are user-initiated data sent off-devi
 
 ### App description update
 
-Suggested addition to the **long description** (Hebrew):
+See `doc/Play Store/full_description.md` for the current store copy. Suggested addition for this release:
 
+**Hebrew:**
 > **חדש: הוספת מוצרים משלך וזיהוי חכם יותר**
 > כעת ניתן להוסיף מוצרים משלך ולערוך את פרטיהם ידנית, וסריקת הברקוד משלימה את הפרטים אוטומטית מתוך מאגרי מוצרים חיצוניים רחבים יותר — לזיהוי טוב יותר לפי ברקוד או לפי שם המוצר.
 
-English (if maintained):
-
+**English (if maintained):**
 > **New: add your own products and smarter recognition**
 > You can now add your own products and edit their details by hand, and barcode scanning fills in the details automatically from a much wider set of external product databases — matching by barcode or by product name.
 
@@ -132,6 +132,8 @@ If CAMERA was already declared in a previous submission, no action is needed.
 - [ ] Play Console **Data safety** form updated for all nine lookup recipients incl. the product-name flow
 - [ ] CAMERA permission declaration confirmed in Play Console (carry-over)
 - [ ] Screenshots updated for the new custom-product / edit flow
+- [ ] `doc/Play Store/full_description.md` updated and copy-pasted into Play Console
+- [ ] `doc/Play Store/short_description.md` updated and copy-pasted into Play Console
 
 ---
 

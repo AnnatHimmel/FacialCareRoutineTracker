@@ -15,7 +15,7 @@ description: >
 End-to-end release preparation for The Glow Protocol. Five phases, in order:
 
 1. **Analyze** — what changed since the last version bump
-2. **Play Store notes** — update `doc/google_play_store_notes.md`
+2. **Play Store files** — update `doc/Play Store/google_play_store_notes.md`, `full_description.md`, and `short_description.md`
 3. **Privacy policy** — update `web/privacy.html` only if new data flows require it
 4. **Version bump** — propose and confirm with user, then apply to `pubspec.yaml`
 5. **Build** — `flutter build appbundle --release`
@@ -48,9 +48,13 @@ Record your findings clearly. Everything in phases 2 and 3 flows from this analy
 
 ---
 
-## Phase 2: Update Play Store Notes
+## Phase 2: Update Play Store Files
 
-Read `doc/google_play_store_notes.md`. Find the existing "Next release" section and **replace it entirely** with a new one reflecting the current release. Archive the old section by moving it to a `## Release history` section at the bottom of the file (or if one already exists, append to it).
+Three files live under `doc/Play Store/`. Update all three that are relevant to this release:
+
+### 2a. `doc/Play Store/google_play_store_notes.md`
+
+Find the existing "Next release" section and **replace it entirely** with a new one reflecting the current release. Archive the old section by moving it to a `## Release history` section at the bottom of the file (or if one already exists, append to it).
 
 Use this template — include only sections where something actually changed; omit empty ones:
 
@@ -63,11 +67,7 @@ Use this template — include only sections where something actually changed; om
   > "The permission is used to [user-visible purpose]. No data is stored or transmitted."
 
 ### App description update
-Suggested addition to the long description (Hebrew):
-> ...
-
-Suggested addition to the long description (English, if maintained):
-> ...
+See `doc/Play Store/full_description.md` for the updated long description. Summarise what changed here.
 
 ### Screenshots
 Consider updating/adding screenshots showing [describe what has changed visually].
@@ -94,6 +94,8 @@ Minimum: 2 screenshots per form factor in Play Console.
 - [ ] Privacy policy URL live and updated (if policy changed)
 - [ ] Play Console permissions declaration updated (if new permissions)
 - [ ] Screenshots updated (if UI changed significantly)
+- [ ] `doc/Play Store/full_description.md` updated and copy-pasted into Play Console
+- [ ] `doc/Play Store/short_description.md` updated and copy-pasted into Play Console
 ```
 
 **What's New writing guide:**
@@ -102,6 +104,16 @@ Minimum: 2 screenshots per form factor in Play Console.
 - Warm tone: "כעת ניתן ל…" / "You can now…"
 - Hard 250-char limit — count before writing
 - If the release is purely internal/fix, a single sentence is fine
+
+### 2b. `doc/Play Store/full_description.md`
+
+Read the current file. If this release added new user-facing features (new capabilities, new screens, new behaviours), **update the Hebrew and English feature lists** to reflect them. Keep the copy accurate to what is actually in the shipped build — do not add promises for future features.
+
+Update only if something meaningfully changed for users. Bug fixes and internal refactors do not warrant a description change.
+
+### 2c. `doc/Play Store/short_description.md`
+
+Read the current file. Update only if the one-line positioning of the app has changed (rare). The short description rarely changes between releases — most releases leave it untouched.
 
 ---
 
@@ -210,9 +222,11 @@ Version:     1.1.0+4  →  1.2.0+5
 AAB:         build/app/outputs/bundle/release/app-release.aab
 
 Files updated:
-  • doc/google_play_store_notes.md
+  • doc/Play Store/google_play_store_notes.md
+  • doc/Play Store/full_description.md   ← or: "no changes needed"
+  • doc/Play Store/short_description.md  ← or: "no changes needed"
   • pubspec.yaml
-  • web/privacy.html        ← or: "no changes needed"
+  • web/privacy.html                     ← or: "no changes needed"
 
 Play Console actions still needed:
   • [list the checklist items from the notes file that require manual Play Console steps]
