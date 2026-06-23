@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/l10n/hebrew_date_strings.dart';
 import '../../core/theme/app_colors.dart';
@@ -19,8 +18,6 @@ import '../../shared/widgets/glow_card.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
-
-const _uuid = Uuid();
 
 class OrderCustomizationScreen extends ConsumerStatefulWidget {
   final bool fromSetup;
@@ -71,15 +68,10 @@ class _OrderCustomizationScreenState
 
     setState(() => _localOrder[slot] = ids);
 
+    // Route through scheduler.setOrder so the deterministic-id rule is applied
+    // in one place, preventing duplicate rows on rapid drags.
     final scheduler = ref.read(routineSchedulerProvider);
-    await scheduler.upsertOrderOverride(
-      OrderOverride(
-        id: existing?.id ?? _uuid.v4(),
-        slot: slot,
-        orderedProductIds: ids,
-        lastModified: DateTime.now(),
-      ),
-    );
+    await scheduler.setOrder(slot: slot, weekday: null, orderedIds: ids);
   }
 
   Future<void> _resetOrder(Slot slot) async {
@@ -116,6 +108,12 @@ class _OrderCustomizationScreenState
         ref.watch(_orderOverrideProvider(Slot.evening));
 
     final schedulesAsync = ref.watch(allSchedulesProvider);
+    // Category overrides so the Order screen sorts identically to Daily Home.
+    final catOverrideList =
+        ref.watch(categoryOverridesProvider).valueOrNull ?? [];
+    final categoryOverrides = catOverrideList.isEmpty
+        ? null
+        : {for (final o in catOverrideList) o.productId: o.categoryId};
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -151,6 +149,7 @@ class _OrderCustomizationScreenState
             morningOverride,
             _localOrder[Slot.morning],
             schedules,
+            categoryOverrides,
           );
           final eveningProducts = _sortedProducts(
             master,
@@ -159,6 +158,7 @@ class _OrderCustomizationScreenState
             eveningOverride,
             _localOrder[Slot.evening],
             schedules,
+            categoryOverrides,
           );
 
           if (_isOnboarding) {
@@ -351,6 +351,7 @@ class _OrderCustomizationScreenState
     OrderOverride? override,
     List<String>? localOrder,
     List<WeekdaySchedule> schedules,
+    Map<String, String>? categoryOverrides,
   ) {
     // Exclude products whose schedule for this slot was explicitly cleared to
     // empty (e.g. moved to the other slot by the conflict resolver).
@@ -370,6 +371,7 @@ class _OrderCustomizationScreenState
       categories: master.categories,
       subcategories: master.subcategories,
       slot: slot,
+      categoryOverrides: categoryOverrides,
     );
 
     final orderIds = localOrder ?? override?.orderedProductIds;
@@ -881,18 +883,17 @@ class _PerDayOrderSheetState extends ConsumerState<_PerDayOrderSheet> {
     setState(() {
       final id = _ids.removeAt(oldIndex);
       _ids.insert(newIndex, id);
+      // Mark that a per-day override exists now (for the clear button)
+      _overrideId ??= 'order-day-${widget.slot.name}-${widget.weekday}';
     });
 
-    _overrideId ??= _uuid.v4();
+    // Route through scheduler.setOrder so the deterministic-id rule is applied
+    // in one place, preventing duplicate rows on rapid drags.
     final scheduler = ref.read(routineSchedulerProvider);
-    await scheduler.upsertOrderOverride(
-      OrderOverride(
-        id: _overrideId!,
-        slot: widget.slot,
-        weekday: widget.weekday,
-        orderedProductIds: List<String>.from(_ids),
-        lastModified: DateTime.now(),
-      ),
+    await scheduler.setOrder(
+      slot: widget.slot,
+      weekday: widget.weekday,
+      orderedIds: List<String>.from(_ids),
     );
   }
 

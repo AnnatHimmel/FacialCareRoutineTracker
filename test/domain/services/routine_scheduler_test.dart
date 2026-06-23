@@ -925,6 +925,93 @@ void main() {
     });
   });
 
+  // ── Group 5d: setOrder deterministic id / no duplicate rows ────────────────
+
+  group('setOrder deterministic id', () {
+    test(
+        'calling_setOrder_twice_for_same_slot_results_in_exactly_one_override_row',
+        () async {
+      // RED: this test currently fails because the second setOrder call
+      // generates a new UUID id and inserts a SECOND row.
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: ['prod-daily', 'prod-weekly'],
+      );
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: ['prod-weekly', 'prod-daily'],
+      );
+
+      // Only one global row should exist for morning slot
+      final overrides =
+          await scheduler.watchOrderOverride(Slot.morning).first;
+
+      // watchOrderOverride returns the effective (latest) override
+      expect(overrides, isNotNull);
+      expect(overrides!.orderedProductIds,
+          equals(['prod-weekly', 'prod-daily']),
+          reason: 'second setOrder must update the existing row, not create a duplicate');
+    });
+
+    test(
+        'deterministic_id_is_stable_across_multiple_setOrder_calls',
+        () async {
+      // Call setOrder 3 times for same slot — must always upsert same row
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: ['prod-daily', 'prod-weekly'],
+      );
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: ['prod-weekly', 'prod-daily'],
+      );
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: ['prod-daily', 'prod-weekly'],
+      );
+
+      // Last write wins — must be the third write
+      final overrides =
+          await scheduler.watchOrderOverride(Slot.morning).first;
+      expect(overrides, isNotNull);
+      expect(overrides!.orderedProductIds,
+          equals(['prod-daily', 'prod-weekly']),
+          reason: 'third setOrder must reflect the latest write');
+    });
+
+    test(
+        'setOrder_per_day_twice_results_in_one_row_with_latest_order',
+        () async {
+      // Per-day variant: weekday != null
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: 3,
+        orderedIds: ['prod-daily', 'prod-weekly'],
+      );
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: 3,
+        orderedIds: ['prod-weekly', 'prod-daily'],
+      );
+
+      final overrides =
+          await scheduler.watchPerDayOrderOverrides(Slot.morning).first;
+      final dayOverride = overrides.where((o) => o.weekday == 3).toList();
+
+      // Must be exactly one row for this weekday
+      expect(dayOverride.length, equals(1),
+          reason: 'setOrder twice for same slot+weekday must upsert, not duplicate');
+      expect(dayOverride.first.orderedProductIds,
+          equals(['prod-weekly', 'prod-daily']),
+          reason: 'must reflect the latest write');
+    });
+  });
+
   // ── Group 7: fixProblems ─────────────────────────────────────────────────
 
   group('fixProblems', () {

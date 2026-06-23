@@ -74,6 +74,7 @@ class WeekGlanceBuilder {
     required Set<String> mutedRuleIds,
     OrderOverride? morningOrderOverride,
     OrderOverride? eveningOrderOverride,
+    Map<String, String>? categoryOverrides,
   }) {
     // Selected, non-deprecated, admin-ordered products, then dropping any with
     // zero scheduled days in the slot — a product that runs on no day is not
@@ -91,6 +92,7 @@ class WeekGlanceBuilder {
         categories: categories,
         subcategories: subcategories,
         orderOverride: morningOrderOverride,
+        categoryOverrides: categoryOverrides,
       ),
       Slot.morning,
     );
@@ -103,6 +105,7 @@ class WeekGlanceBuilder {
         categories: categories,
         subcategories: subcategories,
         orderOverride: eveningOrderOverride,
+        categoryOverrides: categoryOverrides,
       ),
       Slot.evening,
     );
@@ -263,6 +266,7 @@ class WeekGlanceBuilder {
     required List<Category> categories,
     required List<SubCategory> subcategories,
     OrderOverride? orderOverride,
+    Map<String, String>? categoryOverrides,
   }) {
     final selectedIds = selections
         .where((s) => s.isSelected)
@@ -279,6 +283,7 @@ class WeekGlanceBuilder {
       categories: categories,
       subcategories: subcategories,
       slot: slot,
+      categoryOverrides: categoryOverrides,
     );
 
     // A persisted custom order (Order Customization screen / S3) wins — use the

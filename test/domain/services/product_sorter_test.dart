@@ -68,8 +68,12 @@ void main() {
       expect(sorted.map((p) => p.id), ['p2', 'p1']);
     });
 
-    test('null/unknown sub-category sorts last within its category', () {
+    test('mixed null/unknown sub-category falls through to slot order then id', () {
+      // Subcategory comparison is skipped when either product has a null/unknown
+      // sub-category (defensive fix for Bug 5: asymmetric Supabase data must not
+      // invert the admin-intended config.order).
       // p1 has no sub-category, p2 has subA1, p3 has an unknown sub id.
+      // All have morningOrder=1, so they tie on slotOrder and fall through to id.
       final p1 = prod('p1', 'catA');
       final p2 = prod('p2', 'catA', subCategoryId: 'subA1');
       final p3 = prod('p3', 'catA', subCategoryId: 'nope');
@@ -78,10 +82,10 @@ void main() {
         subcategories: allSubs,
         slot: Slot.morning,
       );
-      final sorted = [p1, p2, p3]..sort(cmp);
-      // p2 (known sub) first; p1 and p3 both sentinel-last.
-      expect(sorted.first.id, 'p2');
-      expect(sorted.skip(1).map((p) => p.id), containsAll(['p1', 'p3']));
+      final sorted = [p3, p2, p1]..sort(cmp);
+      // When subcategory is skipped and slot orders all tie, products fall
+      // through to id comparison: 'p1' < 'p2' < 'p3'.
+      expect(sorted.map((p) => p.id), ['p1', 'p2', 'p3']);
     });
 
     test('breaks tie within same sub-category by slot order', () {
@@ -156,6 +160,26 @@ void main() {
       );
       final sorted = [p1, p2]..sort(cmp);
       expect(sorted.map((p) => p.id), ['p2', 'p1']);
+    });
+
+    test('mixed subcategory (one known, one null) falls through to slot order', () {
+      // Bug 5 regression: if one product has a known subCategoryId and another
+      // has null (sentinel 9999), the subcategory tier must be SKIPPED entirely
+      // so that the lower slot config.order wins.
+      // cat-serum products: p_azelaic has config.order 6 and subCategoryId null,
+      // p_niacinamide has config.order 9 and subCategoryId 'subA1'.
+      // Expected: p_azelaic (order 6) sorts before p_niacinamide (order 9).
+      final pAzelaic = prod('p_azelaic', 'catA', morningOrder: 6);          // no sub
+      final pNiacinamide = prod('p_niacinamide', 'catA',
+          subCategoryId: 'subA1', morningOrder: 9);
+      final cmp = ProductSorter.adminComparator(
+        categories: [catA, catB],
+        subcategories: allSubs,
+        slot: Slot.morning,
+      );
+      final sorted = [pNiacinamide, pAzelaic]..sort(cmp);
+      expect(sorted.first.id, 'p_azelaic',
+          reason: 'lower config.order must win when subcategories are mixed null/known');
     });
 
     test('breaks final tie by product id', () {

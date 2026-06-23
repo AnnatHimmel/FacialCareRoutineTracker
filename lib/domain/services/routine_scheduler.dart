@@ -136,6 +136,12 @@ class RoutineScheduler {
     final selections = await _repo.watchSelections(slot).first;
     final schedules = await _repo.watchAllSchedules().first;
     final orderOverride = await _repo.watchOrderOverride(slot).first;
+    // Fetch category overrides so all surfaces (Daily Home, Order screen, Week
+    // Glance) sort identically to dailyRoutineProvider.
+    final catOverrideList = await _repo.watchCategoryOverrides().first;
+    final catOverrides = catOverrideList.isEmpty
+        ? null
+        : {for (final o in catOverrideList) o.productId: o.categoryId};
 
     // Build a deterministic date for the weekday.
     // 2026-01-04 is Sunday (weekday=0 in our scheme). 0=Sun..6=Sat.
@@ -157,6 +163,7 @@ class RoutineScheduler {
       schedules: schedules,
       orderOverride: orderOverride,
       boundary: DayBoundaryService(),
+      categoryOverrides: catOverrides,
     );
   }
 
@@ -298,6 +305,11 @@ class RoutineScheduler {
     final schedules = await _repo.watchAllSchedules().first;
     final mutedConflicts = await _repo.watchMutedConflicts().first;
     final mutedRuleIds = mutedConflicts.map((m) => m.ruleId).toSet();
+    // Fetch category overrides so Week Glance sorts identically to Daily Home.
+    final catOverrideList = await _repo.watchCategoryOverrides().first;
+    final catOverrides = catOverrideList.isEmpty
+        ? null
+        : {for (final o in catOverrideList) o.productId: o.categoryId};
 
     return const WeekGlanceBuilder().build(
       allProducts: master.products,
@@ -308,6 +320,7 @@ class RoutineScheduler {
       eveningSelections: eveningSelections,
       schedules: schedules,
       mutedRuleIds: mutedRuleIds,
+      categoryOverrides: catOverrides,
     );
   }
 
@@ -693,9 +706,14 @@ class RoutineScheduler {
     int? weekday,
     required List<String> orderedIds,
   }) async {
-    final existing = await _repo.watchOrderOverride(slot).first;
+    // Use a deterministic id so insertOnConflictUpdate always updates the one
+    // canonical row, preventing duplicate global/per-day rows when the user
+    // drags quickly before the watch-stream re-emits.
+    final id = weekday == null
+        ? 'order-global-${slot.name}'
+        : 'order-day-${slot.name}-$weekday';
     await _repo.upsertOrderOverride(OrderOverride(
-      id: existing?.id ?? _uuid.v4(),
+      id: id,
       slot: slot,
       weekday: weekday,
       orderedProductIds: orderedIds,

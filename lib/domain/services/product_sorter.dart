@@ -41,9 +41,14 @@ class ProductSorter {
       final catB = catOrderById[effectiveCatId(b)] ?? 9999;
       if (catA != catB) return catA.compareTo(catB);
 
+      // Apply the sub-category tier ONLY when BOTH products have a known
+      // (non-sentinel) sub-category. If either is null/unknown (sentinel 9999),
+      // skip this tier and fall through to the slot config.order tier so that
+      // mixed/asymmetric Supabase data never inverts the admin-intended order.
       final subA = subOrder(a);
       final subB = subOrder(b);
-      if (subA != subB) return subA.compareTo(subB);
+      final bothKnown = subA != 9999 && subB != 9999;
+      if (bothKnown && subA != subB) return subA.compareTo(subB);
 
       final slotCmp = slotOrder(a).compareTo(slotOrder(b));
       if (slotCmp != 0) return slotCmp;

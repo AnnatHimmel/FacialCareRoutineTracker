@@ -14,23 +14,30 @@ class OrderOverridesDao extends DatabaseAccessor<AppDatabase>
       (select(orderOverrides)..where((t) => t.slot.equals(slot))).watch();
 
   // Global override (weekday IS NULL) for a slot.
+  // Ordered by lastModifiedMs DESC so rows.first is always the newest —
+  // self-heals any duplicate rows that exist on the device from prior versions.
   Stream<List<OrderOverrideRow>> watchGlobalBySlot(String slot) =>
       (select(orderOverrides)
-            ..where((t) => t.slot.equals(slot) & t.weekday.isNull()))
+            ..where((t) => t.slot.equals(slot) & t.weekday.isNull())
+            ..orderBy([(t) => OrderingTerm.desc(t.lastModifiedMs)]))
           .watch();
 
   // All per-day overrides (weekday IS NOT NULL) for a slot.
+  // Ordered by lastModifiedMs DESC so duplicates resolve to the latest write.
   Stream<List<OrderOverrideRow>> watchPerDayBySlot(String slot) =>
       (select(orderOverrides)
-            ..where((t) => t.slot.equals(slot) & t.weekday.isNotNull()))
+            ..where((t) => t.slot.equals(slot) & t.weekday.isNotNull())
+            ..orderBy([(t) => OrderingTerm.desc(t.lastModifiedMs)]))
           .watch();
 
   // Override for a specific slot + weekday.
+  // Ordered by lastModifiedMs DESC so rows.first is always the newest.
   Stream<List<OrderOverrideRow>> watchBySlotAndWeekday(
       String slot, int weekday) =>
       (select(orderOverrides)
             ..where(
-                (t) => t.slot.equals(slot) & t.weekday.equals(weekday)))
+                (t) => t.slot.equals(slot) & t.weekday.equals(weekday))
+            ..orderBy([(t) => OrderingTerm.desc(t.lastModifiedMs)]))
           .watch();
 
   Stream<List<OrderOverrideRow>> watchAll() => select(orderOverrides).watch();
