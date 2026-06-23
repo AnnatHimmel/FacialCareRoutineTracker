@@ -1609,4 +1609,104 @@ void main() {
       expect(find.text(cardTitle), findsOneWidget, reason: 'still gated');
     });
   });
+
+  // ── Group: initialName pre-fill (Bug 3) ──────────────────────────────────
+
+  group('initialName pre-fill', () {
+    testWidgets(
+        'AddCustomProductSheet(initialName: X) pre-fills the name field',
+        (tester) async {
+      // Given: the sheet is opened with initialName set to 'My Serum'
+      final udr = _FakeUDR();
+      final master = _masterWith([serumCat], []);
+
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          masterContentRepositoryProvider
+              .overrideWithValue(_FakeMCR(master)),
+          userDataRepositoryProvider.overrideWithValue(udr),
+          productClassifierProvider
+              .overrideWith((ref) async => _emptyClassifier()),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('he'),
+          home: const Scaffold(
+            // initialName param does not exist yet — this should fail to compile
+            body: AddCustomProductSheet(initialName: 'My Serum'),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      // Then: the name field is pre-filled with 'My Serum'
+      expect(
+        find.widgetWithText(TextField, 'My Serum'),
+        findsOneWidget,
+        reason: 'name field must be pre-filled with initialName',
+      );
+    });
+
+    testWidgets(
+        'AddCustomProductSheet(initialName: X) enables the smart-complete button',
+        (tester) async {
+      // Given: a sheet with initialName set (name field should be non-empty)
+      // Then: the "find the details" button is enabled because name is not empty
+      final udr = _FakeUDR();
+      final master = _masterWith([serumCat], []);
+      final lookup = _FakeLookupService(null);
+
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          masterContentRepositoryProvider
+              .overrideWithValue(_FakeMCR(master)),
+          userDataRepositoryProvider.overrideWithValue(udr),
+          productClassifierProvider
+              .overrideWith((ref) async => _emptyClassifier()),
+          barcodeProductLookupServiceProvider.overrideWithValue(lookup),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('he'),
+          home: const Scaffold(
+            body: AddCustomProductSheet(initialName: 'My Serum'),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      // The gate card is shown; the "find the details" button is enabled because
+      // initialName has pre-filled the name field.
+      await tester.tap(find.text('מצאו לי את הפרטים'));
+      await tester.pumpAndSettle();
+
+      // Lookup was invoked (not blocked by empty name check)
+      expect(lookup.nameQueries, ['My Serum'],
+          reason: 'lookup should run because name was pre-filled');
+    });
+
+    testWidgets(
+        'AddCustomProductSheet() with null initialName shows empty name field',
+        (tester) async {
+      // Given: no initialName provided
+      final udr = _FakeUDR();
+      final master = _masterWith([serumCat], []);
+
+      await tester.pumpWidget(_wrapGated(
+        master: master,
+        udr: udr,
+        classifier: _emptyClassifier(),
+      ));
+      await tester.pumpAndSettle();
+
+      // Then: name field is empty (hint is shown instead)
+      expect(
+        find.widgetWithText(TextField, 'My Serum'),
+        findsNothing,
+        reason: 'no pre-fill when initialName is null',
+      );
+    });
+  });
 }

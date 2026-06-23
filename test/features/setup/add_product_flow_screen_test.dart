@@ -110,6 +110,16 @@ class _FakeUDR implements UserDataRepository {
   @override Future<void> deleteCategoryOverride(String productId) async {}
 }
 
+/// Variant that pre-seeds selections so watchSelections returns existing rows.
+class _FakeUDRWithSelections extends _FakeUDR {
+  final List<ProductSelection> _preseeded;
+  _FakeUDRWithSelections(this._preseeded);
+
+  @override
+  Stream<List<ProductSelection>> watchSelections(Slot slot) =>
+      Stream.value(_preseeded.where((s) => s.slot == slot).toList());
+}
+
 // ── Test helpers ─────────────────────────────────────────────────────────────
 
 MasterProduct _amProduct(String id, String name, String catId) => MasterProduct(
@@ -415,6 +425,54 @@ void main() {
       expect(udr.categoryOverridesUpserted.first.categoryId, 'cat-moisturizer',
           reason: 'persisted categoryId must match the user selection');
       expect(udr.categoryOverridesUpserted.first.productId, 'p1');
+    });
+  });
+
+  group('AddProductFlowScreen — Bug 4: idempotent save', () {
+    testWidgets(
+        're-saving an already-selected product reuses the existing selection id',
+        (tester) async {
+      const existingSelId = 'existing-sel-1';
+      final existingSel = ProductSelection(
+        id: existingSelId,
+        productId: 'p1',
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: DateTime(2025, 1, 1),
+      );
+      final udr = _FakeUDRWithSelections([existingSel]);
+      final master = _masterWith([
+        _amProduct('p1', 'קרם לחות', 'cat-serum'),
+      ], [cat1]);
+
+      await tester.pumpWidget(_wrap(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      // Step 1: select product
+      await tester.tap(find.text('קרם לחות'));
+      await tester.pumpAndSettle();
+
+      // Step 2 (category): advance
+      await tester.tap(find.text('המשך'));
+      await tester.pumpAndSettle();
+
+      // Step 4 (days) — slot step was skipped for AM-only product
+      expect(find.text('באילו ימים?'), findsOneWidget);
+      await tester.tap(find.text('המשך'));
+      await tester.pumpAndSettle();
+
+      // Step 5 (placement): confirm add
+      expect(find.text('המיקום המוצע'), findsOneWidget);
+      await tester.tap(find.text('הוספה לשגרה'));
+      await tester.pumpAndSettle();
+
+      // The upserted selection must reuse the existing id — NOT a new UUID.
+      expect(udr.upserted, isNotEmpty,
+          reason: 'upsertSelection should have been called');
+      final savedId = udr.upserted.last.id;
+      expect(savedId, existingSelId,
+          reason: 'Bug 4: re-save must reuse the existing row id, not create '
+              'a duplicate with a new UUID');
     });
   });
 }

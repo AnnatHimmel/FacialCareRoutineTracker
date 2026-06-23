@@ -267,6 +267,11 @@ class _ProductSelectionScreenState
       );
 
       for (final m in resolution.mutations) {
+        // Bug 1 fix: only apply mutations for the newly-added product. Never
+        // write or clear a schedule row for any other product — conflicts with
+        // existing products remain as advisory warnings (PRD: advisory only).
+        if (m.productId != newProductId) continue;
+
         final existing = schedules
             .where((s) => s.productId == m.productId && s.slot == m.slot)
             .firstOrNull;
@@ -492,7 +497,11 @@ class _ProductSelectionScreenState
                             context: context,
                             isScrollControlled: true,
                             backgroundColor: Colors.transparent,
-                            builder: (_) => const AddCustomProductSheet(),
+                            builder: (_) => AddCustomProductSheet(
+                              initialName: _searchQuery.trim().isEmpty
+                                  ? null
+                                  : _searchQuery.trim(),
+                            ),
                           ),
                         ),
                       );
@@ -617,7 +626,11 @@ class _ProductSelectionScreenState
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
-                    builder: (_) => const AddCustomProductSheet(),
+                    builder: (_) => AddCustomProductSheet(
+                      initialName: _searchQuery.trim().isEmpty
+                          ? null
+                          : _searchQuery.trim(),
+                    ),
                   ),
                   onOpenDetail: (p) => _openProductDetail(context, p),
                 )

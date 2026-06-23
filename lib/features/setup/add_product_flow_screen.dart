@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -11,7 +10,6 @@ import '../../domain/entities/sub_category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/category_override.dart';
-import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
@@ -21,7 +19,6 @@ import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/weekday_picker.dart';
 import 'barcode_scan_sheet.dart';
 
-const _uuid = Uuid();
 
 // Hebrew abbreviated day labels (Sunday-first, 0-indexed).
 const _heAbbrLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
@@ -150,28 +147,20 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
   Future<void> _save() async {
     final p = _product;
     if (p == null) return;
+    final master = ref.read(masterContentProvider).valueOrNull;
+    if (master == null) return;
     final scheduler = ref.read(routineSchedulerProvider);
     final slots = _chosenSlots ?? _defaultSlots(p);
     final now = DateTime.now();
     for (final slot in slots) {
-      await scheduler.upsertSelection(
-        ProductSelection(
-          id: _uuid.v4(),
-          productId: p.id,
-          slot: slot,
-          isSelected: true,
-          lastModified: now,
-        ),
-      );
-      await scheduler.upsertSchedule(
-        WeekdaySchedule(
-          id: _uuid.v4(),
-          productId: p.id,
-          slot: slot,
-          weekdays: _chosenDays,
-          lastModified: now,
-        ),
-      );
+      // Bug 4 fix: addProduct is idempotent — it finds and reuses the existing
+      // selection row instead of creating a duplicate with a new UUID.
+      await scheduler.addProduct(
+          master: master, productId: p.id, slot: slot);
+      // setDays is also idempotent — finds the existing schedule row and
+      // updates it; creates one only if none exists.
+      await scheduler.setDays(
+          productId: p.id, slot: slot, days: _chosenDays);
     }
     if (_catIdOverride != null) {
       await ref.read(userDataRepositoryProvider).upsertCategoryOverride(

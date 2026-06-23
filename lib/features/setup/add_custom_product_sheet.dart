@@ -40,6 +40,12 @@ class AddCustomProductSheet extends ConsumerStatefulWidget {
   final MasterProduct? viewProduct;
   final bool isUserProduct;
 
+  /// When set and no other content (initialProduct / viewProduct / prefillFromScan)
+  /// is provided, pre-fills the name field in the fresh manual-add flow.
+  /// Mirrors the search query typed on the product-selection screen so the user
+  /// does not have to re-type it. Has no effect on scan/edit/view flows.
+  final String? initialName;
+
   /// Test-only: skip the smart-completion gate so the full manual form is shown
   /// immediately. Lets pre-gate tests exercise the form without first dismissing
   /// the gate. Has no effect on scan/edit/view flows (never gated anyway).
@@ -53,6 +59,7 @@ class AddCustomProductSheet extends ConsumerStatefulWidget {
     this.onScanAgain,
     this.viewProduct,
     this.isUserProduct = false,
+    this.initialName,
     this.startRevealed = false,
   });
 
@@ -131,6 +138,17 @@ class _AddCustomProductSheetState
   @override
   void initState() {
     super.initState();
+    // Pre-fill the name field from the search query when opening from the
+    // product-selection screen. This only applies to fresh manual-add (no
+    // initialProduct / viewProduct / prefillFromScan set).
+    if (widget.initialProduct == null &&
+        widget.viewProduct == null &&
+        widget.prefillFromScan == null &&
+        widget.initialName != null &&
+        widget.initialName!.isNotEmpty) {
+      _nameController.text = widget.initialName!;
+    }
+
     // Gate the fresh manual-add flow only: scans, edits and views already carry
     // data, so they go straight to the full (ungated) form.
     _gated = !widget.startRevealed &&

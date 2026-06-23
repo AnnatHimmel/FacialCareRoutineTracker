@@ -6,6 +6,7 @@ import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/shared/widgets/glass_bottom_nav.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
+import 'package:skincare_tracker/domain/entities/incompatibility_rule.dart';
 import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
 import 'package:skincare_tracker/domain/entities/master_product.dart';
 import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
@@ -16,6 +17,7 @@ import 'package:skincare_tracker/domain/entities/collection_item.dart';
 import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
+import 'package:skincare_tracker/domain/enums/rule_scope.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 import 'package:skincare_tracker/domain/entities/category_override.dart';
@@ -789,6 +791,202 @@ void main() {
 
       expect(find.text('קרם טוב'), findsOneWidget);
       expect(find.text('מוצר ישן'), findsNothing);
+    });
+  });
+
+  _bug1Tests();
+}
+
+// ── Bug 1 — _resolveSlotConflicts must not write rows for other products ──
+
+// A UDR that pre-seeds selections + schedules and captures all upsertSchedule
+// calls so the test can assert which product IDs had schedule rows written.
+class _ConflictResolvingUDR implements UserDataRepository {
+  final Map<Slot, List<ProductSelection>> _selections;
+  final List<WeekdaySchedule> _schedules;
+  final List<WeekdaySchedule> schedulesWritten = [];
+  final List<ProductSelection> selectionsWritten = [];
+
+  _ConflictResolvingUDR({
+    required Map<Slot, List<ProductSelection>> selections,
+    required List<WeekdaySchedule> schedules,
+  })  : _selections = selections,
+        _schedules = schedules;
+
+  @override
+  Stream<List<ProductSelection>> watchSelections(Slot slot) =>
+      Stream.value(_selections[slot] ?? []);
+
+  @override
+  Stream<List<MutedConflict>> watchMutedConflicts() => Stream.value([]);
+
+  @override
+  Future<void> upsertSelection(ProductSelection s) async =>
+      selectionsWritten.add(s);
+
+  @override
+  Stream<List<WeekdaySchedule>> watchAllSchedules() =>
+      Stream.value(_schedules);
+
+  @override
+  Future<void> upsertSchedule(WeekdaySchedule s) async =>
+      schedulesWritten.add(s);
+
+  @override Future<void> muteConflict(MutedConflict m) async {}
+  @override Future<void> unmuteConflict(String ruleId) async {}
+  @override Stream<List<UserCustomProduct>> watchCustomProducts() =>
+      Stream.value([]);
+  @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
+  @override Future<void> deleteCustomProduct(String id) async {}
+  @override Stream<List<CollectionItem>> watchCollectionItems() =>
+      throw UnimplementedError();
+  @override Future<void> upsertCollectionItem(CollectionItem item) =>
+      throw UnimplementedError();
+  @override Future<void> deleteCollectionItem(String id) =>
+      throw UnimplementedError();
+  @override Stream<WeekdaySchedule?> watchSchedule(String p, Slot s) =>
+      throw UnimplementedError();
+  @override Stream<OrderOverride?> watchOrderOverride(Slot s) =>
+      Stream.value(null);
+  @override Future<void> upsertOrderOverride(OrderOverride o) =>
+      throw UnimplementedError();
+  @override Future<void> deleteOrderOverride(Slot s) =>
+      throw UnimplementedError();
+  @override Stream<List<OrderOverride>> watchPerDayOrderOverrides(Slot slot) =>
+      Stream.value([]);
+  @override Future<OrderOverride?> getEffectiveOrderOverride(
+          Slot slot, int weekday) async =>
+      null;
+  @override Future<void> deletePerDayOrderOverride(
+          Slot slot, int weekday) async {}
+  @override Stream<DayRecord?> watchDayRecord(String d, Slot s) =>
+      throw UnimplementedError();
+  @override Future<DayRecord> snapshotAndGetDayRecord(
+          String d, Slot s, List<String> ids, String v) =>
+      throw UnimplementedError();
+  @override Future<void> updateDayRecord(DayRecord r) =>
+      throw UnimplementedError();
+  @override Stream<List<DayRecord>> watchDayRecordsForMonth(String ym) =>
+      throw UnimplementedError();
+  @override Stream<List<DayRecord>> watchAllDayRecords() =>
+      throw UnimplementedError();
+  @override Stream<SkinLogEntry?> watchSkinLog(String d) =>
+      throw UnimplementedError();
+  @override Future<void> upsertSkinLog(SkinLogEntry e) =>
+      throw UnimplementedError();
+  @override Stream<List<SkinLogEntry>> watchAllSkinLogs() =>
+      throw UnimplementedError();
+  @override Future<UserDataExport> exportAllData() =>
+      throw UnimplementedError();
+  @override Future<void> replaceAllData(UserDataExport e) =>
+      throw UnimplementedError();
+  @override Future<void> clearRoutineData() async {}
+  @override Stream<List<CategoryOverride>> watchCategoryOverrides() =>
+      Stream.value([]);
+  @override Future<void> upsertCategoryOverride(CategoryOverride o) async {}
+  @override Future<void> deleteCategoryOverride(String productId) async {}
+}
+
+void _bug1Tests() {
+  group('ProductSelectionScreen — Bug 1 non-destructive conflict resolution',
+      () {
+    // Two products in the same category with a within-slot incompatibility rule.
+    // productA is already selected. productB is the newly-added one.
+    // After selecting productB, the resolver runs — but ONLY productB may have
+    // a schedule row written. productA's schedule must never be touched.
+
+    testWidgets(
+        'selecting a new conflicting product does not write a schedule row '
+        'for the already-existing product', (tester) async {
+      const catId = 'cat-serum';
+      final cat = const Category(id: catId, name: 'סרום', order: 5);
+
+      // productA is already selected in morning with a user-set schedule.
+      final productA = MasterProduct(
+        id: 'prod-a',
+        name: 'Product A',
+        categoryId: catId,
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+      );
+      // productB is the new product being added; it conflicts with productA.
+      final productB = MasterProduct(
+        id: 'prod-b',
+        name: 'Product B',
+        categoryId: catId,
+        isDeprecated: false,
+        addedInVersion: '1.0.0',
+        morningConfig: const SlotConfig(order: 2, frequencyRule: DailyRule()),
+      );
+
+      // Incompatibility rule: productA and productB cannot be in the same slot.
+      final rule = IncompatibilityRule(
+        id: 'rule-ab',
+        entityA: const RuleTarget(type: RuleTargetType.product, id: 'prod-a'),
+        entityB: const RuleTarget(type: RuleTargetType.product, id: 'prod-b'),
+        scope: RuleScope.withinSlot,
+      );
+
+      // productA is already selected; productB is not yet.
+      final t = DateTime(2025);
+      final selA = ProductSelection(
+        id: 'sel-a',
+        productId: 'prod-a',
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: t,
+      );
+      // productA has an explicit user-set schedule (non-empty, 5 days/week).
+      final schedA = WeekdaySchedule(
+        id: 'sched-a',
+        productId: 'prod-a',
+        slot: Slot.morning,
+        weekdays: {1, 2, 3, 4, 5},
+        lastModified: t,
+      );
+
+      final udr = _ConflictResolvingUDR(
+        selections: {
+          Slot.morning: [selA],
+          Slot.evening: [],
+        },
+        schedules: [schedA],
+      );
+
+      final master = MasterContent(
+        products: [productA, productB],
+        categories: [cat],
+        subcategories: [],
+        rules: [rule],
+        manifest: const MasterListManifest(
+          contentVersion: '1.0.0',
+          appVersion: '1.0.0',
+          changelog: [],
+        ),
+      );
+
+      await tester.pumpWidget(_wrap(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      // Select productB via the V3FinderRow checkbox.
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('v3_row_prod-b')),
+          matching: find.byType(GestureDetector),
+        ).last,
+      );
+      await tester.pumpAndSettle();
+
+      // productA must NEVER appear in the schedule writes.
+      final writtenForA =
+          udr.schedulesWritten.where((s) => s.productId == 'prod-a').toList();
+      expect(
+        writtenForA,
+        isEmpty,
+        reason: 'selecting a new product must never write a schedule row for '
+            'an already-existing product (Bug 1 non-destructive guard)',
+      );
     });
   });
 }

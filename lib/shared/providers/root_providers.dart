@@ -18,6 +18,8 @@ import '../../domain/entities/category_override.dart';
 import '../../domain/entities/collection_item.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/muted_conflict.dart';
+import '../../domain/entities/weekday_schedule.dart';
+import '../../domain/services/schedule_days.dart';
 import '../../domain/entities/order_override.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/user_custom_product.dart';
@@ -130,23 +132,90 @@ final silentStartupProvider = FutureProvider<void>((ref) async {
   ref.read(masterContentRefreshProvider)();
 });
 
-/// Silently resolves any product conflicts that exist in the user's selections
-/// on cold start, before the home screen renders.
+/// Seeds any missing default schedules on cold start, before the home screen
+/// renders.
 ///
-/// Delegates to [RoutineScheduler.ensureDefaultSchedules] and
-/// [RoutineScheduler.fixProblems] — this corrects conflicts that were
-/// missed at selection time (e.g. when sub-category data was first added).
-/// Returns the number of conflicting pairs that were resolved.
+/// Bug 1 fix: [RoutineScheduler.fixProblems] is intentionally NOT called here.
+/// Conflict resolution is advisory only (PRD §UC-4b) — it must never silently
+/// overwrite a schedule the user has deliberately set. The "Fix problems"
+/// action is surfaced explicitly in the UI when the user opts in.
+///
+/// Also heals "selected but scheduled nowhere" products that lack any active
+/// days across all slots (e.g. orphaned rows from a previous bug), by removing
+/// their empty WeekdaySchedule rows so the scheduler can re-seed them cleanly
+/// via ensureDefaultSchedules. Products that are active in at least one slot
+/// are left untouched.
 final conflictAutoFixProvider = FutureProvider<int>((ref) async {
   final master = await ref.read(masterContentProvider.future);
   final s = ref.read(routineSchedulerProvider);
 
   await s.ensureDefaultSchedules(master: master);
 
-  final morningResult = await s.fixProblems(master: master, slot: Slot.morning);
-  final eveningResult = await s.fixProblems(master: master, slot: Slot.evening);
+  // Heal: for each selected product that has zero effective days across all
+  // slots (selected-but-active-nowhere), seed the default schedule directly.
+  // This covers orphaned empty rows that ensureDefaultSchedules skips because
+  // it only seeds products with NO row at all (if (existing != null) continue).
+  // Products that are active in at least one slot are left untouched.
+  final repo = ref.read(userDataRepositoryProvider);
+  final allSchedules = await repo.watchAllSchedules().first;
+  final morningSels = await repo.watchSelections(Slot.morning).first;
+  final eveningSels = await repo.watchSelections(Slot.evening).first;
 
-  return morningResult.applied.length + eveningResult.applied.length;
+  final selectedBySlot = {
+    Slot.morning: morningSels.where((s) => s.isSelected).toList(),
+    Slot.evening: eveningSels.where((s) => s.isSelected).toList(),
+  };
+
+  for (final entry in selectedBySlot.entries) {
+    final slot = entry.key;
+    for (final sel in entry.value) {
+      final productId = sel.productId;
+      // Compute effective days across ALL slots for this product.
+      final totalEffectiveDays = [Slot.morning, Slot.evening]
+          .expand((sl) {
+            final row = allSchedules
+                .where((sch) => sch.productId == productId && sch.slot == sl)
+                .firstOrNull;
+            if (row != null) return row.weekdays;
+            // No row = DailyRule product, which is always active.
+            final mp = master.products
+                .where((p) => p.id == productId)
+                .firstOrNull;
+            if (mp == null) return <int>{};
+            return defaultDaysFor(mp, sl);
+          })
+          .toSet();
+
+      if (totalEffectiveDays.isNotEmpty) continue;
+
+      // All slots are empty — seed this slot with the default schedule.
+      final mp = master.products
+          .where((p) => p.id == productId)
+          .firstOrNull;
+      if (mp == null) continue;
+
+      final existing = allSchedules
+          .where((sch) => sch.productId == productId && sch.slot == slot)
+          .firstOrNull;
+      if (existing != null && existing.weekdays.isNotEmpty) continue;
+
+      final defaults = defaultDaysFor(mp, slot);
+      if (defaults.isEmpty) continue; // no default to apply
+
+      final rowToWrite = existing != null
+          ? existing.copyWith(weekdays: defaults, lastModified: DateTime.now())
+          : WeekdaySchedule(
+              id: 'heal-$productId-${slot.name}',
+              productId: productId,
+              slot: slot,
+              weekdays: defaults,
+              lastModified: DateTime.now(),
+            );
+      await repo.upsertSchedule(rowToWrite);
+    }
+  }
+
+  return 0;
 });
 
 final exportImportServiceProvider = Provider(
@@ -330,8 +399,18 @@ final dailyRoutineProvider =
 
 // ── Week glance & day warnings ────────────────────────────────────────────────
 
+/// Bug 4 fix: watch all backing stream providers so Riverpod re-runs the future
+/// whenever selections, schedules, custom products, or muted conflicts change.
+/// Without these watches, the FutureProvider only re-evaluates when
+/// masterContentProvider changes (which is almost never), so freshly-added
+/// products were invisible in the week glance until app restart.
 final weekGlanceProvider = FutureProvider<WeekGlance>((ref) async {
   final master = await ref.watch(masterContentProvider.future);
+  ref.watch(selectionsProvider(Slot.morning));
+  ref.watch(selectionsProvider(Slot.evening));
+  ref.watch(allSchedulesProvider);
+  ref.watch(customProductsProvider);
+  ref.watch(mutedConflictsProvider);
   return ref.watch(routineSchedulerProvider).weekGlance(master: master);
 });
 
