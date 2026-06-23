@@ -120,16 +120,14 @@ final reconciliationServiceProvider = Provider(
   ),
 );
 
-/// Runs reconciliation silently on every cold start, then fires a background
-/// Supabase refresh so brand values (and any fields only in Supabase) flow in
-/// automatically without requiring the user to open the product-selection screen.
+/// Runs reconciliation silently on every cold start.
+/// masterContentProvider already fetches from Supabase on first load, so no
+/// explicit background refresh is needed here.
 /// Override in tests to verify it is watched by AppEntryPoint.
 final silentStartupProvider = FutureProvider<void>((ref) async {
   final svc = ref.read(reconciliationServiceProvider);
   final result = await svc.reconcile();
   await svc.acknowledgeUpdate(result.currentContentVersion);
-  // Fire-and-forget — does not block startup.
-  ref.read(masterContentRefreshProvider)();
 });
 
 /// Seeds any missing default schedules on cold start, before the home screen
