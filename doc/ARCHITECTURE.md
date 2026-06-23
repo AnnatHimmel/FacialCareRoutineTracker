@@ -128,9 +128,11 @@ A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusiv
         │  │  PhotoRepository  │   │ SettingsRepository│             │
         │  │  (file / IDB)     │   │ (SharedPrefs)     │             │
         │  └───────────────────┘   └──────────────────┘             │
-        │  ┌───────────────────┐                                     │
-        │  │ PremiumRepository │  (stub in v1.0; hookpoint for UC-21)│
-        │  └───────────────────┘                                     │
+        │  ┌───────────────────────────────┐                        │
+        │  │ RemoteCachedMasterContentRepo │ (Supabase + cache +    │
+        │  │  + SupabaseDataSource + Cache │  bundled fallback)     │
+        │  └───────────────────────────────┘                        │
+        │  (No PremiumRepository in v1.0 — S15 screen is a stub.)    │
         └────────────────────────────────────────────────────────────┘
                     │ Android                     │ Web
                     ▼                             ▼
@@ -160,8 +162,9 @@ A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusiv
 | **BarcodeProductLookupService** | Queries 5 external APIs in parallel (OpenBeautyFacts, OpenFoodFacts, UPCItemDB, InciBeauty, BarcodeSpider); merges results by priority | http package |
 | **UserDataRepository** | All CRUD for user data (selections, schedules, order overrides, day records, skin logs, muted conflicts) via Drift DAOs; reactive streams | Drift database |
 | **PhotoRepository** | Platform-abstracted photo storage: read, write, delete, list; used by export | Android: FilesDir adapter; Web: IndexedDB adapter |
-| **SettingsRepository** | Key-value store for app settings: last export date, last known master version, schema version | SharedPreferences |
-| **PremiumRepository** | Stub in v1.0 (always returns `isActivated: false`); interface is the hookpoint for UC-21 | none in v1.0 |
+| **SettingsRepository** | Key-value store for app settings: last export date, last known master version, schema version, onboarding/locale/gender, demo flags | SharedPreferences |
+| **RefreshableRepository** | Marker interface (`refresh()`) implemented by `RemoteCachedMasterContentRepositoryImpl`; lets the app trigger a background Supabase refresh without coupling to the concrete impl | none |
+| **PremiumScreen (S15)** | UI stub in v1.0 — no `PremiumRepository` interface exists yet; the license-activation screen is a placeholder hookpoint for UC-21 | none in v1.0 |
 | **RoutineScheduler** | Single gateway for all routine data (selections, weekday schedules, order overrides) and product ordering; owns every routine device read/write; orchestrates RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver, ProductSorter | UserDataRepository, RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver |
 
 ### 2.3 Interface Contracts
@@ -196,27 +199,27 @@ watchSelections(slot: Slot) → Stream<List<ProductSelection>>
 watchAllSchedules() → Stream<List<WeekdaySchedule>>
 watchOrderOverride(slot: Slot) → Stream<OrderOverride?>
 
-// Derived reads
-orderForDay(master: MasterContent, slot: Slot, weekday: int) → Future<List<MasterProduct>>
-warningsForDay(master: MasterContent, slot: Slot, weekday: int) → Future<DayWarnings>
+// Derived reads (all named params)
+orderForDay({master, slot, weekday: int}) → Future<List<MasterProduct>>
+warningsForDay({master, slot, weekday: int}) → Future<DayWarnings>
   // DayWarnings: {conflicts: List<ConflictInfo>, overused: List<OveruseEntry>, zeroDayCount: int}
-weekGlance(master: MasterContent) → Future<WeekGlance>
+weekGlance({master}) → Future<WeekGlance>
 
-// Product mutations
-addProduct(master: MasterContent, productId: String, slot: Slot) → Future<int>
+// Product mutations (named params)
+addProduct({master, productId: String, slot: Slot}) → Future<int>
   // returns the product's 0-based index in the admin-sorted slot routine
-removeProduct(productId: String, slot: Slot) → Future<void>
-fixProblems(master: MasterContent, slot: Slot) → Future<RoutineFixResult>
+removeProduct({productId: String, slot: Slot}) → Future<void>
+fixProblems({master, slot: Slot}) → Future<RoutineFixResult>
   // RoutineFixResult: {applied, inverse, changeDescriptions, anyPartial}
 
-// Schedule mutations
-setDays(productId: String, slot: Slot, weekdays: Set<int>) → Future<void>
-toggleDay(productId: String, slot: Slot, weekday: int) → Future<void>
-removeDay(productId: String, slot: Slot, weekday: int) → Future<void>
-setOrder(slot: Slot, {int? weekday, required List<String> orderedIds}) → Future<void>
-resetOrder(slot: Slot, {int? weekday}) → Future<void>
+// Schedule mutations (named params)
+setDays({productId: String, slot: Slot, days: Set<int>}) → Future<void>
+toggleDay({productId: String, slot: Slot, weekday: int}) → Future<void>
+removeDay({productId: String, slot: Slot, weekday: int}) → Future<void>
+setOrder({slot: Slot, int? weekday, required List<String> orderedIds}) → Future<void>
+resetOrder({slot: Slot, int? weekday}) → Future<void>
 applyMutationsPersisting(mutations: List<ScheduleMutation>) → Future<void>
-ensureDefaultSchedules(master: MasterContent) → Future<void>
+ensureDefaultSchedules({master}) → Future<void>
 
 // Canonical static helpers
 static effectiveDays(product: MasterProduct, slot: Slot, schedules: List<WeekdaySchedule>) → Set<int>
@@ -272,6 +275,7 @@ class MasterProduct {
   final String? comment;         // Hebrew admin note
   final String? commentEn;       // English admin note (optional)
   final String categoryId;
+  final String? subCategoryId;   // optional finer grouping within a category
   final SlotConfig? morningConfig;
   final SlotConfig? eveningConfig;
   final bool isDeprecated;
@@ -285,9 +289,11 @@ class SlotConfig {
   final FrequencyRule frequencyRule;
 }
 
-sealed class FrequencyRule {
-  const factory FrequencyRule.daily() = DailyRule;
-  const factory FrequencyRule.weeklyMax(int maxPerWeek) = WeeklyMaxRule;
+sealed class FrequencyRule { const FrequencyRule(); }
+final class DailyRule extends FrequencyRule { const DailyRule(); }
+final class WeeklyMaxRule extends FrequencyRule {
+  final int maxPerWeek;
+  const WeeklyMaxRule(this.maxPerWeek);
 }
 
 class Category {
@@ -372,6 +378,7 @@ class SkinLogEntries extends Table {
   TextColumn get id => text()();
   TextColumn get date => text()();           // ISO: YYYY-MM-DD
   TextColumn get notes => text().nullable()();
+  TextColumn get skinState => text().nullable()(); // optional skin-state tag
   TextColumn get photoPaths => text()();     // JSON array of storage keys
   IntColumn get lastModified => integer()();
   @override Set<Column> get primaryKey => {id};
@@ -384,6 +391,13 @@ class MutedConflicts extends Table {
   IntColumn get mutedAt => integer()();
   @override Set<Column> get primaryKey => {id};
 }
+
+// Additional Drift tables (same id + lastModified convention; see
+// lib/data/local/database/tables/ for full DSL):
+//   CategoryOverrides      — per-product user category reassignment
+//   CollectionItems        — product lifecycle / "my collection" status (CollectionStatus)
+//   ProductUseTimestamps   — opened/expiry timestamps feeding the PAO (period-after-opening) meter
+//   UserCustomProducts     — user-authored products (soft-deletable; map to MasterProduct via toMasterProduct())
 
 // AppSettings uses SharedPreferences (key-value):
 // Key: 'last_export_date'         → ISO date string or null
@@ -487,7 +501,7 @@ User requests Export
 | RTL / i18n | `flutter_localizations` + `intl` + ARB files | Hebrew locale (`he`); `Directionality.rtl` at root |
 | Typography | `google_fonts` | Quicksand + Plus Jakarta Sans; both available on Google Fonts; offline-cached in build |
 | Preferences | `shared_preferences` | Key-value settings (last export date, schema version, master version) |
-| Barcode Scanning | `mobile_scanner ^5.2.3` | Camera-based barcode/QR scan for product lookup; Android only (guarded by `kIsWeb`); requires `CAMERA` permission in `AndroidManifest.xml` |
+| Barcode Scanning | `mobile_scanner ^7.2.0` | Camera-based barcode/QR scan for product lookup; Android only (guarded by `kIsWeb`); requires `CAMERA` permission in `AndroidManifest.xml` |
 | Remote content | supabase_flutter | Single-client Supabase SDK; `get_master_content()` RPC avoids 4 round-trips |
 | Network image cache | cached_network_image | Caches Supabase Storage URLs for product thumbnails |
 | HTTP client | http | Used by BarcodeProductLookupService for external API queries |
@@ -575,22 +589,32 @@ SoftWarningBanner({
 
 ### State Providers (Riverpod)
 
+All defined in `lib/shared/providers/root_providers.dart` unless noted.
+
 | Provider | Type | Scope |
 |----------|------|-------|
-| `masterContentProvider` | `FutureProvider<MasterContent>` | Global — loaded once at startup |
-| `effectiveDateProvider` | `Provider<LocalDate>` | Global — recomputed; invalidated at 06:00 |
+| `masterContentProvider` | `FutureProvider<MasterContent>` | Global — loaded once at startup via `masterContentRepositoryProvider.load()` |
+| `masterContentRefreshProvider` | `Provider<Future<void> Function()>` | Global — triggers background Supabase refresh + invalidates `masterContentProvider` |
+| `effectiveDateProvider` | `Provider<DateTime>` | Global — `todayEffectiveDate` from `DayBoundaryService` (06:00 boundary) |
 | `routineSchedulerProvider` | `Provider<RoutineScheduler>` | Global — single instance; owns all routine device access |
-| `dailyRoutineProvider(date, slot)` | `StreamProvider<List<ResolvedProduct>>` | Per-day; **scheduler-backed** — combines `watchSelections`, `watchOrderOverride`, `orderForDay` |
-| `dayRecordProvider(date, slot)` | `StreamProvider<DayRecord?>` | Per-day per-slot |
-| `streakProvider` | `StreamProvider<StreakResult>` | Global — recomputes when DayRecords change |
-| `selectionsProvider(slot)` | `StreamProvider<List<ProductSelection>>` | Per-slot; **scheduler-backed** — delegates to `routineSchedulerProvider.watchSelections` |
-| `allSchedulesProvider` | `StreamProvider<List<WeekdaySchedule>>` | Global; **scheduler-backed** — delegates to `routineSchedulerProvider.watchAllSchedules` |
-| `conflictsForDayProvider(date)` | `Provider<List<ConflictInfo>>` | Per-day; derived from routine + rules |
-| `orderOverrideProvider(slot)` | `StreamProvider<OrderOverride?>` | Per-slot; **scheduler-backed** — delegates to `routineSchedulerProvider.watchOrderOverride` |
-| `weekGlanceProvider` | `FutureProvider<WeekGlance>` | Global; **scheduler-backed** — delegates to `routineSchedulerProvider.weekGlance` |
-| `dayWarningsProvider(slot, weekday)` | `FutureProvider.family<DayWarnings, ({Slot slot, int weekday})>` | Per-slot per-weekday; **scheduler-backed** — delegates to `routineSchedulerProvider.warningsForDay` |
-| `exportImportStateProvider` | `StateNotifierProvider<ExportImportNotifier>` | Feature-scoped |
-| `settingsProvider` | `StateNotifierProvider<SettingsNotifier>` | Global |
+| `dailyRoutineProvider(({String date, Slot slot}))` | `StreamProvider.family<List<MasterProduct>>` | Per-day per-slot; **scheduler-backed** — composes selections, schedules, effective order override, category overrides, and custom products via `RoutineResolver` |
+| `selectionsProvider(slot)` | `StreamProvider.family<List<ProductSelection>, Slot>` | Per-slot; **scheduler-backed** — delegates to `watchSelections` |
+| `allSchedulesProvider` | `StreamProvider<List<WeekdaySchedule>>` | Global; **scheduler-backed** — delegates to `watchAllSchedules` |
+| `orderOverrideProvider(slot)` | `StreamProvider.family<OrderOverride?, Slot>` | Per-slot; **scheduler-backed** — delegates to `watchOrderOverride` |
+| `weekGlanceProvider` | `FutureProvider<WeekGlance>` | Global; **scheduler-backed** — watches selections/schedules/custom/muted then calls `weekGlance` |
+| `dayWarningsProvider(({Slot slot, int weekday}))` | `FutureProvider.family<DayWarnings>` | Per-slot per-weekday; **scheduler-backed** — delegates to `warningsForDay` |
+| `mutedConflictsProvider` | `StreamProvider<List<MutedConflict>>` | Global — `UserDataRepository.watchMutedConflicts` |
+| `allDayRecordsProvider` | `StreamProvider<List<DayRecord>>` | Global — `UserDataRepository.watchAllDayRecords` |
+| `customProductsProvider` | `StreamProvider<List<UserCustomProduct>>` | Global — user-added custom products |
+| `collectionItemsProvider` | `StreamProvider<List<CollectionItem>>` | Global — product lifecycle / collection items |
+| `categoryOverridesProvider` | `StreamProvider<List<CategoryOverride>>` | Global — per-product category overrides |
+| `barcodeProductLookupServiceProvider` | `Provider<BarcodeProductLookupService>` | Global — barcode lookup (APIs + scrapers) |
+| `productClassifierProvider` | `FutureProvider<ProductClassifier>` | Global — built from raw bundled subcategory keywords |
+| `paoCalculatorProvider` | `Provider<PaoCalculator>` | Global |
+| `silentStartupProvider` / `conflictAutoFixProvider` | `FutureProvider<void>` / `FutureProvider<int>` | Global — cold-start reconcile + default-schedule seeding/healing |
+| `appLocaleProvider` / `localeSyncProvider` | `StateProvider<Locale>` / `FutureProvider<void>` | Global — Hebrew (f/m) / English locale selection |
+| `appVersionProvider` / `onboardingCompletedProvider` / `userNameProvider` | `FutureProvider<…>` | Global — settings-backed |
+| `isProDemoProvider` / `milestoneDemoProvider` | `StateProvider<bool>` | Global — in-memory demo toggles |
 
 ---
 
@@ -599,27 +623,31 @@ SoftWarningBanner({
 ```
 skincare_tracker/
 ├── lib/
-│   ├── main.dart                         # Entry point; ProviderScope wrapper
+│   ├── main.dart                         # Entry point; ProviderScope wrapper; Supabase + DB init
 │   ├── app.dart                          # MaterialApp; ThemeData; locale; RTL; routing
 │   │
 │   ├── core/
 │   │   ├── theme/
 │   │   │   ├── radiant_dew_theme.dart    # Full ThemeData from DESIGN.md tokens
 │   │   │   ├── app_colors.dart           # Color constants
-│   │   │   └── app_typography.dart       # TextStyles (Quicksand + Plus Jakarta Sans)
+│   │   │   ├── app_typography.dart       # TextStyles (Quicksand + Plus Jakarta Sans)
+│   │   │   └── app_layout.dart           # Spacing / radius layout constants
+│   │   ├── config/
+│   │   │   ├── supabase_config.dart      # Supabase URL + anon key
+│   │   │   └── feature_flags.dart        # Build-time feature toggles
 │   │   ├── l10n/
-│   │   │   └── app_he.arb               # Hebrew string resources
+│   │   │   ├── hebrew_date_strings.dart  # Hebrew month/weekday strings
+│   │   │   └── generated/               # gen_l10n output (app_localizations*.dart)
 │   │   ├── utils/
-│   │   │   ├── day_boundary.dart         # effectiveDate(DateTime) → LocalDate
-│   │   │   ├── bidi_text.dart            # BiDi text widget helpers for bidi product names
 │   │   │   └── json_list.dart            # JSON encode/decode helpers for Drift TEXT columns
 │   │   └── routing/
-│   │       └── app_router.dart           # go_router or Navigator route definitions
+│   │       └── app_router.dart           # go_router route definitions
 │   │
 │   ├── domain/
 │   │   ├── entities/
-│   │   │   ├── master_product.dart
+│   │   │   ├── master_product.dart        # incl. SlotConfig + FrequencyRule
 │   │   │   ├── category.dart
+│   │   │   ├── sub_category.dart
 │   │   │   ├── incompatibility_rule.dart
 │   │   │   ├── master_list_manifest.dart
 │   │   │   ├── product_selection.dart
@@ -627,34 +655,64 @@ skincare_tracker/
 │   │   │   ├── order_override.dart
 │   │   │   ├── day_record.dart
 │   │   │   ├── skin_log_entry.dart
-│   │   │   └── muted_conflict.dart
+│   │   │   ├── muted_conflict.dart
+│   │   │   ├── category_override.dart
+│   │   │   ├── collection_item.dart
+│   │   │   ├── product_use_timestamp.dart
+│   │   │   ├── user_custom_product.dart
+│   │   │   ├── scanned_product_info.dart
+│   │   │   └── user_data_export.dart
 │   │   ├── enums/
 │   │   │   ├── slot.dart                 # morning | evening
 │   │   │   ├── rule_scope.dart
-│   │   │   └── day_completion_state.dart # complete | partial | missed | future
+│   │   │   ├── day_completion_state.dart # complete | partial | missed | future
+│   │   │   ├── collection_status.dart
+│   │   │   └── pao_tone.dart
 │   │   ├── repositories/                 # Abstract interfaces
 │   │   │   ├── master_content_repository.dart
 │   │   │   ├── user_data_repository.dart
 │   │   │   ├── photo_repository.dart
 │   │   │   ├── settings_repository.dart
-│   │   │   └── premium_repository.dart
+│   │   │   └── refreshable_repository.dart
 │   │   └── services/
 │   │       ├── routine_scheduler.dart        # Single gateway for all routine device data
 │   │       ├── routine_resolver.dart
-│   │       ├── streak_calculator.dart
+│   │       ├── week_glance_builder.dart
+│   │       ├── product_sorter.dart
+│   │       ├── schedule_days.dart            # canonical effectiveDays / defaultDaysFor
+│   │       ├── default_schedule.dart
 │   │       ├── incompatibility_checker.dart
+│   │       ├── conflict_resolver.dart
+│   │       ├── streak_calculator.dart
+│   │       ├── calendar_stats.dart
+│   │       ├── day_boundary_service.dart
 │   │       ├── reconciliation_service.dart
-│   │       └── export_import_service.dart
+│   │       ├── export_import_service.dart
+│   │       ├── pao_calculator.dart
+│   │       ├── product_classifier.dart
+│   │       └── category_helpers.dart
 │   │
 │   ├── data/
 │   │   ├── bundled/
-│   │   │   └── master_content_repository_impl.dart  # Loads assets/data/*.json
+│   │   │   └── master_content_repository_impl.dart  # Loads assets/data/*.json (offline fallback)
+│   │   ├── cache/
+│   │   │   ├── master_content_cache.dart            # Cache interface
+│   │   │   ├── shared_prefs_master_content_cache.dart
+│   │   │   └── master_content_serializer.dart
+│   │   ├── remote/
+│   │   │   ├── supabase_master_content_data_source.dart
+│   │   │   ├── remote_content_data_source.dart
+│   │   │   ├── barcode_lookup_service.dart           # 5 barcode APIs, merged by priority
+│   │   │   ├── retailer_search_scraper.dart          # scraper interface
+│   │   │   └── scrapers/                             # iherb, incidecoder, olive_young_global,
+│   │   │                                             #   open_beauty_facts_name_search, yes_style
+│   │   ├── remote_cached/
+│   │   │   └── remote_cached_master_content_repository_impl.dart  # 3-tier: memory→cache→bundled
 │   │   ├── local/
 │   │   │   ├── database/
-│   │   │   │   ├── app_database.dart     # Drift @DriftDatabase definition
+│   │   │   │   ├── app_database.dart     # Drift @DriftDatabase definition + migrations
 │   │   │   │   ├── tables/               # One file per Drift table
-│   │   │   │   ├── daos/                 # SelectionsDao, DayRecordsDao, etc.
-│   │   │   │   └── migrations/           # Versioned migration steps
+│   │   │   │   └── daos/                 # SelectionsDao, DayRecordsDao, etc. (+ .g.dart)
 │   │   │   ├── photo_storage/
 │   │   │   │   ├── photo_repository_android.dart
 │   │   │   │   └── photo_repository_web.dart
@@ -664,59 +722,78 @@ skincare_tracker/
 │   │       └── user_data_repository_impl.dart
 │   │
 │   ├── features/
+│   │   ├── welcome/                    # First-launch welcome
+│   │   ├── onboarding/                 # Onboarding flow
+│   │   ├── app_entry.dart              # Post-startup routing gate (reconcile + locale sync)
 │   │   ├── setup/
 │   │   │   ├── product_selection_screen.dart  # S1 guided + S1b browse tab (isTabDestination)
-│   │   │   ├── barcode_scan_sheet.dart        # Camera barcode scanner modal (Android only)
-│   │   │   ├── add_custom_product_sheet.dart  # Add/edit custom product
-│   │   │   ├── schedule/                      # S2 — Schedule Setup
-│   │   │   └── ordering/                      # S3 — Order Customization
-│   │   ├── daily_home/                  # S4 — Daily Home + S10 Streak widget
-│   │   ├── history/
-│   │   │   ├── calendar/               # S6 — Calendar
-│   │   │   └── day_detail/             # S7 — Day Detail
-│   │   ├── skin_log/
-│   │   │   ├── entry/                  # S8 — Skin Log Entry
-│   │   │   └── journal/                # S9 — Skin Journal
-│   │   ├── settings/                   # S11 — Settings hub
-│   │   ├── data_management/
-│   │   │   └── export_import/          # S12 — Export / Import
-│   │   ├── about/                      # S13 — About / What's New
-│   │   ├── update_review/              # S14 — Post-update reconciliation screen
-│   │   ├── backup_reminder/            # S16 — Backup reminder surface
-│   │   └── premium/                    # S15 — License Activation (stub in v1.0)
+│   │   │   ├── add_product_flow_screen.dart    # Guided add-product flow
+│   │   │   ├── barcode_scan_sheet.dart         # Camera barcode scanner modal (Android only)
+│   │   │   ├── add_custom_product_sheet.dart   # Add/edit custom product
+│   │   │   ├── category_review_screen.dart     # Category override review
+│   │   │   ├── schedule_setup_screen.dart      # S2 — Schedule Setup
+│   │   │   └── order_customization_screen.dart # S3 — Order Customization
+│   │   ├── home/
+│   │   │   ├── daily_home_screen.dart  # S4 — Daily Home + S10 Streak widget
+│   │   │   └── week_glance_screen.dart # Week overview
+│   │   ├── calendar/
+│   │   │   ├── calendar_screen.dart    # S6 — Calendar
+│   │   │   └── day_detail_screen.dart  # S7 — Day Detail
+│   │   ├── journal/
+│   │   │   ├── skin_log_entry_screen.dart  # S8 — Skin Log Entry
+│   │   │   └── skin_journal_screen.dart    # S9 — Skin Journal
+│   │   ├── collection/
+│   │   │   ├── collection_screen.dart      # Product collection / lifecycle
+│   │   │   └── product_detail_screen.dart
+│   │   └── settings/
+│   │       ├── settings_screen.dart        # S11 — Settings hub
+│   │       ├── export_import_screen.dart   # S12 — Export / Import
+│   │       ├── merge_conflict_screen.dart  # S12 merge conflict chooser
+│   │       ├── about_screen.dart           # S13 — About / What's New
+│   │       ├── update_review_screen.dart   # S14 — Post-update reconciliation
+│   │       └── premium_screen.dart         # S15 — License Activation (stub in v1.0)
 │   │
 │   └── shared/
 │       ├── widgets/
 │       │   ├── routine_item_row.dart    # S5 component — core shared widget
 │       │   ├── soft_warning_banner.dart
+│       │   ├── backup_reminder_banner.dart  # S16 — Backup reminder surface
 │       │   ├── slot_section_header.dart
 │       │   ├── category_header.dart
 │       │   ├── completion_indicator.dart
 │       │   ├── weekday_picker.dart
-│       │   └── streak_widget.dart
+│       │   ├── streak_widget.dart
+│       │   ├── glow_card.dart
+│       │   ├── glow_app_bar.dart
+│       │   ├── glass_bottom_nav.dart
+│       │   ├── product_thumb.dart
+│       │   ├── pao_meter.dart
+│       │   ├── radiant_chips.dart
+│       │   ├── fixed_slot_chip.dart
+│       │   ├── skin_state_chip.dart
+│       │   ├── pro_tag.dart
+│       │   ├── upgrade_sheet.dart
+│       │   ├── primary_button.dart
+│       │   └── soft_icon_button.dart
 │       └── providers/
 │           └── root_providers.dart      # Global Riverpod providers
 │
 ├── assets/
 │   ├── data/
-│   │   ├── master_products.json         # Admin-authored product list
+│   │   ├── master_products.json         # Admin-authored products + categories + subcategories
 │   │   ├── incompatibility_rules.json
 │   │   └── changelog.json               # Manifest + version history
 │   └── images/
+│       ├── app_icon.png
 │       └── products/                    # Admin-uploaded product images
 │           └── {product_id}.jpg
 │
-├── test/
-│   ├── domain/
-│   │   ├── routine_resolver_test.dart
-│   │   ├── streak_calculator_test.dart
-│   │   ├── incompatibility_checker_test.dart
-│   │   └── day_boundary_test.dart
-│   ├── data/
-│   │   └── export_import_test.dart
-│   └── features/
-│       └── daily_home/
-│           └── daily_home_widget_test.dart
+├── test/                                # Unit + widget + Playwright (test/playwright/) tests
+├── supabase/                            # Supabase schema + seed for remote master content
+│   ├── 01_schema.sql
+│   ├── 02_seed.sql
+│   ├── 03_add_ingredients.sql
+│   └── 04_add_barcodes.sql
 │
 ├── doc/
 │   ├── skincare-tracker-prd.md
@@ -814,7 +891,7 @@ Dependencies flow from foundation to feature. Each step assumes prior steps are 
 | UC-20 Backup reminder (S16) | `BackupReminderFeature`; `SettingsRepository.lastExportDate`; `SoftWarningBanner` |
 | UC-21 Premium backup (deferred) | `PremiumRepository` stub interface; `S15` placeholder screen; archive format (UC-16) is the natural seed |
 | UC-22 Barcode scanning | BarcodeScanSheet; BarcodeProductLookupService; MasterProduct.barcodes; barcode_scan_sheet.dart |
-| Supabase remote content | RemoteCachedMasterContentRepositoryImpl; SupabaseMasterContentDataSource; supabase/migrations/ |
+| Supabase remote content | RemoteCachedMasterContentRepositoryImpl; SupabaseMasterContentDataSource; `get_master_content()` RPC; supabase/*.sql |
 | NFR-L1–L4 Hebrew RTL, bidi | `AppRoot` (locale + `TextDirection.rtl`); `BidiTextHelper`; `RoutineItemRow` bidi-safe names |
 | NFR-M1–M7 Data durability | Stable UUID IDs on all records; `lastModified` on all rows; Drift schema migrations; `ReconciliationService`; export archive versioning |
 | Design system (Radiant Dew) | `RadiantDewTheme`; `AppColors`; `AppTypography`; all screens consume tokens |

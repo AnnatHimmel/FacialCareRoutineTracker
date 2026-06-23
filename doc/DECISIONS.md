@@ -19,6 +19,14 @@ Persists architectural and implementation decisions across task contexts. Each a
 
 **Updated 2026-06-17:** Implementation was extended to 5 APIs total (OpenBeautyFacts, OpenFoodFacts, UPCItemDB, InciBeauty, BarcodeSpider). Master-product matching was also added — see DEC-015 for the full lookup strategy.
 
+**Updated 2026-06-23:** The lookup pipeline is now multi-tier and combines the barcode APIs with HTML scrapers (see also MOD-DEC-001, which describes the same scraping technique in the standalone admin tool). `BarcodeProductLookupService.lookup(barcode)` runs three tiers and merges them (first non-null field wins; images concatenated then deduped at the address level, http/https folded):
+- **Tier 1 — barcode-capable scrapers** queried with the raw barcode (highest priority for the fields they return). Scrapers expose `supportsBarcodeSearch`; currently `YesStyleScraper` and `IHerbScraper` return `true`. Site-level / Cloudflare-challenge titles are rejected via a name pattern.
+- **Tier 2 — the 5 barcode-lookup APIs** above, merged among themselves (priority OBF > OFF > UPC > InciBeauty > BarcodeSpider). **UPC Item DB is still used** (its `description` is mapped to `comment`, not `ingredients`, since it is marketing copy not INCI).
+- **Tier 3 — name-only scrapers** augment gaps using the resolved product name (falling back to the barcode if no name yet).
+
+The registered scrapers (`barcodeProductLookupServiceProvider` in `root_providers.dart`) are: `OpenBeautyFactsNameSearchScraper`, `OliveYoungGlobalScraper`, `YesStyleScraper`, `IHerbScraper`, `IncidecoderScraper` (last — fills ingredients/images, lowest brand confidence). iHerb was added as a source on 2026-06-23. Most scrapers are **Android-only** (web CORS blocks the cross-origin HTML fetches and return null on `kIsWeb`). A separate `lookupByName(name, {brand})` entry point powers the manual "find the details for me" flow, querying only the name-search scrapers.
+**Affects Files (additions):** `retailer_search_scraper.dart`, `scrapers/{open_beauty_facts_name_search_scraper,olive_young_global_scraper,yes_style_scraper,iherb_scraper,incidecoder_scraper}.dart`.
+
 ### MOD-DEC-BAR-002: Cache Version Guard for Master Content
 **Date**: 2026-06-17
 **Request**: After adding `barcodes` to `master_products.json` and bumping `contentVersion` to `1.0.1`, existing devices still returned 0/33 products with barcodes because `RemoteCachedMasterContentRepositoryImpl.load()` always preferred the SharedPreferences cache over the bundled asset with no version check.
@@ -33,6 +41,11 @@ Persists architectural and implementation decisions across task contexts. Each a
 **Rationale**: Offline-first preserved — network never blocks load; cache outlasts sessions; bundled JSON is permanent fallback. Single RPC avoids 4 round-trips. Existing `MasterContentRepository` interface unchanged.
 **Alternatives Rejected**: Static file hosting (no admin CRUD UI for images); 4 separate table fetches (extra latency); replacing bundled JSON (loses first-launch offline).
 **Affects Files**: `MasterProduct`, `MasterContentRepositoryImpl`, `ProductThumb`, `root_providers.dart`, `main.dart`, `product_selection_screen.dart`, 8 new files.
+
+**Updated 2026-06-23:** Confirmed against `supabase_master_content_data_source.dart` (single `rpc('get_master_content')` call), `remote_cached_master_content_repository_impl.dart`, and `shared_prefs_master_content_cache.dart`. Notes on current behavior:
+- Supabase project ref is `ddrxzzeplokmkzizailn`. The URL and anon key are injected at build time via `--dart-define` (`SupabaseConfig.url` / `.anonKey` are `String.fromEnvironment`), not hardcoded.
+- `load()` is offline-first and never hits the network: it loads the bundled asset, then prefers the SharedPreferences cache **only if its `contentVersion` is ≥ the bundled version** (the version guard from MOD-DEC-BAR-002); otherwise it clears the stale cache and uses bundled.
+- `refresh()` (separate from `load()`) fetches from Supabase and **merges by ID — remote wins on collision, bundled-only items are appended** (so a Supabase lag never drops bundled products), then writes the merged result to cache. The repo implements `RefreshableRepository`.
 
 ### Flutter / Dart
 
@@ -71,6 +84,8 @@ Persists architectural and implementation decisions across task contexts. Each a
 **Rationale**: Server-side scraping bypasses CORS entirely. Node.js has mature scraping libraries (axios + cheerio). A separate tool keeps admin authoring logic out of the user app. Local-only run model means no auth needed, no deployment costs.
 **Alternatives Rejected**: Client-side fetch (CORS blocked); adding admin screens to Flutter app (bloats APK, poor UX for content authoring); headless browser (heavier, slower startup).
 **Affects Tasks**: MOD-001 through MOD-006.
+
+**Updated 2026-06-23:** This decision still holds for the **admin authoring** workflow (master-list curation stays in the standalone Node tool). It is, however, no longer the *only* place scraping happens: the Flutter **user** app now scrapes retailer pages at runtime for the barcode-scan / "find details" flows (see MOD-DEC-BAR-001 update and DEC-015). That in-app scraping is Android-only because the browser CORS rationale above still applies on web — the scrapers return null on `kIsWeb`.
 
 #### MOD-DEC-002: Scraper Fallback to Manual Entry
 **Date**: 2026-05-28

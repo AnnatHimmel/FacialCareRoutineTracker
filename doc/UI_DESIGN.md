@@ -50,10 +50,21 @@ All wireframes are designed for the phone breakpoint (375–430px wide).
 
 ```
 Bottom Navigation (RTL read order — 4 tabs):
-  [הגדרות / Settings S11] | [יומן / Calendar S6] | [המוצרים שלי / My Products S1b] | [היום / Today S4]
+  [הגדרות / Settings S11] | [יומן עור / Skin Log S9] | [המדף שלי / Shelf S1b] | [היום שלי / My Day S4]
 ```
 
-> **Note on wireframes below:** Wireframes show `יומן עור` as a bottom-nav tab — that label is outdated. The actual second tab is **המוצרים שלי** (My Products, `/products`). The Skin Journal (S9) is reachable from Calendar (S6) and from the skin-log icon on S4, but is **not** a bottom-nav tab.
+Implemented in `lib/shared/widgets/glass_bottom_nav.dart` (`AppBottomNav`), wired to the `StatefulShellRoute` branches in `lib/core/routing/app_router.dart`. The four branches, in declaration order, are:
+
+| Tab | Route | Icon (Material) | Hebrew label | Screen |
+|-----|-------|-----------------|--------------|--------|
+| 1 | `/today` | `wb_sunny` | היום שלי | S4 Daily Home |
+| 2 | `/collection` | `spa` | המדף שלי | S1b My Shelf (collection) |
+| 3 | `/journal` | `calendar_today` | יומן עור | S9 Skin Journal |
+| 4 | `/settings` | `settings` | הגדרות | S11 Settings |
+
+> **Notes:**
+> - The third tab (`calendar_today` icon, label **יומן עור**) navigates to the **Skin Journal (S9)**, not the Calendar. The **Calendar (S6)** lives at the standalone route `/calendar` (outside the nav shell) and is reached from elsewhere, not from a bottom-nav tab.
+> - The second tab is the **Shelf / "המדף שלי"** (`CollectionScreen`, `/collection`) — a "My Shelf" view with in-use / sealed / archive sub-tabs and PAO tracking. The setup-style product browse (S1b, `ProductSelectionScreen`) is a separate standalone route `/products`, not a bottom-nav tab.
 
 ---
 
@@ -64,16 +75,16 @@ Bottom Navigation (RTL read order — 4 tabs):
 | # | Screen | Purpose | Entry Points | Exit Points |
 |---|--------|---------|--------------|-------------|
 | S1 | Product Selection (setup wizard) | Step-by-step product selection by category | First launch (setup); Settings → "ערוך בחירה" | S2 (if any occasional), S4 (if all daily) |
-| S1b | My Products tab (browse mode) | Flat searchable product browse; same `ProductSelectionScreen` with `isTabDestination: true` | Bottom nav "המוצרים שלי" | Stays in tab; optional barcode scan modal |
+| S1b | My Shelf tab (`CollectionScreen`) | "My Shelf" view with in-use / sealed / archive sub-tabs + PAO tracking; standalone product browse (`ProductSelectionScreen`) lives at `/products` | Bottom nav "המדף שלי" (`/collection`) | S1c barcode scan / add-custom-product sheet; product detail |
 | S1c | Barcode Scan Sheet | Camera barcode scanner modal for finding a product | S1b FAB (Android only) | Returns to S1b; optionally opens AddCustomProduct |
 | S2 | Schedule Setup | Weekday schedule for occasional products | After S1 (setup); Settings → "ערוך לוח זמנים" | S3 (order) or S4 |
 | S3 | Order Customization | Reorder selected products per slot | After S2 (setup); Settings → "ערוך סדר" | S4 |
-| S4 | Daily Home | Today's routine; record done | App launch (main screen); bottom nav "היום" | S7 (tap date), S5 (expand row), S8 (skin log) |
+| S4 | Daily Home | Today's routine; record done | App launch (main screen); bottom nav "היום שלי" | S7 (tap date), S5 (expand row), S8 (skin log) |
 | S5 | Routine Item | Expanded product detail row | S4/S7 row expand | Collapses back |
-| S6 | Calendar / History | Monthly completion grid | Bottom nav "לוח שנה" | S7 (tap day) |
+| S6 | Calendar / History | Monthly completion grid | Standalone route `/calendar` (not a bottom-nav tab) | S7 (tap day) |
 | S7 | Day Detail | Past day's routine + skin log | S6 (tap day); S4 (tap date header) | S8 (edit skin log), back |
 | S8 | Skin Log Entry | Add/edit notes + photos | S4 (skin log button); S7 (edit) | Back to S4/S7 |
-| S9 | Skin Journal | Chronological photo gallery | Bottom nav "יומן עור" | S8 (tap entry) |
+| S9 | Skin Journal | Chronological photo gallery | Bottom nav "יומן עור" (`/journal`) | S8 (tap entry) |
 | S10 | Streak Display | Streak widget (embedded in S4) | Shown on S4 always | Part of S4 |
 | S11 | Settings | Manage all settings | Bottom nav "הגדרות" | S1, S2, S3, S12, S13 |
 | S12 | Export / Import | Backup and restore data | S11 → "ייצוא / ייבוא" | Back to S11 |
@@ -130,7 +141,7 @@ Bottom Navigation (RTL read order — 4 tabs):
 │  │  💾 גבה את הנתונים שלך   [גיבוי] [✕] │  │
 │  └───────────────────────────────────────┘  │
 ├─────────────────────────────────────────────┤
-│   הגדרות  |  יומן עור  |  לוח שנה  |  היום │  ← Bottom nav (RTL order: Settings|Journal|Calendar|Today)
+│   הגדרות  |  יומן עור  |  המדף שלי  |  היום שלי │  ← Bottom nav (RTL read order: Settings | Skin Log | Shelf | My Day)
 └─────────────────────────────────────────────┘
 ```
 
@@ -147,7 +158,7 @@ Bottom Navigation (RTL read order — 4 tabs):
 | Conflict marker ⚠️ | Icon + tooltip | `conflictsForDayProvider` | Tap → soft warning bottom sheet |
 | Deprecated marker | Text badge | `MasterProduct.isDeprecated` | Inline "לא מומלץ" badge |
 | Backup reminder | `SoftWarningBanner` | `settingsProvider.lastExportDate` | Dismiss ✕; or tap "גיבוי" → S12 |
-| Bottom navigation | `NavigationBar` | — | Navigate to Today / Calendar / Skin / Settings |
+| Bottom navigation | `AppBottomNav` / `GlassBottomNav` | — | Navigate to My Day / Shelf / Skin Log / Settings |
 
 **States:**
 | State | Description |
@@ -481,7 +492,7 @@ Expanded deprecated: shows banner "מוצר זה אינו מומלץ עוד — 
 ├─────────────────────────────────────────────┤
 │  ● שלם  ◑ חלקי  ✗ הוחמץ  □ עתידי          │  ← Legend
 ├─────────────────────────────────────────────┤
-│   הגדרות  |  יומן עור  |  לוח שנה  |  היום │
+│   הגדרות  |  יומן עור  |  המדף שלי  |  היום שלי │
 └─────────────────────────────────────────────┘
 ```
 
@@ -546,7 +557,7 @@ Expanded deprecated: shows banner "מוצר זה אינו מומלץ עוד — 
 │  │     הבחירות שהיו תקפות באותה עת        ││
 │  └─────────────────────────────────────────┘│
 ├─────────────────────────────────────────────┤
-│   הגדרות  |  יומן עור  |  לוח שנה  |  היום │
+│   הגדרות  |  יומן עור  |  המדף שלי  |  היום שלי │
 └─────────────────────────────────────────────┘
 ```
 
@@ -625,7 +636,7 @@ Expanded deprecated: shows banner "מוצר זה אינו מומלץ עוד — 
 │  └──────┘ └──────┘                         │
 │                                             │
 ├─────────────────────────────────────────────┤
-│   הגדרות  |  יומן עור  |  לוח שנה  |  היום │
+│   הגדרות  |  יומן עור  |  המדף שלי  |  היום שלי │
 └─────────────────────────────────────────────┘
 ```
 
@@ -704,7 +715,7 @@ Expanded deprecated: shows banner "מוצר זה אינו מומלץ עוד — 
 │  └──────────────────────────────────────┘  │
 │                                             │
 ├─────────────────────────────────────────────┤
-│   הגדרות  |  יומן עור  |  לוח שנה  |  היום │
+│   הגדרות  |  יומן עור  |  המדף שלי  |  היום שלי │
 └─────────────────────────────────────────────┘
 ```
 
@@ -911,13 +922,13 @@ S4 Daily Home ←──── Daily app open (subsequent launches)
     ├── Expand row → S5 Product Detail
     ├── Tap date → S7 Day Detail
     ├── Tap skin log icon → S8 Skin Log Entry
-    └── Bottom nav → S6, S9, S11
+    └── Bottom nav → S1b (Shelf), S9 (Skin Journal), S11 (Settings)
 ```
 
 ### 4.2 Flow: History Review
 
 ```
-Bottom nav "לוח שנה"
+Open Calendar (standalone `/calendar` route — not a bottom-nav tab)
     │
     ▼
 S6 Calendar (monthly grid)
@@ -992,7 +1003,8 @@ S12 Import → file selected → validate archive
 | Tertiary | Rosy Pink | `#874E58` | Evening slot color, progress accents |
 | Tertiary Container | Rosy Container | `#DE99A4` | Evening slot header bg, partial-day cells |
 | Surface | Cream | `#FFF8F6` | All screen backgrounds |
-| Surface Container | — | `#FFE9E4` | Card surfaces |
+| Surface Container Lowest | Pebble White | `#FFFFFF` | Card surfaces (pure white "pebbles" on cream) |
+| Surface Container | — | `#FFE9E4` | Raised fills, future calendar cells |
 | On Surface | Warm Charcoal | `#251815` | Primary body text |
 | On Surface Variant | Muted Brown | `#56423E` | Secondary text, captions |
 | Outline | — | `#89726D` | Borders, dividers |
@@ -1000,14 +1012,16 @@ S12 Import → file selected → validate archive
 | Error Container | — | `#FFDAD6` | Missed-day calendar cells |
 | Inverse Primary | — | `#FFB4A4` | Text on dark surfaces |
 
-**Glassmorphism style** (sticky headers, streak card, warning banners):
-- `background: rgba(255, 255, 255, 0.60)`
-- `backdrop-filter: blur(12px)`
-- `border: 1px solid rgba(255, 255, 255, 0.30)`
+**Glassmorphism style** (sticky headers, bottom nav, streak card, warning banners) — see `AppColors.glassFill` / `glassBlurSigma`:
+- `background: #FFF1ED @ ~85% opacity` (`Color(0xD9FFF1ED)` — warm surface-low tint, not white)
+- `backdrop-filter: blur(12px)` (`glassBlurSigma = 12`)
+- Bottom nav adds a 1px top border in `primaryFixed` and an upward `navGlow` shadow.
 
-**Shadow / glow style** (cards):
-- Level 2: `boxShadow: 0 4px 24px rgba(255, 139, 113, 0.12)` (peach ambient glow)
-- Level 3 (hover/active): double shadow with tight white highlight + wide peach glow
+**Shadow / glow style** (cards) — peach-tinted, never dark drop shadows (see `AppColors.glow*`/`soft`):
+- `soft`: `0 1px 2px rgba(37,24,21,.04), 0 4px 16px rgba(158,65,44,.06)` (resting cards)
+- `glowSm`: `0 2px 12px rgba(255,139,113,.10)`
+- `glow`: `0 8px 30px rgba(255,139,113,.10)` (standard card glow)
+- `glowLg`: `0 16px 48px -8px rgba(158,65,44,.18)` (elevated / active)
 
 ### 5.2 Typography
 
@@ -1046,7 +1060,7 @@ S12 Import → file selected → validate archive
 |---------|--------------|
 | Buttons (primary CTA) | Full pill (9999px) |
 | Inputs | 1rem (16px) |
-| Cards (mobile) | 2rem (32px) |
+| Cards (mobile) | 28px (`RadiantDewTheme.cardRadius`) |
 | Bottom navigation | 0 (flush to edge) |
 | Chips / weekday toggles | Full pill (9999px) |
 | Category headers | 0 (spans full width) |
@@ -1057,25 +1071,26 @@ S12 Import → file selected → validate archive
 
 ### 5.5 Icons
 
-Use **Phosphor Icons** (rounded / soft variant, 2px stroke weight) to match the rounded UI personality. Key icons:
+Uses Flutter's built-in **Material Icons** (the `_rounded` / `_outlined` variants where available) to match the rounded UI personality. Bottom-nav destinations pair an outlined idle icon with a rounded selected icon. Indicative mapping:
 
-| Icon | Usage |
-|------|-------|
-| `sun` | Morning slot |
-| `moon` | Evening slot |
-| `fire` | Streak current |
-| `star` | Streak longest |
-| `check-circle` | Done / complete |
-| `warning` | Incompatibility conflict / deprecation |
-| `archive-box` | Export |
-| `folder-open` | Import |
-| `calendar` | Calendar nav |
-| `camera` | Skin log photo |
-| `image` | Gallery |
-| `gear` | Settings |
-| `info` | About |
-| `arrow-right` | Back in RTL (leading navigation) |
-| `dots-six-vertical` | Drag handle (S3) |
+| Material icon | Usage |
+|---------------|-------|
+| `wb_sunny` | Morning slot; My Day nav tab |
+| `nightlight` / `bedtime` | Evening slot |
+| `local_fire_department` | Streak current |
+| `star` / `emoji_events` | Streak longest |
+| `check_circle` | Done / complete |
+| `warning_amber` | Incompatibility conflict / deprecation |
+| `spa` | Shelf nav tab |
+| `calendar_today` | Skin Log nav tab |
+| `camera_alt` | Skin log photo |
+| `photo_library` | Gallery |
+| `settings` | Settings nav tab |
+| `info_outline` | About |
+| `chevron_left` | Trailing navigation indicator in RTL list rows (see RTL chevron rule below) |
+| `drag_handle` / `drag_indicator` | Drag handle (S3) |
+
+**RTL chevron rule (per CLAUDE.md):** all chevron `IconData` values have `matchTextDirection: true`, so in this RTL app they auto-mirror. Every chevron `Icon` must pass `textDirection: TextDirection.ltr` to suppress the mirror and control direction explicitly. Use `Icons.chevron_left` (visually `<`) as the trailing "navigate to detail" indicator in list rows — the correct RTL direction.
 
 ---
 

@@ -80,6 +80,15 @@ Warm "golden hour" aesthetic: soft minimalism + glassmorphism.
 
 This applies to every task in `/6-ModifyLoop`, `/4-Execution`, and any ad-hoc code change. Never write implementation code before a failing test exists for it.
 
+### "All tests" means BOTH suites — Dart **and** Playwright
+
+The project has two test suites, and a full test run / verification gate **must include both**:
+
+1. **Dart unit & widget tests** — `flutter test` (from repo root).
+2. **Playwright web e2e** — `cd test/playwright && npx playwright test` (drives the Flutter-web build via the accessibility/semantics tree; the config auto-runs `flutter build web` first, so the first run is slow).
+
+**Never report "all tests pass" or treat a change as verified after running only `flutter test`.** The e2e suite catches UI/flow regressions the Dart tests cannot. If a fix touches selection, scheduling, ordering, onboarding, or any screen flow, the Playwright suite is mandatory before declaring done. Run `flutter analyze` as well.
+
 ### Subagent Mapping for TDD Phases
 
 Delegate each phase to the matching specialized subagent to protect the main context window:
