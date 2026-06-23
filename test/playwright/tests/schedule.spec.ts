@@ -94,9 +94,9 @@ test.describe('Schedule compliance after onboarding', () => {
     // ── Step 3d: Morning order ────────────────────────────────────────────────
     // Argireline must not appear in the drag list (schedule was cleared to empty,
     // so order_customization_screen excludes it via the isExcluded guard).
-    await expectTextContaining(page, 'Confirm morning order');
+    await expectTextContaining(page, 'Looks good, continue to evening routine');
     await expect(text(page, 'Argireline Solution 10%')).not.toBeVisible();
-    await tapText(page, 'Confirm morning order');
+    await tapText(page, 'Looks good, continue to evening routine');
 
     // ── Step 3e: Evening transition ───────────────────────────────────────────
     await expectText(page, 'Now for the evening routine');

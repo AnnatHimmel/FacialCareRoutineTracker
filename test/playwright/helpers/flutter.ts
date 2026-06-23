@@ -245,11 +245,23 @@ async function engageAndType(page: Page, field: Locator, value: string): Promise
 /**
  * Search for and select a product on the onboarding product-selection screen.
  *
- * The real success signal is that the product row appears after filtering —
- * verifying the DOM input value is not enough, because keystrokes can land in
- * the DOM input without reaching Flutter's search controller (the canvas keeps
- * showing the previous results). We retry the whole search-and-tap until the
- * `exact` row materialises, then tap it.
+ * The product row exposes TWO buttons in the Flutter semantics tree:
+ *   1. `button "<product name>"` — tapping this opens the product-detail sheet
+ *   2. `button` (no accessible name) — the circular toggle that selects/deselects
+ *
+ * We locate the toggle by:
+ *   1. Searching and waiting for the named product button to appear.
+ *   2. Getting its bounding-box y-coordinate (the row's vertical centre).
+ *   3. Finding all unlabeled buttons on the page and clicking the one whose
+ *      y-centre is within 20px of the named button — that is the row's toggle.
+ *
+ * A synthetic `dispatchEvent('click')` is used (as with tapNavTab / tapDayChip)
+ * because the toggle is a role=button that responds to synthetic DOM clicks
+ * without needing coordinate accuracy.
+ *
+ * Success signal: the search field is still visible after the tap (a detail
+ * sheet opening would cover it). If the detail sheet opens anyway, we dismiss
+ * it with Escape and retry.
  */
 export async function selectProduct(
   page: Page,
@@ -259,19 +271,85 @@ export async function selectProduct(
 ): Promise<void> {
   const field = textbox(page, searchHint).first();
   await field.waitFor({ state: 'visible', timeout: 20_000 });
-  const row = textContaining(page, exact).first();
+
+  // The named product button (opens detail sheet — do NOT tap this).
+  const productButton = page.getByRole('button', { name: exact, exact: false }).first();
 
   for (let attempt = 0; attempt < 6; attempt++) {
-    await engageAndType(page, field, search);
-    try {
-      await row.waitFor({ state: 'visible', timeout: 5_000 });
-    } catch {
-      continue; // Flutter didn't filter — re-engage and retry.
+    // Dismiss any modal covering the search field before each attempt.
+    if (!(await field.isVisible())) {
+      await dismissDetailSheetIfOpen(page);
+      await field.waitFor({ state: 'visible', timeout: 10_000 });
     }
-    await clickCenter(page, row);
-    return;
+
+    await engageAndType(page, field, search);
+
+    // Wait for the named product button to appear in filtered results.
+    try {
+      await productButton.waitFor({ state: 'visible', timeout: 5_000 });
+    } catch {
+      continue; // Flutter filter didn't fire — re-engage and retry.
+    }
+
+    // Get the row's vertical centre from the named product button.
+    const productBox = await productButton.boundingBox();
+    if (!productBox) continue;
+    const rowCenterY = productBox.y + productBox.height / 2;
+
+    // Find the toggle: the small (24×24) button in the same row as the named
+    // product button. In the semantics tree, each product row is a group with
+    // two buttons: a large named button (opens detail) and a small unnamed
+    // toggle (selects/deselects). We target the toggle via the named product
+    // button's ancestor group, then select the small-sized sibling button.
+    //
+    // dispatchEvent('click') is used because the toggle is outside the viewport
+    // in RTL mode (x ≈ 744 on a 412 px viewport); synthetic DOM clicks don't
+    // require coordinate accuracy (same pattern as tapNavTab / tapDayChip).
+    //
+    // The toggle is the following-sibling button of the named button inside the
+    // same flt-semantics[role="group"] container. XPath identifies it directly.
+    const toggleLocator = productButton.locator(
+      'xpath=ancestor::flt-semantics[@role="group"]//flt-semantics[@role="button"][not(normalize-space())]',
+    );
+    const toggleAlt = productButton.locator(
+      'xpath=../following-sibling::flt-semantics[@role="button"]',
+    );
+
+    // Attempt to dispatch click on the toggle found via ancestor group.
+    let tapped = false;
+    const tCount = await toggleLocator.count().catch(() => 0);
+    if (tCount > 0) {
+      await toggleLocator.first().dispatchEvent('click');
+      tapped = true;
+    } else {
+      // Fallback: sibling following the named button in the DOM.
+      const aCount = await toggleAlt.count().catch(() => 0);
+      if (aCount > 0) {
+        await toggleAlt.first().dispatchEvent('click');
+        tapped = true;
+      }
+    }
+    if (!tapped) continue;
+
+    // Verify no detail sheet opened (search field must still be visible).
+    await page.waitForTimeout(300);
+    if (await field.isVisible()) {
+      return; // Toggle tap succeeded — search field is uncovered.
+    }
+
+    // Detail sheet opened — dismiss and retry.
+    await dismissDetailSheetIfOpen(page);
   }
-  throw new Error(`selectProduct: row "${exact}" never appeared for search "${search}"`);
+  throw new Error(`selectProduct: could not select "${exact}" after searching "${search}"`);
+}
+
+/**
+ * Dismiss an open product-detail bottom sheet.
+ * Flutter bottom sheets respond to the Escape key.
+ */
+async function dismissDetailSheetIfOpen(page: Page): Promise<void> {
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
 }
 
 // ── Schedule (days-view) scanning ────────────────────────────────────────────
