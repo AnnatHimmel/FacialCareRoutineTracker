@@ -202,6 +202,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get journalCtaButton => 'Log Now';
 
   @override
+  String get weeklyReminderBadge => 'Weekly check-in';
+
+  @override
+  String get weeklyReminderTitle => 'How\'s your skin this week?';
+
+  @override
+  String get weeklyReminderBody =>
+      'Snap a quick photo and note how your skin feels — once a week, to see your progress over time.';
+
+  @override
+  String get weeklyReminderNotesHint =>
+      'How does your skin feel today? Dryness, redness, breakouts...';
+
+  @override
+  String get weeklyReminderCapture => 'Take photo';
+
+  @override
+  String get weeklyReminderBrowse => 'or from gallery';
+
+  @override
+  String get weeklyReminderDismiss => 'Later';
+
+  @override
+  String get weeklyReminderNeverShow => 'Don\'t show again';
+
+  @override
+  String get settingsWeeklyReminder => 'Weekly tracking reminder';
+
+  @override
+  String get settingsWeeklyReminderDesc =>
+      'Weekly nudge to photograph and note your skin';
+
+  @override
+  String get settingsDebugResumeReminder => 'Resume weekly reminder';
+
+  @override
+  String get settingsDebugSectionNote => 'Developer tool (debug builds only)';
+
+  @override
+  String get settingsDebugResumeReminderDone =>
+      'Weekly reminder will show again';
+
+  @override
+  String get settingsDebugClearShelf => 'Clear the shelf';
+
+  @override
+  String get settingsDebugClearShelfConfirm =>
+      'Delete all products from the shelf? This cannot be undone.';
+
+  @override
+  String get settingsDebugClearShelfDone => 'Shelf cleared';
+
+  @override
   String get onboardingSkip => 'Skip';
 
   @override
@@ -946,6 +999,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customProductDeleteConfirmAction => 'Remove';
+
+  @override
+  String get productRemoveFromShelfConfirmBody =>
+      'The product will be removed from your routine.';
 
   @override
   String get customProductCommentLabel => 'Note';
@@ -1843,4 +1900,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productDetailViewDetails => 'View full details';
+
+  @override
+  String get routineReadyTitle => 'Your Routine Is Ready ✨';
+
+  @override
+  String routineReadyCounts(int total, int morning, int evening) {
+    return '$total products organized · $morning morning, $evening evening';
+  }
+
+  @override
+  String get routineReadyChangesHeader => 'What We Adjusted for You';
+
+  @override
+  String get routineReadyChangesExplainer =>
+      'Small adjustments for a safe and effective routine — you can always change them.';
+
+  @override
+  String get routineReadyAdvisoriesHeader => 'Worth Noting';
+
+  @override
+  String get routineReadyAdvisoriesExplainer =>
+      'We didn\'t block anything — just a small advisory note.';
+
+  @override
+  String get routineReadyNothingToReport =>
+      'No adjustments needed — your routine is organized and ready.';
+
+  @override
+  String get routineReadyCta => 'View My Routine';
 }

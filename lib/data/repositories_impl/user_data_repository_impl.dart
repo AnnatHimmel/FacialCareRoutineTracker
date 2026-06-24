@@ -478,6 +478,23 @@ class UserDataRepositoryImpl implements UserDataRepository {
     });
   }
 
+  /// Debug-only: empties "the shelf" — every product the user owns
+  /// (selections, custom products, collection-item lifecycle) plus the routine
+  /// wiring tied to those products (schedules, order overrides, category
+  /// overrides). History (day records, skin logs, muted conflicts) is preserved.
+  /// Not part of the [UserDataRepository] contract — reached via
+  /// `debugClearShelfProvider`.
+  Future<void> clearShelf() async {
+    await _db.transaction(() async {
+      await _db.selectionsDao.deleteAll();
+      await _db.schedulesDao.deleteAll();
+      await _db.orderOverridesDao.deleteAll();
+      await _db.collectionItemsDao.deleteAll();
+      await _db.categoryOverridesDao.deleteAll();
+      await _db.userCustomProductsDao.deleteAll();
+    });
+  }
+
   // ── Row → Domain mappers ──────────────────────────────────────────────────
 
   ProductSelection _selectionFromRow(SelectionRow r) => ProductSelection(

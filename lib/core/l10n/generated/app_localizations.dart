@@ -459,6 +459,102 @@ abstract class AppLocalizations {
   /// **'תעדי עכשיו'**
   String get journalCtaButton;
 
+  /// No description provided for @weeklyReminderBadge.
+  ///
+  /// In he, this message translates to:
+  /// **'תיעוד שבועי'**
+  String get weeklyReminderBadge;
+
+  /// No description provided for @weeklyReminderTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'איך העור שלך השבוע?'**
+  String get weeklyReminderTitle;
+
+  /// No description provided for @weeklyReminderBody.
+  ///
+  /// In he, this message translates to:
+  /// **'צלמי תמונה קצרה ורשמי איך העור מרגיש — פעם בשבוע, כדי לראות את ההתקדמות לאורך זמן.'**
+  String get weeklyReminderBody;
+
+  /// No description provided for @weeklyReminderNotesHint.
+  ///
+  /// In he, this message translates to:
+  /// **'איך העור מרגיש היום? יובש, אדמומיות, פצעונים...'**
+  String get weeklyReminderNotesHint;
+
+  /// No description provided for @weeklyReminderCapture.
+  ///
+  /// In he, this message translates to:
+  /// **'צלמי'**
+  String get weeklyReminderCapture;
+
+  /// No description provided for @weeklyReminderBrowse.
+  ///
+  /// In he, this message translates to:
+  /// **'או מהגלריה'**
+  String get weeklyReminderBrowse;
+
+  /// No description provided for @weeklyReminderDismiss.
+  ///
+  /// In he, this message translates to:
+  /// **'אחר כך'**
+  String get weeklyReminderDismiss;
+
+  /// No description provided for @weeklyReminderNeverShow.
+  ///
+  /// In he, this message translates to:
+  /// **'אל תציג שוב'**
+  String get weeklyReminderNeverShow;
+
+  /// No description provided for @settingsWeeklyReminder.
+  ///
+  /// In he, this message translates to:
+  /// **'תזכורת תיעוד שבועי'**
+  String get settingsWeeklyReminder;
+
+  /// No description provided for @settingsWeeklyReminderDesc.
+  ///
+  /// In he, this message translates to:
+  /// **'תזכורת שבועית לצלם ולתעד את מצב העור'**
+  String get settingsWeeklyReminderDesc;
+
+  /// No description provided for @settingsDebugResumeReminder.
+  ///
+  /// In he, this message translates to:
+  /// **'הצג שוב תזכורת שבועית'**
+  String get settingsDebugResumeReminder;
+
+  /// No description provided for @settingsDebugSectionNote.
+  ///
+  /// In he, this message translates to:
+  /// **'כלי פיתוח (Debug בלבד)'**
+  String get settingsDebugSectionNote;
+
+  /// No description provided for @settingsDebugResumeReminderDone.
+  ///
+  /// In he, this message translates to:
+  /// **'התזכורת השבועית תוצג שוב'**
+  String get settingsDebugResumeReminderDone;
+
+  /// No description provided for @settingsDebugClearShelf.
+  ///
+  /// In he, this message translates to:
+  /// **'נקה את המדף'**
+  String get settingsDebugClearShelf;
+
+  /// No description provided for @settingsDebugClearShelfConfirm.
+  ///
+  /// In he, this message translates to:
+  /// **'למחוק את כל המוצרים מהמדף? לא ניתן לבטל.'**
+  String get settingsDebugClearShelfConfirm;
+
+  /// No description provided for @settingsDebugClearShelfDone.
+  ///
+  /// In he, this message translates to:
+  /// **'המדף נוקה'**
+  String get settingsDebugClearShelfDone;
+
   /// No description provided for @onboardingSkip.
   ///
   /// In he, this message translates to:
@@ -1778,6 +1874,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הסרה'**
   String get customProductDeleteConfirmAction;
+
+  /// No description provided for @productRemoveFromShelfConfirmBody.
+  ///
+  /// In he, this message translates to:
+  /// **'המוצר יוסר מהשגרה שלך.'**
+  String get productRemoveFromShelfConfirmBody;
 
   /// No description provided for @customProductCommentLabel.
   ///
@@ -3332,6 +3434,54 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לפרטים המלאים'**
   String get productDetailViewDetails;
+
+  /// No description provided for @routineReadyTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השגרה שלך מוכנה ✨'**
+  String get routineReadyTitle;
+
+  /// No description provided for @routineReadyCounts.
+  ///
+  /// In he, this message translates to:
+  /// **'{total} מוצרים סודרו · {morning} בבוקר, {evening} בערב'**
+  String routineReadyCounts(int total, int morning, int evening);
+
+  /// No description provided for @routineReadyChangesHeader.
+  ///
+  /// In he, this message translates to:
+  /// **'מה סידרנו בשבילך'**
+  String get routineReadyChangesHeader;
+
+  /// No description provided for @routineReadyChangesExplainer.
+  ///
+  /// In he, this message translates to:
+  /// **'התאמות קטנות שעשינו עבור שגרה בטוחה ויעילה — תמיד אפשר לשנות.'**
+  String get routineReadyChangesExplainer;
+
+  /// No description provided for @routineReadyAdvisoriesHeader.
+  ///
+  /// In he, this message translates to:
+  /// **'כדאי לשים לב'**
+  String get routineReadyAdvisoriesHeader;
+
+  /// No description provided for @routineReadyAdvisoriesExplainer.
+  ///
+  /// In he, this message translates to:
+  /// **'לא חסמנו — רק המלצה קטנה לתשומת ליבך.'**
+  String get routineReadyAdvisoriesExplainer;
+
+  /// No description provided for @routineReadyNothingToReport.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נדרשו התאמות — השגרה מסודרת ומוכנה.'**
+  String get routineReadyNothingToReport;
+
+  /// No description provided for @routineReadyCta.
+  ///
+  /// In he, this message translates to:
+  /// **'הצגת השגרה שלי'**
+  String get routineReadyCta;
 }
 
 class _AppLocalizationsDelegate

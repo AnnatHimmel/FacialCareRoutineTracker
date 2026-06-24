@@ -79,7 +79,7 @@ Implemented in `lib/shared/widgets/glass_bottom_nav.dart` (`AppBottomNav`), wire
 | S1c | Barcode Scan Sheet | Camera barcode scanner modal for finding a product | S1b FAB (Android only) | Returns to S1b; optionally opens AddCustomProduct |
 | S2 | Schedule Setup | Weekday schedule for occasional products | After S1 (setup); Settings → "ערוך לוח זמנים" | S3 (order) or S4 |
 | S3 | Order Customization | Reorder selected products per slot | After S2 (setup); Settings → "ערוך סדר" | S4 |
-| S4 | Daily Home | Today's routine; record done | App launch (main screen); bottom nav "היום שלי" | S7 (tap date), S5 (expand row), S8 (skin log) |
+| S4 | Daily Home | Today's routine; record done; weekly skin-reminder card (embedded) | App launch (main screen); bottom nav "היום שלי" | S7 (tap date), S5 (expand row), S8 (skin log) |
 | S5 | Routine Item | Expanded product detail row | S4/S7 row expand | Collapses back |
 | S6 | Calendar / History | Monthly completion grid | Standalone route `/calendar` (not a bottom-nav tab) | S7 (tap day) |
 | S7 | Day Detail | Past day's routine + skin log | S6 (tap day); S4 (tap date header) | S8 (edit skin log), back |
@@ -92,6 +92,7 @@ Implemented in `lib/shared/widgets/glass_bottom_nav.dart` (`AppBottomNav`), wire
 | S14 | Update Review | Post-update new/deprecated products | Auto-shown on first run after update | S4 (dismiss) |
 | S15 | License Activation (stub) | Premium key entry (Web only, post-v1.0) | S11 → "הפעלת רישיון" | Back to S11 |
 | S16 | Backup Reminder | Persistent gentle nudge | Auto-shown when no recent export | Dismissed; or → S12 |
+| S17 | Routine Ready Summary | Auto-sorter decisions after a routine build | Onboarding finish; after add/remove product | "View my routine" → S4 (`/today`) |
 
 ---
 
@@ -151,6 +152,7 @@ Implemented in `lib/shared/widgets/glass_bottom_nav.dart` (`AppBottomNav`), wire
 | Date header | Text (Quicksand 24px Bold) | `DayBoundaryService.effectiveDate()` | Tap → S7 (today's detail) |
 | Skin log button | Icon button (top right) | — | Tap → S8 |
 | S10 Streak card | Custom widget | `StreakCalculator` | Read-only display |
+| Weekly skin-reminder card | `WeeklySkinReminderCard` | `_allSkinLogsProvider` (skin logs) + dismiss-date & enabled settings (`weeklyReminderEnabledProvider`) | Camera badge (right) + eyebrow + title; inline note field + photo-capture box; soft-peach "אחר כך" pill (snooze for the day) + "אל תציג שוב" text link (disable permanently). Shown only when the reminder is enabled, a routine exists, no skin-log photo within 7 days, and not dismissed today. Re-enable via Settings → "תזכורת תיעוד שבועי" |
 | Slot header (Morning) | Section header | Static Hebrew string | Tap → collapse/expand slot; secondary-container bg |
 | Slot header (Evening) | Section header | Static Hebrew string | Tap → collapse/expand slot; tertiary-container bg |
 | Routine item row | `RoutineItemRow` | `dailyRoutineProvider` + `dayRecordProvider` | Tap row body → expand (S5); tap checkbox → toggleDone |
@@ -891,6 +893,48 @@ Will be replaced post-v1.0 with a key-entry form + cloud backup controls.
 - On Web build: shown after 7 days (more urgent given eviction risk), with explicit iOS Safari storage warning.
 - ✕ dismisses for this session; shown again next launch if condition persists.
 - "גיבוי" → S12.
+
+---
+
+### S17 — Routine Ready Summary
+
+**Purpose:** Shown every time the auto-sorter builds a routine — at onboarding completion, and after adding or removing a product — to surface the decisions the sorter made. Reference: `auto-reorder message ref.jpg`. Backed by `RoutineScheduler.buildRoutineSummary` → `RoutineBuildSummary`; pure presentation widget (`RoutineReadySummaryScreen`).
+
+**Wireframe:**
+```
+┌─────────────────────────────────────────────┐
+│                  ( ✓ )                       │  ← Lemon-container disc + check; no app bar
+│           השגרה שלך מוכנה ✨                 │  ← Title (headlineMd, centered)
+│       13 מוצרים סודרו · 7 בבוקר, 9 בערב     │  ← Counts: total · morning, evening
+│                                             │
+│  ✦ מה סידרנו בשבילך                          │  ← "What we arranged" (only if changes)
+│  התאמות קטנות … — תמיד אפשר לשנות.          │
+│  ┌────────────────────────────────────────┐ │
+│  │ [בוקר ☀] ↔  הזזנו את … ליום שני …      │ │  ← RoutineChange: slot badge + kind icon
+│  └────────────────────────────────────────┘ │     (↔ movedDays, ↓ reducedFrequency,
+│  ┌────────────────────────────────────────┐ │      ⇅ movedSlot) + resolver's HE text
+│  │ [ערב 🌙] ↓  צמצמנו את … מ-4 ל-3 …       │ │
+│  └────────────────────────────────────────┘ │
+│                                             │
+│  ⓘ כדאי לשים לב                              │  ← "Worth noting" (only if advisories)
+│  לא חסמנו — רק המלצה קטנה לתשומת ליבך.       │
+│  ┌────────────────────────────────────────┐ │
+│  │ [בוקר ☀] 🕐 … מתחמצנים יחד …            │ │  ← RoutineAdvisory: slot badge + clock
+│  └────────────────────────────────────────┘ │
+│                                             │
+│  (אם אין שינויים: "לא נדרשו התאמות …")        │  ← Empty-state line replaces both sections
+│                                             │
+│           [  הצגת השגרה שלי  ]               │  ← Single CTA → /today
+└─────────────────────────────────────────────┘
+```
+
+**Behavior:**
+- **Always shown** when the sorter runs (header-only when nothing changed — per `RoutineBuildSummary.hasNothingToReport`).
+- **No back, no Undo** — terminal screen; the explainer ("תמיד אפשר לשנות") points users to edit manually in S2/S3.
+- "מה סידרנו בשבילך" lists `summary.changes`; "כדאי לשים לב" lists `summary.advisories` (pairs the user kept together that still co-occur).
+- Slot badge reuses `TagChip` (morning = peach/sun, evening = rose/moon). Kind icons use `textDirection: TextDirection.ltr` (RTL no-mirror rule).
+- CTA `onContinue` is caller-supplied: onboarding hands off to the host (`onFinish`); add/remove product navigate to `/today`.
+- Onboarding renders it **in-tree** (a view swap) rather than an imperative push, so it composes cleanly with go_router.
 
 ---
 

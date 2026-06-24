@@ -145,7 +145,7 @@ A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusiv
 |-----------|---------------|--------------|
 | **AppRoot** | `MaterialApp` with Radiant Dew `ThemeData`, `he_IL` locale, `TextDirection.rtl`, `ProviderScope` | Riverpod, flutter_localizations |
 | **SetupFlow (S1–S3)** | Product selection, schedule setup, order customization; drives incompatibility warnings | RoutineResolver, IncompatibilityChecker, UserDataRepository, MasterContentRepo |
-| **DailyHomeFeature (S4, S5, S10)** | Today's resolved routine, done-toggles, streak widget, conflict markers, deprecation notices | RoutineResolver, StreakCalculator, IncompatibilityChecker, DayBoundaryService, UserDataRepository |
+| **DailyHomeFeature (S4, S5, S10)** | Today's resolved routine, done-toggles, streak widget, conflict markers, deprecation notices, weekly skin-reminder card | RoutineResolver, StreakCalculator, IncompatibilityChecker, DayBoundaryService, UserDataRepository, SettingsRepository |
 | **HistoryFeature (S6, S7)** | Calendar grid (four completion states), day detail, past record editing | UserDataRepository, DayBoundaryService |
 | **SkinLogFeature (S8, S9)** | Skin log entry (text + photos), chronological journal gallery | PhotoRepository, UserDataRepository |
 | **DataManagementFeature (S11–S16)** | Settings hub, export/import, about/changelog, backup reminder, update review, premium placeholder | ExportImportService, ReconciliationService, SettingsRepository, MasterContentRepo |
@@ -162,7 +162,7 @@ A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusiv
 | **BarcodeProductLookupService** | Queries 5 external APIs in parallel (OpenBeautyFacts, OpenFoodFacts, UPCItemDB, InciBeauty, BarcodeSpider); merges results by priority | http package |
 | **UserDataRepository** | All CRUD for user data (selections, schedules, order overrides, day records, skin logs, muted conflicts) via Drift DAOs; reactive streams | Drift database |
 | **PhotoRepository** | Platform-abstracted photo storage: read, write, delete, list; used by export | Android: FilesDir adapter; Web: IndexedDB adapter |
-| **SettingsRepository** | Key-value store for app settings: last export date, last known master version, schema version, onboarding/locale/gender, demo flags | SharedPreferences |
+| **SettingsRepository** | Key-value store for app settings: last export date, last known master version, schema version, onboarding/locale/gender, demo flags, weekly skin-reminder dismiss date | SharedPreferences |
 | **RefreshableRepository** | Marker interface (`refresh()`) implemented by `RemoteCachedMasterContentRepositoryImpl`; lets the app trigger a background Supabase refresh without coupling to the concrete impl | none |
 | **PremiumScreen (S15)** | UI stub in v1.0 — no `PremiumRepository` interface exists yet; the license-activation screen is a placeholder hookpoint for UC-21 | none in v1.0 |
 | **RoutineScheduler** | Single gateway for all routine data (selections, weekday schedules, order overrides) and product ordering; owns every routine device read/write; orchestrates RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver, ProductSorter | UserDataRepository, RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver |
@@ -261,6 +261,8 @@ Only `RoutineScheduler` (`lib/domain/services/routine_scheduler.dart`) may read 
 **Scope is routine-only.** Day records, skin log entries, muted conflicts, collection items, and category overrides remain on `UserDataRepository` and are not part of the scheduler's contract.
 
 **`effectiveDays` is the canonical rule.** The rule "which weekdays is a product active on for a given slot" was previously implemented independently in `RoutineResolver.resolve`, `WeekGlanceBuilder._buildActiveDays`, and the schedule setup screen's `_effectiveDays` helper. It is now defined once as `RoutineScheduler.effectiveDays(product, slot, schedules)` and called from all three sites. The semantics are: an explicit `WeekdaySchedule` row wins regardless of value (even an empty set means intentionally excluded); a `DailyRule` product with no row defaults to `{0..6}`; a `WeeklyMaxRule` product with no row defaults to `{}`.
+
+**`buildRoutineSummary` is the "routine ready" derived read.** `RoutineScheduler.buildRoutineSummary({master})` returns a `RoutineBuildSummary` (`lib/domain/services/routine_build_summary.dart`) describing the auto-sorter's decisions for the post-build summary screen (S17). It composes existing pieces: it runs `fixProblems` (whose `RoutineFixResult` now carries an additive `changes: List<RoutineChange>` — each a slot + `RoutineChangeKind` {movedDays, reducedFrequency, movedSlot} + the resolver's localized text), counts distinct/per-slot selections, and derives `advisories` from `IncompatibilityChecker` — pairs that *still* co-occur on a weekday after the fix (i.e. user-muted pairs the resolver leaves alone). Keeping this on the scheduler preserves the single-source-of-truth rule; the screen (`RoutineReadySummaryScreen`) is a pure presentation widget fed the value object. Invoked at three sites: onboarding finish (`onboarding_screen.dart`), add-product save (`add_product_flow_screen.dart`), and custom-product delete (`add_custom_product_sheet.dart`).
 
 ### 3.1 Data Models
 
@@ -404,6 +406,8 @@ class MutedConflicts extends Table {
 // Key: 'last_known_master_version' → content version string
 // Key: 'user_schema_version'      → integer
 // Key: 'longest_streak'           → integer (cached for performance)
+// Key: 'weekly_photo_reminder_dismissed_date' → ISO date string; S4 weekly skin-reminder snoozed for that day
+// Key: 'weekly_photo_reminder_enabled' → bool (default true); master on/off for the S4 weekly skin-reminder
 ```
 
 #### Export Archive Format (ZIP)

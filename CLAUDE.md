@@ -21,6 +21,17 @@ A personal skincare routine tracker app. An admin curates a master list of skinc
 - **Design system:** [docs/design-reference/screens/uploads/stitch_application_ux_ui_design/radiant_dew/DESIGN.md](docs/design-reference/screens/uploads/stitch_application_ux_ui_design/radiant_dew/DESIGN.md) — "Radiant Dew" design tokens (colors, typography, spacing, shape language).
 - **Screen references:** [docs/design-reference/screens/](docs/design-reference/screens/) — HTML/CSS mockups. **Reference only** — not shipped, not embedded in the app. Implement as native Flutter widgets.
 
+## Documentation Maintenance (REQUIRED on every change)
+
+The living design docs under `doc/` must be kept in sync with the code on **every** change — treat this as part of "done", alongside tests. After any feature, behavior, or architecture change, update the relevant file(s):
+
+- **[doc/ARCHITECTURE.md](doc/ARCHITECTURE.md)** — components, data flow, contracts, providers, single-source-of-truth rules.
+- **[doc/DECISIONS.md](doc/DECISIONS.md)** — add a dated decision entry (request → decision → rationale → alternatives rejected → affected files) for any non-trivial choice.
+- **[doc/FUNCTIONALITY.md](doc/FUNCTIONALITY.md)** — features, inputs/outputs, edge cases.
+- **[doc/UI_DESIGN.md](doc/UI_DESIGN.md)** — screen inventory (S-numbers), screen specs, flows, style guide.
+
+A change is not complete until the docs above reflect it. Keep entries concise and accurate to the shipped code.
+
 ## Architecture Decisions
 
 ### Data Model (critical for long-term integrity)

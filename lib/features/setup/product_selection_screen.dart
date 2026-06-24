@@ -267,10 +267,17 @@ class _ProductSelectionScreenState
       );
 
       for (final m in resolution.mutations) {
-        // Bug 1 fix: only apply mutations for the newly-added product. Never
-        // write or clear a schedule row for any other product — conflicts with
-        // existing products remain as advisory warnings (PRD: advisory only).
-        if (m.productId != newProductId) continue;
+        if (m.productId != newProductId) {
+          // For existing products, only apply a slot-separation: clearing a
+          // bi-slot product from this slot keeps it in its other slot with no
+          // frequency loss, so it is always safe. Day-separation on existing
+          // products is intentionally skipped — those remain advisory warnings.
+          final otherSlot = slot == Slot.morning ? Slot.evening : Slot.morning;
+          final movedProd =
+              allProducts.where((p) => p.id == m.productId).firstOrNull;
+          final isBiSlot = movedProd?.configForSlot(otherSlot) != null;
+          if (!isBiSlot || m.days.isNotEmpty) continue;
+        }
 
         final existing = schedules
             .where((s) => s.productId == m.productId && s.slot == m.slot)

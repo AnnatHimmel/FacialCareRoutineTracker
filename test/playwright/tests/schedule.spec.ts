@@ -8,6 +8,7 @@ import {
   scanDaySchedule,
   scrollScheduleToTop,
   tapDayChip,
+  tapNavTab,
   text,
   expectText,
   expectTextContaining,
@@ -145,7 +146,136 @@ test.describe('Schedule compliance after onboarding', () => {
     await tapText(page, 'Continue to application order');
     await tapText(page, 'Finish and show my routine');
 
-    // Confirm onboarding completed — main nav tabs are now visible.
-    await expectTextContaining(page, 'My Day');
+    // ── Step 3h: Routine-ready summary ────────────────────────────────────────
+    // The auto-sorter now presents a summary of its decisions before handing
+    // off to the main app. Its CTA navigates to /week-glance.
+    await expectTextContaining(page, 'Your Routine Is Ready');
+    await tapText(page, 'View My Routine');
+
+    // Confirm onboarding completed — the weekly glance screen is visible.
+    await expectTextContaining(page, 'My Week');
+  });
+});
+
+test.describe('Conflict resolution — minimal product set', () => {
+  /**
+   * Bug regression: selecting only Argireline Solution 10% and
+   * Light On Serum Centella + Vita C must trigger conflict-resolution
+   * and move Argireline to the evening slot.
+   *
+   * Why:
+   *   - Vita C (prod-016) is morning-only (no eveningConfig).
+   *   - Argireline (prod-037) is bi-slot (morning + evening).
+   *   - rule-004 forbids argireline + vitamin-C in the same slot.
+   *   - ConflictResolver §(a) kicks in: the bi-slot product (Argireline)
+   *     is the only one that can leave morning, so it is moved there.
+   *
+   * Expected outcome:
+   *   Morning schedule — Argireline in "not used" section.
+   *   Evening schedule — Argireline scheduled every day.
+   */
+  test('Argireline moves to evening-only when Vita C is the only other product', async ({ page }) => {
+    test.setTimeout(300_000);
+
+    // ── Onboarding ──────────────────────────────────────────────────────────
+    await bootFlutter(page, '/');
+    await tapButton(page, 'English');
+    await expectText(page, 'The Glow Protocol');
+    await tapButton(page, "Let's Begin");
+    await expectText(page, 'Tell us about you');
+    await fillField(page, 'Your name', 'Dana');
+    await tapButton(page, 'Female');
+    await tapText(page, 'Continue');
+
+    // ── Product selection — only two products ────────────────────────────────
+    await expectText(page, 'Which products do you have?');
+    await selectProduct(page, 'Search product or brand...', 'Argireline',   'Argireline Solution 10%');
+    await selectProduct(page, 'Search product or brand...', 'Light On Serum', 'Light On Serum Centella + Vita C');
+    await tapButton(page, 'Organize my shelf');
+
+    // ── Category review ──────────────────────────────────────────────────────
+    await tapText(page, 'Continue to day selection');
+
+    // ── Morning schedule ─────────────────────────────────────────────────────
+    await expectText(page, 'Morning routine');
+
+    // Conflict resolution should have cleared Argireline from every morning day.
+    const morningPlacement = await scanDaySchedule(page, ['Argireline']);
+    expect(
+      morningPlacement['Argireline'],
+      'Argireline must be in the "not used" section on the morning schedule after conflict resolution with Vita C',
+    ).toBe('notUsed');
+
+    await scrollScheduleToTop(page);
+    await tapText(page, 'Continue to application order');
+
+    // ── Morning order ────────────────────────────────────────────────────────
+    // Argireline has been removed from morning, so it must not appear in the
+    // morning drag-to-order list.
+    await expectTextContaining(page, 'Looks good, continue to evening routine');
+    await expect(text(page, 'Argireline Solution 10%')).not.toBeVisible();
+    await tapText(page, 'Looks good, continue to evening routine');
+
+    // ── Evening transition ───────────────────────────────────────────────────
+    await expectText(page, 'Now for the evening routine');
+    await tapText(page, 'Continue');
+
+    // ── Evening schedule ─────────────────────────────────────────────────────
+    await expectText(page, 'Evening routine');
+
+    // Argireline is daily in the evening — it must be scheduled on the default
+    // day shown when the screen first opens.
+    const eveningPlacement = await scanDaySchedule(page, ['Argireline']);
+    expect(
+      eveningPlacement['Argireline'],
+      'Argireline must be scheduled in the evening after being conflict-resolved off morning',
+    ).toBe('scheduled');
+
+    await scrollScheduleToTop(page);
+    await tapText(page, 'Continue to application order');
+
+    // ── Evening order ─────────────────────────────────────────────────────────
+    await tapText(page, 'Finish and show my routine');
+
+    // ── Routine-ready summary ─────────────────────────────────────────────────
+    await expectTextContaining(page, 'Your Routine Is Ready');
+    await tapText(page, 'View My Routine');
+
+    // ── Weekly glance screen ──────────────────────────────────────────────────
+    // After onboarding the app routes to /week-glance.
+    await expectTextContaining(page, "My Week");
+
+    // Both slots must show the green "no conflicts" banner — the conflict was
+    // fully resolved by moving Argireline off morning, so neither slot retains
+    // an incompatibility.
+    await expectTextContaining(page, 'No conflicts in morning routine');
+    await expectTextContaining(page, 'No conflicts in evening routine');
+
+    // The week matrix must show each product in its resolved slot.
+    // Morning matrix row: Light On Serum (Vita C) — the only morning product.
+    await expectTextContaining(page, 'Light On Serum');
+    // Evening matrix row: Argireline — conflict-moved here, daily every night.
+    await expectTextContaining(page, 'Argireline Solution');
+
+    // ── My Day (daily home screen) ────────────────────────────────────────────
+    // /week-glance is a standalone route (no bottom nav). Navigate directly to
+    // /today — the shell route — which preserves the IndexedDB state written
+    // during onboarding.
+    await bootFlutter(page, '/today');
+
+    // Section headers are plain Text widgets — textContaining works for them.
+    await expectTextContaining(page, 'Morning Routine');
+    await expectTextContaining(page, 'Evening Routine');
+
+    // Routine items use Semantics(label: 'product.name, Not done', button: true),
+    // so the product name is in aria-label, not DOM text content. Use an
+    // attribute selector that matches aria-label directly.
+    await expect(
+      page.locator('flt-semantics[role="button"][aria-label*="Light On Serum"]:not([aria-hidden="true"])').first()
+    ).toBeVisible({ timeout: 20_000 });
+
+    await expect(
+      page.locator('flt-semantics[role="button"][aria-label*="Argireline Solution"]:not([aria-hidden="true"])').first()
+    ).toBeVisible({ timeout: 20_000 });
   });
 });

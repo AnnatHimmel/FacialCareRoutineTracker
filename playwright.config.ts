@@ -29,10 +29,11 @@ export default defineConfig({
 
   webServer: {
     command: 'flutter build web && node test/playwright/serve.mjs',
+    cwd: __dirname,
     url: BASE_URL,
     timeout: 600_000,
     reuseExistingServer: !process.env.CI,
-    stdout: 'pipe',
-    stderr: 'pipe',
+    stdout: 'inherit',
+    stderr: 'inherit',
   },
 });

@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
 import '../../domain/entities/master_product.dart';
+import '../../domain/entities/skin_log_entry.dart';
 import '../../domain/enums/collection_status.dart';
 import '../../domain/enums/pao_tone.dart';
 import '../../domain/enums/slot.dart';
@@ -19,6 +20,7 @@ import '../../core/config/feature_flags.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
+import 'widgets/weekly_skin_reminder_card.dart';
 enum _ViewMode { list, images }
 
 class DailyHomeScreen extends ConsumerStatefulWidget {
@@ -85,6 +87,38 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
         _tapHintSeen = hintSeen;
       });
     }
+  }
+
+  Future<void> _dismissWeeklyReminder() async {
+    final today = _todayStr;
+    await ref
+        .read(settingsRepositoryProvider)
+        .setWeeklyPhotoReminderDismissedDate(today);
+    ref.invalidate(weeklyReminderDismissedDateProvider);
+  }
+
+  Future<void> _neverShowWeeklyReminder() async {
+    await ref.read(settingsRepositoryProvider).setWeeklyReminderEnabled(false);
+    ref.invalidate(weeklyReminderEnabledProvider);
+  }
+
+  /// The reminder is eligible when no skin-log photo exists within the last 7
+  /// days (rolling) and it was not dismissed today.
+  bool _shouldShowWeeklyReminder(
+    List<SkinLogEntry> skinLogs,
+    String today,
+    String? dismissedDate,
+  ) {
+    if (dismissedDate == today) return false;
+    final boundary = ref.read(dayBoundaryServiceProvider);
+    final todayDate = boundary.todayEffectiveDate;
+    for (final entry in skinLogs) {
+      if (entry.photoPaths.isEmpty) continue;
+      final d = boundary.parseDate(entry.date);
+      final diff = todayDate.difference(d).inDays;
+      if (diff >= 0 && diff < 7) return false;
+    }
+    return true;
   }
 
   Future<void> _setViewMode(_ViewMode mode) async {
@@ -203,6 +237,17 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
 
     final isPro = ref.watch(isProDemoProvider);
 
+    final skinLogs = ref.watch(_allSkinLogsProvider).valueOrNull ?? const [];
+    final reminderEnabled =
+        ref.watch(weeklyReminderEnabledProvider).valueOrNull ?? true;
+    final reminderDismissedDate =
+        ref.watch(weeklyReminderDismissedDateProvider).valueOrNull;
+    final hasRoutine =
+        morningProducts.isNotEmpty || eveningProducts.isNotEmpty;
+    final showWeeklyReminder = reminderEnabled &&
+        hasRoutine &&
+        _shouldShowWeeklyReminder(skinLogs, dateStr, reminderDismissedDate);
+
     final isLoading =
         morningRoutineAsync.isLoading && eveningRoutineAsync.isLoading;
 
@@ -263,6 +308,19 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     ),
                   ),
                 ),
+
+                if (showWeeklyReminder)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                      child: WeeklySkinReminderCard(
+                        key: const ValueKey('weekly_skin_reminder'),
+                        dateStr: dateStr,
+                        onDismiss: _dismissWeeklyReminder,
+                        onNeverShow: _neverShowWeeklyReminder,
+                      ),
+                    ),
+                  ),
 
                 if (kProFeaturesEnabled && (isPro ? nearExpiryIds.isNotEmpty : true))
                   SliverToBoxAdapter(
@@ -1059,6 +1117,12 @@ final _dayRecordProvider =
   (ref, params) => ref
       .watch(userDataRepositoryProvider)
       .watchDayRecord(params.date, params.slot),
+);
+
+/// All skin-log entries — used by the home screen to decide whether the weekly
+/// skin-tracking reminder is still pending (no photo within the last 7 days).
+final _allSkinLogsProvider = StreamProvider<List<SkinLogEntry>>(
+  (ref) => ref.watch(userDataRepositoryProvider).watchAllSkinLogs(),
 );
 
 // ── Week button ───────────────────────────────────────────────────────────────

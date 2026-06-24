@@ -5,11 +5,14 @@ import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/enums/slot.dart';
+import '../../domain/repositories/master_content_repository.dart';
+import '../../domain/services/routine_build_summary.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../setup/category_review_screen.dart';
 import '../setup/order_customization_screen.dart';
 import '../setup/product_selection_screen.dart';
+import '../setup/routine_ready_summary_screen.dart';
 import '../setup/schedule_setup_screen.dart';
 
 // Wizard sub-stages within Step 3 (product setup)
@@ -44,6 +47,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _pmScheduleFromTransition = false;
   String _name = '';
   String? _gender;
+  // When set, the auto-sorter's "routine ready" summary is shown over the
+  // wizard; its CTA hands off to the host (onFinish → home).
+  RoutineBuildSummary? _summary;
 
   void _next() => setState(() => _step++);
   void _back() => setState(() => _step--);
@@ -87,13 +93,57 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     } catch (_) {
       // Repository may not be available in tests; always proceed.
     }
-    widget.onFinish();
+    // Show the auto-sorter's "routine ready" summary, then hand off to the host
+    // (which routes to the home screen). If the summary can't be built, finish
+    // straight away so onboarding never dead-ends.
+    MasterContent? master = ref.read(masterContentProvider).valueOrNull;
+    if (master == null) {
+      // Provider may be mid-refresh (Supabase) — await the value rather than
+      // dropping straight to the fallback.
+      try {
+        master = await ref.read(masterContentProvider.future);
+      } catch (_) {
+        master = null;
+      }
+    }
+    if (!mounted) return;
+    if (master == null) {
+      widget.onFinish();
+      return;
+    }
+    RoutineBuildSummary? summary;
+    try {
+      summary = await ref
+          .read(routineSchedulerProvider)
+          .buildRoutineSummary(master: master);
+    } catch (_) {
+      summary = null;
+    }
+    if (!mounted) return;
+    if (summary == null) {
+      widget.onFinish();
+      return;
+    }
+    // Render the summary in-tree (a view swap), not an imperative
+    // Navigator.push — pushing onto go_router's navigator here proved
+    // unreliable. The summary's CTA performs the host hand-off.
+    setState(() => _summary = summary);
   }
 
   @override
   Widget build(BuildContext context) {
     // Step 0: language picker — rendered before any l10n text
     if (_step == 0) return _LanguageSelectionStep(onSelect: _onLanguageSelected);
+
+    // Terminal: the auto-sorter's "routine ready" summary, shown over the
+    // wizard once onboarding finishes building the routine.
+    final summary = _summary;
+    if (summary != null) {
+      return RoutineReadySummaryScreen(
+        summary: summary,
+        onContinue: widget.onFinish,
+      );
+    }
 
     final l = AppLocalizations.of(context)!;
     return Scaffold(

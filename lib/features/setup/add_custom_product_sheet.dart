@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/l10n/generated/app_localizations.dart';
@@ -21,10 +22,12 @@ import '../../domain/enums/slot.dart';
 import '../../shared/widgets/product_thumb.dart' show userPhotoProvider;
 import '../../domain/services/category_helpers.dart';
 import '../../domain/services/default_schedule.dart';
+import '../../domain/services/routine_build_summary.dart';
 import '../../domain/services/routine_scheduler.dart';
 import '../../domain/services/product_classifier.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/soft_icon_button.dart';
+import 'routine_ready_summary_screen.dart';
 
 const _uuid = Uuid();
 
@@ -973,7 +976,98 @@ class _AddCustomProductSheetState
       await ref
           .read(userDataRepositoryProvider)
           .deleteCustomProduct(deleteId);
-      if (mounted) Navigator.of(context).pop();
+
+      // Re-run the auto-sorter and present its "routine ready" summary after the
+      // shelf change. Build it before closing the sheet; navigate via captured
+      // references so we don't touch a defunct context post-pop.
+      final master = ref.read(masterContentProvider).valueOrNull;
+      RoutineBuildSummary? summary;
+      if (master != null) {
+        try {
+          summary = await scheduler.buildRoutineSummary(master: master);
+        } catch (_) {
+          summary = null;
+        }
+      }
+      if (!mounted) return;
+      final rootNav = Navigator.of(context, rootNavigator: true);
+      final router = GoRouter.of(context);
+      Navigator.of(context).pop(); // close the sheet
+      if (summary != null) {
+        void navigateAway() {
+          rootNav.pop();
+          router.go('/week-glance');
+        }
+        rootNav.push(MaterialPageRoute<void>(
+          builder: (_) => PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, _) {
+              if (!didPop) navigateAway();
+            },
+            child: RoutineReadySummaryScreen(
+              summary: summary!,
+              onContinue: navigateAway,
+            ),
+          ),
+        ));
+      }
+    }
+  }
+
+  Future<void> _removeFromShelf(AppLocalizations l) async {
+    final product = widget.viewProduct;
+    if (product == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.customProductDeleteConfirmTitle),
+        content: Text(l.productRemoveFromShelfConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.cancelAction),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              l.customProductDeleteConfirmAction,
+              style: const TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final scheduler = ref.read(routineSchedulerProvider);
+      await scheduler.removeProduct(productId: product.id, slot: Slot.morning);
+      await scheduler.removeProduct(productId: product.id, slot: Slot.evening);
+
+      final master = ref.read(masterContentProvider).valueOrNull;
+      RoutineBuildSummary? summary;
+      if (master != null) {
+        try {
+          summary = await scheduler.buildRoutineSummary(master: master);
+        } catch (_) {
+          summary = null;
+        }
+      }
+      if (!mounted) return;
+      final rootNav = Navigator.of(context, rootNavigator: true);
+      final router = GoRouter.of(context);
+      Navigator.of(context).pop();
+      if (summary != null) {
+        rootNav.push(MaterialPageRoute<void>(
+          builder: (_) => RoutineReadySummaryScreen(
+            summary: summary!,
+            onContinue: () {
+              rootNav.pop();
+              router.go('/week-glance');
+            },
+          ),
+        ));
+      }
     }
   }
 
@@ -1081,7 +1175,7 @@ class _AddCustomProductSheetState
                           ),
                         ),
                       ),
-                    // Edit pencil — shown in view mode; enabled for custom products only
+                    // Edit pencil and remove — shown in view mode
                     if (widget.viewProduct != null && _readOnly) ...[
                       SoftIconButton(
                         icon: Icons.edit_rounded,
@@ -1093,6 +1187,15 @@ class _AddCustomProductSheetState
                             : null,
                         onTap:
                             widget.isUserProduct ? _enableEdit : null,
+                      ),
+                      const SizedBox(width: 8),
+                      SoftIconButton(
+                        icon: Icons.delete_outline_rounded,
+                        iconColor: AppColors.error,
+                        tooltip: l.customProductDeleteButton,
+                        onTap: () => widget.isUserProduct
+                            ? _deleteProduct(l)
+                            : _removeFromShelf(l),
                       ),
                       const SizedBox(width: 8),
                     ],

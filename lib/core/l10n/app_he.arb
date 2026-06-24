@@ -94,6 +94,22 @@
   "journalCtaTitle": "איך העור מרגיש?",
   "journalCtaSubtitle": "תעדי את התקדמותך",
   "journalCtaButton": "תעדי עכשיו",
+  "weeklyReminderBadge": "תיעוד שבועי",
+  "weeklyReminderTitle": "איך העור שלך השבוע?",
+  "weeklyReminderBody": "צלמי תמונה קצרה ורשמי איך העור מרגיש — פעם בשבוע, כדי לראות את ההתקדמות לאורך זמן.",
+  "weeklyReminderNotesHint": "איך העור מרגיש היום? יובש, אדמומיות, פצעונים...",
+  "weeklyReminderCapture": "צלמי",
+  "weeklyReminderBrowse": "או מהגלריה",
+  "weeklyReminderDismiss": "אחר כך",
+  "weeklyReminderNeverShow": "אל תציג שוב",
+  "settingsWeeklyReminder": "תזכורת תיעוד שבועי",
+  "settingsWeeklyReminderDesc": "תזכורת שבועית לצלם ולתעד את מצב העור",
+  "settingsDebugResumeReminder": "הצג שוב תזכורת שבועית",
+  "settingsDebugSectionNote": "כלי פיתוח (Debug בלבד)",
+  "settingsDebugResumeReminderDone": "התזכורת השבועית תוצג שוב",
+  "settingsDebugClearShelf": "נקה את המדף",
+  "settingsDebugClearShelfConfirm": "למחוק את כל המוצרים מהמדף? לא ניתן לבטל.",
+  "settingsDebugClearShelfDone": "המדף נוקה",
   "onboardingSkip": "דלגי",
   "onboardingWelcome": "ברוכה הבאה",
   "onboardingAppIntro": "ל־The Glow Protocol",
@@ -456,6 +472,7 @@
   "customProductDeleteConfirmTitle": "הסרת מוצר",
   "customProductDeleteConfirmBody": "המוצר יוסר לצמיתות מהרשימה שלך. פעולה זו אינה הפיכה.",
   "customProductDeleteConfirmAction": "הסרה",
+  "productRemoveFromShelfConfirmBody": "המוצר יוסר מהשגרה שלך.",
   "customProductCommentLabel": "הערה",
   "customProductCommentHint": "הערה אישית על המוצר (לא חובה)",
   "customProductCommentLanguageNote": "(נכתב ב{language})",
@@ -980,5 +997,26 @@
   "unsavedChangesTitle": "שינויים לא שמורים",
   "unsavedChangesMessage": "האם לשמור את השינויים לפני יציאה?",
   "discardChangesAction": "בטל שינויים",
-  "productDetailViewDetails": "לפרטים המלאים"
+  "productDetailViewDetails": "לפרטים המלאים",
+  "routineReadyTitle": "השגרה שלך מוכנה ✨",
+  "routineReadyCounts": "{total} מוצרים סודרו · {morning} בבוקר, {evening} בערב",
+  "@routineReadyCounts": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "morning": {
+        "type": "int"
+      },
+      "evening": {
+        "type": "int"
+      }
+    }
+  },
+  "routineReadyChangesHeader": "מה סידרנו בשבילך",
+  "routineReadyChangesExplainer": "התאמות קטנות שעשינו עבור שגרה בטוחה ויעילה — תמיד אפשר לשנות.",
+  "routineReadyAdvisoriesHeader": "כדאי לשים לב",
+  "routineReadyAdvisoriesExplainer": "לא חסמנו — רק המלצה קטנה לתשומת ליבך.",
+  "routineReadyNothingToReport": "לא נדרשו התאמות — השגרה מסודרת ומוכנה.",
+  "routineReadyCta": "הצגת השגרה שלי"
 }

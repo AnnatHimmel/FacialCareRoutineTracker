@@ -159,6 +159,10 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setAppLanguage(String code) async {}
   @override Future<bool> getTapHintSeen() async => false;
   @override Future<void> setTapHintSeen(bool value) async {}
+  @override Future<String?> getWeeklyPhotoReminderDismissedDate() async => null;
+  @override Future<void> setWeeklyPhotoReminderDismissedDate(String isoDate) async {}
+  @override Future<bool> getWeeklyReminderEnabled() async => true;
+  @override Future<void> setWeeklyReminderEnabled(bool value) async {}
 }
 
 // ── Test data ─────────────────────────────────────────────────────────────────
@@ -799,8 +803,15 @@ void main() {
       await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _handleFinish async continuation
+      await tester.pumpAndSettle();
 
-      // No evening products → finish directly
+      // The auto-sorter's "routine ready" summary now appears before the host
+      // hand-off; tapping its CTA fires onFinish.
+      expect(find.text('השגרה שלך מוכנה ✨'), findsOneWidget);
+      expect(onFinishCalled, isFalse);
+      await tester.tap(find.text('הצגת השגרה שלי'));
+      await tester.pumpAndSettle();
+
       expect(onFinishCalled, isTrue);
     });
 
@@ -854,13 +865,19 @@ void main() {
       await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _handleFinish async continuation
+      await tester.pumpAndSettle();
 
       // The critical assertion is on the PERSISTED side effect, not just the
       // navigation callback: onboarding must be marked complete even though the
-      // profile-field saves threw.
+      // profile-field saves threw. This happens BEFORE the summary screen, so
+      // it holds regardless of the new step.
       expect(settings.onboardingCompletedValue, isTrue,
           reason:
               'setOnboardingCompleted(true) must run even when profile saves fail');
+
+      // Routine-ready summary precedes the host hand-off; its CTA fires onFinish.
+      await tester.tap(find.text('הצגת השגרה שלי'));
+      await tester.pumpAndSettle();
       expect(onFinishCalled, isTrue);
     });
   });

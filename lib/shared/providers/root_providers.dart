@@ -346,6 +346,30 @@ final userNameProvider = FutureProvider<String?>(
   (ref) => ref.watch(settingsRepositoryProvider).getUserName(),
 );
 
+/// Master on/off switch for the weekly skin-tracking reminder card (S4).
+/// Toggled by the card's "never show again" action and the Settings switch.
+final weeklyReminderEnabledProvider = FutureProvider<bool>(
+  (ref) => ref.watch(settingsRepositoryProvider).getWeeklyReminderEnabled(),
+);
+
+/// Effective date the weekly reminder was last snoozed ("אחר כך"), or null.
+/// Reactive so the debug "resume" reset (and the dismiss action) reflect on the
+/// home screen immediately without a restart.
+final weeklyReminderDismissedDateProvider = FutureProvider<String?>(
+  (ref) =>
+      ref.watch(settingsRepositoryProvider).getWeeklyPhotoReminderDismissedDate(),
+);
+
+/// Debug-only callback that empties the shelf (all owned products + their
+/// routine wiring) via [UserDataRepositoryImpl.clearShelf]. No-op when the
+/// repository is a test fake. Used by the debug Settings tool.
+final debugClearShelfProvider = Provider<Future<void> Function()>((ref) {
+  final repo = ref.watch(userDataRepositoryProvider);
+  return () async {
+    if (repo is UserDataRepositoryImpl) await repo.clearShelf();
+  };
+});
+
 // ── Per-day routine provider ──────────────────────────────────────────────────
 
 typedef _DailyRoutineParams = ({String date, Slot slot});
@@ -407,9 +431,12 @@ final weekGlanceProvider = FutureProvider<WeekGlance>((ref) async {
   ref.watch(selectionsProvider(Slot.morning));
   ref.watch(selectionsProvider(Slot.evening));
   ref.watch(allSchedulesProvider);
-  ref.watch(customProductsProvider);
+  final customProds = ref.watch(customProductsProvider).valueOrNull ?? [];
   ref.watch(mutedConflictsProvider);
-  return ref.watch(routineSchedulerProvider).weekGlance(master: master);
+  return ref.watch(routineSchedulerProvider).weekGlance(
+    master: master,
+    extraProducts: customProds.map((p) => p.toMasterProduct()).toList(),
+  );
 });
 
 final dayWarningsProvider =

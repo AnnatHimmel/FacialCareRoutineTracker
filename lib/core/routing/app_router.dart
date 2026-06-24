@@ -73,7 +73,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/onboarding',
       builder: (context, state) => _withSafeZone(OnboardingScreen(
-        onFinish: () => context.go('/today'),
+        onFinish: () => context.go('/week-glance'),
       )),
     ),
     GoRoute(

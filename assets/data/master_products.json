@@ -531,7 +531,8 @@
       "morningConfig": {
         "order": 20,
         "frequency": {
-          "type": "daily"
+          "type": "weeklyMax",
+          "maxPerWeek": 3
         }
       },
       "eveningConfig": null
@@ -795,7 +796,6 @@
       "name": "Azelaic Acid Cream 20%",
       "imageAsset": "assets/images/products/kisocare_azelaic_acid_cream_20.jpg",
       "categoryId": "cat-serum",
-      "subCategoryId": "sub-azelaic",
       "comment": {
         "he": "קרם טיפולי פעיל בריכוז 20% חומצה אזלאית להבהרת כתמים, טיפול בפגמי עור ושיפור מרקם העור",
         "en": "Active treatment cream with 20% azelaic acid for brightening dark spots, treating blemishes, and improving skin texture"
@@ -820,7 +820,6 @@
       "name": "Niacinamide 20 Serum",
       "imageAsset": "assets/images/products/jumiso_niacinamide_20_serum.jpg",
       "categoryId": "cat-serum",
-      "subCategoryId": "sub-niacinamide",
       "comment": {
         "he": "סרום פעיל בריכוז 20% ניאצינמיד להבהרה, איזון סבום, כיווץ נקבוביות ושיפור מרקם העור",
         "en": "Active serum with 20% niacinamide for brightening, sebum control, pore minimizing, and skin texture improvement"
@@ -937,7 +936,6 @@
       "name": "AZ15 Serum",
       "imageAsset": "assets/images/products/cos_de_baha_az15_serum.jpg",
       "categoryId": "cat-serum",
-      "subCategoryId": "sub-azelaic",
       "comment": {
         "he": "סרום טיפולי המכיל 15% חומצה אזלאית להרגעת אדמומיות, טיפול בדלקתיות ועור מגורה, והבהרת פגמי עור",
         "en": "Treatment serum with 15% azelaic acid for calming redness, treating inflammation and irritated skin, and brightening blemishes"
@@ -1029,7 +1027,6 @@
       "name": "Niacinamide 10% + TXA 4% Serum",
       "imageAsset": "assets/images/products/anua_niacinamide_txa_serum.jpg",
       "categoryId": "cat-serum",
-      "subCategoryId": "sub-niacinamide",
       "comment": {
         "he": "סרום מתקדם המשלב 10% ניאצינמיד ו-4% חומצה טרנקסמית להבהרה עוצמתית של פיגמנטציה, טשטוש כתמים כהים והאחדת גוון העור",
         "en": "Advanced serum combining 10% niacinamide and 4% tranexamic acid for powerful pigmentation brightening, fading dark spots, and evening skin tone"

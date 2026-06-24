@@ -6,6 +6,11 @@ import 'package:skincare_tracker/domain/entities/product_selection.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
+import 'package:skincare_tracker/domain/entities/collection_item.dart';
+import 'package:skincare_tracker/domain/entities/category_override.dart';
+import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
+import 'package:skincare_tracker/domain/entities/skin_log_entry.dart';
+import 'package:skincare_tracker/domain/enums/collection_status.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 
 void main() {
@@ -103,6 +108,74 @@ void main() {
 
       expect(schedules, isEmpty);
       expect(selections.where((s) => s.isSelected).length, equals(1));
+    });
+  });
+
+  group('clearShelf', () {
+    test('wipes products + routine wiring, keeps history', () async {
+      // Shelf data
+      await repo.upsertSelection(ProductSelection(
+        id: 'sel-1',
+        productId: 'prod-1',
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: DateTime(2026),
+      ));
+      await repo.upsertSchedule(WeekdaySchedule(
+        id: 's1',
+        productId: 'prod-1',
+        slot: Slot.morning,
+        weekdays: {1, 3, 5},
+        lastModified: DateTime(2026),
+      ));
+      await repo.upsertOrderOverride(OrderOverride(
+        id: 'o1',
+        slot: Slot.morning,
+        orderedProductIds: ['prod-1'],
+        lastModified: DateTime(2026),
+      ));
+      await repo.upsertCollectionItem(CollectionItem(
+        id: 'ci-1',
+        productId: 'prod-1',
+        status: CollectionStatus.inUse,
+        paoMonths: 12,
+        lastModified: DateTime(2026),
+      ));
+      await repo.upsertCategoryOverride(CategoryOverride(
+        id: 'co-1',
+        productId: 'prod-1',
+        categoryId: 'cat-x',
+        lastModified: DateTime(2026),
+      ));
+      await repo.upsertCustomProduct(UserCustomProduct(
+        id: 'cp-1',
+        name: 'My Custom Serum',
+        categoryId: 'cat-x',
+        inMorning: true,
+        inEvening: false,
+        isDaily: true,
+        lastModified: DateTime(2026),
+      ));
+
+      // History that must survive
+      await repo.upsertSkinLog(SkinLogEntry(
+        id: 'sl-1',
+        date: '2026-06-20',
+        photoPaths: const ['p1'],
+        lastModified: DateTime(2026),
+      ));
+
+      await repo.clearShelf();
+
+      expect(await repo.watchSelections(Slot.morning).first, isEmpty);
+      expect(await repo.watchAllSchedules().first, isEmpty);
+      expect(await repo.watchPerDayOrderOverrides(Slot.morning).first, isEmpty);
+      expect(await repo.watchCollectionItems().first, isEmpty);
+      expect(await repo.watchCategoryOverrides().first, isEmpty);
+      expect(await repo.watchCustomProducts().first, isEmpty);
+
+      // History preserved.
+      expect(await repo.watchSkinLog('2026-06-20').first, isNotNull);
     });
   });
 }

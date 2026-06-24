@@ -94,6 +94,22 @@
   "journalCtaTitle": "How's your skin?",
   "journalCtaSubtitle": "Track your progress",
   "journalCtaButton": "Log Now",
+  "weeklyReminderBadge": "Weekly check-in",
+  "weeklyReminderTitle": "How's your skin this week?",
+  "weeklyReminderBody": "Snap a quick photo and note how your skin feels — once a week, to see your progress over time.",
+  "weeklyReminderNotesHint": "How does your skin feel today? Dryness, redness, breakouts...",
+  "weeklyReminderCapture": "Take photo",
+  "weeklyReminderBrowse": "or from gallery",
+  "weeklyReminderDismiss": "Later",
+  "weeklyReminderNeverShow": "Don't show again",
+  "settingsWeeklyReminder": "Weekly tracking reminder",
+  "settingsWeeklyReminderDesc": "Weekly nudge to photograph and note your skin",
+  "settingsDebugResumeReminder": "Resume weekly reminder",
+  "settingsDebugSectionNote": "Developer tool (debug builds only)",
+  "settingsDebugResumeReminderDone": "Weekly reminder will show again",
+  "settingsDebugClearShelf": "Clear the shelf",
+  "settingsDebugClearShelfConfirm": "Delete all products from the shelf? This cannot be undone.",
+  "settingsDebugClearShelfDone": "Shelf cleared",
   "onboardingSkip": "Skip",
   "onboardingWelcome": "Welcome",
   "onboardingAppIntro": "to The Glow Protocol",
@@ -456,6 +472,7 @@
   "customProductDeleteConfirmTitle": "Remove Product",
   "customProductDeleteConfirmBody": "The product will be permanently removed from your list. This action cannot be undone.",
   "customProductDeleteConfirmAction": "Remove",
+  "productRemoveFromShelfConfirmBody": "The product will be removed from your routine.",
   "customProductCommentLabel": "Note",
   "customProductCommentHint": "Personal note about this product (optional)",
   "customProductCommentLanguageNote": "(written in {language})",
@@ -1037,5 +1054,26 @@
   "unsavedChangesTitle": "Unsaved Changes",
   "unsavedChangesMessage": "Do you want to save your changes before leaving?",
   "discardChangesAction": "Discard",
-  "productDetailViewDetails": "View full details"
+  "productDetailViewDetails": "View full details",
+  "routineReadyTitle": "Your Routine Is Ready ✨",
+  "routineReadyCounts": "{total} products organized · {morning} morning, {evening} evening",
+  "@routineReadyCounts": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "morning": {
+        "type": "int"
+      },
+      "evening": {
+        "type": "int"
+      }
+    }
+  },
+  "routineReadyChangesHeader": "What We Adjusted for You",
+  "routineReadyChangesExplainer": "Small adjustments for a safe and effective routine — you can always change them.",
+  "routineReadyAdvisoriesHeader": "Worth Noting",
+  "routineReadyAdvisoriesExplainer": "We didn't block anything — just a small advisory note.",
+  "routineReadyNothingToReport": "No adjustments needed — your routine is organized and ready.",
+  "routineReadyCta": "View My Routine"
 }

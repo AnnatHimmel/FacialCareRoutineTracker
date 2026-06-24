@@ -34,6 +34,10 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setRoutineShowNames(bool v) async {}
   @override Future<bool> getTapHintSeen() async => false;
   @override Future<void> setTapHintSeen(bool value) async {}
+  @override Future<String?> getWeeklyPhotoReminderDismissedDate() async => null;
+  @override Future<void> setWeeklyPhotoReminderDismissedDate(String isoDate) async {}
+  @override Future<bool> getWeeklyReminderEnabled() async => true;
+  @override Future<void> setWeeklyReminderEnabled(bool value) async {}
 }
 
 ProviderContainer _container(_FakeSettings settings) => ProviderContainer(

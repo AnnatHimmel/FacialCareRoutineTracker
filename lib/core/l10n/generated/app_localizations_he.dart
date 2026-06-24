@@ -201,6 +201,58 @@ class AppLocalizationsHe extends AppLocalizations {
   String get journalCtaButton => 'תעדי עכשיו';
 
   @override
+  String get weeklyReminderBadge => 'תיעוד שבועי';
+
+  @override
+  String get weeklyReminderTitle => 'איך העור שלך השבוע?';
+
+  @override
+  String get weeklyReminderBody =>
+      'צלמי תמונה קצרה ורשמי איך העור מרגיש — פעם בשבוע, כדי לראות את ההתקדמות לאורך זמן.';
+
+  @override
+  String get weeklyReminderNotesHint =>
+      'איך העור מרגיש היום? יובש, אדמומיות, פצעונים...';
+
+  @override
+  String get weeklyReminderCapture => 'צלמי';
+
+  @override
+  String get weeklyReminderBrowse => 'או מהגלריה';
+
+  @override
+  String get weeklyReminderDismiss => 'אחר כך';
+
+  @override
+  String get weeklyReminderNeverShow => 'אל תציג שוב';
+
+  @override
+  String get settingsWeeklyReminder => 'תזכורת תיעוד שבועי';
+
+  @override
+  String get settingsWeeklyReminderDesc =>
+      'תזכורת שבועית לצלם ולתעד את מצב העור';
+
+  @override
+  String get settingsDebugResumeReminder => 'הצג שוב תזכורת שבועית';
+
+  @override
+  String get settingsDebugSectionNote => 'כלי פיתוח (Debug בלבד)';
+
+  @override
+  String get settingsDebugResumeReminderDone => 'התזכורת השבועית תוצג שוב';
+
+  @override
+  String get settingsDebugClearShelf => 'נקה את המדף';
+
+  @override
+  String get settingsDebugClearShelfConfirm =>
+      'למחוק את כל המוצרים מהמדף? לא ניתן לבטל.';
+
+  @override
+  String get settingsDebugClearShelfDone => 'המדף נוקה';
+
+  @override
   String get onboardingSkip => 'דלגי';
 
   @override
@@ -935,6 +987,9 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get customProductDeleteConfirmAction => 'הסרה';
+
+  @override
+  String get productRemoveFromShelfConfirmBody => 'המוצר יוסר מהשגרה שלך.';
 
   @override
   String get customProductCommentLabel => 'הערה';
@@ -1814,6 +1869,35 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get productDetailViewDetails => 'לפרטים המלאים';
+
+  @override
+  String get routineReadyTitle => 'השגרה שלך מוכנה ✨';
+
+  @override
+  String routineReadyCounts(int total, int morning, int evening) {
+    return '$total מוצרים סודרו · $morning בבוקר, $evening בערב';
+  }
+
+  @override
+  String get routineReadyChangesHeader => 'מה סידרנו בשבילך';
+
+  @override
+  String get routineReadyChangesExplainer =>
+      'התאמות קטנות שעשינו עבור שגרה בטוחה ויעילה — תמיד אפשר לשנות.';
+
+  @override
+  String get routineReadyAdvisoriesHeader => 'כדאי לשים לב';
+
+  @override
+  String get routineReadyAdvisoriesExplainer =>
+      'לא חסמנו — רק המלצה קטנה לתשומת ליבך.';
+
+  @override
+  String get routineReadyNothingToReport =>
+      'לא נדרשו התאמות — השגרה מסודרת ומוכנה.';
+
+  @override
+  String get routineReadyCta => 'הצגת השגרה שלי';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -1848,6 +1932,20 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get journalCtaButton => 'תעד עכשיו';
+
+  @override
+  String get weeklyReminderBody =>
+      'צלם תמונה קצרה ורשום איך העור מרגיש — פעם בשבוע, כדי לראות את ההתקדמות לאורך זמן.';
+
+  @override
+  String get weeklyReminderNotesHint =>
+      'איך העור מרגיש היום? יובש, אדמומיות, פצעונים...';
+
+  @override
+  String get weeklyReminderCapture => 'צלם';
+
+  @override
+  String get weeklyReminderNeverShow => 'אל תציג שוב';
 
   @override
   String get onboardingSkip => 'דלג';

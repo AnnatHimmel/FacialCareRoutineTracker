@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -130,6 +131,17 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ],
           ),
+
+          const SizedBox(height: 16),
+          const _WeeklyReminderToggleCard(),
+
+          // Debug-only tools. Stripped from release/profile builds.
+          if (kDebugMode) ...[
+            const SizedBox(height: 16),
+            const _DebugResumeReminderCard(),
+            const SizedBox(height: 16),
+            const _DebugClearShelfCard(),
+          ],
 
           const SizedBox(height: 32),
         ],
@@ -760,6 +772,251 @@ class _DemoModeCard extends ConsumerWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Weekly Reminder Toggle Card ─────────────────────────────────────────────────
+
+class _WeeklyReminderToggleCard extends ConsumerWidget {
+  const _WeeklyReminderToggleCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final enabled =
+        ref.watch(weeklyReminderEnabledProvider).valueOrNull ?? true;
+
+    return GlowCard(
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primaryFixed.withAlpha(128),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.photo_camera_outlined,
+              color: AppColors.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l.settingsWeeklyReminder,
+                  style: AppTypography.labelMd.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14.5,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  l.settingsWeeklyReminderDesc,
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                    fontSize: 11.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: enabled,
+            onChanged: (v) async {
+              await ref
+                  .read(settingsRepositoryProvider)
+                  .setWeeklyReminderEnabled(v);
+              ref.invalidate(weeklyReminderEnabledProvider);
+            },
+            activeThumbColor: AppColors.primary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Debug-only: Resume Weekly Reminder ──────────────────────────────────────────
+
+class _DebugResumeReminderCard extends ConsumerWidget {
+  const _DebugResumeReminderCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+
+    return GlowCard(
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () async {
+          final settings = ref.read(settingsRepositoryProvider);
+          await settings.setWeeklyReminderEnabled(true);
+          // Clear today's snooze so the card is eligible again immediately.
+          await settings.setWeeklyPhotoReminderDismissedDate('');
+          ref.invalidate(weeklyReminderEnabledProvider);
+          ref.invalidate(weeklyReminderDismissedDateProvider);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l.settingsDebugResumeReminderDone)),
+            );
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryFixed.withAlpha(128),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.bug_report_outlined,
+                  color: AppColors.onSecondaryContainer,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.settingsDebugResumeReminder,
+                      style: AppTypography.labelMd.copyWith(
+                        color: AppColors.onSurface,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14.5,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      l.settingsDebugSectionNote,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.refresh_rounded,
+                color: AppColors.onSurfaceVariant,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DebugClearShelfCard extends ConsumerWidget {
+  const _DebugClearShelfCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+
+    return GlowCard(
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text(l.settingsDebugClearShelf, textAlign: TextAlign.start),
+              content: Text(
+                l.settingsDebugClearShelfConfirm,
+                textAlign: TextAlign.start,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: Text(l.cancelAction),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: Text(
+                    l.settingsDebugClearShelf,
+                    style: const TextStyle(color: AppColors.error),
+                  ),
+                ),
+              ],
+            ),
+          );
+          if (confirmed != true) return;
+          await ref.read(debugClearShelfProvider)();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l.settingsDebugClearShelfDone)),
+            );
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.errorContainer.withAlpha(80),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.delete_sweep_outlined,
+                  color: AppColors.error,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.settingsDebugClearShelf,
+                      style: AppTypography.labelMd.copyWith(
+                        color: AppColors.onSurface,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14.5,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      l.settingsDebugSectionNote,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.onSurfaceVariant,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
