@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../shared/widgets/camera_capture_screen.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
@@ -98,20 +97,13 @@ class _WeeklySkinReminderCardState
   }
 
   Future<void> _pickAndSave({required bool fromCamera}) async {
-    final XFile? file;
-    if (fromCamera) {
-      file = await Navigator.push<XFile>(
-        context,
-        MaterialPageRoute(builder: (_) => const CameraCaptureScreen()),
-      );
-    } else {
-      file = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1080,
-        maxHeight: 1080,
-        imageQuality: 85,
-      );
-    }
+    final XFile? file = await _picker.pickImage(
+      source: fromCamera ? ImageSource.camera : ImageSource.gallery,
+      maxWidth: 1080,
+      maxHeight: 1080,
+      imageQuality: 85,
+      preferredCameraDevice: CameraDevice.front,
+    );
     if (file == null || !mounted) return;
 
     setState(() => _saving = true);

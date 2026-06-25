@@ -19,6 +19,7 @@ import '../../features/collection/collection_screen.dart';
 import '../../features/collection/product_detail_screen.dart';
 import '../../features/journal/skin_log_entry_screen.dart';
 import '../../features/setup/add_product_flow_screen.dart';
+import '../../features/setup/products_wizard_screen.dart';
 import '../../features/setup/routine_ready_route.dart';
 import '../../features/setup/order_customization_screen.dart';
 import '../../features/setup/schedule_setup_screen.dart';
@@ -119,10 +120,10 @@ final appRouter = GoRouter(
       ],
     ),
 
-    // Products — standalone (outside shell, no persistent nav)
+    // Products — standalone wizard (outside shell, no persistent nav)
     GoRoute(
       path: '/products',
-      builder: (context, state) => _withSafeZone(const ProductSelectionScreen()),
+      builder: (context, state) => _withSafeZone(const ProductsWizardScreen()),
       routes: [
         GoRoute(
           path: 'schedule',
