@@ -80,13 +80,13 @@ test.describe('Onboarding', () => {
  *   1  Welcome                (brand, tagline, "Let's Begin")
  *   2  Personal info          (name + gender → Continue)
  *   3a Product selection      (bi-slot products → "Organize my shelf")
- *   3b Category review        ("Continue to day selection")
- *   3c Routine summary        (auto-sort result; "Let's review the Morning routine")
- *   3d Morning schedule       ("Continue to application order")
- *   3e Morning order          ("Looks good, continue to evening routine")
+ *   3b Category review        ("Let's plan your routine")
+ *   3c Routine summary        (auto-sort result; "Let's start with your Morning routine")
+ *   3d Morning schedule       ("Let's review the layering order")
+ *   3e Morning order          ("Looks good, let's continue to your evening routine")
  *   3f Evening schedule       (reached directly — no transition screen)
- *   3g Evening order          ("Finish and show my routine")
- *   3h Week at a glance        (onboarding mode; "All set, start glowing!")
+ *   3g Evening order          ("Let's review your week")
+ *   3h Week at a glance        (onboarding mode; "You're all set, let's glow")
  *   →  Daily home             (routine rendered; state persists across reload)
  *
  * The three selected products (Generic Cleansing Gel, Niacinamide 20 Serum,
@@ -129,35 +129,35 @@ test.describe('Onboarding — full wizard walkthrough', () => {
     await tapButton(page, 'Organize my shelf');
 
     // ── Step 3b: Category review ──────────────────────────────────────────────
-    await tapText(page, 'Continue to day selection');
+    await tapText(page, "Let's plan your routine");
 
     // ── Step 3c: Routine summary (auto-sort, NEW position) ────────────────────
     // The summary now appears right after category review, framing the per-slot
     // review that follows. Its CTA names the first slot to review (Morning).
     await expectTextContaining(page, 'Your Routine Is Ready');
-    await expectText(page, "Let's review the Morning routine");
-    await tapText(page, "Let's review the Morning routine");
+    await expectText(page, "Let's start with your Morning routine");
+    await tapText(page, "Let's start with your Morning routine");
 
     // ── Step 3d: Morning schedule ─────────────────────────────────────────────
     await expectText(page, 'Morning routine');
-    await tapText(page, 'Continue to application order');
+    await tapText(page, "Let's review the layering order");
 
     // ── Step 3e: Morning order ────────────────────────────────────────────────
-    await expectTextContaining(page, 'Looks good, continue to evening routine');
-    await tapText(page, 'Looks good, continue to evening routine');
+    await expectTextContaining(page, "Looks good, let's continue to your evening routine");
+    await tapText(page, "Looks good, let's continue to your evening routine");
 
     // ── Step 3f: Evening schedule (direct — no transition interstitial) ───────
     await expectText(page, 'Evening routine');
-    await tapText(page, 'Continue to application order');
+    await tapText(page, "Let's review the layering order");
 
     // ── Step 3g: Evening order ────────────────────────────────────────────────
-    await expectTextContaining(page, 'Finish and show my routine');
-    await tapText(page, 'Finish and show my routine');
+    await expectTextContaining(page, "Let's review your week");
+    await tapText(page, "Let's review your week");
 
     // ── Step 3h: Week at a glance (onboarding completion) ─────────────────────
     await expectTextContaining(page, 'My Week');
-    await expectText(page, 'All set, start glowing!');
-    await tapText(page, 'All set, start glowing!');
+    await expectText(page, "You're all set, let's glow");
+    await tapText(page, "You're all set, let's glow");
 
     // ── Daily home — onboarding complete, routine rendered ────────────────────
     await expectTextContaining(page, 'Morning Routine');

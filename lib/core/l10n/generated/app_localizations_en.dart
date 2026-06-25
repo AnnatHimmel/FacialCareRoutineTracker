@@ -1429,7 +1429,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryReviewAddMore => 'Add more products';
 
   @override
-  String get categoryReviewCTA => 'Continue to day selection';
+  String get categoryReviewCTA => 'Let\'s plan your routine';
 
   @override
   String get categoryReviewEmpty => 'No products on your shelf yet';
@@ -1453,7 +1453,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleContextChipEvening => 'Evening routine';
 
   @override
-  String get scheduleContinueToOrder => 'Continue to application order';
+  String get scheduleContinueToOrder => 'Let\'s review the layering order';
 
   @override
   String daySummaryNoteCount(int count, Object day) {
@@ -1568,10 +1568,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get orderCtaMorning => 'Looks good, continue to evening routine';
+  String get orderCtaMorning =>
+      'Looks good, let\'s continue to your evening routine';
 
   @override
-  String get orderCtaFinish => 'Finish and show my routine';
+  String get orderCtaFinish => 'Let\'s review your week';
 
   @override
   String get eveningTransitionTitle => 'Now for the evening routine';
@@ -1734,7 +1735,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekGlanceTitle => 'My Week\'s Routine';
 
   @override
-  String get weekGlanceStartGlowingCta => 'All set, start glowing!';
+  String get weekGlanceStartGlowingCta => 'You\'re all set, let\'s glow';
 
   @override
   String get weekGlanceEntrySubtitle =>
@@ -1935,6 +1936,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String routineReadyReviewSlotCta(String slot) {
-    return 'Let\'s review the $slot routine';
+    return 'Let\'s start with your $slot routine';
   }
 }

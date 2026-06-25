@@ -1410,7 +1410,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get categoryReviewAddMore => 'הוספת מוצרים נוספים';
 
   @override
-  String get categoryReviewCTA => 'המשך לבחירת ימים';
+  String get categoryReviewCTA => 'נמשיך לתכנון השגרה';
 
   @override
   String get categoryReviewEmpty => 'אין מוצרים במדף עדיין';
@@ -1434,7 +1434,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get scheduleContextChipEvening => 'שגרת ערב';
 
   @override
-  String get scheduleContinueToOrder => 'המשיכי לסדר המריחה';
+  String get scheduleContinueToOrder => 'נמשיך לסדר המריחה';
 
   @override
   String daySummaryNoteCount(int count, Object day) {
@@ -1550,7 +1550,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get orderCtaMorning => 'נראה טוב, נמשיך לשגרת הערב';
 
   @override
-  String get orderCtaFinish => 'סיום והצגת השגרה שלי';
+  String get orderCtaFinish => 'נמשיך לסקירת השבוע';
 
   @override
   String get eveningTransitionTitle => 'עכשיו נעבור לשגרת הערב';
@@ -1710,7 +1710,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get weekGlanceTitle => 'שגרת השבוע שלי';
 
   @override
-  String get weekGlanceStartGlowingCta => 'הכול מוכן, מתחילים לזרוח!';
+  String get weekGlanceStartGlowingCta => 'הכול מסודר, אפשר להתחיל';
 
   @override
   String get weekGlanceEntrySubtitle => 'מה בשגרת הבוקר ומה בשגרת הערב בכל יום';
@@ -1904,7 +1904,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String routineReadyReviewSlotCta(String slot) {
-    return 'נסקור את שגרת ה$slot';
+    return 'נתחיל עם שגרת ה$slot';
   }
 }
 
@@ -2156,10 +2156,10 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get streakPitchCta => 'נסה';
 
   @override
-  String get categoryReviewCTA => 'המשך לבחירת ימים';
+  String get categoryReviewCTA => 'נמשיך לתכנון השגרה';
 
   @override
-  String get scheduleContinueToOrder => 'המשך לסדר המריחה';
+  String get scheduleContinueToOrder => 'נמשיך לסדר המריחה';
 
   @override
   String welcomeGreeting(String name, String weekday) {
@@ -2181,10 +2181,10 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
       'חודש ויותר של שגרת טיפוח עקבית — אתה אגדה!';
 
   @override
-  String get weekGlanceStartGlowingCta => 'הכול מוכן, מתחילים לזרוח!';
+  String get weekGlanceStartGlowingCta => 'הכול מסודר, אפשר להתחיל';
 
   @override
   String routineReadyReviewSlotCta(String slot) {
-    return 'נסקור את שגרת ה$slot';
+    return 'נתחיל עם שגרת ה$slot';
   }
 }

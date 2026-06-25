@@ -76,7 +76,7 @@ test.describe('Schedule compliance after onboarding', () => {
     await tapButton(page, 'Organize my shelf');
 
     // ── Step 3b: Category review ──────────────────────────────────────────────
-    await tapText(page, 'Continue to day selection');
+    await tapText(page, "Let's plan your routine");
 
     // ── Step 3c: Routine summary (auto-sort) ──────────────────────────────────
     // The auto-sorter now runs after category review and shows its results before
@@ -100,14 +100,14 @@ test.describe('Schedule compliance after onboarding', () => {
     ).toBe('notUsed');
 
     await scrollScheduleToTop(page);
-    await tapText(page, 'Continue to application order');
+    await tapText(page, "Let's review the layering order");
 
     // ── Step 3e: Morning order ────────────────────────────────────────────────
     // Argireline must not appear in the drag list (schedule was cleared to empty,
     // so order_customization_screen excludes it via the isExcluded guard).
-    await expectTextContaining(page, 'Looks good, continue to evening routine');
+    await expectTextContaining(page, "Looks good, let's continue to your evening routine");
     await expect(text(page, 'Argireline Solution 10%')).not.toBeVisible();
-    await tapText(page, 'Looks good, continue to evening routine');
+    await tapText(page, "Looks good, let's continue to your evening routine");
 
     // ── Step 3f: Evening schedule (direct, no transition) ────────────────────
     // No "Now for the evening routine" transition — it goes directly to evening.
@@ -150,8 +150,8 @@ test.describe('Schedule compliance after onboarding', () => {
     await scrollScheduleToTop(page);
 
     // ── Step 3g: Evening order ────────────────────────────────────────────────
-    await tapText(page, 'Continue to application order');
-    await tapText(page, 'Finish and show my routine');
+    await tapText(page, "Let's review the layering order");
+    await tapText(page, "Let's review your week");
 
     // ── Step 3h: Week at a glance (onboarding completion) ────────────────────
     // After ordering completes, the app navigates to /week-glance in onboarding mode.
@@ -159,7 +159,7 @@ test.describe('Schedule compliance after onboarding', () => {
 
     // Tap the celebratory CTA to finish onboarding and go to the daily home.
     // The button text may be localized, so find it by pattern.
-    const glowButton = page.getByText(/glowing|מתחילים|All set/, { exact: false });
+    const glowButton = page.getByText(/let's glow|אפשר להתחיל/i, { exact: false });
     await glowButton.first().click();
 
     // ── Onboarding complete: daily home ───────────────────────────────────────
@@ -205,7 +205,7 @@ test.describe('Conflict resolution — minimal product set', () => {
     await tapButton(page, 'Organize my shelf');
 
     // ── Category review ──────────────────────────────────────────────────────
-    await tapText(page, 'Continue to day selection');
+    await tapText(page, "Let's plan your routine");
 
     // ── Routine summary (auto-sort, conflict resolved here) ─────────────────────
     // The conflict between Argireline and Vita C is resolved during the routine
@@ -228,14 +228,14 @@ test.describe('Conflict resolution — minimal product set', () => {
     ).toBe('notUsed');
 
     await scrollScheduleToTop(page);
-    await tapText(page, 'Continue to application order');
+    await tapText(page, "Let's review the layering order");
 
     // ── Morning order ────────────────────────────────────────────────────────
     // Argireline has been removed from morning, so it must not appear in the
     // morning drag-to-order list.
-    await expectTextContaining(page, 'Looks good, continue to evening routine');
+    await expectTextContaining(page, "Looks good, let's continue to your evening routine");
     await expect(text(page, 'Argireline Solution 10%')).not.toBeVisible();
-    await tapText(page, 'Looks good, continue to evening routine');
+    await tapText(page, "Looks good, let's continue to your evening routine");
 
     // ── Evening schedule (direct, no transition) ────────────────────────────
     await expectText(page, 'Evening routine');
@@ -249,10 +249,10 @@ test.describe('Conflict resolution — minimal product set', () => {
     ).toBe('scheduled');
 
     await scrollScheduleToTop(page);
-    await tapText(page, 'Continue to application order');
+    await tapText(page, "Let's review the layering order");
 
     // ── Evening order ─────────────────────────────────────────────────────────
-    await tapText(page, 'Finish and show my routine');
+    await tapText(page, "Let's review your week");
 
     // ── Week at a glance (onboarding completion) ──────────────────────────────
     // After ordering, the app navigates directly to /week-glance in onboarding mode.
@@ -271,7 +271,7 @@ test.describe('Conflict resolution — minimal product set', () => {
     await expectTextContaining(page, 'Argireline Solution');
 
     // Tap the celebratory CTA to finish onboarding and go to the daily home.
-    const glowButton2 = page.getByText(/glowing|מתחילים|All set/, { exact: false });
+    const glowButton2 = page.getByText(/let's glow|אפשר להתחיל/i, { exact: false });
     await glowButton2.first().click();
 
     // ── My Day (daily home screen) ────────────────────────────────────────────
@@ -349,7 +349,7 @@ test.describe('AHA + Vitamin A conflict resolution', () => {
       await tapButton(page, 'Organize my shelf');
 
       // ── Category review ──────────────────────────────────────────────────────
-      await tapText(page, 'Continue to day selection');
+      await tapText(page, "Let's plan your routine");
 
       // ── Routine summary (auto-sort, conflict fully resolved here) ─────────────
       // Both products are evening-only, so the summary skips morning and proceeds
@@ -368,8 +368,8 @@ test.describe('AHA + Vitamin A conflict resolution', () => {
 
       // ── Evening order ─────────────────────────────────────────────────────────
       // Proceed through to ordering.
-      await tapText(page, 'Continue to application order');
-      await tapText(page, 'Finish and show my routine');
+      await tapText(page, "Let's review the layering order");
+      await tapText(page, "Let's review your week");
 
       // ── Week at a glance (onboarding completion) ──────────────────────────────
       // The conflict was fully resolved at the summary step, so no conflicts appear.
@@ -377,7 +377,7 @@ test.describe('AHA + Vitamin A conflict resolution', () => {
       await expectTextContaining(page, 'No conflicts in evening routine');
 
       // Tap the celebratory CTA to finish onboarding — it navigates to the daily home.
-      const glowButton3 = page.getByText(/glowing|מתחילים|All set/, { exact: false });
+      const glowButton3 = page.getByText(/let's glow|אפשר להתחיל/i, { exact: false });
       await glowButton3.first().click();
 
       // ── Daily home — one of the two products in today's evening routine ───────

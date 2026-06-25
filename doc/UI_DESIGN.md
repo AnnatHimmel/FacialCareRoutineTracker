@@ -933,7 +933,7 @@ Will be replaced post-v1.0 with a key-entry form + cloud backup controls.
 - **No back, no Undo** — terminal screen; the explainer ("תמיד אפשר לשנות") points users to edit manually in S2/S3.
 - "מה סידרנו בשבילך" lists `summary.changes`; "כדאי לשים לב" lists `summary.advisories` (pairs the user kept together that still co-occur).
 - Slot badge reuses `TagChip` (morning = peach/sun, evening = rose/moon). Kind icons use `textDirection: TextDirection.ltr` (RTL no-mirror rule).
-- CTA `onContinue` lands on the shelf (`/collection`): the `/routine-ready` route supplies `context.go('/collection')`. Onboarding's in-tree variant uses a slot-contextualized label via `routineReadyReviewSlotCta(slot)` — "נסקור את שגרת הבוקר" for a morning-first routine, "נסקור את שגרת הערב" for an evening-only routine — and advances to the first active slot's schedule screen instead of the shelf.
+- CTA `onContinue` lands on the shelf (`/collection`): the `/routine-ready` route supplies `context.go('/collection')`. Onboarding's in-tree variant uses a slot-contextualized label via `routineReadyReviewSlotCta(slot)` — "נתחיל עם שגרת הבוקר" for a morning-first routine, "נתחיל עם שגרת הערב" for an evening-only routine — and advances to the first active slot's schedule screen instead of the shelf.
 - Onboarding renders it **in-tree** (a view swap shown immediately after sub-category approval, before the user reviews schedules and order) rather than at the end of the wizard, so the auto-sort framing is visible up front.
 
 ---
@@ -956,8 +956,8 @@ Is setup complete?
     ├─ 2. Sub-category approval (categoryReview)
     │
     ├─ 3. S17 Routine Ready Summary (routineSummary — auto-sort framing)
-    │         CTA: "נסקור את שגרת הבוקר" → morning timing
-    │         (evening-only: "נסקור את שגרת הערב" → PM schedule; skips stages 4–5)
+    │         CTA: "נתחיל עם שגרת הבוקר" → morning timing
+    │         (evening-only: "נתחיל עם שגרת הערב" → PM schedule; skips stages 4–5)
     │
     ├─ 4. Morning weekly timing (amSchedule)
     │
@@ -968,7 +968,7 @@ Is setup complete?
     ├─ 7. Evening order override (pmOrder)
     │
     └─ 8. Week-at-a-Glance (onboarding mode)
-              CTA: "הכול מוכן, מתחילים לזרוח!" → /today
+              CTA: "הכול מסודר, אפשר להתחיל" → /today
     │
     ▼
 S4 Daily Home ←──── Daily app open (subsequent launches)

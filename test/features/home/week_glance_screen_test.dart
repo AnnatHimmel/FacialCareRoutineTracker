@@ -480,7 +480,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('הכול מוכן, מתחילים לזרוח!'), findsOneWidget);
+      expect(find.text('הכול מסודר, אפשר להתחיל'), findsOneWidget);
       expect(find.byIcon(Icons.arrow_back_rounded), findsNothing);
     });
 
@@ -493,7 +493,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('הכול מוכן, מתחילים לזרוח!'));
+      await tester.tap(find.text('הכול מסודר, אפשר להתחיל'));
       await tester.pumpAndSettle();
 
       expect(find.text('TODAY_SENTINEL'), findsOneWidget);
@@ -509,7 +509,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('הכול מוכן, מתחילים לזרוח!'), findsNothing);
+      expect(find.text('הכול מסודר, אפשר להתחיל'), findsNothing);
       expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
     });
   });

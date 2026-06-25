@@ -687,7 +687,7 @@
   "categoryReviewChangeCategory": "שינוי קטגוריה",
   "categoryReviewRemove": "הסרה",
   "categoryReviewAddMore": "הוספת מוצרים נוספים",
-  "categoryReviewCTA": "המשך לבחירת ימים",
+  "categoryReviewCTA": "נמשיך לתכנון השגרה",
   "categoryReviewEmpty": "אין מוצרים במדף עדיין",
   "scheduleHeaderWeekly": "תזמון שבועי",
   "scheduleStepLabel": "שלב 1 מתוך 2 · {slot}",
@@ -699,7 +699,7 @@
   "scheduleSubtitleV3": "בחרו באילו ימים להשתמש בכל מוצר. נציג הערות רק כשצריך.",
   "scheduleContextChipMorning": "שגרת בוקר",
   "scheduleContextChipEvening": "שגרת ערב",
-  "scheduleContinueToOrder": "המשיכי לסדר המריחה",
+  "scheduleContinueToOrder": "נמשיך לסדר המריחה",
   "daySummaryNoteCount": "{count} הערות ליום {day}",
   "@daySummaryNoteCount": {
     "placeholders": {
@@ -777,7 +777,7 @@
     }
   },
   "orderCtaMorning": "נראה טוב, נמשיך לשגרת הערב",
-  "orderCtaFinish": "סיום והצגת השגרה שלי",
+  "orderCtaFinish": "נמשיך לסקירת השבוע",
   "eveningTransitionTitle": "עכשיו נעבור לשגרת הערב",
   "eveningTransitionBody": "נשתמש באותם מוצרים ונציע ימים וסדר שמתאימים לערב.",
   "addProductTitle": "הוספת מוצר",
@@ -925,7 +925,7 @@
   },
   "welcomeSubline30plus": "חודש ויותר של שגרת טיפוח עקבית — את אגדה!",
   "weekGlanceTitle": "שגרת השבוע שלי",
-  "weekGlanceStartGlowingCta": "הכול מוכן, מתחילים לזרוח!",
+  "weekGlanceStartGlowingCta": "הכול מסודר, אפשר להתחיל",
   "weekGlanceEntrySubtitle": "מה בשגרת הבוקר ומה בשגרת הערב בכל יום",
   "weekGlanceEditButton": "עריכה",
   "weekGlanceStatusOkTitle": "השגרה נראית תקינה",
@@ -1020,7 +1020,7 @@
   "routineReadyAdvisoriesExplainer": "לא חסמנו — רק המלצה קטנה לתשומת ליבך.",
   "routineReadyNothingToReport": "לא נדרשו התאמות — השגרה מסודרת ומוכנה.",
   "routineReadyCta": "הצגת השגרה שלי",
-  "routineReadyReviewSlotCta": "נסקור את שגרת ה{slot}",
+  "routineReadyReviewSlotCta": "נתחיל עם שגרת ה{slot}",
   "@routineReadyReviewSlotCta": {
     "placeholders": {
       "slot": {

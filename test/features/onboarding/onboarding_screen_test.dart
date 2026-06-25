@@ -583,17 +583,17 @@ void main() {
       await tester.pumpAndSettle();
 
       // Category review → routineSummary (async summary build)
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _loadSummary async continuation
       await tester.pumpAndSettle();
 
       // routineSummary screen should appear after category review
-      expect(find.text('נסקור את שגרת הבוקר'), findsOneWidget,
+      expect(find.text('נתחיל עם שגרת הבוקר'), findsOneWidget,
           reason: 'routineSummary screen with morning CTA should appear after category review');
 
       // Advance to amSchedule
-      await tester.tap(find.text('נסקור את שגרת הבוקר'));
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
       await tester.pumpAndSettle();
 
       // Schedule header should be visible
@@ -601,7 +601,7 @@ void main() {
       // Morning context chip
       expect(find.text('שגרת בוקר'), findsOneWidget);
       // CTA label for onboarding schedule
-      expect(find.text('המשיכי לסדר המריחה'), findsOneWidget);
+      expect(find.text('נמשיך לסדר המריחה'), findsOneWidget);
     });
 
     testWidgets(
@@ -633,15 +633,15 @@ void main() {
       await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
       // Category review → routineSummary
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _loadSummary async continuation
       await tester.pumpAndSettle();
       // routineSummary → amSchedule
-      await tester.tap(find.text('נסקור את שגרת הבוקר'));
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
       await tester.pumpAndSettle();
-      // On amSchedule — tap "המשיכי לסדר המריחה"
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      // On amSchedule — tap "נמשיך לסדר המריחה"
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
 
       // Morning order header should be visible
@@ -694,15 +694,15 @@ void main() {
       await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
       // Category review → routineSummary
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _loadSummary async continuation
       await tester.pumpAndSettle();
       // routineSummary → amSchedule
-      await tester.tap(find.text('נסקור את שגרת הבוקר'));
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
       await tester.pumpAndSettle();
       // amSchedule → amOrder
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
       // amOrder → pmSchedule directly (eveningTransition removed)
       await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
@@ -747,13 +747,13 @@ void main() {
       await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
       // Category review → routineSummary (no morning products, so evening CTA)
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _loadSummary async continuation
       await tester.pumpAndSettle();
       // routineSummary with evening CTA (no morning products)
-      expect(find.text('נסקור את שגרת הערב'), findsOneWidget);
-      await tester.tap(find.text('נסקור את שגרת הערב'));
+      expect(find.text('נתחיל עם שגרת הערב'), findsOneWidget);
+      await tester.tap(find.text('נתחיל עם שגרת הערב'));
       await tester.pumpAndSettle();
 
       // Should be on pmSchedule (evening schedule header)
@@ -817,19 +817,19 @@ void main() {
 
       // Category review
       expect(find.text('סידרנו את המוצרים לפי שלבים'), findsOneWidget);
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _loadSummary async continuation
       await tester.pumpAndSettle();
 
       // routineSummary screen appears right after category review
-      expect(find.text('נסקור את שגרת הבוקר'), findsOneWidget);
-      await tester.tap(find.text('נסקור את שגרת הבוקר'));
+      expect(find.text('נתחיל עם שגרת הבוקר'), findsOneWidget);
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
       await tester.pumpAndSettle();
 
       // amSchedule
       expect(find.text('תזמון שבועי'), findsOneWidget);
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
 
       // amOrder
@@ -883,17 +883,17 @@ void main() {
       await tester.pumpAndSettle();
 
       // Category review → routineSummary
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _loadSummary async continuation
       await tester.pumpAndSettle();
 
       // routineSummary → amSchedule
-      await tester.tap(find.text('נסקור את שגרת הבוקר'));
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
       await tester.pumpAndSettle();
 
       // amSchedule → amOrder
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
 
       // amOrder — tap finish

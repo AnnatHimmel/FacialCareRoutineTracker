@@ -212,7 +212,7 @@ Widget _wrap({
 ///
 /// New flow: products → categoryReview → routineSummary → amSchedule.
 /// After category review, the routine summary screen appears with a morning
-/// CTA ("נסקור את שגרת הבוקר"); tapping it advances to amSchedule.
+/// CTA ("נתחיל עם שגרת הבוקר"); tapping it advances to amSchedule.
 Future<void> _advanceToAmSchedule(WidgetTester tester) async {
   // Step 0: language
   await tester.tap(find.text('עברית'));
@@ -232,12 +232,12 @@ Future<void> _advanceToAmSchedule(WidgetTester tester) async {
   await tester.tap(find.text('סידור המדף שלי'));
   await tester.pumpAndSettle();
   // Category review → routineSummary (async summary build)
-  await tester.tap(find.text('המשך לבחירת ימים'));
+  await tester.tap(find.text('נמשיך לתכנון השגרה'));
   await tester.pumpAndSettle();
   await tester.pump(Duration.zero); // flush _loadSummary async continuation
   await tester.pumpAndSettle();
   // routineSummary → tap morning CTA to reach amSchedule
-  await tester.tap(find.text('נסקור את שגרת הבוקר'));
+  await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
   await tester.pumpAndSettle();
 }
 
@@ -289,7 +289,7 @@ void main() {
           reason: 'Back must not return to onboarding step 1 (welcome)');
       expect(onFinishCalled, isFalse,
           reason: 'Pressing back must not complete onboarding');
-      expect(find.text('נסקור את שגרת הבוקר'), findsOneWidget,
+      expect(find.text('נתחיל עם שגרת הבוקר'), findsOneWidget,
           reason: 'Back from amSchedule should return to the routine summary screen');
     });
 
@@ -318,7 +318,7 @@ void main() {
 
       await _advanceToAmSchedule(tester);
       // Advance to amOrder
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
 
       expect(find.text('סדר המריחה בבוקר'), findsOneWidget,
@@ -396,7 +396,7 @@ void main() {
 
       await _advanceToAmSchedule(tester);
       // amSchedule → amOrder
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
       expect(find.text('סדר המריחה בבוקר'), findsOneWidget,
           reason: 'Should be on morning order screen');

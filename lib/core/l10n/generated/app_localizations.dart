@@ -2652,7 +2652,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryReviewCTA.
   ///
   /// In he, this message translates to:
-  /// **'המשך לבחירת ימים'**
+  /// **'נמשיך לתכנון השגרה'**
   String get categoryReviewCTA;
 
   /// No description provided for @categoryReviewEmpty.
@@ -2694,7 +2694,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleContinueToOrder.
   ///
   /// In he, this message translates to:
-  /// **'המשיכי לסדר המריחה'**
+  /// **'נמשיך לסדר המריחה'**
   String get scheduleContinueToOrder;
 
   /// No description provided for @daySummaryNoteCount.
@@ -2892,7 +2892,7 @@ abstract class AppLocalizations {
   /// No description provided for @orderCtaFinish.
   ///
   /// In he, this message translates to:
-  /// **'סיום והצגת השגרה שלי'**
+  /// **'נמשיך לסקירת השבוע'**
   String get orderCtaFinish;
 
   /// No description provided for @eveningTransitionTitle.
@@ -3144,7 +3144,7 @@ abstract class AppLocalizations {
   /// No description provided for @weekGlanceStartGlowingCta.
   ///
   /// In he, this message translates to:
-  /// **'הכול מוכן, מתחילים לזרוח!'**
+  /// **'הכול מסודר, אפשר להתחיל'**
   String get weekGlanceStartGlowingCta;
 
   /// No description provided for @weekGlanceEntrySubtitle.
@@ -3492,7 +3492,7 @@ abstract class AppLocalizations {
   /// No description provided for @routineReadyReviewSlotCta.
   ///
   /// In he, this message translates to:
-  /// **'נסקור את שגרת ה{slot}'**
+  /// **'נתחיל עם שגרת ה{slot}'**
   String routineReadyReviewSlotCta(String slot);
 }
 
