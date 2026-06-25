@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/skin_log_entry.dart';
 import '../../shared/providers/root_providers.dart';
+import '../../shared/widgets/camera_capture_screen.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
 import '../../shared/widgets/skin_state_chip.dart';
@@ -104,15 +105,20 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
   }
 
   Future<void> _pickPhoto({required bool fromCamera}) async {
-    final source =
-        fromCamera ? ImageSource.camera : ImageSource.gallery;
-    final XFile? file = await _picker.pickImage(
-      source: source,
-      maxWidth: 1080,
-      maxHeight: 1080,
-      imageQuality: 85,
-      preferredCameraDevice: CameraDevice.front,
-    );
+    final XFile? file;
+    if (fromCamera) {
+      file = await Navigator.push<XFile>(
+        context,
+        MaterialPageRoute(builder: (_) => const CameraCaptureScreen()),
+      );
+    } else {
+      file = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1080,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+    }
     if (file == null || !mounted) return;
 
     final bytes = await file.readAsBytes();
