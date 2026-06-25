@@ -15,6 +15,7 @@ This is the live store copy. Update before each release when features change, th
 - מעקב אחר ביצוע — סמני כל מוצר שהשתמשת בו
 - זיהוי קונפליקטים — התראה על שילובי מוצרים לא מומלצים (כמו רטינול ו-AHA באותו יום)
 - יומן עור — צלמי תמונות ורשמי הערות כדי לעקוב אחר השינויים בעור שלך
+- תזכורת שבועית — הזכרי לעצמך לתעד את מצב העור פעם בשבוע, בלחיצה אחת מהמסך הראשי
 - לוח שנה — ראי אחורה כמה עקבית הייתה השגרה שלך
 - סטריק שגרה — מוטיבציה להמשיך
 - סריקת ברקוד — זהי מוצרים מהירות וקבלי פרטים אוטומטית
@@ -35,6 +36,7 @@ Choose the products you own, and the app builds your morning and evening routine
 - Completion tracking — check off each product as you use it
 - Conflict detection — alerts for incompatible product combinations (e.g. retinol + AHA on the same day)
 - Skin journal — take photos and notes to track changes in your skin over time
+- Weekly reminder — a gentle nudge to log your skin once a week, in one tap from the home screen
 - Calendar view — look back and see how consistent your routine has been
 - Routine streak — motivation to keep going
 - Barcode scanning — quickly identify products and auto-fill details

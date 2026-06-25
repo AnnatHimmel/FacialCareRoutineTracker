@@ -4,73 +4,44 @@ This document tracks what needs to be done in the Play Console for each release 
 
 ---
 
-## Next release: Custom products, manual editing & much wider product lookup
+## Next release: Weekly skin reminder, routine summary & product wizard
 
-**Proposed version:** `1.2.0+5` (from `1.1.0+4`). Minor bump — new user-facing capabilities plus an additive local DB table, all backward compatible, no data-schema break.
+**Proposed version:** `1.3.0+6` (from `1.2.0+5`). Minor bump — new user-facing screens and capabilities, all local-only, backward compatible, no data-schema break.
 
-> **Note:** The previously drafted `1.2.0+5` notes were **never deployed**. This release consolidates *all* changes since the last shipped build (`1.1.0+4`) into a single submission. The archived draft is kept under **Release history** for reference only.
-
-### What changed since the last shipped release (`1.1.0+4`)
+### What changed since the last shipped release (`1.2.0+5`)
 
 User-facing features:
-- **Custom products** — users can now add their own products and **manually enter or edit** product details (name, category, image), not just pick from the master list.
-- **Automatic detail fill on scan** — scanning a barcode now auto-populates product fields where a match is found.
-- **Much wider product lookup** — lookup now queries a broad set of external product databases and retailer/ingredient sites, and matches by **product name** as well as barcode, for far better match rates (see network-calls note below).
-- **Smarter routine completion** — enhanced smart-completion behavior on the daily screen.
-- Carried forward from the un-shipped draft (also new to users): redesigned onboarding, two-tier smart routine ordering, conflict detection & resolution, streak-first home screen, weekly product overview, Radiant Dew daily-tracking screen.
+- **Weekly skin-tracking reminder** — a gentle, dismissible card near the top of the home screen prompts the user once a week to photograph and note her skin. Capture is inline (one tap appends a photo + note to today's skin log). The card auto-hides once a skin-log photo exists in the last 7 days, and can be turned off entirely from **Settings**.
+- **Routine summary screen** — after picking products, a new summary screen shows the auto-built routine (correct order, morning/evening) before the user fine-tunes scheduling. Used in onboarding and the new product wizard.
+- **Product wizard for returning users** — a streamlined re-entry flow to add or remove products (and review the resulting routine) without redoing the full onboarding.
 
 Bug fixes:
-- Assorted UI fixes across setup and the day-detail screen.
-- (Carried forward) wrong-day display just after midnight, duplicate conflict messages, undo-button label.
+- Reverted to the system photo picker (`image_picker`) for skin-log capture; removed the experimental in-app camera screen.
+- `subCategoryId` correctly carried through product handling; assorted UI fixes.
 
 Data / storage:
-- New **local** `user_custom_products` table (plus sub-category / category-override support carried forward). Additive migration only — existing user data is preserved.
+- New **local** settings flags for the weekly-reminder enable/dismiss state. No schema break; existing user data is preserved.
 
 Content (master list):
-- Master catalog re-classification and barcode data, applied to both Supabase and the bundled `assets/data/master_products.json` / `incompatibility_rules.json`.
+- Minor master-catalog touch-ups, applied to both Supabase and the bundled `assets/data/master_products.json`.
 
-**No new Android permissions.** `CAMERA` and `INTERNET` already shipped in earlier cycles.
+**No new Android permissions.** No `AndroidManifest.xml` changes this release. The weekly reminder uses the existing system photo picker — no new camera/storage permission is introduced.
 
-### New external network calls (product lookup) — data-safety relevant
-
-`lib/data/remote/barcode_lookup_service.dart` plus the registered scrapers now fan a **barcode number and/or a product name** out to **nine** external product-lookup services. The product **name** being sent off-device is a **new data flow** this release (previously only the barcode number was transmitted).
-
-| Service | Host | Query type | Status vs. last shipped build |
-|---|---|---|---|
-| Open Beauty Facts | `world.openbeautyfacts.org` | barcode + name | existing host, now also name |
-| Open Food Facts | `world.openfoodfacts.org` | barcode | existing |
-| UPC Item DB | `api.upcitemdb.com` | barcode | existing |
-| INCI Beauty | `world.incibeauty.com` | barcode | existing |
-| Barcode Spider | `www.barcodespider.com` | barcode | existing |
-| **iHerb** | `www.iherb.com` | barcode + name | **new** |
-| **YesStyle** | `www.yesstyle.com` | barcode + name | **new** |
-| **Olive Young Global** | `global.oliveyoung.com` | name | **new** |
-| **InciDecoder** | `incidecoder.com` | name | **new** |
-
-The barcode (EAN/UPC) and the product name are user-initiated data sent off-device to third-party services. Under Google Play policy this must be declared in the **Play Console Data safety form** (see Data safety section below). The privacy policy uses generic language ("external product-lookup services") and does not name individual providers.
+**No new external network calls.** All new features are local-only. Product lookup is unchanged from `1.2.0+5` (same nine services, same barcode/name flow — already declared).
 
 ---
 
 ### App description update
 
-See `doc/Play Store/full_description.md` for the current store copy. Suggested addition for this release:
-
-**Hebrew:**
-> **חדש: הוספת מוצרים משלך וזיהוי חכם יותר**
-> כעת ניתן להוסיף מוצרים משלך ולערוך את פרטיהם ידנית, וסריקת הברקוד משלימה את הפרטים אוטומטית מתוך מאגרי מוצרים חיצוניים רחבים יותר — לזיהוי טוב יותר לפי ברקוד או לפי שם המוצר.
-
-**English (if maintained):**
-> **New: add your own products and smarter recognition**
-> You can now add your own products and edit their details by hand, and barcode scanning fills in the details automatically from a much wider set of external product databases — matching by barcode or by product name.
+See `doc/Play Store/full_description.md`. Added a feature bullet for the weekly skin-tracking reminder (Hebrew + English). No other copy changes.
 
 ---
 
 ### Screenshots
 
 Consider adding/refreshing screenshots for:
-- The add-custom-product / manual edit flow.
-- Barcode scan with auto-filled details.
-- (If not already updated) onboarding, streak-first home, and weekly product overview.
+- The weekly skin-tracking reminder card on the home screen.
+- The new routine summary screen.
 
 Play Console minimum: 2 screenshots per form factor.
 
@@ -79,71 +50,63 @@ Play Console minimum: 2 screenshots per form factor.
 ### What's New (250-char limit)
 
 **Hebrew:**
-> כעת ניתן להוסיף מוצרים משלך ולערוך את פרטיהם ידנית. סריקת ברקוד משלימה פרטים אוטומטית, וזיהוי המוצרים שופר משמעותית — לפי ברקוד או לפי שם, ממאגרים חיצוניים רבים יותר. בנוסף: השלמת שגרה חכמה יותר ותיקוני ממשק.
+> חדש: תזכורת שבועית לתיעוד מצב העור — צילום והערה בלחיצה אחת מהמסך הראשי. נוסף מסך סיכום שמציג את השגרה שנבנתה עבורך, ואשף נוח להוספת והסרת מוצרים בלי להגדיר הכול מחדש. כולל תיקוני ממשק.
 
 **English (if maintained):**
-> You can now add your own products and edit their details by hand. Barcode scanning auto-fills details, and product recognition is much wider — matching by barcode or name across more external databases. Plus smarter routine completion and UI fixes.
+> New: a weekly reminder to track your skin — snap a photo and note in one tap from the home screen. Plus a routine summary screen, and a wizard to add or remove products without redoing setup. Includes UI fixes.
 
 ---
 
 ### Data safety section
 
-**Play Console action required this release.**
-
-Product lookup now sends the scanned **barcode number** and, newly, the **product name** to **nine** external product-lookup services (five existing, four new: iHerb, YesStyle, Olive Young Global, InciDecoder). The Data safety form must reflect this.
-
-In Play Console → **App content → Data safety**:
-
-1. Under **Data types** → confirm the lookup action is covered (product identifier / search query, not a personal identifier).
-2. Under **Data shared** → declare that the barcode value **and the product name the user enters** are shared with third-party services for product lookup, at the user's explicit initiation. Update the entry to cover **all nine** services.
-3. **Data collected:** None beyond prior declarations — no personal data, no device identifiers, no image stored or transmitted.
-4. **Location data / Photos / Camera:** no change from prior declaration.
-
-> If the form was worded generically ("third-party product databases"), verify the wording still covers product-name queries. If it named services individually, expand the list to all nine.
-
----
-
-### Permissions declaration (CAMERA) — carry-over, confirm status
-
-`android.permission.CAMERA` is declared and used for barcode scanning. It was introduced in an earlier cycle, **not** this release. If it was never declared in a published submission (the prior barcode build was never deployed), complete it before submitting:
-
-1. **App content → Permissions declaration** → add `CAMERA`, type: core functionality.
-   > "The camera is used to scan the barcode on skincare product packaging so the user can quickly look up a product. No image is stored or transmitted. The camera is only active during a scanning session initiated by the user."
-
-If CAMERA was already declared in a previous submission, no action is needed.
+**No change required this release.** No new data types, no new recipients, no new network calls. Product lookup (barcode + product name to nine external services) is unchanged from `1.2.0+5` and remains declared as before. The weekly reminder stores photos and notes **locally only** — nothing is transmitted.
 
 ---
 
 ### Privacy policy
 
-**Updated this release.** `web/privacy.html` now states that the barcode number **and/or the product name** the user enters are sent to external product-lookup services (Hebrew + English kept in sync). Still uses generic language — no service names listed.
-
-- Action: ensure the hosted privacy policy URL is live and current **before** submitting the build.
+**No change required.** No new data flows. `web/privacy.html` already covers local photo/note storage and the product-lookup data flow.
 
 ---
 
 ### Internal checklist before submission
 
-- [ ] Bump `version` in `pubspec.yaml` to `1.2.0+5` (versionCode 4 → 5)
+- [ ] Bump `version` in `pubspec.yaml` to `1.3.0+6` (versionCode 5 → 6)
 - [ ] Signed with the same keystore (never change the signing key)
 - [ ] `flutter build appbundle --release` completes without errors
-- [ ] Smoke-test: add custom product + manual edit, barcode scan auto-fill, name-based lookup, smart completion, onboarding, streak home, week overview
-- [ ] Privacy policy URL confirmed live (text updated — product name now disclosed)
-- [ ] Play Console **Data safety** form updated for all nine lookup recipients incl. the product-name flow
-- [ ] CAMERA permission declaration confirmed in Play Console (carry-over)
-- [ ] Screenshots updated for the new custom-product / edit flow
+- [ ] Smoke-test: weekly reminder appears → capture photo+note → card hides; Settings toggle hides it; routine summary screen renders; product wizard add/remove → routine rebuilds
+- [ ] Screenshots updated for the weekly reminder + routine summary (if UI shown to users changed)
 - [ ] `doc/Play Store/full_description.md` updated and copy-pasted into Play Console
-- [ ] `doc/Play Store/short_description.md` updated and copy-pasted into Play Console
+- [ ] `doc/Play Store/short_description.md` — no change this release
+- [ ] No Data safety / permissions / privacy-policy actions needed this release
 
 ---
 
 ## Release history
 
-### Drafted `1.2.0+5` — never deployed (superseded by the consolidated release above)
+### Shipped `1.2.0+5` — Custom products, manual editing & much wider product lookup
 
-> Original draft summary: *Smart routine ordering, new onboarding, streak home & wider barcode lookup.* Listed five barcode-lookup services (Open Beauty Facts, UPC Item DB, Open Food Facts, INCI Beauty, Barcode Spider) and proposed the same `1.2.0+5` version. This draft was never submitted to the Play Console; its features are folded into the current "Next release" section, which supersedes it. Retained here only so the original Data safety / CAMERA notes are not lost:
->
-> - Barcode lookup expanded to five services (two existing + three new at the time).
-> - New local DB tables: `category_overrides`, sub-category support, custom products (additive migration).
-> - No new Android permissions; CAMERA carry-over declaration noted.
-> - Privacy policy left unchanged at the time (barcode-only, generic wording).
+Minor bump from `1.1.0+4`. Consolidated all changes since the last shipped build into a single submission.
+
+User-facing features:
+- **Custom products** — users can add their own products and **manually enter or edit** product details (name, category, image), not just pick from the master list.
+- **Automatic detail fill on scan** — scanning a barcode auto-populates product fields where a match is found.
+- **Much wider product lookup** — lookup queries a broad set of external product databases and retailer/ingredient sites, matching by **product name** as well as barcode.
+- **Smarter routine completion** on the daily screen.
+- Also new at the time: redesigned onboarding, two-tier smart routine ordering, conflict detection & resolution, streak-first home screen, weekly product overview, Radiant Dew daily-tracking screen.
+
+Data / storage:
+- New **local** `user_custom_products` table plus sub-category / category-override support. Additive migration only.
+
+Network / data safety (declared at submission):
+- `lib/data/remote/barcode_lookup_service.dart` fans a **barcode number and/or product name** out to **nine** external product-lookup services: Open Beauty Facts, Open Food Facts, UPC Item DB, INCI Beauty, Barcode Spider, iHerb, YesStyle, Olive Young Global, InciDecoder. The product **name** being sent off-device was new in this release. Declared in the Play Console **Data safety** form (product identifier / search query, user-initiated, no personal data, no image stored or transmitted).
+
+Permissions:
+- **No new Android permissions.** `CAMERA` + `INTERNET` shipped in earlier cycles. CAMERA used for barcode scanning (core functionality; no image stored or transmitted).
+
+Privacy policy:
+- Updated to state that the barcode number **and/or product name** are sent to external product-lookup services (Hebrew + English, generic wording, no service names listed).
+
+### Drafted `1.2.0+5` — superseded
+
+> An earlier draft of `1.2.0+5` listed only five barcode-lookup services and was never submitted on its own; its scope was folded into the shipped `1.2.0+5` above.
