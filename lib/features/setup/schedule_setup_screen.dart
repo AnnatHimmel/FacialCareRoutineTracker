@@ -1523,21 +1523,24 @@ class _DayProductCard extends StatelessWidget {
                         color: AppColors.surfaceLow,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.event_repeat_rounded,
-                              size: 9,
-                              color: AppColors.onSurfaceVariant),
-                          const SizedBox(width: 3),
-                          Text(
-                            scheduleText,
-                            style: AppTypography.labelSm.copyWith(
-                              color: AppColors.onSurfaceVariant,
-                              fontSize: 9,
-                            ),
+                      child: Text.rich(
+                        TextSpan(
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                            fontSize: 9,
                           ),
-                        ],
+                          children: [
+                            const WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: Icon(Icons.event_repeat_rounded,
+                                  size: 9,
+                                  color: AppColors.onSurfaceVariant),
+                            ),
+                            TextSpan(text: ' $scheduleText'),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (hasConflict)

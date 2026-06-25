@@ -42,14 +42,16 @@ class PrimaryButton extends StatelessWidget {
                 Icon(leadingIcon, color: Colors.white, size: 19),
                 const SizedBox(width: 8),
               ],
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.labelMd.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15.5,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.labelMd.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15.5,
+                  ),
                 ),
               ),
               if (trailingIcon != null) ...[

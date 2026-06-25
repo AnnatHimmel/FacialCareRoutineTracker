@@ -841,7 +841,7 @@ class _WWeekMatrix extends StatelessWidget {
 
     return Column(
       children: [
-        // Day header row
+        // Day header row — text rotated vertically to fit the narrow columns
         Row(
           children: [
             const Expanded(child: SizedBox()),
@@ -849,9 +849,12 @@ class _WWeekMatrix extends StatelessWidget {
               SizedBox(
                 width: _kDayColW,
                 child: Center(
-                  child: Text(
-                    dayAbbrevs[i],
-                    style: dayHeaderStyle,
+                  child: RotatedBox(
+                    quarterTurns: 1,
+                    child: Text(
+                      dayAbbrevs[i],
+                      style: dayHeaderStyle,
+                    ),
                   ),
                 ),
               ),
@@ -872,8 +875,7 @@ class _WWeekMatrix extends StatelessWidget {
                       ),
                     ),
                   ),
-            child: _WMatrixRow(
-                spread: products[pi], slot: slot),
+            child: _WMatrixRow(spread: products[pi], slot: slot),
           );
         }),
       ],

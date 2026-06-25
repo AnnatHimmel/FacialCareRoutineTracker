@@ -39,9 +39,9 @@ See `doc/Play Store/full_description.md`. Added a feature bullet for the weekly 
 
 ### Screenshots
 
-Consider adding/refreshing screenshots for:
-- The weekly skin-tracking reminder card on the home screen.
-- The new routine summary screen.
+A refreshed screenshot set is ready under `assets/for_play_store/screenshots/` (7 each, **English + Hebrew**): Add Custom Product, Barcode Scan, Fetched Data, My Shelf, Routine – grid, Routine – List, Week Glance. Upload both locales in Play Console.
+
+Not yet captured (optional to add this release): the weekly skin-tracking reminder card and the new routine summary screen.
 
 Play Console minimum: 2 screenshots per form factor.
 
@@ -75,7 +75,7 @@ Play Console minimum: 2 screenshots per form factor.
 - [ ] Signed with the same keystore (never change the signing key)
 - [ ] `flutter build appbundle --release` completes without errors
 - [ ] Smoke-test: weekly reminder appears → capture photo+note → card hides; Settings toggle hides it; routine summary screen renders; product wizard add/remove → routine rebuilds
-- [ ] Screenshots updated for the weekly reminder + routine summary (if UI shown to users changed)
+- [x] Refreshed screenshot set ready (EN + HE) under `assets/for_play_store/screenshots/`; upload both locales in Play Console
 - [ ] `doc/Play Store/full_description.md` updated and copy-pasted into Play Console
 - [ ] `doc/Play Store/short_description.md` — no change this release
 - [ ] No Data safety / permissions / privacy-policy actions needed this release

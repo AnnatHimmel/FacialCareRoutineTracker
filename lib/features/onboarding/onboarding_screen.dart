@@ -298,7 +298,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 Text(l.onboardingNamePrompt),
                 const SizedBox(height: 8),
                 TextField(
-                  textDirection: TextDirection.rtl,
                   decoration: InputDecoration(
                     hintText: l.onboardingNameHint,
                     border: OutlineInputBorder(
