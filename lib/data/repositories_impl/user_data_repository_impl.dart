@@ -387,6 +387,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
           id: Value(o.id),
           productId: Value(o.productId),
           categoryId: Value(o.categoryId),
+          subCategoryId: Value(o.subCategoryId),
           lastModifiedMs: Value(o.lastModified.millisecondsSinceEpoch),
         ),
       );
@@ -475,6 +476,23 @@ class UserDataRepositoryImpl implements UserDataRepository {
       await _db.mutedConflictsDao.deleteAll();
       // Derived from day records — clear it when day records are cleared.
       await _db.productUseTimestampsDao.deleteAll();
+    });
+  }
+
+  /// Debug-only: empties "the shelf" — every product the user owns
+  /// (selections, custom products, collection-item lifecycle) plus the routine
+  /// wiring tied to those products (schedules, order overrides, category
+  /// overrides). History (day records, skin logs, muted conflicts) is preserved.
+  /// Not part of the [UserDataRepository] contract — reached via
+  /// `debugClearShelfProvider`.
+  Future<void> clearShelf() async {
+    await _db.transaction(() async {
+      await _db.selectionsDao.deleteAll();
+      await _db.schedulesDao.deleteAll();
+      await _db.orderOverridesDao.deleteAll();
+      await _db.collectionItemsDao.deleteAll();
+      await _db.categoryOverridesDao.deleteAll();
+      await _db.userCustomProductsDao.deleteAll();
     });
   }
 
@@ -587,6 +605,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
         id: r.id,
         productId: r.productId,
         categoryId: r.categoryId,
+        subCategoryId: r.subCategoryId,
         lastModified: DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),
       );
 }

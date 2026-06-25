@@ -53,7 +53,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -130,6 +130,17 @@ class AppDatabase extends _$AppDatabase {
           if (from < 15) {
             await m.addColumn(
                 userCustomProducts, userCustomProducts.isDeprecated);
+          }
+          if (from < 16) {
+            await m.addColumn(
+                categoryOverrides, categoryOverrides.subCategoryId);
+          }
+          if (from < 17) {
+            // Remove skin_log_entries written with date = "new" — a bug where
+            // the literal route segment was stored instead of a YYYY-MM-DD string.
+            await customStatement(
+              "DELETE FROM skin_log_entries WHERE date NOT LIKE '____-__-__'",
+            );
           }
         },
       );

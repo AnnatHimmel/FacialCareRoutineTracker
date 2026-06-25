@@ -288,6 +288,7 @@ class UserDataExport {
         'id': o.id,
         'productId': o.productId,
         'categoryId': o.categoryId,
+        if (o.subCategoryId != null) 'subCategoryId': o.subCategoryId,
         'lastModified': o.lastModified.toIso8601String(),
       };
 
@@ -296,6 +297,7 @@ class UserDataExport {
         id: m['id'] as String,
         productId: m['productId'] as String,
         categoryId: m['categoryId'] as String,
+        subCategoryId: m['subCategoryId'] as String?,
         lastModified: DateTime.parse(m['lastModified'] as String),
       );
 }

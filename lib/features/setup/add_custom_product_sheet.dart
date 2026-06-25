@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/l10n/generated/app_localizations.dart';
@@ -862,7 +863,15 @@ class _AddCustomProductSheetState
         await _seedSpreadSchedule(scheduler, id, inMorning, inEvening);
       }
 
-      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      // After a routine-affecting save, run the auto-sorter and show its
+      // "routine ready" summary (which then hands off to the shelf). A brand-new
+      // shelf product placed in no slot didn't change the routine — just close.
+      // GoRouter.maybeOf keeps widget tests (plain MaterialApp, no router) green.
+      final changedRoutine = inMorning || inEvening || _isEditing;
+      final router = changedRoutine ? GoRouter.maybeOf(context) : null;
+      Navigator.of(context).pop();
+      router?.go('/routine-ready');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -973,7 +982,14 @@ class _AddCustomProductSheetState
       await ref
           .read(userDataRepositoryProvider)
           .deleteCustomProduct(deleteId);
-      if (mounted) Navigator.of(context).pop();
+
+      // Hand off to the shared /routine-ready route, which re-runs the
+      // auto-sorter (with custom products as extraProducts) and shows the
+      // "routine ready" summary before returning to the shelf.
+      if (!mounted) return;
+      final router = GoRouter.maybeOf(context);
+      Navigator.of(context).pop(); // close the sheet
+      router?.go('/routine-ready');
     }
   }
 
@@ -1081,7 +1097,7 @@ class _AddCustomProductSheetState
                           ),
                         ),
                       ),
-                    // Edit pencil — shown in view mode; enabled for custom products only
+                    // Edit pencil — shown in view mode
                     if (widget.viewProduct != null && _readOnly) ...[
                       SoftIconButton(
                         icon: Icons.edit_rounded,

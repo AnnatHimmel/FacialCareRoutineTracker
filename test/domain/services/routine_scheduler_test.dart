@@ -248,6 +248,69 @@ void main() {
       // Then: returned index is valid
       expect(index, greaterThanOrEqualTo(0));
     });
+
+    test(
+        'addProduct_with_existing_global_override_inserts_new_product_at_admin_sorted_position',
+        () async {
+      // Given: two products already in the override list
+      // _conflictA has category cat-treat (order 2), slot order 2
+      // _conflictB has category cat-treat (order 2), slot order 3
+      // _dailyProduct has category cat-cleanse (order 1), slot order 1
+      // Admin order: _dailyProduct < _conflictA < _conflictB
+      final master = _buildMaster();
+
+      // Seed an existing global override that has conflictA and conflictB only
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: [_conflictA.id, _conflictB.id],
+      );
+
+      // When: adding _dailyProduct (which admin-sorts BEFORE both existing products)
+      await scheduler.addProduct(
+        master: master,
+        productId: _dailyProduct.id,
+        slot: Slot.morning,
+      );
+
+      // Then: global override should now be [dailyProduct, conflictA, conflictB]
+      final override = await repo.watchOrderOverride(Slot.morning).first;
+      expect(override, isNotNull);
+      expect(
+        override!.orderedProductIds,
+        equals([_dailyProduct.id, _conflictA.id, _conflictB.id]),
+        reason: 'new product must be inserted at its admin-sorted position, not appended',
+      );
+    });
+
+    test(
+        'addProduct_with_existing_per_day_override_inserts_new_product_at_admin_sorted_position',
+        () async {
+      // Given: a per-day override for Monday (weekday=1) with two products
+      final master = _buildMaster();
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: 1,
+        orderedIds: [_conflictA.id, _conflictB.id],
+      );
+
+      // When: adding _dailyProduct (admin-first)
+      await scheduler.addProduct(
+        master: master,
+        productId: _dailyProduct.id,
+        slot: Slot.morning,
+      );
+
+      // Then: per-day override for Monday must include the new product at its admin position
+      final perDays = await repo.watchPerDayOrderOverrides(Slot.morning).first;
+      final monday = perDays.where((o) => o.weekday == 1).firstOrNull;
+      expect(monday, isNotNull);
+      expect(
+        monday!.orderedProductIds,
+        equals([_dailyProduct.id, _conflictA.id, _conflictB.id]),
+        reason: 'per-day override must also be updated with admin-sorted insertion',
+      );
+    });
   });
 
   // ── Group 3: removeProduct ───────────────────────────────────────────────

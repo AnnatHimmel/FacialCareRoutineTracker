@@ -41,7 +41,7 @@ class SkinJournalScreen extends ConsumerWidget {
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: GestureDetector(
-          onTap: () => context.push('/skin-log/new'),
+          onTap: () => context.push('/skin-log/${ref.read(dayBoundaryServiceProvider).formatDate(today)}'),
           child: Container(
             width: double.infinity,
             height: 52,
@@ -92,7 +92,7 @@ class SkinJournalScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               if (withPhotos.isEmpty) ...[
                 _EmptyTimelineState(
-                  onAddEntry: () => context.push('/skin-log/new'),
+                  onAddEntry: () => context.push('/skin-log/${ref.read(dayBoundaryServiceProvider).formatDate(today)}'),
                 ),
               ] else ...[
                 _JournalSectionHeader(),

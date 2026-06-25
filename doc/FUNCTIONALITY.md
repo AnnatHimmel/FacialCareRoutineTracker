@@ -40,8 +40,8 @@ The Admin authors content at **build time** (bundled data, not a runtime UI). Th
 
 | Input | Format | Source | Validation / Rules |
 |-------|--------|--------|------------|
-| Master product list | Bundled JSON/config at build time | Admin (authored out of band) | Stable IDs; name, optional image, optional comment, category, slot(s), order, frequency rule, deprecated flag |
-| Incompatibility rules | Bundled config at build time | Admin | Product↔product or category↔category pair + scope (within Morning / within Evening / same-day across both) |
+| Master product list | Live from Supabase at runtime, with bundled JSON (`assets/data/master_products.json`) as offline fallback | Admin (authored out of band) | Stable IDs; name, optional brand, optional image, optional comment, category/subcategory, slot(s), order, frequency rule, optional barcodes, deprecated flag |
+| Incompatibility rules | Live from Supabase at runtime, with bundled JSON (`assets/data/incompatibility_rules.json`) as offline fallback | Admin | Product↔product or category↔category pair + scope (within Morning / within Evening / same-day across both) |
 | User product selection | Toggle per product per slot | User tap | Deprecated products not selectable; empty selection is valid |
 | Schedule (weekday toggles) | Days of week per occasional product | User tap, Sunday-first | Soft cap: warn if over admin's "max N/week" limit (non-blocking) |
 | Order override | Drag-to-reorder within a slot | User gesture | Optional; defaults to admin order; "Reset" action discards override |
@@ -58,12 +58,16 @@ The Admin authors content at **build time** (bundled data, not a runtime UI). Th
 | Output | Format | Destination | Notes |
 |--------|--------|-------------|-------|
 | Resolved daily routine | Screen display (S4 Daily Home) | User, on device | Morning + Evening per slot; only products scheduled for today; in effective order |
+| Routine-ready summary | Full-screen confirmation (S17) | User, in-app | Shown every time the auto-sorter builds a routine (mid-onboarding after category approval, add/remove product); product counts + "what we arranged" (auto-adjustments) + "worth noting" (advisories); CTA to the routine |
 | Streak display | Screen display (S10, embedded in S4) | User, on device | Current streak + longest streak; optional weekly-miss budget |
 | Calendar history | Monthly grid (S6) + day detail (S7) | User, on device | Four completion states: complete / partial / missed / future; colorblind-safe |
 | Skin journal | Chronological photo gallery (S9) | User, on device | Past skin-log photos for visual comparison over time |
+| Product collection / inventory | Screen display (`/collection`) | User, on device | Owned products grouped by In-use / Sealed / Archive status; per-product PAO meter (remaining shelf life, ok/warn/bad tone) |
+| Week-at-a-glance | Screen display (`/week-glance`) | User, on device | Per-weekday view of products scheduled in Morning and Evening |
 | Incompatibility warnings | Soft inline/banner warnings | User, in-app | Advisory only; never blocks; names both conflicting products verbatim |
 | Deprecation notices | Inline row marker (S4/S5/S7) | User, in-app | "No longer recommended" on products admin has deprecated |
 | Backup reminder | Dismissible in-app nudge (S16) | User, in-app | Gentle, non-blocking; shown when no recent export exists |
+| Weekly skin-tracking reminder | Inline card at top of S4 | User, in-app | Prompts a weekly skin photo + note; inline capture writes to today's skin log; hidden once a skin-log photo exists within the last 7 days (rolling); "אחר כך" dismisses it for the rest of the day; "אל תציג שוב" turns it off permanently; only shown when a routine exists. Can be re-enabled from Settings → "תזכורת תיעוד שבועי" |
 | Export archive | Single portable, open-format archive | User file system / share sheet | Contains all user data (selections, schedules, overrides, day records, skin log + photos); master list excluded |
 | Update review | First-run screen after version change (S14) | User, in-app | New unselected products; newly deprecated flagged; data-intact confirmation; export offer |
 | Version + changelog | Screen (S13 About/What's New) | User, in-app | Current version ID and per-version changelog of master-list changes |
@@ -74,15 +78,18 @@ The Admin authors content at **build time** (bundled data, not a runtime UI). Th
 
 ### Setup & Personalization
 1. **Product Selection (UC-4, S1 — setup wizard):** Step-by-step per-category flow for first-time setup. User marks owned products per slot (Morning/Evening). Daily incompatibility conflicts surface here with mutable soft warnings.
-2. **My Products Tab (S1b — browse mode):** Persistent bottom-nav tab (`/products`). Flat searchable product list grouped by category. Search bar + slot filter chips (All / Morning / Evening). Same toggle/timing controls as S1. Selected-count badge. "Add custom product" CTA at bottom. Barcode scan FAB on Android.
+2. **Product Browse / Selection (S1b — browse mode, `/products`):** Standalone (non-nav) flat searchable product list grouped by category. Search bar + slot filter chips (All / Morning / Evening). Same toggle/timing controls as S1. Selected-count badge. "Add custom product" CTA at bottom. Barcode scan FAB on Android. Reached from the Collection tab and the returning-user add-product flow — it is **not** itself a bottom-nav tab.
 3. **Barcode Scan (S1c — Android only):** Camera-based barcode scanner bottom sheet (`BarcodeScanSheet`). On barcode detection: (1) checks master product list by `barcodes` field — if matched, shows "Recognized product" card with product name/brand/slots and a one-tap "Add to Routine" CTA; if already in all applicable slots, shows "Already in your routine" badge. (2) If no master match: queries 5 external APIs in parallel (OpenBeautyFacts, OpenFoodFacts, UPCItemDB, InciBeauty, BarcodeSpider), merges results by priority (OBF wins), pre-fills AddCustomProductSheet. (3) If all APIs return nothing: "Not found" state with manual entry CTA. Requires `CAMERA` permission on Android; FAB hidden on Web (`kIsWeb` guard). Barcode field is present on all master products (24/33 have confirmed barcodes as of v1.0.1).
 4. **Custom Products:** User can add their own products (name, slot, timing) via the Add Custom Product sheet, accessible from S1, S1b, and post-barcode-scan. Custom products are stored locally, not in the admin master list.
 5. **Schedule Setup (UC-5, S2):** For "max N/week" products, user assigns specific weekdays (Sunday-first toggles). Soft over-cap warning; day-dependent incompatibility conflicts surface here.
 6. **Order Customization (UC-6, S3):** Optional drag-to-reorder within a slot. "Reset to recommended order" action. Personal override stored locally.
+7. **Routine-Ready Summary (S17):** A full-screen confirmation shown **every time the auto-sorter builds a routine** — mid-onboarding (right after sub-category approval, before scheduling and order customization) and after adding or removing a product. It reflects the sorter's actual decisions: product counts (total + per slot), a "what we arranged" list of auto-adjustments (days moved to avoid a conflict, weekly frequency reduced) and a "worth noting" list of advisories the sorter intentionally left alone (kept-together pairs). Always shown (header-only when nothing changed); no Undo — adjustments are edited manually in S2/S3. In the onboarding wizard the CTA label is `routineReadyReviewSlotCta(slot)` — "נתחיל עם שגרת הבוקר" for a morning-first routine, "נתחיל עם שגרת הערב" for an evening-only routine — and advances directly to the first active slot's schedule screen (not the shelf). Evening-only routines skip the AM schedule and AM order stages entirely. The onboarding wizard concludes on the Week-at-a-Glance screen in onboarding mode (no back button; CTA `weekGlanceStartGlowingCta` — "הכול מסודר, אפשר להתחיל" → `/today`). Outside onboarding the single CTA navigates to the shelf (`/collection`).
 
 ### Daily Use
-4. **Daily Home / Today's Routine (UC-8, UC-9, S4):** Primary screen. Shows today's Morning + Evening resolved routine (all daily products + occasional products scheduled today), in effective order. Users optionally record each product as "done" — reversible, never required. 6am day boundary governs which day it's credited to.
+4. **Daily Home / Today's Routine (UC-8, UC-9, S4):** Primary screen. Shows today's Morning + Evening resolved routine (all daily products + occasional products scheduled today), in effective order. Users optionally record each product as "done" — reversible, never required. 6am day boundary governs which day it's credited to. A **weekly skin-tracking reminder** card appears near the top (only when a routine exists) nudging the user to photograph and note her skin. Capture is inline — picking a photo appends it (plus any typed note) to today's skin-log entry — and the card auto-hides once any skin-log photo exists within the last 7 days (rolling cadence). The "אחר כך" (later) button dismisses it for the remainder of the day; it reappears the next day if still no photo that week.
 5. **Product Detail Expand (UC-10, S5):** Routine item row expands to reveal admin-authored product image and persistent comment. Same comment displayed identically everywhere the product appears.
+6. **Collection / "My Products" Tab (`/collection`):** A persistent bottom-nav tab (Today / Collection / Journal / Settings) presenting the user's product inventory — their selected master products plus custom products. Three status tabs: **In use**, **Sealed**, **Archive** (`CollectionStatus.inUse / sealed / archive`). Tapping a product opens a detail view where the user sets an **opened date**, the **period-after-opening (PAO) months** (defaulted per category — e.g. 18 for toner, 12 for most others), a per-product notify toggle, and lifecycle actions ("finished" / "discarded" move it to Archive). A **PAO meter** visualizes how much shelf life remains with a three-state tone — `ok`, `warn` (≥80% elapsed), `bad` (expired). Entry point to the Product Browse/Selection screen and Week-at-a-glance.
+7. **Week at a Glance (`/week-glance`):** A week-overview screen (reached from the Collection tab) showing, per weekday, which products are scheduled across Morning and Evening — letting the user see their whole week's routine at once.
 
 ### History & Motivation
 6. **Calendar History (UC-11, S6/S7):** Monthly RTL grid showing past days as complete / partial / missed / future. Tap a day for the Day Detail — the routine as it was that day, which items were recorded, and the skin log. Past records are editable.
@@ -100,7 +107,7 @@ The Admin authors content at **build time** (bundled data, not a runtime UI). Th
 16. **Deprecation Handling (UC-12):** Deprecated products not offered for new selection; if user already uses one, it's marked "no longer recommended" everywhere it appears, but continues to function until removed. History preserved regardless.
 
 ### Admin Authoring (at build time — not a runtime UI)
-17. **Master List Authoring (UC-1):** Admin defines products (stable ID, name, optional image, optional comment, category, slot membership, canonical order, frequency rule) and bundles them into the release.
+17. **Master List Authoring (UC-1):** Admin defines products (stable ID, name, optional brand, optional image, optional comment, category/subcategory, slot membership, canonical order, frequency rule, optional barcodes). Content is maintained in Supabase (live source) and mirrored to the bundled JSON (`assets/data/master_products.json`) shipped as the offline fallback — Supabase updated first.
 18. **Incompatibility Rule Authoring (UC-1b):** Admin defines advisory product/category pair rules with scope. Bundled into the release.
 19. **Product Deprecation (UC-2):** Admin marks a product deprecated. Ships in next release. Product remains in data forever (never deleted).
 20. **Release (UC-3):** Admin assigns version ID and master-list content version; records changelog. Distributed as APK (Android) or updated web host.
@@ -147,6 +154,7 @@ A standalone local web app (`admin/`) that the admin runs on their machine to bu
 | Large master list | Selection remains scannable via category grouping; day view resolves promptly with up to ~100 products (PRD §10) |
 | Bidirectional text | Latin-script brand names (LTR) embedded in Hebrew lines (RTL) must render correctly — e.g., in routine rows, category headers, changelog, admin comments (NFR-L2) |
 | Order override vs. admin default | Effective order = personal override if set, else admin order. Occasional products sit in their admin position. Override state indicated; "Reset" action available (UC-6) |
+| Moisture lotion-before-cream | Within the Moisturizer category and the same sub-category grouping, a product whose name contains "lotion" is ordered before one containing "cream" (lotions are lighter, applied first), overriding the admin numeric order. Names with neither/both keywords keep their existing order; the rule does not apply across different sub-categories or outside the Moisturizer category |
 | Muted incompatibility conflict that no longer exists | If the user's selection/schedule changes so that the conflicting pair no longer coexists, any mute for that pair is cleared (UC-7) |
 
 ---
@@ -156,7 +164,7 @@ A standalone local web app (`admin/`) that the admin runs on their machine to bu
 - **Platform:** Android (≥ API 29 / Android 10) and Web (current mobile browsers, primarily iPhone/Safari). Single Flutter codebase for both targets.
 - **Distribution:** Android via directly-shared sideloaded APK (no app store); Web via admin-hosted URL. No automatic update delivery; users install/refresh manually.
 - **Language & Layout:** Entire interface in Hebrew, RTL. Product names and category names displayed verbatim (admin-authored, bidirectional-safe). No translation or localization of admin content.
-- **Offline-First:** Free product requires no network at runtime on either platform. No backend, no accounts, no sync.
+- **Offline-First:** Free product requires no network to run. Master content loads from bundled JSON (or a previously-cached newer copy) with no network needed; a background refresh from Supabase merges newer admin content when reachable and silently keeps the existing data when offline. No user accounts, no user-data sync. Barcode external-API lookups and admin-portal scraping require network but are non-essential, opt-in actions.
 - **Privacy:** No analytics, telemetry, or third-party data collection in v1.0.
 - **Storage:** All user data and bundled images stored locally on-device/in-browser. User-captured photos stored at bounded resolution.
 - **Performance:** Day view resolves promptly with up to ~100 master products. Typical routine ~10 products per slot; monthly history opens promptly.

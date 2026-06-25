@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
@@ -8,6 +7,7 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/category_override.dart';
 import '../../domain/entities/master_product.dart';
+import '../../domain/entities/sub_category.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/product_sorter.dart';
 import '../../shared/providers/root_providers.dart';
@@ -31,24 +31,78 @@ class CategoryReviewScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
+  // Persisted overrides (category and subcategory) per productId
   final Map<String, String> _categoryOverrides = {};
+  final Map<String, String?> _subCategoryOverrides = {};
+
+  // Currently open edit card
   String? _editingProductId;
+
+  // Draft state while editing (valid only when _editingProductId != null)
+  String? _editDraftCatId;
+  String? _editDraftSubCatId;
+
+  // Original values captured when edit opened — used to restore subcat
+  // when the user picks back the original category
+  String? _editOrigCatId;
+  String? _editOrigSubCatId;
+
   bool _overridesLoaded = false;
 
   String _effectiveCatId(MasterProduct p) =>
       _categoryOverrides[p.id] ?? p.categoryId;
 
-  void _reassign(String productId, String catId) {
+  String? _effectiveSubCatId(MasterProduct p) =>
+      _subCategoryOverrides.containsKey(p.id)
+          ? _subCategoryOverrides[p.id]
+          : p.subCategoryId;
+
+  void _openEdit(MasterProduct p) {
+    final origCat = _effectiveCatId(p);
+    final origSubCat = _effectiveSubCatId(p);
+    setState(() {
+      _editingProductId = p.id;
+      _editOrigCatId = origCat;
+      _editOrigSubCatId = origSubCat;
+      _editDraftCatId = origCat;
+      _editDraftSubCatId = origSubCat;
+    });
+  }
+
+  void _closeEdit() => setState(() => _editingProductId = null);
+
+  void _draftPickCategory(String catId) {
+    setState(() {
+      _editDraftCatId = catId;
+      // Restore original subcat when the user picks back the original category;
+      // reset to null when a different category is chosen.
+      if (catId == _editOrigCatId) {
+        _editDraftSubCatId = _editOrigSubCatId;
+      } else {
+        _editDraftSubCatId = null;
+      }
+    });
+  }
+
+  void _draftPickSubCategory(String? subCatId) {
+    setState(() => _editDraftSubCatId = subCatId);
+  }
+
+  void _saveEdit(String productId) {
+    final catId = _editDraftCatId!;
+    final subCatId = _editDraftSubCatId;
     setState(() {
       _categoryOverrides[productId] = catId;
+      _subCategoryOverrides[productId] = subCatId;
       _editingProductId = null;
     });
-    // Persist immediately — fire and forget
+    // Persist — fire and forget
     ref.read(userDataRepositoryProvider).upsertCategoryOverride(
           CategoryOverride(
             id: 'cat-override-$productId',
             productId: productId,
             categoryId: catId,
+            subCategoryId: subCatId,
             lastModified: DateTime.now(),
           ),
         );
@@ -62,13 +116,13 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
     final eveningAsync = ref.watch(selectionsProvider(Slot.evening));
     final savedOverridesAsync = ref.watch(categoryOverridesProvider);
 
-    // Seed local map from DB once on first successful load.
-    // Subsequent changes go through _reassign which writes directly to _categoryOverrides.
+    // Seed local maps from DB once on first successful load.
     if (!_overridesLoaded) {
       savedOverridesAsync.whenData((saved) {
         _overridesLoaded = true;
         for (final o in saved) {
           _categoryOverrides[o.productId] = o.categoryId;
+          _subCategoryOverrides[o.productId] = o.subCategoryId;
         }
       });
     }
@@ -82,15 +136,11 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
         final morning = morningAsync.valueOrNull ?? [];
         final evening = eveningAsync.valueOrNull ?? [];
 
-        // Collect the set of selected product IDs (morning + evening)
         final selectedIds = {
           for (final s in morning.where((s) => s.isSelected)) s.productId,
           for (final s in evening.where((s) => s.isSelected)) s.productId,
         };
 
-        // Build ordered product list sorted by effective category order then slot order.
-        // Uses _categoryOverrides (local draft state) for accurate live sorting.
-        // Products span both slots; morning order used as the primary slot key.
         final products = master.products
             .where((p) => !p.isDeprecated && selectedIds.contains(p.id))
             .toList()
@@ -99,6 +149,10 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
             subcategories: master.subcategories,
             slot: Slot.morning,
             categoryOverrides: _categoryOverrides,
+            subCategoryOverrides: {
+              for (final e in _subCategoryOverrides.entries)
+                if (e.value != null) e.key: e.value!,
+            },
           ));
 
         return Scaffold(
@@ -125,31 +179,39 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
                               key: Key('review_card_${product.id}'),
                               product: product,
                               categories: master.categories,
+                              subcategories: master.subcategories,
                               effectiveCatId: _effectiveCatId(product),
+                              effectiveSubCatId: _effectiveSubCatId(product),
                               isEditing: _editingProductId == product.id,
+                              draftCatId: _editingProductId == product.id
+                                  ? _editDraftCatId
+                                  : null,
+                              draftSubCatId: _editingProductId == product.id
+                                  ? _editDraftSubCatId
+                                  : null,
                               locale: l.localeName,
-                              onEditToggle: () => setState(() {
-                                _editingProductId =
-                                    _editingProductId == product.id
-                                        ? null
-                                        : product.id;
-                              }),
-                              onReassign: (catId) =>
-                                  _reassign(product.id, catId),
-                              onOpenDetail: () =>
-                                  showModalBottomSheet<void>(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (_) => AddCustomProductSheet(
-                                      viewProduct: product,
-                                      isUserProduct:
-                                          product.addedInVersion == 'custom',
-                                    ),
-                                  ),
+                              onEditToggle: () {
+                                if (_editingProductId == product.id) {
+                                  _closeEdit();
+                                } else {
+                                  _openEdit(product);
+                                }
+                              },
+                              onPickCategory: _draftPickCategory,
+                              onPickSubCategory: _draftPickSubCategory,
+                              onSave: () => _saveEdit(product.id),
+                              onOpenDetail: () => showModalBottomSheet<void>(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (_) => AddCustomProductSheet(
+                                  viewProduct: product,
+                                  isUserProduct:
+                                      product.addedInVersion == 'custom',
+                                ),
+                              ),
                             ),
                           ),
-                      // "Add more products" — returns to product selection
                       _AddMoreButton(
                         label: l.categoryReviewAddMore,
                         onTap: widget.onBack,
@@ -170,7 +232,6 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
       },
     );
   }
-
 }
 
 // ── Header ─────────────────────────────────────────────────────────────────────
@@ -242,32 +303,68 @@ class _Header extends StatelessWidget {
 class _ProductReviewCard extends StatelessWidget {
   final MasterProduct product;
   final List<Category> categories;
+  final List<SubCategory> subcategories;
   final String effectiveCatId;
+  final String? effectiveSubCatId;
   final bool isEditing;
+  final String? draftCatId;
+  final String? draftSubCatId;
   final String locale;
   final VoidCallback onEditToggle;
-  final ValueChanged<String> onReassign;
+  final ValueChanged<String> onPickCategory;
+  final ValueChanged<String?> onPickSubCategory;
+  final VoidCallback onSave;
   final VoidCallback? onOpenDetail;
 
   const _ProductReviewCard({
     super.key,
     required this.product,
     required this.categories,
+    required this.subcategories,
     required this.effectiveCatId,
+    required this.effectiveSubCatId,
     required this.isEditing,
+    required this.draftCatId,
+    required this.draftSubCatId,
     required this.locale,
     required this.onEditToggle,
-    required this.onReassign,
+    required this.onPickCategory,
+    required this.onPickSubCategory,
+    required this.onSave,
     this.onOpenDetail,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+
+    // While editing, show the live draft values in the header so the user sees
+    // a preview of what they're selecting before tapping Save.
+    final displayCatId =
+        isEditing ? (draftCatId ?? effectiveCatId) : effectiveCatId;
+    final displaySubCatId =
+        isEditing ? draftSubCatId : effectiveSubCatId;
+
     final catName = categories
             .cast<Category?>()
-            .firstWhere((c) => c?.id == effectiveCatId, orElse: () => null)
+            .firstWhere((c) => c?.id == displayCatId, orElse: () => null)
             ?.localizedName(locale) ??
-        effectiveCatId;
+        displayCatId;
+
+    final subCatName = displaySubCatId == null
+        ? null
+        : subcategories
+            .cast<SubCategory?>()
+            .firstWhere((s) => s?.id == displaySubCatId,
+                orElse: () => null)
+            ?.localizedName(locale);
+
+    // Subcategories that belong to the current draft category (for the picker)
+    final activeDraftCat = draftCatId ?? effectiveCatId;
+    final subcatsForDraftCat = subcategories
+        .where((s) => s.categoryId == activeDraftCat)
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
@@ -297,7 +394,6 @@ class _ProductReviewCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Product name — now spans the full line width
                         Text(
                           product.name,
                           maxLines: 1,
@@ -309,15 +405,17 @@ class _ProductReviewCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        // Bottom line: current category chip + change-category action.
-                        // Wrap lets the two pieces fall onto a second line on narrow
-                        // screens instead of overflowing the row.
                         Wrap(
-                          spacing: 8,
+                          spacing: 6,
                           runSpacing: 6,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            _CalmCategoryChip(catName: catName),
+                            _CalmChip(label: catName),
+                            if (subCatName != null)
+                              _CalmChip(
+                                label: subCatName,
+                                isSubCategory: true,
+                              ),
                             _ChangeCategoryButton(
                               isEditing: isEditing,
                               onTap: onEditToggle,
@@ -331,7 +429,8 @@ class _ProductReviewCard extends StatelessWidget {
               ),
             ),
           ),
-          // Inline category picker (expanded state)
+
+          // Inline edit panel
           if (isEditing)
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -339,12 +438,47 @@ class _ProductReviewCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Divider(height: 1, color: AppColors.outlineVariant),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
+
+                  // Category picker
                   _InlineCategoryPicker(
                     categories: categories,
-                    selected: effectiveCatId,
+                    selected: draftCatId ?? effectiveCatId,
                     locale: locale,
-                    onPick: onReassign,
+                    onPick: onPickCategory,
+                  ),
+
+                  // Subcategory picker (only when the active category has subcategories)
+                  if (subcatsForDraftCat.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    _InlineSubCategoryPicker(
+                      subcategories: subcatsForDraftCat,
+                      selected: draftSubCatId,
+                      locale: locale,
+                      onPick: onPickSubCategory,
+                    ),
+                  ],
+
+                  const SizedBox(height: 12),
+                  // Save button
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(9999),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        textStyle: AppTypography.labelMd.copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                      onPressed: onSave,
+                      child: Text(l.saveAction),
+                    ),
                   ),
                 ],
               ),
@@ -355,7 +489,7 @@ class _ProductReviewCard extends StatelessWidget {
   }
 }
 
-// ── Change category button ──────────────────────────────────────────────────────
+// ── Change-category toggle button ──────────────────────────────────────────────
 
 class _ChangeCategoryButton extends StatelessWidget {
   final bool isEditing;
@@ -387,28 +521,35 @@ class _ChangeCategoryButton extends StatelessWidget {
   }
 }
 
-// ── Calm category chip ─────────────────────────────────────────────────────────
+// ── Calm chip (category or sub-category display) ───────────────────────────────
 
-class _CalmCategoryChip extends StatelessWidget {
-  final String catName;
+class _CalmChip extends StatelessWidget {
+  final String label;
+  final bool isSubCategory;
 
-  const _CalmCategoryChip({required this.catName});
+  const _CalmChip({required this.label, this.isSubCategory = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLow,
+        color: isSubCategory
+            ? AppColors.surfaceLow.withAlpha(180)
+            : AppColors.surfaceLow,
         borderRadius: BorderRadius.circular(9999),
+        border: isSubCategory
+            ? Border.all(
+                color: AppColors.outlineVariant.withAlpha(120), width: 1)
+            : null,
       ),
       child: Text(
-        catName,
+        label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: AppTypography.labelSm.copyWith(
           color: AppColors.onSurfaceVariant,
-          fontWeight: FontWeight.w600,
+          fontWeight: isSubCategory ? FontWeight.w500 : FontWeight.w600,
           fontSize: 11,
         ),
       ),
@@ -442,7 +583,8 @@ class _InlineCategoryPicker extends StatelessWidget {
             onTap: () => onPick(cat.id),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: cat.id == selected
                     ? AppColors.primary
@@ -452,7 +594,85 @@ class _InlineCategoryPicker extends StatelessWidget {
               child: Text(
                 cat.localizedName(locale),
                 style: AppTypography.labelSm.copyWith(
-                  color: cat.id == selected ? Colors.white : AppColors.primary,
+                  color:
+                      cat.id == selected ? Colors.white : AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// ── Inline sub-category picker ─────────────────────────────────────────────────
+
+class _InlineSubCategoryPicker extends StatelessWidget {
+  final List<SubCategory> subcategories;
+  final String? selected;
+  final String locale;
+  final ValueChanged<String?> onPick;
+
+  const _InlineSubCategoryPicker({
+    required this.subcategories,
+    required this.selected,
+    required this.locale,
+    required this.onPick,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        // "None" option
+        GestureDetector(
+          onTap: () => onPick(null),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: selected == null
+                  ? AppColors.secondary
+                  : AppColors.surfaceLow,
+              borderRadius: BorderRadius.circular(9999),
+            ),
+            child: Text(
+              l.customProductSubCategoryNone,
+              style: AppTypography.labelSm.copyWith(
+                color: selected == null
+                    ? Colors.white
+                    : AppColors.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+        for (final sub in subcategories)
+          GestureDetector(
+            onTap: () => onPick(sub.id),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: sub.id == selected
+                    ? AppColors.secondary
+                    : AppColors.surfaceLow,
+                borderRadius: BorderRadius.circular(9999),
+              ),
+              child: Text(
+                sub.localizedName(locale),
+                style: AppTypography.labelSm.copyWith(
+                  color: sub.id == selected
+                      ? Colors.white
+                      : AppColors.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                 ),

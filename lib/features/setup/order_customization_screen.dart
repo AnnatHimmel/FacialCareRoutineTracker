@@ -88,7 +88,9 @@ class _OrderCustomizationScreenState
       await ref
           .read(settingsRepositoryProvider)
           .setOnboardingCompleted(true);
-      if (context.mounted) context.go('/today');
+      // Setup ends here — run the auto-sorter once and show its summary, which
+      // then hands off to the shelf.
+      if (context.mounted) context.go('/routine-ready');
     } else {
       context.pop();
     }

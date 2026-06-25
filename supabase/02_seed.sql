@@ -11,7 +11,7 @@ INSERT INTO categories (id, name_he, name_en, sort_order, icon, is_active) VALUE
   ('cat-cleanser-step2', 'ניקוי שלב 2',   'Cleanse — Step 2',  2, 'bubble_chart', TRUE),
   ('cat-toner',          'טונר / אסנס',    'Toner / Essence',   3, 'water_drop',   TRUE),
   ('cat-retinoid',       'רטינואידים',     'Retinoid',          4, 'science',      TRUE),
-  ('cat-serum',          'סרום / חומצות',  'Serum / Active',    5, 'auto_awesome', TRUE),
+  ('cat-serum',          'סרום',           'Serum / Active',    5, 'auto_awesome', TRUE),
   ('cat-moisturizer',    'לחות',           'Moisturizer',       6, 'opacity',      TRUE),
   ('cat-oil',            'שמנים',          'Face Oil',          7, 'spa',          TRUE),
   ('cat-spf',            'הגנה',           'Protect (SPF)',     8, 'wb_sunny',     TRUE)

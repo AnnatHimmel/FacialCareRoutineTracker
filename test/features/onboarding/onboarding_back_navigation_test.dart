@@ -139,6 +139,10 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setAppLanguage(String code) async {}
   @override Future<bool> getTapHintSeen() async => false;
   @override Future<void> setTapHintSeen(bool value) async {}
+  @override Future<String?> getWeeklyPhotoReminderDismissedDate() async => null;
+  @override Future<void> setWeeklyPhotoReminderDismissedDate(String isoDate) async {}
+  @override Future<bool> getWeeklyReminderEnabled() async => true;
+  @override Future<void> setWeeklyReminderEnabled(bool value) async {}
 }
 
 // ── Test data ─────────────────────────────────────────────────────────────────
@@ -205,6 +209,10 @@ Widget _wrap({
 
 /// Drives the onboarding flow up to the schedule screen (amSchedule stage).
 /// Requires at least one morning product to be pre-selected in the UDR.
+///
+/// New flow: products → categoryReview → routineSummary → amSchedule.
+/// After category review, the routine summary screen appears with a morning
+/// CTA ("נתחיל עם שגרת הבוקר"); tapping it advances to amSchedule.
 Future<void> _advanceToAmSchedule(WidgetTester tester) async {
   // Step 0: language
   await tester.tap(find.text('עברית'));
@@ -223,8 +231,13 @@ Future<void> _advanceToAmSchedule(WidgetTester tester) async {
   // Step 3: product is pre-selected — tap "סידור המדף שלי"
   await tester.tap(find.text('סידור המדף שלי'));
   await tester.pumpAndSettle();
-  // Category review → tap "המשך לבחירת ימים" to proceed to amSchedule
-  await tester.tap(find.text('המשך לבחירת ימים'));
+  // Category review → routineSummary (async summary build)
+  await tester.tap(find.text('נמשיך לתכנון השגרה'));
+  await tester.pumpAndSettle();
+  await tester.pump(Duration.zero); // flush _loadSummary async continuation
+  await tester.pumpAndSettle();
+  // routineSummary → tap morning CTA to reach amSchedule
+  await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
   await tester.pumpAndSettle();
 }
 
@@ -233,7 +246,7 @@ void main() {
 
   group('Onboarding back navigation', () {
     testWidgets(
-        'Back from amSchedule returns to category review, not onboarding step 1',
+        'Back from amSchedule returns to routine summary, not onboarding step 1',
         (tester) async {
       final master =
           _masterWith([_product('p1', 'קרם לחות', 'cat1')], [cat1]);
@@ -263,7 +276,7 @@ void main() {
       expect(find.text('תזמון שבועי'), findsOneWidget,
           reason: 'Should be on schedule screen (amSchedule stage)');
 
-      // The custom header back button calls onBack → goes to categoryReview.
+      // The custom header back button calls onBack → goes to routineSummary.
       final backButton = find.byIcon(Icons.arrow_back);
       expect(backButton, findsOneWidget,
           reason: 'Schedule screen should show a back button in onboarding mode');
@@ -271,13 +284,13 @@ void main() {
       await tester.tap(backButton);
       await tester.pumpAndSettle();
 
-      // Should land back on the category review screen, NOT onboarding step 1.
+      // Should land back on the routine summary screen, NOT onboarding step 1.
       expect(find.text('נתחיל?'), findsNothing,
           reason: 'Back must not return to onboarding step 1 (welcome)');
       expect(onFinishCalled, isFalse,
           reason: 'Pressing back must not complete onboarding');
-      expect(find.text('המשך לבחירת ימים'), findsOneWidget,
-          reason: 'Back should return to the category review screen');
+      expect(find.text('נתחיל עם שגרת הבוקר'), findsOneWidget,
+          reason: 'Back from amSchedule should return to the routine summary screen');
     });
 
     testWidgets(
@@ -305,7 +318,7 @@ void main() {
 
       await _advanceToAmSchedule(tester);
       // Advance to amOrder
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
 
       expect(find.text('סדר המריחה בבוקר'), findsOneWidget,
@@ -323,7 +336,7 @@ void main() {
     });
 
     testWidgets(
-        'Back from pmSchedule (entered via eveningTransition) returns to eveningTransition',
+        'Back from pmSchedule returns to amOrder',
         (tester) async {
       final masterProduct = MasterProduct(
         id: 'p1',
@@ -383,29 +396,23 @@ void main() {
 
       await _advanceToAmSchedule(tester);
       // amSchedule → amOrder
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
-      // amOrder → eveningTransition
+      expect(find.text('סדר המריחה בבוקר'), findsOneWidget,
+          reason: 'Should be on morning order screen');
+      // amOrder → pmSchedule directly (eveningTransition removed)
       await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('עכשיו נעבור לשגרת הערב'), findsOneWidget,
-          reason: 'Should be on evening transition screen');
-
-      // Advance to pmSchedule
-      await tester.tap(find.text('המשך'));
       await tester.pumpAndSettle();
 
       expect(find.text('שגרת ערב'), findsOneWidget,
           reason: 'Should be on pmSchedule with evening context chip');
 
-      // Press back → should return to eveningTransition, not amOrder
+      // Press back → should return to amOrder, not amSchedule
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
 
-      expect(find.text('עכשיו נעבור לשגרת הערב'), findsOneWidget,
-          reason:
-              'Back from pmSchedule (via transition) should return to eveningTransition');
+      expect(find.text('סדר המריחה בבוקר'), findsOneWidget,
+          reason: 'Back from pmSchedule should return to amOrder');
     });
   });
 }

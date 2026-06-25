@@ -228,6 +228,10 @@ class BarcodeProductLookupService {
         .whereType<ScannedProductInfo>()
         .where((r) => r.hasUsefulData && !_isSiteLevelName(r.name))
         .toList();
+    if (kDebugMode) {
+      debugPrint('[ByName:"$query"] useful sources: '
+          '${useful.isEmpty ? 'none' : useful.map((r) => r.name).join(', ')}');
+    }
     if (useful.isEmpty) return null;
 
     String? mergedName;
@@ -248,7 +252,7 @@ class BarcodeProductLookupService {
       candidateImages.addAll(r.imageUrls);
     }
 
-    return ScannedProductInfo(
+    final merged = ScannedProductInfo(
       barcode: '',
       name: mergedName,
       brand: mergedBrand,
@@ -258,6 +262,14 @@ class BarcodeProductLookupService {
       comment: comment,
       quantity: quantity,
     );
+    if (kDebugMode) {
+      debugPrint('[ByName:"$query"] merged result → '
+          'name=${merged.name} | brand=${merged.brand} | '
+          'categoryHint=${merged.categoryHint} | quantity=${merged.quantity} | '
+          'images(${merged.imageUrls.length})=${merged.imageUrls} | '
+          'ingredients=${merged.ingredients} | comment=${merged.comment}');
+    }
+    return merged;
   }
 
   Future<ScannedProductInfo?> _augmentWithScrapers(

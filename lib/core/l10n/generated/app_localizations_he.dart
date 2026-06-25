@@ -201,6 +201,58 @@ class AppLocalizationsHe extends AppLocalizations {
   String get journalCtaButton => 'תעדי עכשיו';
 
   @override
+  String get weeklyReminderBadge => 'תיעוד שבועי';
+
+  @override
+  String get weeklyReminderTitle => 'איך העור שלך השבוע?';
+
+  @override
+  String get weeklyReminderBody =>
+      'צלמי תמונה קצרה ורשמי איך העור מרגיש — פעם בשבוע, כדי לראות את ההתקדמות לאורך זמן.';
+
+  @override
+  String get weeklyReminderNotesHint =>
+      'איך העור מרגיש היום? יובש, אדמומיות, פצעונים...';
+
+  @override
+  String get weeklyReminderCapture => 'צלמי';
+
+  @override
+  String get weeklyReminderBrowse => 'או מהגלריה';
+
+  @override
+  String get weeklyReminderDismiss => 'אחר כך';
+
+  @override
+  String get weeklyReminderNeverShow => 'אל תציג שוב';
+
+  @override
+  String get settingsWeeklyReminder => 'תזכורת תיעוד שבועי';
+
+  @override
+  String get settingsWeeklyReminderDesc =>
+      'תזכורת שבועית לצלם ולתעד את מצב העור';
+
+  @override
+  String get settingsDebugResumeReminder => 'הצג שוב תזכורת שבועית';
+
+  @override
+  String get settingsDebugSectionNote => 'כלי פיתוח (Debug בלבד)';
+
+  @override
+  String get settingsDebugResumeReminderDone => 'התזכורת השבועית תוצג שוב';
+
+  @override
+  String get settingsDebugClearShelf => 'נקה את המדף';
+
+  @override
+  String get settingsDebugClearShelfConfirm =>
+      'למחוק את כל המוצרים מהמדף? לא ניתן לבטל.';
+
+  @override
+  String get settingsDebugClearShelfDone => 'המדף נוקה';
+
+  @override
   String get onboardingSkip => 'דלגי';
 
   @override
@@ -876,6 +928,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get skinStateOily => 'שומני';
 
   @override
+  String get skinStateDry => 'יבש';
+
+  @override
   String get weekdayOverCapWarning => 'מעבר למומלץ. כדאי להפחית.';
 
   @override
@@ -935,6 +990,9 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get customProductDeleteConfirmAction => 'הסרה';
+
+  @override
+  String get productRemoveFromShelfConfirmBody => 'המוצר יוסר מהשגרה שלך.';
 
   @override
   String get customProductCommentLabel => 'הערה';
@@ -1355,7 +1413,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get categoryReviewAddMore => 'הוספת מוצרים נוספים';
 
   @override
-  String get categoryReviewCTA => 'המשך לבחירת ימים';
+  String get categoryReviewCTA => 'נמשיך לתכנון השגרה';
 
   @override
   String get categoryReviewEmpty => 'אין מוצרים במדף עדיין';
@@ -1379,7 +1437,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get scheduleContextChipEvening => 'שגרת ערב';
 
   @override
-  String get scheduleContinueToOrder => 'המשיכי לסדר המריחה';
+  String get scheduleContinueToOrder => 'נמשיך לסדר המריחה';
 
   @override
   String daySummaryNoteCount(int count, Object day) {
@@ -1495,7 +1553,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get orderCtaMorning => 'נראה טוב, נמשיך לשגרת הערב';
 
   @override
-  String get orderCtaFinish => 'סיום והצגת השגרה שלי';
+  String get orderCtaFinish => 'נמשיך לסקירת השבוע';
 
   @override
   String get eveningTransitionTitle => 'עכשיו נעבור לשגרת הערב';
@@ -1653,6 +1711,9 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get weekGlanceTitle => 'שגרת השבוע שלי';
+
+  @override
+  String get weekGlanceStartGlowingCta => 'הכול מסודר, אפשר להתחיל';
 
   @override
   String get weekGlanceEntrySubtitle => 'מה בשגרת הבוקר ומה בשגרת הערב בכל יום';
@@ -1814,6 +1875,50 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get productDetailViewDetails => 'לפרטים המלאים';
+
+  @override
+  String get routineReadyTitle => 'השגרה שלך מוכנה ✨';
+
+  @override
+  String routineReadyCounts(int total, int morning, int evening) {
+    return '$total מוצרים סודרו · $morning בבוקר, $evening בערב';
+  }
+
+  @override
+  String get routineReadyChangesHeader => 'מה סידרנו בשבילך';
+
+  @override
+  String get routineReadyChangesExplainer =>
+      'התאמות קטנות שעשינו עבור שגרה בטוחה ויעילה — תמיד אפשר לשנות.';
+
+  @override
+  String get routineReadyAdvisoriesHeader => 'כדאי לשים לב';
+
+  @override
+  String get routineReadyAdvisoriesExplainer =>
+      'לא חסמנו — רק המלצה קטנה לתשומת ליבך.';
+
+  @override
+  String get routineReadyNothingToReport =>
+      'לא נדרשו התאמות — השגרה מסודרת ומוכנה.';
+
+  @override
+  String get routineReadyCta => 'הצגת השגרה שלי';
+
+  @override
+  String routineReadyReviewSlotCta(String slot) {
+    return 'נתחיל עם שגרת ה$slot';
+  }
+
+  @override
+  String get collectionAddRemoveProduct => 'הוספת/הסרת מוצר';
+
+  @override
+  String get productSelUnsavedChangesBody =>
+      'הוספת או הסרת מוצרים. חזרה אחורה לא תעדכן את השגרה שלך.';
+
+  @override
+  String get productSelGoBackAnyway => 'חזרה בכל זאת';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -1848,6 +1953,20 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
 
   @override
   String get journalCtaButton => 'תעד עכשיו';
+
+  @override
+  String get weeklyReminderBody =>
+      'צלם תמונה קצרה ורשום איך העור מרגיש — פעם בשבוע, כדי לראות את ההתקדמות לאורך זמן.';
+
+  @override
+  String get weeklyReminderNotesHint =>
+      'איך העור מרגיש היום? יובש, אדמומיות, פצעונים...';
+
+  @override
+  String get weeklyReminderCapture => 'צלם';
+
+  @override
+  String get weeklyReminderNeverShow => 'אל תציג שוב';
 
   @override
   String get onboardingSkip => 'דלג';
@@ -2050,10 +2169,10 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String get streakPitchCta => 'נסה';
 
   @override
-  String get categoryReviewCTA => 'המשך לבחירת ימים';
+  String get categoryReviewCTA => 'נמשיך לתכנון השגרה';
 
   @override
-  String get scheduleContinueToOrder => 'המשך לסדר המריחה';
+  String get scheduleContinueToOrder => 'נמשיך לסדר המריחה';
 
   @override
   String welcomeGreeting(String name, String weekday) {
@@ -2073,4 +2192,12 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   @override
   String get welcomeSubline30plus =>
       'חודש ויותר של שגרת טיפוח עקבית — אתה אגדה!';
+
+  @override
+  String get weekGlanceStartGlowingCta => 'הכול מסודר, אפשר להתחיל';
+
+  @override
+  String routineReadyReviewSlotCta(String slot) {
+    return 'נתחיל עם שגרת ה$slot';
+  }
 }

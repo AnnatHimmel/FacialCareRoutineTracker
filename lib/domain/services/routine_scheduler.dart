@@ -1,9 +1,11 @@
+import 'package:collection/collection.dart';
 import 'package:uuid/uuid.dart';
 
 import '../entities/master_product.dart';
 import '../entities/order_override.dart';
 import '../entities/product_selection.dart';
 import '../entities/weekday_schedule.dart';
+import '../enums/rule_scope.dart';
 import '../enums/slot.dart';
 import '../repositories/master_content_repository.dart';
 import '../repositories/user_data_repository.dart';
@@ -11,6 +13,7 @@ import 'conflict_resolver.dart';
 import 'day_boundary_service.dart';
 import 'incompatibility_checker.dart';
 import 'product_sorter.dart';
+import 'routine_build_summary.dart';
 import 'routine_resolver.dart';
 import 'schedule_days.dart' as sd;
 import 'week_glance_builder.dart';
@@ -52,11 +55,17 @@ class RoutineFixResult {
   final List<({String he, String en})> changeDescriptions;
   final bool anyPartial;
 
+  /// Per-conflict adjustments enriched with slot + kind, for the
+  /// "routine ready" summary screen. Additive — [changeDescriptions] is kept
+  /// for the existing Schedule-Setup auto-fix dialog consumer.
+  final List<RoutineChange> changes;
+
   const RoutineFixResult({
     required this.applied,
     required this.inverse,
     required this.changeDescriptions,
     required this.anyPartial,
+    this.changes = const [],
   });
 
   bool get isEmpty => applied.isEmpty;
@@ -299,7 +308,10 @@ class RoutineScheduler {
 
   // ── weekGlance ──────────────────────────────────────────────────────────────
 
-  Future<WeekGlance> weekGlance({required MasterContent master}) async {
+  Future<WeekGlance> weekGlance({
+    required MasterContent master,
+    List<MasterProduct> extraProducts = const [],
+  }) async {
     final morningSelections = await _repo.watchSelections(Slot.morning).first;
     final eveningSelections = await _repo.watchSelections(Slot.evening).first;
     final schedules = await _repo.watchAllSchedules().first;
@@ -311,8 +323,11 @@ class RoutineScheduler {
         ? null
         : {for (final o in catOverrideList) o.productId: o.categoryId};
 
+    final morningOrderOverride = await _repo.watchOrderOverride(Slot.morning).first;
+    final eveningOrderOverride = await _repo.watchOrderOverride(Slot.evening).first;
+
     return const WeekGlanceBuilder().build(
-      allProducts: master.products,
+      allProducts: [...master.products, ...extraProducts],
       categories: master.categories,
       subcategories: master.subcategories,
       rules: master.rules,
@@ -321,6 +336,8 @@ class RoutineScheduler {
       schedules: schedules,
       mutedRuleIds: mutedRuleIds,
       categoryOverrides: catOverrides,
+      morningOrderOverride: morningOrderOverride,
+      eveningOrderOverride: eveningOrderOverride,
     );
   }
 
@@ -332,8 +349,11 @@ class RoutineScheduler {
     required MasterContent master,
     required String productId,
     required Slot slot,
+    List<MasterProduct> extraProducts = const [],
   }) async {
-    final product = master.products.firstWhere((p) => p.id == productId);
+    // Custom products are not in master.products — look in the combined list.
+    final allProducts = [...master.products, ...extraProducts];
+    final product = allProducts.firstWhereOrNull((p) => p.id == productId);
 
     // Upsert selection
     final existingSelections = await _repo.watchSelections(slot).first;
@@ -358,7 +378,7 @@ class RoutineScheduler {
     // Write default schedule only for WeeklyMaxRule products (DailyRule has
     // implicit all-7-days default when no row exists, so the write is optional
     // but for WeeklyMaxRule we MUST write the spread).
-    final rule = product.configForSlot(slot)?.frequencyRule;
+    final rule = product?.configForSlot(slot)?.frequencyRule;
     final existingSchedules = await _repo.watchAllSchedules().first;
     final existingRow = existingSchedules
         .where((s) => s.productId == productId && s.slot == slot)
@@ -375,13 +395,14 @@ class RoutineScheduler {
       ));
     }
 
-    // Return admin-sorted index
+    // Return admin-sorted index (custom products not in master list → 0)
+    if (product == null) return 0;
     final allSelections = await _repo.watchSelections(slot).first;
     final selectedIds = allSelections
         .where((s) => s.isSelected)
         .map((s) => s.productId)
         .toSet();
-    final selectedProducts = master.products
+    final selectedProducts = allProducts
         .where((p) =>
             selectedIds.contains(p.id) && p.configForSlot(slot) != null)
         .toList();
@@ -394,6 +415,37 @@ class RoutineScheduler {
     selectedProducts.sort(cmp);
 
     final index = selectedProducts.indexWhere((p) => p.id == productId);
+
+    // Insert the new product into any existing order overrides at its
+    // admin-sorted position, so the daily home screen respects the placement
+    // the user was shown on the "where it goes" step.
+    List<String> insertAtAdminPosition(List<String> existingIds) {
+      if (existingIds.contains(productId)) return existingIds;
+      int insertAt = 0;
+      for (int i = 0; i < existingIds.length; i++) {
+        final existing = allProducts.firstWhereOrNull((p) => p.id == existingIds[i]);
+        if (existing != null && cmp(existing, product) <= 0) insertAt = i + 1;
+      }
+      return [...existingIds.sublist(0, insertAt), productId, ...existingIds.sublist(insertAt)];
+    }
+
+    final globalOverride = await _repo.watchOrderOverride(slot).first;
+    if (globalOverride != null) {
+      await setOrder(
+        slot: slot,
+        weekday: null,
+        orderedIds: insertAtAdminPosition(globalOverride.orderedProductIds),
+      );
+    }
+    final perDayOverrides = await _repo.watchPerDayOrderOverrides(slot).first;
+    for (final perDay in perDayOverrides) {
+      await setOrder(
+        slot: slot,
+        weekday: perDay.weekday,
+        orderedIds: insertAtAdminPosition(perDay.orderedProductIds),
+      );
+    }
+
     return index < 0 ? 0 : index;
   }
 
@@ -519,6 +571,7 @@ class RoutineScheduler {
   Future<RoutineFixResult> fixProblems({
     required MasterContent master,
     required Slot slot,
+    List<MasterProduct> extraProducts = const [],
   }) async {
     final morningSelections = await _repo.watchSelections(Slot.morning).first;
     final eveningSelections = await _repo.watchSelections(Slot.evening).first;
@@ -526,10 +579,12 @@ class RoutineScheduler {
     final mutedConflicts = await _repo.watchMutedConflicts().first;
     final mutedRuleIds = mutedConflicts.map((m) => m.ruleId).toSet();
 
+    final allProducts = [...master.products, ...extraProducts];
+
     Set<String> selectedIds(List<ProductSelection> sels) =>
         sels.where((s) => s.isSelected).map((s) => s.productId).toSet();
 
-    List<MasterProduct> slotProducts(Slot s, Set<String> ids) => master.products
+    List<MasterProduct> slotProducts(Slot s, Set<String> ids) => allProducts
         .where((p) =>
             !p.isDeprecated &&
             ids.contains(p.id) &&
@@ -598,6 +653,7 @@ class RoutineScheduler {
     final allApplied = <ScheduleMutation>[];
     final allInverse = <ScheduleMutation>[];
     final allDescriptions = <({String he, String en})>[];
+    final allChanges = <RoutineChange>[];
     bool anyPartial = false;
 
     for (final conflict in active) {
@@ -635,8 +691,19 @@ class RoutineScheduler {
         // Check if this product would still be active on all 7 days (DailyRule, no row)
         final rule = p.configForSlot(conflictSlot)?.frequencyRule;
         if (rule is! DailyRule) continue;
-        // It has all 7 days by default. If the resolution didn't assign it any
-        // days, write an explicit suppression row.
+        // If the conflict partner was already cleared from this slot, the resolver
+        // chose slot separation (moving the partner to its other slot). This
+        // product is the stayer and must remain in this slot — skip supplementation.
+        final partner = p.id == conflict.productA.id
+            ? conflict.productB
+            : conflict.productA;
+        final partnerKey = '${partner.id}|${conflictSlot.name}';
+        final partnerCleared = supplemented
+            .any((m) => '${m.productId}|${m.slot.name}' == partnerKey && m.days.isEmpty);
+        if (partnerCleared) continue;
+        // Day-separation: the yielder has no remaining days after the anchor
+        // claimed them all. Write an explicit suppression row so the DailyRule
+        // default (all-7) doesn't keep it active.
         supplemented.add(ScheduleMutation(
           productId: p.id,
           slot: conflictSlot,
@@ -658,6 +725,16 @@ class RoutineScheduler {
           slot: m.slot,
           days: priorRow != null ? Set<int>.from(priorRow.weekdays) : const <int>{},
         ));
+      }
+
+      // Capture EFFECTIVE before-days (daily-with-no-row counts as 7, not 0)
+      // from the pre-persist snapshot, for the summary's change classification.
+      final beforeDaysByKey = <String, Set<int>>{};
+      for (final m in supplemented) {
+        final p = allProducts.where((p) => p.id == m.productId).firstOrNull;
+        if (p == null) continue;
+        beforeDaysByKey['${m.productId}|${m.slot.name}'] =
+            sd.effectiveDays(p, m.slot, schedules);
       }
 
       // Persist mutations, updating local snapshot
@@ -689,6 +766,38 @@ class RoutineScheduler {
         he: resolution.description,
         en: resolution.descriptionEn ?? resolution.description,
       ));
+
+      // Classify this conflict's adjustment for the "routine ready" summary,
+      // using EFFECTIVE before-days. `movedSlot` = a product cleared from this
+      // slot that still runs in its other slot (a true slot move); otherwise a
+      // drop in total active days is `reducedFrequency`, else `movedDays`.
+      var movedSlot = false;
+      var beforeTotal = 0;
+      var afterTotal = 0;
+      for (final m in supplemented) {
+        final before =
+            beforeDaysByKey['${m.productId}|${m.slot.name}'] ?? const <int>{};
+        final after = m.days;
+        if (before.isNotEmpty && after.isEmpty) {
+          final otherSlot =
+              m.slot == Slot.morning ? Slot.evening : Slot.morning;
+          final p = allProducts.where((p) => p.id == m.productId).firstOrNull;
+          if (p?.configForSlot(otherSlot) != null) movedSlot = true;
+        }
+        beforeTotal += before.length;
+        afterTotal += after.length;
+      }
+      final kind = movedSlot
+          ? RoutineChangeKind.movedSlot
+          : afterTotal < beforeTotal
+              ? RoutineChangeKind.reducedFrequency
+              : RoutineChangeKind.movedDays;
+      allChanges.add(RoutineChange(
+        slot: conflictSlot,
+        kind: kind,
+        he: resolution.description,
+        en: resolution.descriptionEn ?? resolution.description,
+      ));
     }
 
     return RoutineFixResult(
@@ -696,7 +805,118 @@ class RoutineScheduler {
       inverse: allInverse,
       changeDescriptions: allDescriptions,
       anyPartial: anyPartial,
+      changes: allChanges,
     );
+  }
+
+  // ── buildRoutineSummary ──────────────────────────────────────────────────────
+
+  /// One-shot summary of the auto-sorter's decisions for the "routine ready"
+  /// screen. Resolves all conflicts (via [fixProblems], reusing its enriched
+  /// [RoutineFixResult.changes]), counts the selected products per slot, and
+  /// collects the advisory conflicts the resolver intentionally leaves alone —
+  /// pairs that still co-occur on a weekday after the fix (e.g. two daily
+  /// products that oxidize together and cannot be separated).
+  Future<RoutineBuildSummary> buildRoutineSummary({
+    required MasterContent master,
+    List<MasterProduct> extraProducts = const [],
+  }) async {
+    final fix = await fixProblems(
+      master: master,
+      slot: Slot.morning,
+      extraProducts: extraProducts,
+    );
+
+    final morningSelections = await _repo.watchSelections(Slot.morning).first;
+    final eveningSelections = await _repo.watchSelections(Slot.evening).first;
+
+    final allProducts = [...master.products, ...extraProducts];
+
+    bool isLive(String id, Slot s) {
+      final p = allProducts.firstWhereOrNull((p) => p.id == id);
+      return p != null && !p.isDeprecated && p.configForSlot(s) != null;
+    }
+
+    Set<String> liveIds(List<ProductSelection> sels, Slot s) => sels
+        .where((sel) => sel.isSelected && isLive(sel.productId, s))
+        .map((sel) => sel.productId)
+        .toSet();
+
+    final morningIds = liveIds(morningSelections, Slot.morning);
+    final eveningIds = liveIds(eveningSelections, Slot.evening);
+    final totalIds = {...morningIds, ...eveningIds};
+
+    final schedules = await _repo.watchAllSchedules().first;
+    final mutedConflicts = await _repo.watchMutedConflicts().first;
+    final mutedRuleIds = mutedConflicts.map((m) => m.ruleId).toSet();
+
+    List<MasterProduct> slotProducts(Slot s, Set<String> ids) =>
+        allProducts
+            .where((p) =>
+                !p.isDeprecated &&
+                ids.contains(p.id) &&
+                p.configForSlot(s) != null)
+            .toList();
+
+    final conflicts = IncompatibilityChecker().getConflictsForDay(
+      morningProducts: slotProducts(Slot.morning, morningIds),
+      eveningProducts: slotProducts(Slot.evening, eveningIds),
+      rules: master.rules,
+      categories: master.categories,
+      mutedRuleIds: mutedRuleIds,
+    );
+
+    // Advisories = pairs that STILL co-occur on a weekday after the fix. The
+    // resolver separates every conflict it acts on, so what remains are the
+    // pairs the user chose to keep together (muted) — "we didn't block, just a
+    // gentle recommendation". Resolved/separated pairs no longer overlap and
+    // are excluded here (they appear under "what we arranged" instead).
+    final advisories = <RoutineAdvisory>[];
+    final seen = <String>{};
+    for (final c in conflicts) {
+      final key = ([c.productA.id, c.productB.id]..sort()).join('|');
+      if (!seen.add(key)) continue;
+      final slot = _advisorySlot(c, schedules);
+      if (slot == null) continue;
+      advisories.add(RoutineAdvisory(
+        slot: slot,
+        he: c.reason ?? '',
+        en: c.reasonEn ?? c.reason ?? '',
+      ));
+    }
+
+    return RoutineBuildSummary(
+      totalProducts: totalIds.length,
+      morningCount: morningIds.length,
+      eveningCount: eveningIds.length,
+      changes: fix.changes,
+      advisories: advisories,
+    );
+  }
+
+  /// The slot to badge for an advisory, or null when the pair no longer
+  /// co-occurs on any weekday (so it isn't worth noting).
+  Slot? _advisorySlot(ConflictInfo c, List<WeekdaySchedule> schedules) {
+    final a = c.productA;
+    final b = c.productB;
+    Set<int> days(MasterProduct p, Slot s) =>
+        p.configForSlot(s) != null ? sd.effectiveDays(p, s, schedules) : <int>{};
+
+    if (c.scope == RuleScope.withinSlot) {
+      for (final s in const [Slot.morning, Slot.evening]) {
+        if (days(a, s).intersection(days(b, s)).isNotEmpty) return s;
+      }
+      return null;
+    }
+    // sameDayAcrossBoth: one product in the morning, the other in the evening,
+    // both active on the same calendar weekday.
+    if (days(a, Slot.morning).intersection(days(b, Slot.evening)).isNotEmpty) {
+      return Slot.morning;
+    }
+    if (days(b, Slot.morning).intersection(days(a, Slot.evening)).isNotEmpty) {
+      return Slot.morning;
+    }
+    return null;
   }
 
   // ── order edits ──────────────────────────────────────────────────────────────

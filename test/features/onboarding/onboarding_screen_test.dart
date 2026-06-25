@@ -159,6 +159,10 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setAppLanguage(String code) async {}
   @override Future<bool> getTapHintSeen() async => false;
   @override Future<void> setTapHintSeen(bool value) async {}
+  @override Future<String?> getWeeklyPhotoReminderDismissedDate() async => null;
+  @override Future<void> setWeeklyPhotoReminderDismissedDate(String isoDate) async {}
+  @override Future<bool> getWeeklyReminderEnabled() async => true;
+  @override Future<void> setWeeklyReminderEnabled(bool value) async {}
 }
 
 // ── Test data ─────────────────────────────────────────────────────────────────
@@ -550,7 +554,7 @@ void main() {
     });
 
     testWidgets(
-        'Category review → amSchedule shows schedule header, morning context chip, scheduleContinueToOrder CTA',
+        'Category review → routineSummary → amSchedule shows schedule header, morning context chip, scheduleContinueToOrder CTA',
         (tester) async {
       final master = _masterWith(
         [_product('p1', 'קרם לחות', 'cat1')],
@@ -578,8 +582,18 @@ void main() {
       await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
 
-      // Now on category review — advance to amSchedule
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      // Category review → routineSummary (async summary build)
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
+      await tester.pumpAndSettle();
+      await tester.pump(Duration.zero); // flush _loadSummary async continuation
+      await tester.pumpAndSettle();
+
+      // routineSummary screen should appear after category review
+      expect(find.text('נתחיל עם שגרת הבוקר'), findsOneWidget,
+          reason: 'routineSummary screen with morning CTA should appear after category review');
+
+      // Advance to amSchedule
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
       await tester.pumpAndSettle();
 
       // Schedule header should be visible
@@ -587,7 +601,7 @@ void main() {
       // Morning context chip
       expect(find.text('שגרת בוקר'), findsOneWidget);
       // CTA label for onboarding schedule
-      expect(find.text('המשיכי לסדר המריחה'), findsOneWidget);
+      expect(find.text('נמשיך לסדר המריחה'), findsOneWidget);
     });
 
     testWidgets(
@@ -618,10 +632,16 @@ void main() {
       await _advanceToProductSelection(tester);
       await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      // Category review → routineSummary
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
       await tester.pumpAndSettle();
-      // On amSchedule — tap "המשיכי לסדר המריחה"
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.pump(Duration.zero); // flush _loadSummary async continuation
+      await tester.pumpAndSettle();
+      // routineSummary → amSchedule
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
+      await tester.pumpAndSettle();
+      // On amSchedule — tap "נמשיך לסדר המריחה"
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
 
       // Morning order header should be visible
@@ -629,7 +649,7 @@ void main() {
     });
 
     testWidgets(
-        'Evening transition appears when evening products exist after morning order',
+        'pmSchedule appears directly (no transition) when evening products exist after morning order',
         (tester) async {
       // Product with both morning and evening config
       final masterProduct = MasterProduct(
@@ -673,18 +693,24 @@ void main() {
       await _advanceToProductSelection(tester);
       await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
-      // Category review
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      // Category review → routineSummary
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
       await tester.pumpAndSettle();
-      // amSchedule
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.pump(Duration.zero); // flush _loadSummary async continuation
       await tester.pumpAndSettle();
-      // amOrder — tap morning CTA
+      // routineSummary → amSchedule
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
+      await tester.pumpAndSettle();
+      // amSchedule → amOrder
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
+      await tester.pumpAndSettle();
+      // amOrder → pmSchedule directly (eveningTransition removed)
       await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
       await tester.pumpAndSettle();
 
-      // Evening transition screen should appear
-      expect(find.text('עכשיו נעבור לשגרת הערב'), findsOneWidget);
+      // pmSchedule appears directly — no evening transition screen
+      expect(find.text('שגרת ערב'), findsOneWidget);
+      expect(find.text('עכשיו נעבור לשגרת הערב'), findsNothing);
     });
 
     testWidgets(
@@ -720,9 +746,14 @@ void main() {
       await _advanceToProductSelection(tester);
       await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
-      // Category review — tap "המשך לבחירת ימים" → should go to pmSchedule
-      // (no morning products, so morning steps are skipped)
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      // Category review → routineSummary (no morning products, so evening CTA)
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
+      await tester.pumpAndSettle();
+      await tester.pump(Duration.zero); // flush _loadSummary async continuation
+      await tester.pumpAndSettle();
+      // routineSummary with evening CTA (no morning products)
+      expect(find.text('נתחיל עם שגרת הערב'), findsOneWidget);
+      await tester.tap(find.text('נתחיל עם שגרת הערב'));
       await tester.pumpAndSettle();
 
       // Should be on pmSchedule (evening schedule header)
@@ -730,7 +761,7 @@ void main() {
       expect(find.text('שגרת ערב'), findsOneWidget);
     });
 
-    testWidgets('Complete onboarding flow (morning only): products → schedule → order → finish',
+    testWidgets('Complete onboarding flow (morning only): products → routineSummary → schedule → order → finish',
         (tester) async {
       final master = _masterWith(
         [
@@ -786,12 +817,19 @@ void main() {
 
       // Category review
       expect(find.text('סידרנו את המוצרים לפי שלבים'), findsOneWidget);
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
+      await tester.pumpAndSettle();
+      await tester.pump(Duration.zero); // flush _loadSummary async continuation
+      await tester.pumpAndSettle();
+
+      // routineSummary screen appears right after category review
+      expect(find.text('נתחיל עם שגרת הבוקר'), findsOneWidget);
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
       await tester.pumpAndSettle();
 
       // amSchedule
       expect(find.text('תזמון שבועי'), findsOneWidget);
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
 
       // amOrder
@@ -799,8 +837,10 @@ void main() {
       await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _handleFinish async continuation
+      await tester.pumpAndSettle();
 
-      // No evening products → finish directly
+      // _handleFinish calls widget.onFinish() directly — the summary was
+      // already shown at the routineSummary stage after category review.
       expect(onFinishCalled, isTrue);
     });
 
@@ -842,18 +882,25 @@ void main() {
       await tester.tap(find.text('סידור המדף שלי'));
       await tester.pumpAndSettle();
 
-      // Category review
-      await tester.tap(find.text('המשך לבחירת ימים'));
+      // Category review → routineSummary
+      await tester.tap(find.text('נמשיך לתכנון השגרה'));
+      await tester.pumpAndSettle();
+      await tester.pump(Duration.zero); // flush _loadSummary async continuation
       await tester.pumpAndSettle();
 
-      // amSchedule
-      await tester.tap(find.text('המשיכי לסדר המריחה'));
+      // routineSummary → amSchedule
+      await tester.tap(find.text('נתחיל עם שגרת הבוקר'));
+      await tester.pumpAndSettle();
+
+      // amSchedule → amOrder
+      await tester.tap(find.text('נמשיך לסדר המריחה'));
       await tester.pumpAndSettle();
 
       // amOrder — tap finish
       await tester.tap(find.text('נראה טוב, נמשיך לשגרת הערב'));
       await tester.pumpAndSettle();
       await tester.pump(Duration.zero); // flush _handleFinish async continuation
+      await tester.pumpAndSettle();
 
       // The critical assertion is on the PERSISTED side effect, not just the
       // navigation callback: onboarding must be marked complete even though the
@@ -861,6 +908,8 @@ void main() {
       expect(settings.onboardingCompletedValue, isTrue,
           reason:
               'setOnboardingCompleted(true) must run even when profile saves fail');
+
+      // _handleFinish now calls widget.onFinish() directly (no terminal summary).
       expect(onFinishCalled, isTrue);
     });
   });

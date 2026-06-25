@@ -13,6 +13,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyRoutineShowNames = 'routine_show_names';
   static const _keyAppLanguage = 'app_language';
   static const _keyTapHintSeen = 'hp_tapHintSeen';
+  static const _keyWeeklyPhotoReminderDismissed =
+      'weekly_photo_reminder_dismissed_date';
+  static const _keyWeeklyReminderEnabled = 'weekly_photo_reminder_enabled';
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
@@ -111,4 +114,20 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<void> setTapHintSeen(bool value) async =>
       (await _prefs).setBool(_keyTapHintSeen, value);
+
+  @override
+  Future<String?> getWeeklyPhotoReminderDismissedDate() async =>
+      (await _prefs).getString(_keyWeeklyPhotoReminderDismissed);
+
+  @override
+  Future<void> setWeeklyPhotoReminderDismissedDate(String isoDate) async =>
+      (await _prefs).setString(_keyWeeklyPhotoReminderDismissed, isoDate);
+
+  @override
+  Future<bool> getWeeklyReminderEnabled() async =>
+      (await _prefs).getBool(_keyWeeklyReminderEnabled) ?? true;
+
+  @override
+  Future<void> setWeeklyReminderEnabled(bool value) async =>
+      (await _prefs).setBool(_keyWeeklyReminderEnabled, value);
 }

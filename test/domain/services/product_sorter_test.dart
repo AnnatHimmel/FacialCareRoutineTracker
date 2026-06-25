@@ -16,10 +16,11 @@ MasterProduct prod(
   String? subCategoryId,
   int morningOrder = 1,
   int? eveningOrder,
+  String? name,
 }) =>
     MasterProduct(
       id: id,
-      name: id,
+      name: name ?? id,
       categoryId: categoryId,
       subCategoryId: subCategoryId,
       isDeprecated: false,
@@ -180,6 +181,93 @@ void main() {
       final sorted = [pNiacinamide, pAzelaic]..sort(cmp);
       expect(sorted.first.id, 'p_azelaic',
           reason: 'lower config.order must win when subcategories are mixed null/known');
+    });
+
+    group('moisture lotion-before-cream weight rule', () {
+      // Real category id used by the rule, plus its two known subcategories.
+      final moisture = cat('cat-moisturizer', 6);
+      final subSerum = sub('sub-moisture-serum', 'cat-moisturizer', 1);
+      final subCream = sub('sub-moisturizer', 'cat-moisturizer', 2);
+      final moistureSubs = [subSerum, subCream];
+
+      test('lotion sorts before cream despite lower cream slot order', () {
+        // Both moisture, same (null) subcategory. Cream has the lower numeric
+        // order but the name rule must put the lotion first.
+        final cream = prod('p-cream', 'cat-moisturizer',
+            morningOrder: 1, name: 'Heartleaf Calming Cream');
+        final lotion = prod('p-lotion', 'cat-moisturizer',
+            morningOrder: 5, name: 'Cicapair Soothing Lotion');
+        final cmp = ProductSorter.adminComparator(
+          categories: [moisture],
+          subcategories: moistureSubs,
+          slot: Slot.morning,
+        );
+        final sorted = [cream, lotion]..sort(cmp);
+        expect(sorted.map((p) => p.id), ['p-lotion', 'p-cream']);
+      });
+
+      test('real-data shape: lotion first, creams keep relative slot order', () {
+        // Mirrors the bundled data: all subCategoryId null.
+        final lotion = prod('prod-018', 'cat-moisturizer',
+            morningOrder: 14, name: 'Cicapair Repair Treatment Lotion');
+        final cream1 = prod('prod-027', 'cat-moisturizer',
+            morningOrder: 15, name: 'Ectoin Sensitivity Repair Cream');
+        final cream2 = prod('prod-031', 'cat-moisturizer',
+            morningOrder: 16, name: 'Dynasty Cream');
+        final cmp = ProductSorter.adminComparator(
+          categories: [moisture],
+          subcategories: moistureSubs,
+          slot: Slot.morning,
+        );
+        final sorted = [cream2, cream1, lotion]..sort(cmp);
+        expect(sorted.map((p) => p.id), ['prod-018', 'prod-027', 'prod-031']);
+      });
+
+      test('rule is scoped to moisture only — other categories ignore names', () {
+        // Same lotion/cream pairing in catA: lower slot order must still win.
+        final cream = prod('p-cream', 'catA',
+            morningOrder: 1, name: 'Some Cream');
+        final lotion = prod('p-lotion', 'catA',
+            morningOrder: 5, name: 'Some Lotion');
+        final cmp = ProductSorter.adminComparator(
+          categories: [catA, moisture],
+          subcategories: [...allSubs, ...moistureSubs],
+          slot: Slot.morning,
+        );
+        final sorted = [lotion, cream]..sort(cmp);
+        expect(sorted.map((p) => p.id), ['p-cream', 'p-lotion']);
+      });
+
+      test('different known subcategory still decided by subcategory order', () {
+        // Lotion in the cream subcategory (order 2), cream in the serum
+        // subcategory (order 1). The name rule must NOT fire across groups —
+        // subcategory order wins, so the serum-group cream comes first.
+        final lotion = prod('p-lotion', 'cat-moisturizer',
+            subCategoryId: 'sub-moisturizer', morningOrder: 1, name: 'X Lotion');
+        final cream = prod('p-cream', 'cat-moisturizer',
+            subCategoryId: 'sub-moisture-serum', morningOrder: 9, name: 'X Cream');
+        final cmp = ProductSorter.adminComparator(
+          categories: [moisture],
+          subcategories: moistureSubs,
+          slot: Slot.morning,
+        );
+        final sorted = [lotion, cream]..sort(cmp);
+        expect(sorted.map((p) => p.id), ['p-cream', 'p-lotion']);
+      });
+
+      test('moisture product with neither keyword is unaffected (slot order)', () {
+        final serum = prod('p-serum', 'cat-moisturizer',
+            morningOrder: 1, name: 'Hydrating Serum');
+        final cream = prod('p-cream', 'cat-moisturizer',
+            morningOrder: 5, name: 'Rich Cream');
+        final cmp = ProductSorter.adminComparator(
+          categories: [moisture],
+          subcategories: moistureSubs,
+          slot: Slot.morning,
+        );
+        final sorted = [cream, serum]..sort(cmp);
+        expect(sorted.map((p) => p.id), ['p-serum', 'p-cream']);
+      });
     });
 
     test('breaks final tie by product id', () {

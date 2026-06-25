@@ -3679,6 +3679,17 @@ class $CategoryOverridesTable extends CategoryOverrides
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _subCategoryIdMeta = const VerificationMeta(
+    'subCategoryId',
+  );
+  @override
+  late final GeneratedColumn<String> subCategoryId = GeneratedColumn<String>(
+    'sub_category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _lastModifiedMsMeta = const VerificationMeta(
     'lastModifiedMs',
   );
@@ -3695,6 +3706,7 @@ class $CategoryOverridesTable extends CategoryOverrides
     id,
     productId,
     categoryId,
+    subCategoryId,
     lastModifiedMs,
   ];
   @override
@@ -3730,6 +3742,15 @@ class $CategoryOverridesTable extends CategoryOverrides
     } else if (isInserting) {
       context.missing(_categoryIdMeta);
     }
+    if (data.containsKey('sub_category_id')) {
+      context.handle(
+        _subCategoryIdMeta,
+        subCategoryId.isAcceptableOrUnknown(
+          data['sub_category_id']!,
+          _subCategoryIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('last_modified_ms')) {
       context.handle(
         _lastModifiedMsMeta,
@@ -3762,6 +3783,10 @@ class $CategoryOverridesTable extends CategoryOverrides
         DriftSqlType.string,
         data['${effectivePrefix}category_id'],
       )!,
+      subCategoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sub_category_id'],
+      ),
       lastModifiedMs: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}last_modified_ms'],
@@ -3780,11 +3805,13 @@ class CategoryOverrideRow extends DataClass
   final String id;
   final String productId;
   final String categoryId;
+  final String? subCategoryId;
   final int lastModifiedMs;
   const CategoryOverrideRow({
     required this.id,
     required this.productId,
     required this.categoryId,
+    this.subCategoryId,
     required this.lastModifiedMs,
   });
   @override
@@ -3793,6 +3820,9 @@ class CategoryOverrideRow extends DataClass
     map['id'] = Variable<String>(id);
     map['product_id'] = Variable<String>(productId);
     map['category_id'] = Variable<String>(categoryId);
+    if (!nullToAbsent || subCategoryId != null) {
+      map['sub_category_id'] = Variable<String>(subCategoryId);
+    }
     map['last_modified_ms'] = Variable<int>(lastModifiedMs);
     return map;
   }
@@ -3802,6 +3832,9 @@ class CategoryOverrideRow extends DataClass
       id: Value(id),
       productId: Value(productId),
       categoryId: Value(categoryId),
+      subCategoryId: subCategoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subCategoryId),
       lastModifiedMs: Value(lastModifiedMs),
     );
   }
@@ -3815,6 +3848,7 @@ class CategoryOverrideRow extends DataClass
       id: serializer.fromJson<String>(json['id']),
       productId: serializer.fromJson<String>(json['productId']),
       categoryId: serializer.fromJson<String>(json['categoryId']),
+      subCategoryId: serializer.fromJson<String?>(json['subCategoryId']),
       lastModifiedMs: serializer.fromJson<int>(json['lastModifiedMs']),
     );
   }
@@ -3825,6 +3859,7 @@ class CategoryOverrideRow extends DataClass
       'id': serializer.toJson<String>(id),
       'productId': serializer.toJson<String>(productId),
       'categoryId': serializer.toJson<String>(categoryId),
+      'subCategoryId': serializer.toJson<String?>(subCategoryId),
       'lastModifiedMs': serializer.toJson<int>(lastModifiedMs),
     };
   }
@@ -3833,11 +3868,15 @@ class CategoryOverrideRow extends DataClass
     String? id,
     String? productId,
     String? categoryId,
+    Value<String?> subCategoryId = const Value.absent(),
     int? lastModifiedMs,
   }) => CategoryOverrideRow(
     id: id ?? this.id,
     productId: productId ?? this.productId,
     categoryId: categoryId ?? this.categoryId,
+    subCategoryId: subCategoryId.present
+        ? subCategoryId.value
+        : this.subCategoryId,
     lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
   );
   CategoryOverrideRow copyWithCompanion(CategoryOverridesCompanion data) {
@@ -3847,6 +3886,9 @@ class CategoryOverrideRow extends DataClass
       categoryId: data.categoryId.present
           ? data.categoryId.value
           : this.categoryId,
+      subCategoryId: data.subCategoryId.present
+          ? data.subCategoryId.value
+          : this.subCategoryId,
       lastModifiedMs: data.lastModifiedMs.present
           ? data.lastModifiedMs.value
           : this.lastModifiedMs,
@@ -3859,13 +3901,15 @@ class CategoryOverrideRow extends DataClass
           ..write('id: $id, ')
           ..write('productId: $productId, ')
           ..write('categoryId: $categoryId, ')
+          ..write('subCategoryId: $subCategoryId, ')
           ..write('lastModifiedMs: $lastModifiedMs')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, productId, categoryId, lastModifiedMs);
+  int get hashCode =>
+      Object.hash(id, productId, categoryId, subCategoryId, lastModifiedMs);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3873,6 +3917,7 @@ class CategoryOverrideRow extends DataClass
           other.id == this.id &&
           other.productId == this.productId &&
           other.categoryId == this.categoryId &&
+          other.subCategoryId == this.subCategoryId &&
           other.lastModifiedMs == this.lastModifiedMs);
 }
 
@@ -3880,12 +3925,14 @@ class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
   final Value<String> id;
   final Value<String> productId;
   final Value<String> categoryId;
+  final Value<String?> subCategoryId;
   final Value<int> lastModifiedMs;
   final Value<int> rowid;
   const CategoryOverridesCompanion({
     this.id = const Value.absent(),
     this.productId = const Value.absent(),
     this.categoryId = const Value.absent(),
+    this.subCategoryId = const Value.absent(),
     this.lastModifiedMs = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -3893,6 +3940,7 @@ class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
     required String id,
     required String productId,
     required String categoryId,
+    this.subCategoryId = const Value.absent(),
     required int lastModifiedMs,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -3903,6 +3951,7 @@ class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
     Expression<String>? id,
     Expression<String>? productId,
     Expression<String>? categoryId,
+    Expression<String>? subCategoryId,
     Expression<int>? lastModifiedMs,
     Expression<int>? rowid,
   }) {
@@ -3910,6 +3959,7 @@ class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
       if (id != null) 'id': id,
       if (productId != null) 'product_id': productId,
       if (categoryId != null) 'category_id': categoryId,
+      if (subCategoryId != null) 'sub_category_id': subCategoryId,
       if (lastModifiedMs != null) 'last_modified_ms': lastModifiedMs,
       if (rowid != null) 'rowid': rowid,
     });
@@ -3919,6 +3969,7 @@ class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
     Value<String>? id,
     Value<String>? productId,
     Value<String>? categoryId,
+    Value<String?>? subCategoryId,
     Value<int>? lastModifiedMs,
     Value<int>? rowid,
   }) {
@@ -3926,6 +3977,7 @@ class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
       id: id ?? this.id,
       productId: productId ?? this.productId,
       categoryId: categoryId ?? this.categoryId,
+      subCategoryId: subCategoryId ?? this.subCategoryId,
       lastModifiedMs: lastModifiedMs ?? this.lastModifiedMs,
       rowid: rowid ?? this.rowid,
     );
@@ -3943,6 +3995,9 @@ class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
     if (categoryId.present) {
       map['category_id'] = Variable<String>(categoryId.value);
     }
+    if (subCategoryId.present) {
+      map['sub_category_id'] = Variable<String>(subCategoryId.value);
+    }
     if (lastModifiedMs.present) {
       map['last_modified_ms'] = Variable<int>(lastModifiedMs.value);
     }
@@ -3958,6 +4013,7 @@ class CategoryOverridesCompanion extends UpdateCompanion<CategoryOverrideRow> {
           ..write('id: $id, ')
           ..write('productId: $productId, ')
           ..write('categoryId: $categoryId, ')
+          ..write('subCategoryId: $subCategoryId, ')
           ..write('lastModifiedMs: $lastModifiedMs, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -6230,6 +6286,7 @@ typedef $$CategoryOverridesTableCreateCompanionBuilder =
       required String id,
       required String productId,
       required String categoryId,
+      Value<String?> subCategoryId,
       required int lastModifiedMs,
       Value<int> rowid,
     });
@@ -6238,6 +6295,7 @@ typedef $$CategoryOverridesTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> productId,
       Value<String> categoryId,
+      Value<String?> subCategoryId,
       Value<int> lastModifiedMs,
       Value<int> rowid,
     });
@@ -6263,6 +6321,11 @@ class $$CategoryOverridesTableFilterComposer
 
   ColumnFilters<String> get categoryId => $composableBuilder(
     column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subCategoryId => $composableBuilder(
+    column: $table.subCategoryId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6296,6 +6359,11 @@ class $$CategoryOverridesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get subCategoryId => $composableBuilder(
+    column: $table.subCategoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get lastModifiedMs => $composableBuilder(
     column: $table.lastModifiedMs,
     builder: (column) => ColumnOrderings(column),
@@ -6319,6 +6387,11 @@ class $$CategoryOverridesTableAnnotationComposer
 
   GeneratedColumn<String> get categoryId => $composableBuilder(
     column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get subCategoryId => $composableBuilder(
+    column: $table.subCategoryId,
     builder: (column) => column,
   );
 
@@ -6371,12 +6444,14 @@ class $$CategoryOverridesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> productId = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
+                Value<String?> subCategoryId = const Value.absent(),
                 Value<int> lastModifiedMs = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CategoryOverridesCompanion(
                 id: id,
                 productId: productId,
                 categoryId: categoryId,
+                subCategoryId: subCategoryId,
                 lastModifiedMs: lastModifiedMs,
                 rowid: rowid,
               ),
@@ -6385,12 +6460,14 @@ class $$CategoryOverridesTableTableManager
                 required String id,
                 required String productId,
                 required String categoryId,
+                Value<String?> subCategoryId = const Value.absent(),
                 required int lastModifiedMs,
                 Value<int> rowid = const Value.absent(),
               }) => CategoryOverridesCompanion.insert(
                 id: id,
                 productId: productId,
                 categoryId: categoryId,
+                subCategoryId: subCategoryId,
                 lastModifiedMs: lastModifiedMs,
                 rowid: rowid,
               ),

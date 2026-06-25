@@ -4,6 +4,10 @@
   "homeTapImageToDone": "הקש על התמונה לסימון בוצע",
   "homeTapProductToDone": "הקש על מוצר לסימון בוצע",
   "journalCtaSubtitle": "תעד את התקדמותך",
+  "weeklyReminderBody": "צלם תמונה קצרה ורשום איך העור מרגיש — פעם בשבוע, כדי לראות את ההתקדמות לאורך זמן.",
+  "weeklyReminderNotesHint": "איך העור מרגיש היום? יובש, אדמומיות, פצעונים...",
+  "weeklyReminderCapture": "צלם",
+  "weeklyReminderNeverShow": "אל תציג שוב",
   "onboardingSkip": "דלג",
   "onboardingWelcome": "ברוך הבא",
   "onboardingProductInstruction": "סמן את המוצרים שיש לך בארון. תוכל לערוך, להוסיף ולתזמן אותם בכל זמן.",
@@ -72,7 +76,7 @@
   "productSelListHint": "לחץ על מוצר כדי להוסיף לרשימה או הוסף מוצר חדש",
   "barcodeScanAddManually": "הוסף ידנית",
   "barcodeScanAddToRoutine": "הוסף לשגרה",
-  "categoryReviewCTA": "המשך לבחירת ימים",
+  "categoryReviewCTA": "נמשיך לתכנון השגרה",
   "updateBackupAction": "גבה נתונים",
   "collectionProBanner": "נסה PRO כדי לעקוב אחרי חיי המדף",
   "lifecycleSetOpenedDate": "הגדר תאריך פתיחה",
@@ -81,9 +85,18 @@
   "settingsDemoDesc": "החלף בין חוויה חינמית למנויית PRO כדי לראות איך המסכים משתנים.",
   "streakPitchSub": "צלם תמונת ׳לפני׳, ובעוד שבועיים תשווי",
   "streakPitchCta": "נסה",
-  "scheduleContinueToOrder": "המשך לסדר המריחה",
+  "scheduleContinueToOrder": "נמשיך לסדר המריחה",
   "welcomeGreeting": "ברוך השב, {name} · {weekday}",
   "welcomeSubline5to9": "שמרת על השגרה {streak} ימים ברצף — אתה בדרך הנכונה לזוהר מושלם.",
   "welcomeHeadline10to29": "{streak} ימים — אתה מבריק! ✨",
-  "welcomeSubline30plus": "חודש ויותר של שגרת טיפוח עקבית — אתה אגדה!"
+  "welcomeSubline30plus": "חודש ויותר של שגרת טיפוח עקבית — אתה אגדה!",
+  "routineReadyReviewSlotCta": "נתחיל עם שגרת ה{slot}",
+  "@routineReadyReviewSlotCta": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "weekGlanceStartGlowingCta": "הכול מסודר, אפשר להתחיל"
 }

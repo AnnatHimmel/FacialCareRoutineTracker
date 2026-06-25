@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_layout.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../features/app_entry.dart';
 import '../../features/onboarding/onboarding_screen.dart';
@@ -20,6 +19,7 @@ import '../../features/collection/collection_screen.dart';
 import '../../features/collection/product_detail_screen.dart';
 import '../../features/journal/skin_log_entry_screen.dart';
 import '../../features/setup/add_product_flow_screen.dart';
+import '../../features/setup/routine_ready_route.dart';
 import '../../features/setup/order_customization_screen.dart';
 import '../../features/setup/schedule_setup_screen.dart';
 import '../../features/home/week_glance_screen.dart';
@@ -73,12 +73,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/onboarding',
       builder: (context, state) => _withSafeZone(OnboardingScreen(
-        onFinish: () => context.go('/today'),
+        onFinish: () => context.go('/week-glance?onboarding=true'),
       )),
     ),
     GoRoute(
       path: '/welcome',
-      builder: (context, state) => _withSafeZone(const WelcomeScreen()),
+      builder: (context, state) => const WelcomeScreen(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) =>
@@ -167,10 +167,20 @@ final appRouter = GoRouter(
       builder: (context, state) => _withSafeZone(const AddProductFlowScreen()),
     ),
 
+    // "Routine ready" auto-sorter summary — the single terminal screen every
+    // routine-changing flow navigates to once its mutations are persisted.
+    GoRoute(
+      path: '/routine-ready',
+      builder: (context, state) => _withSafeZone(const RoutineReadyRoute()),
+    ),
+
     // Week at a glance
     GoRoute(
       path: '/week-glance',
-      builder: (context, state) => _withSafeZone(const WeekGlanceScreen()),
+      builder: (context, state) {
+        final onboarding = state.uri.queryParameters['onboarding'] == 'true';
+        return _withSafeZone(WeekGlanceScreen(onboarding: onboarding));
+      },
     ),
 
     // Detail routes

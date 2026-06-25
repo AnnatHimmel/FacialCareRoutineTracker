@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
 import '../../domain/entities/master_product.dart';
+import '../../domain/entities/skin_log_entry.dart';
 import '../../domain/enums/collection_status.dart';
 import '../../domain/enums/pao_tone.dart';
 import '../../domain/enums/slot.dart';
@@ -19,6 +20,7 @@ import '../../core/config/feature_flags.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
+import 'widgets/weekly_skin_reminder_card.dart';
 enum _ViewMode { list, images }
 
 class DailyHomeScreen extends ConsumerStatefulWidget {
@@ -85,6 +87,49 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
         _tapHintSeen = hintSeen;
       });
     }
+  }
+
+  Future<void> _dismissWeeklyReminder() async {
+    final today = _todayStr;
+    await ref
+        .read(settingsRepositoryProvider)
+        .setWeeklyPhotoReminderDismissedDate(today);
+    ref.read(weeklyReminderForceShowProvider.notifier).state = false;
+    ref.invalidate(weeklyReminderDismissedDateProvider);
+  }
+
+  Future<void> _neverShowWeeklyReminder() async {
+    await ref.read(settingsRepositoryProvider).setWeeklyReminderEnabled(false);
+    ref.read(weeklyReminderForceShowProvider.notifier).state = false;
+    ref.invalidate(weeklyReminderEnabledProvider);
+  }
+
+  /// The reminder is eligible when no skin-log photo exists within the last 7
+  /// days (rolling) and it was not dismissed today.
+  bool _shouldShowWeeklyReminder(
+    List<SkinLogEntry> skinLogs,
+    String today,
+    String? dismissedDate, {
+    bool forceShow = false,
+  }) {
+    if (dismissedDate == today) return false;
+    // Debug "Resume reminder" override: skip the recent-photo gate so the card
+    // can be re-triggered for testing even after a photo has been logged.
+    if (forceShow) return true;
+    final boundary = ref.read(dayBoundaryServiceProvider);
+    final todayDate = boundary.todayEffectiveDate;
+    for (final entry in skinLogs) {
+      if (entry.photoPaths.isEmpty) continue;
+      late final DateTime d;
+      try {
+        d = boundary.parseDate(entry.date);
+      } catch (_) {
+        continue;
+      }
+      final diff = todayDate.difference(d).inDays;
+      if (diff >= 0 && diff < 7) return false;
+    }
+    return true;
   }
 
   Future<void> _setViewMode(_ViewMode mode) async {
@@ -203,6 +248,23 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
 
     final isPro = ref.watch(isProDemoProvider);
 
+    final skinLogs = ref.watch(_allSkinLogsProvider).valueOrNull ?? const [];
+    final reminderEnabled =
+        ref.watch(weeklyReminderEnabledProvider).valueOrNull ?? true;
+    final reminderDismissedDate =
+        ref.watch(weeklyReminderDismissedDateProvider).valueOrNull;
+    final forceShowReminder = ref.watch(weeklyReminderForceShowProvider);
+    final hasRoutine =
+        morningProducts.isNotEmpty || eveningProducts.isNotEmpty;
+    final showWeeklyReminder = reminderEnabled &&
+        hasRoutine &&
+        _shouldShowWeeklyReminder(
+          skinLogs,
+          dateStr,
+          reminderDismissedDate,
+          forceShow: forceShowReminder,
+        );
+
     final isLoading =
         morningRoutineAsync.isLoading && eveningRoutineAsync.isLoading;
 
@@ -263,6 +325,19 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     ),
                   ),
                 ),
+
+                if (showWeeklyReminder)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                      child: WeeklySkinReminderCard(
+                        key: const ValueKey('weekly_skin_reminder'),
+                        dateStr: dateStr,
+                        onDismiss: _dismissWeeklyReminder,
+                        onNeverShow: _neverShowWeeklyReminder,
+                      ),
+                    ),
+                  ),
 
                 if (kProFeaturesEnabled && (isPro ? nearExpiryIds.isNotEmpty : true))
                   SliverToBoxAdapter(
@@ -347,14 +422,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                           ),
                         ],
                       ),
-                    ),
-                  ),
-
-                if (morningProducts.isNotEmpty || eveningProducts.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                      child: _JournalCtaCard(dateStr: dateStr),
                     ),
                   ),
 
@@ -982,83 +1049,18 @@ class _AttentionRow extends StatelessWidget {
 
 // ── Journal CTA card ──────────────────────────────────────────────────────────
 
-class _JournalCtaCard extends StatelessWidget {
-  final String dateStr;
-
-  const _JournalCtaCard({required this.dateStr});
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      decoration: BoxDecoration(
-        gradient: AppColors.streakGradient,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: AppColors.glowLg,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l.journalCtaTitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.start,
-                  style: AppTypography.bodyLg.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  l.journalCtaSubtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.start,
-                  style: AppTypography.labelMd.copyWith(
-                    color: const Color(0xCCFFFFFF),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () => context.push('/skin-log/$dateStr'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.inverseSurface,
-                foregroundColor: AppColors.inverseOnSurface,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                shape: const StadiumBorder(),
-                elevation: 0,
-              ),
-              child: Text(
-                l.journalCtaButton,
-                style: AppTypography.labelMd.copyWith(
-                  color: AppColors.inverseOnSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 final _dayRecordProvider =
     StreamProvider.family<DayRecord?, ({String date, Slot slot})>(
   (ref, params) => ref
       .watch(userDataRepositoryProvider)
       .watchDayRecord(params.date, params.slot),
+);
+
+/// All skin-log entries — used by the home screen to decide whether the weekly
+/// skin-tracking reminder is still pending (no photo within the last 7 days).
+final _allSkinLogsProvider = StreamProvider<List<SkinLogEntry>>(
+  (ref) => ref.watch(userDataRepositoryProvider).watchAllSkinLogs(),
 );
 
 // ── Week button ───────────────────────────────────────────────────────────────

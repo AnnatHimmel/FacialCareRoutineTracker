@@ -120,16 +120,14 @@ final reconciliationServiceProvider = Provider(
   ),
 );
 
-/// Runs reconciliation silently on every cold start, then fires a background
-/// Supabase refresh so brand values (and any fields only in Supabase) flow in
-/// automatically without requiring the user to open the product-selection screen.
+/// Runs reconciliation silently on every cold start.
+/// masterContentProvider already fetches from Supabase on first load, so no
+/// explicit background refresh is needed here.
 /// Override in tests to verify it is watched by AppEntryPoint.
 final silentStartupProvider = FutureProvider<void>((ref) async {
   final svc = ref.read(reconciliationServiceProvider);
   final result = await svc.reconcile();
   await svc.acknowledgeUpdate(result.currentContentVersion);
-  // Fire-and-forget — does not block startup.
-  ref.read(masterContentRefreshProvider)();
 });
 
 /// Seeds any missing default schedules on cold start, before the home screen
@@ -348,6 +346,37 @@ final userNameProvider = FutureProvider<String?>(
   (ref) => ref.watch(settingsRepositoryProvider).getUserName(),
 );
 
+/// Master on/off switch for the weekly skin-tracking reminder card (S4).
+/// Toggled by the card's "never show again" action and the Settings switch.
+final weeklyReminderEnabledProvider = FutureProvider<bool>(
+  (ref) => ref.watch(settingsRepositoryProvider).getWeeklyReminderEnabled(),
+);
+
+/// Effective date the weekly reminder was last snoozed ("אחר כך"), or null.
+/// Reactive so the debug "resume" reset (and the dismiss action) reflect on the
+/// home screen immediately without a restart.
+final weeklyReminderDismissedDateProvider = FutureProvider<String?>(
+  (ref) =>
+      ref.watch(settingsRepositoryProvider).getWeeklyPhotoReminderDismissedDate(),
+);
+
+/// Debug-only: forces the weekly reminder card to show even when a skin-log
+/// photo within the last 7 days would normally suppress it. In-memory only
+/// (resets on app restart); set true by the Settings "Resume reminder" debug
+/// action and cleared once a photo is captured. Does **not** override the
+/// "snoozed today" or "disabled" rules — only the recent-photo gate.
+final weeklyReminderForceShowProvider = StateProvider<bool>((ref) => false);
+
+/// Debug-only callback that empties the shelf (all owned products + their
+/// routine wiring) via [UserDataRepositoryImpl.clearShelf]. No-op when the
+/// repository is a test fake. Used by the debug Settings tool.
+final debugClearShelfProvider = Provider<Future<void> Function()>((ref) {
+  final repo = ref.watch(userDataRepositoryProvider);
+  return () async {
+    if (repo is UserDataRepositoryImpl) await repo.clearShelf();
+  };
+});
+
 // ── Per-day routine provider ──────────────────────────────────────────────────
 
 typedef _DailyRoutineParams = ({String date, Slot slot});
@@ -360,6 +389,10 @@ final dailyRoutineProvider =
     final resolver = ref.watch(routineResolverProvider);
     final scheduler = ref.watch(routineSchedulerProvider);
     final userRepo = ref.watch(userDataRepositoryProvider);
+    // Re-run this stream generator whenever the order override changes so the
+    // daily routine immediately reflects a new drag order without requiring a
+    // selection change to trigger re-emission.
+    ref.watch(orderOverrideProvider(params.slot));
 
     final effectiveDate = boundary.parseDate(params.date);
     final dayOfWeek = effectiveDate.weekday % 7; // Sun=0…Sat=6
@@ -409,9 +442,14 @@ final weekGlanceProvider = FutureProvider<WeekGlance>((ref) async {
   ref.watch(selectionsProvider(Slot.morning));
   ref.watch(selectionsProvider(Slot.evening));
   ref.watch(allSchedulesProvider);
-  ref.watch(customProductsProvider);
+  final customProds = ref.watch(customProductsProvider).valueOrNull ?? [];
   ref.watch(mutedConflictsProvider);
-  return ref.watch(routineSchedulerProvider).weekGlance(master: master);
+  ref.watch(orderOverrideProvider(Slot.morning));
+  ref.watch(orderOverrideProvider(Slot.evening));
+  return ref.watch(routineSchedulerProvider).weekGlance(
+    master: master,
+    extraProducts: customProds.map((p) => p.toMasterProduct()).toList(),
+  );
 });
 
 final dayWarningsProvider =

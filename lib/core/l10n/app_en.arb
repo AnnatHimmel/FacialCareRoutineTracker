@@ -94,6 +94,22 @@
   "journalCtaTitle": "How's your skin?",
   "journalCtaSubtitle": "Track your progress",
   "journalCtaButton": "Log Now",
+  "weeklyReminderBadge": "Weekly check-in",
+  "weeklyReminderTitle": "How's your skin this week?",
+  "weeklyReminderBody": "Snap a quick photo and note how your skin feels — once a week, to see your progress over time.",
+  "weeklyReminderNotesHint": "How does your skin feel today? Dryness, redness, breakouts...",
+  "weeklyReminderCapture": "Take photo",
+  "weeklyReminderBrowse": "or from gallery",
+  "weeklyReminderDismiss": "Later",
+  "weeklyReminderNeverShow": "Don't show again",
+  "settingsWeeklyReminder": "Weekly tracking reminder",
+  "settingsWeeklyReminderDesc": "Weekly nudge to photograph and note your skin",
+  "settingsDebugResumeReminder": "Resume weekly reminder",
+  "settingsDebugSectionNote": "Developer tool (debug builds only)",
+  "settingsDebugResumeReminderDone": "Weekly reminder will show again",
+  "settingsDebugClearShelf": "Clear the shelf",
+  "settingsDebugClearShelfConfirm": "Delete all products from the shelf? This cannot be undone.",
+  "settingsDebugClearShelfDone": "Shelf cleared",
   "onboardingSkip": "Skip",
   "onboardingWelcome": "Welcome",
   "onboardingAppIntro": "to The Glow Protocol",
@@ -436,6 +452,7 @@
   "skinStateCalm": "Calm",
   "skinStateMoist": "Moist",
   "skinStateOily": "Oily",
+  "skinStateDry": "Dry",
   "weekdayOverCapWarning": "Over recommended. Consider reducing.",
   "customProductTitle": "Add Your Own Product",
   "customProductPhotoLabel": "Add photo (optional)",
@@ -456,6 +473,7 @@
   "customProductDeleteConfirmTitle": "Remove Product",
   "customProductDeleteConfirmBody": "The product will be permanently removed from your list. This action cannot be undone.",
   "customProductDeleteConfirmAction": "Remove",
+  "productRemoveFromShelfConfirmBody": "The product will be removed from your routine.",
   "customProductCommentLabel": "Note",
   "customProductCommentHint": "Personal note about this product (optional)",
   "customProductCommentLanguageNote": "(written in {language})",
@@ -676,7 +694,7 @@
   "categoryReviewChangeCategory": "Change category",
   "categoryReviewRemove": "Remove",
   "categoryReviewAddMore": "Add more products",
-  "categoryReviewCTA": "Continue to day selection",
+  "categoryReviewCTA": "Let's plan your routine",
   "categoryReviewEmpty": "No products on your shelf yet",
   "scheduleHeaderWeekly": "Weekly schedule",
   "scheduleStepLabel": "Step 1 of 2 · {slot}",
@@ -688,7 +706,7 @@
   "scheduleSubtitleV3": "Choose which days to use each product. We'll only show notes when needed.",
   "scheduleContextChipMorning": "Morning routine",
   "scheduleContextChipEvening": "Evening routine",
-  "scheduleContinueToOrder": "Continue to application order",
+  "scheduleContinueToOrder": "Let's review the layering order",
   "daySummaryNoteCount": "{count} notes for {day}",
   "@daySummaryNoteCount": {
     "placeholders": {
@@ -765,8 +783,8 @@
       }
     }
   },
-  "orderCtaMorning": "Looks good, continue to evening routine",
-  "orderCtaFinish": "Finish and show my routine",
+  "orderCtaMorning": "Looks good, let's continue to your evening routine",
+  "orderCtaFinish": "Let's review your week",
   "eveningTransitionTitle": "Now for the evening routine",
   "eveningTransitionBody": "We'll use the same products and suggest days and an order that suit the evening.",
   "addProductTitle": "Add product",
@@ -913,6 +931,7 @@
   },
   "welcomeSubline30plus": "A month or more of consistent skincare — you're a legend!",
   "weekGlanceTitle": "My Week's Routine",
+  "weekGlanceStartGlowingCta": "You're all set, let's glow",
   "weekGlanceEntrySubtitle": "Morning and evening routines, day by day",
   "weekGlanceEditButton": "Edit",
   "weekGlanceStatusOkTitle": "Routine looks good",
@@ -1037,5 +1056,37 @@
   "unsavedChangesTitle": "Unsaved Changes",
   "unsavedChangesMessage": "Do you want to save your changes before leaving?",
   "discardChangesAction": "Discard",
-  "productDetailViewDetails": "View full details"
+  "productDetailViewDetails": "View full details",
+  "routineReadyTitle": "Your Routine Is Ready ✨",
+  "routineReadyCounts": "{total} products organized · {morning} morning, {evening} evening",
+  "@routineReadyCounts": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "morning": {
+        "type": "int"
+      },
+      "evening": {
+        "type": "int"
+      }
+    }
+  },
+  "routineReadyChangesHeader": "What We Adjusted for You",
+  "routineReadyChangesExplainer": "Small adjustments for a safe and effective routine — you can always change them.",
+  "routineReadyAdvisoriesHeader": "Worth Noting",
+  "routineReadyAdvisoriesExplainer": "We didn't block anything — just a small advisory note.",
+  "routineReadyNothingToReport": "No adjustments needed — your routine is organized and ready.",
+  "routineReadyCta": "View My Routine",
+  "routineReadyReviewSlotCta": "Let's start with your {slot} routine",
+  "@routineReadyReviewSlotCta": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "collectionAddRemoveProduct": "Add / remove product",
+  "productSelUnsavedChangesBody": "You added or removed products. Going back without completing the flow won't update your routine.",
+  "productSelGoBackAnyway": "Go back"
 }

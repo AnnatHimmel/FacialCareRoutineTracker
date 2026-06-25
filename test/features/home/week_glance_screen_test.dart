@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/collection_item.dart';
@@ -265,6 +266,41 @@ Widget _wrap({
   );
 }
 
+// ── Router-based wrapper for onboarding tests ─────────────────────────────────
+
+Widget _wrapWithRouter({
+  required MasterContent master,
+  required _FakeUDR udr,
+  required bool onboarding,
+}) {
+  final router = GoRouter(
+    initialLocation: '/week-glance',
+    routes: [
+      GoRoute(
+        path: '/week-glance',
+        builder: (context, state) => WeekGlanceScreen(onboarding: onboarding),
+      ),
+      GoRoute(
+        path: '/today',
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('TODAY_SENTINEL'))),
+      ),
+    ],
+  );
+  return ProviderScope(
+    overrides: [
+      masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
+      userDataRepositoryProvider.overrideWithValue(udr),
+    ],
+    child: MaterialApp.router(
+      routerConfig: router,
+      locale: const Locale('he'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+    ),
+  );
+}
+
 void main() {
   group('WeekGlanceScreen (real data)', () {
     testWidgets('should_render_morning_and_evening_slot_labels',
@@ -430,6 +466,51 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('בדיקת הערות'), findsNothing);
+    });
+  });
+
+  group('WeekGlanceScreen (onboarding mode)', () {
+    testWidgets('onboarding_true_shows_cta_and_hides_back_button',
+        (tester) async {
+      final udr = _FakeUDR();
+      await tester.pumpWidget(_wrapWithRouter(
+        master: _masterNoConflicts,
+        udr: udr,
+        onboarding: true,
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('הכול מסודר, אפשר להתחיל'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_rounded), findsNothing);
+    });
+
+    testWidgets('onboarding_true_cta_tap_navigates_to_today', (tester) async {
+      final udr = _FakeUDR();
+      await tester.pumpWidget(_wrapWithRouter(
+        master: _masterNoConflicts,
+        udr: udr,
+        onboarding: true,
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('הכול מסודר, אפשר להתחיל'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('TODAY_SENTINEL'), findsOneWidget);
+    });
+
+    testWidgets('onboarding_false_no_cta_and_shows_back_button',
+        (tester) async {
+      final udr = _FakeUDR();
+      await tester.pumpWidget(_wrapWithRouter(
+        master: _masterNoConflicts,
+        udr: udr,
+        onboarding: false,
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('הכול מסודר, אפשר להתחיל'), findsNothing);
+      expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
     });
   });
 }

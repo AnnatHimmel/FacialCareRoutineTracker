@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/core/theme/app_colors.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
+import 'package:skincare_tracker/domain/entities/sub_category.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
 import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
 import 'package:skincare_tracker/domain/entities/master_product.dart';
@@ -115,11 +116,18 @@ class _FakeUDR implements UserDataRepository {
 
 const _cat1 = Category(id: 'cat1', name: 'ניקוי', order: 1);
 const _cat2 = Category(id: 'cat2', name: 'לחות', order: 2);
+const _sub1 =
+    SubCategory(id: 'sub1', name: 'ניקוי עמוק', categoryId: 'cat1', order: 1);
+const _sub2 =
+    SubCategory(id: 'sub2', name: 'ניקוי עדין', categoryId: 'cat1', order: 2);
 
-MasterProduct _product(String id, String name, String catId) => MasterProduct(
+MasterProduct _product(String id, String name, String catId,
+        {String? subCatId}) =>
+    MasterProduct(
       id: id,
       name: name,
       categoryId: catId,
+      subCategoryId: subCatId,
       isDeprecated: false,
       addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
@@ -133,10 +141,15 @@ ProductSelection _sel(String productId, Slot slot) => ProductSelection(
       lastModified: DateTime(2024),
     );
 
-MasterContent _masterWith(List<MasterProduct> products, List<Category> cats) =>
+MasterContent _masterWith(
+  List<MasterProduct> products,
+  List<Category> cats, {
+  List<SubCategory> subcats = const [],
+}) =>
     MasterContent(
       products: products,
       categories: cats,
+      subcategories: subcats,
       rules: [],
       manifest: const MasterListManifest(
         contentVersion: '1.0.0',
@@ -421,6 +434,132 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(backCalled, isTrue);
+    });
+
+    // ── Sub-category display ───────────────────────────────────────────────────
+
+    testWidgets('subcategory chip shown when product has a subCategoryId',
+        (tester) async {
+      final pWithSub = _product('pSub', 'מוצר עם תת-קטגוריה', 'cat1',
+          subCatId: 'sub1');
+      final masterWithSub =
+          _masterWith([pWithSub], [_cat1], subcats: [_sub1, _sub2]);
+
+      await tester.pumpWidget(_wrap(
+        master: masterWithSub,
+        morning: [_sel('pSub', Slot.morning)],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ניקוי עמוק'), findsOneWidget,
+          reason: 'SubCategory name should appear as a chip on the card');
+    });
+
+    testWidgets('subcategory chip not shown when product has no subCategoryId',
+        (tester) async {
+      final pNoSub = _product('pNoSub', 'מוצר ללא תת-קטגוריה', 'cat1');
+      final masterNoSub =
+          _masterWith([pNoSub], [_cat1], subcats: [_sub1, _sub2]);
+
+      await tester.pumpWidget(_wrap(
+        master: masterNoSub,
+        morning: [_sel('pNoSub', Slot.morning)],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ניקוי עמוק'), findsNothing);
+      expect(find.text('ניקוי עדין'), findsNothing);
+    });
+
+    // ── Edit panel: save button ────────────────────────────────────────────────
+
+    testWidgets('save button appears in edit panel when card is expanded',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        master: master,
+        morning: [_sel('p1', Slot.morning)],
+      ));
+      await tester.pumpAndSettle();
+
+      // Save button not present before editing
+      expect(find.text('שמור'), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.edit_rounded).first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('שמור'), findsOneWidget);
+    });
+
+    testWidgets(
+        'tapping save closes the edit panel without navigating away',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        master: master,
+        morning: [_sel('p1', Slot.morning)],
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.edit_rounded).first);
+      await tester.pumpAndSettle();
+
+      // Panel is open — save button visible
+      expect(find.text('שמור'), findsOneWidget);
+
+      await tester.tap(find.text('שמור'));
+      await tester.pumpAndSettle();
+
+      // Panel closed — save button gone, card still visible
+      expect(find.text('שמור'), findsNothing);
+      expect(find.text('קרם לחות'), findsOneWidget);
+    });
+
+    // ── Edit panel: subcategory picker ─────────────────────────────────────────
+
+    testWidgets('edit panel shows subcategory picker when category has subcats',
+        (tester) async {
+      final pSub = _product('pSub', 'ג׳ל ניקוי', 'cat1', subCatId: 'sub1');
+      final masterSub =
+          _masterWith([pSub], [_cat1, _cat2], subcats: [_sub1, _sub2]);
+
+      await tester.pumpWidget(_wrap(
+        master: masterSub,
+        morning: [_sel('pSub', Slot.morning)],
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.edit_rounded).first);
+      await tester.pumpAndSettle();
+
+      // Both sub-category options should appear in the picker
+      expect(find.text('ניקוי עמוק'), findsWidgets);
+      expect(find.text('ניקוי עדין'), findsWidgets);
+    });
+
+    testWidgets(
+        'changing category in edit panel resets subcategory draft to null',
+        (tester) async {
+      final pSub = _product('pSub', 'ג׳ל ניקוי', 'cat1', subCatId: 'sub1');
+      final masterSub =
+          _masterWith([pSub], [_cat1, _cat2], subcats: [_sub1, _sub2]);
+
+      await tester.pumpWidget(_wrap(
+        master: masterSub,
+        morning: [_sel('pSub', Slot.morning)],
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.edit_rounded).first);
+      await tester.pumpAndSettle();
+
+      // Subcategory picker is visible (cat1 has subcats)
+      expect(find.text('ניקוי עמוק'), findsWidgets);
+
+      // Tap cat2 (which has no subcategories in test data)
+      await tester.tap(find.text('לחות'));
+      await tester.pumpAndSettle();
+
+      // Subcategory picker should be gone (cat2 has no subcats)
+      expect(find.text('ניקוי עמוק'), findsNothing);
     });
   });
 }

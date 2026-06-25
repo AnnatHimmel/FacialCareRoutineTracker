@@ -12,12 +12,14 @@ import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/category_override.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/product_sorter.dart';
+import '../../domain/services/routine_build_summary.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/weekday_picker.dart';
 import 'barcode_scan_sheet.dart';
+import 'routine_ready_summary_screen.dart';
 
 
 // Hebrew abbreviated day labels (Sunday-first, 0-indexed).
@@ -37,6 +39,9 @@ class AddProductFlowScreen extends ConsumerStatefulWidget {
 
 class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
   _Step _step = _Step.search;
+
+  // The auto-sorter's summary, built in _save() and shown on the success step.
+  RoutineBuildSummary? _summary;
 
   // Step 1 state
   final _searchCtrl = TextEditingController();
@@ -149,29 +154,64 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
     if (p == null) return;
     final master = ref.read(masterContentProvider).valueOrNull;
     if (master == null) return;
-    final scheduler = ref.read(routineSchedulerProvider);
-    final slots = _chosenSlots ?? _defaultSlots(p);
-    final now = DateTime.now();
-    for (final slot in slots) {
-      // Bug 4 fix: addProduct is idempotent — it finds and reuses the existing
-      // selection row instead of creating a duplicate with a new UUID.
-      await scheduler.addProduct(
-          master: master, productId: p.id, slot: slot);
-      // setDays is also idempotent — finds the existing schedule row and
-      // updates it; creates one only if none exists.
-      await scheduler.setDays(
-          productId: p.id, slot: slot, days: _chosenDays);
+
+    // Always transition to the success step, even if something fails mid-way.
+    // Without this guard, an uncaught throw turns _save into an unhandled
+    // future and the screen stays frozen on the placement step.
+    try {
+      final scheduler = ref.read(routineSchedulerProvider);
+      final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
+      final extraProducts =
+          customProds.map((c) => c.toMasterProduct()).toList();
+      final slots = _chosenSlots ?? _defaultSlots(p);
+      final now = DateTime.now();
+      for (final slot in slots) {
+        // addProduct is idempotent — finds/reuses existing selection row.
+        // extraProducts lets it handle custom products without throwing.
+        await scheduler.addProduct(
+            master: master,
+            productId: p.id,
+            slot: slot,
+            extraProducts: extraProducts);
+        // setDays is idempotent — finds existing schedule row, creates if absent.
+        await scheduler.setDays(
+            productId: p.id, slot: slot, days: _chosenDays);
+      }
+      if (_catIdOverride != null) {
+        await ref.read(userDataRepositoryProvider).upsertCategoryOverride(
+          CategoryOverride(
+            id: 'cat-override-${p.id}',
+            productId: p.id,
+            categoryId: _catIdOverride!,
+            lastModified: now,
+          ),
+        );
+      }
+      // Re-run the auto-sorter and capture its decisions for the "routine ready"
+      // summary shown on the success step. Falls back to the simple confirmation
+      // if the summary can't be built.
+      // ignore: avoid_print
+      print('[AddProduct] calling buildRoutineSummary, extraProducts=${extraProducts.length}');
+      try {
+        _summary = await scheduler.buildRoutineSummary(
+            master: master, extraProducts: extraProducts);
+        // ignore: avoid_print
+        print('[AddProduct] buildRoutineSummary OK: total=${_summary?.totalProducts} '
+            'morning=${_summary?.morningCount} evening=${_summary?.eveningCount} '
+            'changes=${_summary?.changes.length} advisories=${_summary?.advisories.length}');
+      } catch (e, st) {
+        // ignore: avoid_print
+        print('[AddProduct] buildRoutineSummary failed: $e\n$st');
+        _summary = null;
+      }
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('[AddProduct] _save failed: $e\n$st');
     }
-    if (_catIdOverride != null) {
-      await ref.read(userDataRepositoryProvider).upsertCategoryOverride(
-        CategoryOverride(
-          id: 'cat-override-${p.id}',
-          productId: p.id,
-          categoryId: _catIdOverride!,
-          lastModified: now,
-        ),
-      );
-    }
+
+    if (!mounted) return;
+    // ignore: avoid_print
+    print('[AddProduct] transitioning to success, _summary=${_summary != null ? "non-null" : "null"}');
     setState(() => _step = _Step.success);
   }
 
@@ -180,6 +220,19 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
     final l = AppLocalizations.of(context)!;
 
     if (_step == _Step.success) {
+      final summary = _summary;
+      // ignore: avoid_print
+      print('[AddProduct] build success step — summary=${summary != null ? "non-null" : "null"}');
+      if (summary != null) {
+        // ignore: avoid_print
+        print('[AddProduct] showing RoutineReadySummaryScreen');
+        return RoutineReadySummaryScreen(
+          summary: summary,
+          onContinue: () => context.go('/week-glance'),
+        );
+      }
+      // ignore: avoid_print
+      print('[AddProduct] showing _SuccessScreen (summary was null)');
       return _SuccessScreen(
         product: _product!,
         chosenSlots: _chosenSlots ?? _defaultSlots(_product!),

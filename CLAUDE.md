@@ -21,6 +21,26 @@ A personal skincare routine tracker app. An admin curates a master list of skinc
 - **Design system:** [docs/design-reference/screens/uploads/stitch_application_ux_ui_design/radiant_dew/DESIGN.md](docs/design-reference/screens/uploads/stitch_application_ux_ui_design/radiant_dew/DESIGN.md) — "Radiant Dew" design tokens (colors, typography, spacing, shape language).
 - **Screen references:** [docs/design-reference/screens/](docs/design-reference/screens/) — HTML/CSS mockups. **Reference only** — not shipped, not embedded in the app. Implement as native Flutter widgets.
 
+## Documentation Maintenance (REQUIRED on every change)
+
+The living design docs under `doc/` must be kept in sync with the code on **every** change — treat this as part of "done", alongside tests. After any feature, behavior, or architecture change, update the relevant file(s):
+
+- **[doc/ARCHITECTURE.md](doc/ARCHITECTURE.md)** — components, data flow, contracts, providers, single-source-of-truth rules.
+- **[doc/DECISIONS.md](doc/DECISIONS.md)** — add a dated decision entry (request → decision → rationale → alternatives rejected → affected files) for any non-trivial choice.
+- **[doc/FUNCTIONALITY.md](doc/FUNCTIONALITY.md)** — features, inputs/outputs, edge cases.
+- **[doc/UI_DESIGN.md](doc/UI_DESIGN.md)** — screen inventory (S-numbers), screen specs, flows, style guide.
+
+A change is not complete until the docs above reflect it. Keep entries concise and accurate to the shipped code.
+
+## Git Workflow
+
+**Never commit automatically on the `main` branch.**
+
+- Before committing any changes, create a feature branch (e.g. `git checkout -b feat/your-feature-name`).
+- Only commit and open a PR once the feature branch has been successfully created.
+- All commits directly to `main` are **manual only** — performed by the user, never by Claude autonomously.
+- If branch creation fails for any reason, stop and report the error to the user instead of falling back to committing on `main`.
+
 ## Architecture Decisions
 
 ### Data Model (critical for long-term integrity)
@@ -79,6 +99,15 @@ Warm "golden hour" aesthetic: soft minimalism + glassmorphism.
 3. **REFACTOR:** Clean up if needed. Tests must still pass after.
 
 This applies to every task in `/6-ModifyLoop`, `/4-Execution`, and any ad-hoc code change. Never write implementation code before a failing test exists for it.
+
+### "All tests" means BOTH suites — Dart **and** Playwright
+
+The project has two test suites, and a full test run / verification gate **must include both**:
+
+1. **Dart unit & widget tests** — `flutter test` (from repo root).
+2. **Playwright web e2e** — `cd test/playwright && npx playwright test` (drives the Flutter-web build via the accessibility/semantics tree; the config auto-runs `flutter build web` first, so the first run is slow).
+
+**Never report "all tests pass" or treat a change as verified after running only `flutter test`.** The e2e suite catches UI/flow regressions the Dart tests cannot. If a fix touches selection, scheduling, ordering, onboarding, or any screen flow, the Playwright suite is mandatory before declaring done. Run `flutter analyze` as well.
 
 ### Subagent Mapping for TDD Phases
 

@@ -163,9 +163,11 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     final master = ref.read(masterContentProvider).valueOrNull;
     if (master == null) return;
 
+    final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
     final result = await scheduler.fixProblems(
       master: master,
       slot: _activeSlot,
+      extraProducts: customProds.map((c) => c.toMasterProduct()).toList(),
     );
 
     if (result.isEmpty) return;
@@ -229,7 +231,9 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     if (widget.fromSetup) {
       context.go('/setup/order?from=setup');
     } else if (_isProductsFlow) {
-      context.go('/today');
+      // The shelf "add products" flow commits here — run the auto-sorter and
+      // show its "routine ready" summary, which then hands off to the shelf.
+      context.go('/routine-ready');
     } else {
       context.pop(true);
     }
@@ -947,38 +951,43 @@ class _OnboardingScheduleCta extends StatelessWidget {
         color: AppColors.surface,
         boxShadow: AppColors.navGlow,
       ),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          PrimaryButton(
-            label: l.scheduleContinueToOrder,
-            onTap: hasZeroDays ? null : onContinue,
-            trailingIcon: Icons.arrow_forward,
-            height: 56,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PrimaryButton(
+                label: l.scheduleContinueToOrder,
+                onTap: hasZeroDays ? null : onContinue,
+                trailingIcon: Icons.arrow_forward,
+                height: 56,
+              ),
+              if (hasZeroDays) ...[
+                const SizedBox(height: 6),
+                Text(
+                  l.scheduleZeroDayError(activeSlotLabel),
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ] else if (hasConflicts) ...[
+                const SizedBox(height: 6),
+                Text(
+                  l.scheduleConflictWarningCount(conflictCount, activeSlotLabel),
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ],
           ),
-          if (hasZeroDays) ...[
-            const SizedBox(height: 6),
-            Text(
-              l.scheduleZeroDayError(activeSlotLabel),
-              style: AppTypography.labelSm.copyWith(
-                color: AppColors.error,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ] else if (hasConflicts) ...[
-            const SizedBox(height: 6),
-            Text(
-              l.scheduleConflictWarningCount(conflictCount, activeSlotLabel),
-              style: AppTypography.labelSm.copyWith(
-                color: AppColors.error,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }

@@ -16,6 +16,7 @@ import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
+import 'package:skincare_tracker/domain/services/day_boundary_service.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
 import 'package:skincare_tracker/domain/entities/category_override.dart';
@@ -27,7 +28,15 @@ import 'package:skincare_tracker/shared/providers/root_providers.dart';
 
 class _FakeSettings implements SettingsRepository {
   final bool tapHintSeen;
-  _FakeSettings({this.tapHintSeen = true});
+  final String? dismissedDate;
+  final bool reminderEnabled;
+  String? lastDismissSet;
+  bool? lastReminderEnabledSet;
+  _FakeSettings({
+    this.tapHintSeen = true,
+    this.dismissedDate,
+    this.reminderEnabled = true,
+  });
 
   @override Future<String?> getLastExportDate() async => null;
   @override Future<void> setLastExportDate(String d) async {}
@@ -52,6 +61,16 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setAppLanguage(String code) async {}
   @override Future<bool> getTapHintSeen() async => tapHintSeen;
   @override Future<void> setTapHintSeen(bool value) async {}
+  @override Future<String?> getWeeklyPhotoReminderDismissedDate() async =>
+      lastDismissSet ?? dismissedDate;
+  @override Future<void> setWeeklyPhotoReminderDismissedDate(String isoDate) async {
+    lastDismissSet = isoDate;
+  }
+  @override Future<bool> getWeeklyReminderEnabled() async =>
+      lastReminderEnabledSet ?? reminderEnabled;
+  @override Future<void> setWeeklyReminderEnabled(bool value) async {
+    lastReminderEnabledSet = value;
+  }
 }
 
 class _FakeMCR implements MasterContentRepository {
@@ -67,6 +86,7 @@ class _FakeUDR implements UserDataRepository {
   final List<ProductSelection> eveningSelections;
   final DayRecord? morningRecord;
   final DayRecord? eveningRecord;
+  final List<SkinLogEntry> skinLogs;
   bool updateCalled = false;
   DayRecord? lastUpdate;
 
@@ -75,6 +95,7 @@ class _FakeUDR implements UserDataRepository {
     this.eveningSelections = const [],
     this.morningRecord,
     this.eveningRecord,
+    this.skinLogs = const [],
   });
 
   @override
@@ -137,9 +158,15 @@ class _FakeUDR implements UserDataRepository {
   @override
   Future<void> deletePerDayOrderOverride(Slot slot, int weekday) async {}
   @override Stream<List<DayRecord>> watchDayRecordsForMonth(String ym) => throw UnimplementedError();
-  @override Stream<SkinLogEntry?> watchSkinLog(String d) => throw UnimplementedError();
-  @override Future<void> upsertSkinLog(SkinLogEntry e) => throw UnimplementedError();
-  @override Stream<List<SkinLogEntry>> watchAllSkinLogs() => throw UnimplementedError();
+  @override
+  Stream<SkinLogEntry?> watchSkinLog(String d) {
+    for (final e in skinLogs) {
+      if (e.date == d) return Stream.value(e);
+    }
+    return Stream.value(null);
+  }
+  @override Future<void> upsertSkinLog(SkinLogEntry e) async {}
+  @override Stream<List<SkinLogEntry>> watchAllSkinLogs() => Stream.value(skinLogs);
   @override Future<void> muteConflict(MutedConflict m) => throw UnimplementedError();
   @override Future<void> unmuteConflict(String ruleId) => throw UnimplementedError();
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
@@ -188,6 +215,20 @@ DayRecord _dayRecord({required List<String> recorded}) => DayRecord(
       lastModified: DateTime(2024, 1, 15),
     );
 
+/// Effective "today" as the running app computes it (the home screen reads the
+/// real DayBoundaryService, not the overridden effectiveDateProvider).
+String _todayDateStr() {
+  final b = DayBoundaryService();
+  return b.formatDate(b.todayEffectiveDate);
+}
+
+SkinLogEntry _skinLogWithPhoto(String date) => SkinLogEntry(
+      id: 'sl-$date',
+      date: date,
+      photoPaths: const ['photo-key'],
+      lastModified: DateTime(2024, 1, 1),
+    );
+
 ProductSelection _sel(String productId, Slot slot) => ProductSelection(
       id: 's1',
       productId: productId,
@@ -200,6 +241,7 @@ Widget _wrap({
   required MasterContent master,
   required _FakeUDR udr,
   _FakeSettings? settings,
+  bool forceShowReminder = false,
 }) {
   final router = GoRouter(
     initialLocation: '/today',
@@ -207,11 +249,6 @@ Widget _wrap({
       GoRoute(
         path: '/today',
         builder: (_, __) => const DailyHomeScreen(),
-      ),
-      GoRoute(
-        path: '/skin-log/:date',
-        builder: (_, state) =>
-            Scaffold(body: Text('journal-${state.pathParameters['date']}')),
       ),
       GoRoute(
         path: '/setup/selection',
@@ -225,6 +262,8 @@ Widget _wrap({
       userDataRepositoryProvider.overrideWithValue(udr),
       effectiveDateProvider.overrideWithValue(DateTime(2024, 1, 15)),
       settingsRepositoryProvider.overrideWithValue(settings ?? _FakeSettings()),
+      if (forceShowReminder)
+        weeklyReminderForceShowProvider.overrideWith((ref) => true),
     ],
     child: MaterialApp.router(
       routerConfig: router,
@@ -266,6 +305,12 @@ void main() {
     });
 
     testWidgets('toggle product calls updateDayRecord', (tester) async {
+      // Tall viewport so the routine row sits below the weekly reminder card
+      // without being pushed off-screen.
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       final udr = _FakeUDR(
         morningSelections: [_sel('pm1', Slot.morning)],
         morningRecord: _dayRecord(recorded: []),
@@ -278,24 +323,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(udr.updateCalled, isTrue);
-    });
-
-    testWidgets('journal CTA navigates to /skin-log/:date', (tester) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      final udr = _FakeUDR(
-        morningSelections: [_sel('pm1', Slot.morning)],
-        morningRecord: _dayRecord(recorded: []),
-      );
-      await tester.pumpWidget(_wrap(master: _master, udr: udr));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('תעד עכשיו'));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('journal-'), findsOneWidget);
     });
 
     group('view mode toggle', () {
@@ -441,6 +468,12 @@ void main() {
       });
 
       testWidgets('hint dismisses after tapping any item', (tester) async {
+        // Tall viewport so the routine row sits below the weekly reminder card
+        // without being pushed off-screen.
+        tester.view.physicalSize = const Size(800, 1600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+
         final udr = _FakeUDR(
           morningSelections: [_sel('pm1', Slot.morning)],
           morningRecord: _dayRecord(recorded: []),
@@ -462,6 +495,144 @@ void main() {
         await tester.pump();
 
         expect(find.byIcon(Icons.touch_app_rounded), findsNothing);
+      });
+    });
+
+    group('weekly skin reminder', () {
+      const cardKey = ValueKey('weekly_skin_reminder');
+
+      void _bigView(WidgetTester tester) {
+        tester.view.physicalSize = const Size(900, 2200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+      }
+
+      testWidgets('shown when no recent photo and not dismissed',
+          (tester) async {
+        _bigView(tester);
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+          skinLogs: const [],
+        );
+        await tester.pumpWidget(_wrap(master: _master, udr: udr));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsOneWidget);
+        expect(find.text('תיעוד שבועי'), findsOneWidget);
+      });
+
+      testWidgets('hidden when a skin-log photo exists within 7 days',
+          (tester) async {
+        _bigView(tester);
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+          skinLogs: [_skinLogWithPhoto(_todayDateStr())],
+        );
+        await tester.pumpWidget(_wrap(master: _master, udr: udr));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsNothing);
+      });
+
+      testWidgets('hidden when dismissed today', (tester) async {
+        _bigView(tester);
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+          skinLogs: const [],
+        );
+        await tester.pumpWidget(_wrap(
+          master: _master,
+          udr: udr,
+          settings: _FakeSettings(dismissedDate: _todayDateStr()),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsNothing);
+      });
+
+      testWidgets('tapping אחר כך hides card and persists today as dismissed',
+          (tester) async {
+        _bigView(tester);
+        final settings = _FakeSettings();
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+          skinLogs: const [],
+        );
+        await tester.pumpWidget(
+          _wrap(master: _master, udr: udr, settings: settings),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsOneWidget);
+
+        await tester.tap(find.text('אחר כך'));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsNothing);
+        expect(settings.lastDismissSet, _todayDateStr());
+      });
+
+      testWidgets(
+          'debug force-show overrides the recent-photo suppression',
+          (tester) async {
+        _bigView(tester);
+        // A photo logged today would normally hide the card...
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+          skinLogs: [_skinLogWithPhoto(_todayDateStr())],
+        );
+        // ...but the debug "Resume reminder" force-show flag brings it back.
+        await tester.pumpWidget(
+          _wrap(master: _master, udr: udr, forceShowReminder: true),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsOneWidget);
+      });
+
+      testWidgets('hidden when reminder disabled in settings', (tester) async {
+        _bigView(tester);
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+          skinLogs: const [],
+        );
+        await tester.pumpWidget(_wrap(
+          master: _master,
+          udr: udr,
+          settings: _FakeSettings(reminderEnabled: false),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsNothing);
+      });
+
+      testWidgets('tapping never-show hides card and disables reminder',
+          (tester) async {
+        _bigView(tester);
+        final settings = _FakeSettings();
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+          skinLogs: const [],
+        );
+        await tester.pumpWidget(
+          _wrap(master: _master, udr: udr, settings: settings),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsOneWidget);
+
+        await tester.tap(find.text('אל תציג שוב'));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsNothing);
+        expect(settings.lastReminderEnabledSet, isFalse);
       });
     });
   });

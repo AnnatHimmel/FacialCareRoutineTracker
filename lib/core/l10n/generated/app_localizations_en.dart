@@ -202,6 +202,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get journalCtaButton => 'Log Now';
 
   @override
+  String get weeklyReminderBadge => 'Weekly check-in';
+
+  @override
+  String get weeklyReminderTitle => 'How\'s your skin this week?';
+
+  @override
+  String get weeklyReminderBody =>
+      'Snap a quick photo and note how your skin feels — once a week, to see your progress over time.';
+
+  @override
+  String get weeklyReminderNotesHint =>
+      'How does your skin feel today? Dryness, redness, breakouts...';
+
+  @override
+  String get weeklyReminderCapture => 'Take photo';
+
+  @override
+  String get weeklyReminderBrowse => 'or from gallery';
+
+  @override
+  String get weeklyReminderDismiss => 'Later';
+
+  @override
+  String get weeklyReminderNeverShow => 'Don\'t show again';
+
+  @override
+  String get settingsWeeklyReminder => 'Weekly tracking reminder';
+
+  @override
+  String get settingsWeeklyReminderDesc =>
+      'Weekly nudge to photograph and note your skin';
+
+  @override
+  String get settingsDebugResumeReminder => 'Resume weekly reminder';
+
+  @override
+  String get settingsDebugSectionNote => 'Developer tool (debug builds only)';
+
+  @override
+  String get settingsDebugResumeReminderDone =>
+      'Weekly reminder will show again';
+
+  @override
+  String get settingsDebugClearShelf => 'Clear the shelf';
+
+  @override
+  String get settingsDebugClearShelfConfirm =>
+      'Delete all products from the shelf? This cannot be undone.';
+
+  @override
+  String get settingsDebugClearShelfDone => 'Shelf cleared';
+
+  @override
   String get onboardingSkip => 'Skip';
 
   @override
@@ -887,6 +940,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skinStateOily => 'Oily';
 
   @override
+  String get skinStateDry => 'Dry';
+
+  @override
   String get weekdayOverCapWarning => 'Over recommended. Consider reducing.';
 
   @override
@@ -946,6 +1002,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customProductDeleteConfirmAction => 'Remove';
+
+  @override
+  String get productRemoveFromShelfConfirmBody =>
+      'The product will be removed from your routine.';
 
   @override
   String get customProductCommentLabel => 'Note';
@@ -1372,7 +1432,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryReviewAddMore => 'Add more products';
 
   @override
-  String get categoryReviewCTA => 'Continue to day selection';
+  String get categoryReviewCTA => 'Let\'s plan your routine';
 
   @override
   String get categoryReviewEmpty => 'No products on your shelf yet';
@@ -1396,7 +1456,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleContextChipEvening => 'Evening routine';
 
   @override
-  String get scheduleContinueToOrder => 'Continue to application order';
+  String get scheduleContinueToOrder => 'Let\'s review the layering order';
 
   @override
   String daySummaryNoteCount(int count, Object day) {
@@ -1511,10 +1571,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get orderCtaMorning => 'Looks good, continue to evening routine';
+  String get orderCtaMorning =>
+      'Looks good, let\'s continue to your evening routine';
 
   @override
-  String get orderCtaFinish => 'Finish and show my routine';
+  String get orderCtaFinish => 'Let\'s review your week';
 
   @override
   String get eveningTransitionTitle => 'Now for the evening routine';
@@ -1675,6 +1736,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weekGlanceTitle => 'My Week\'s Routine';
+
+  @override
+  String get weekGlanceStartGlowingCta => 'You\'re all set, let\'s glow';
 
   @override
   String get weekGlanceEntrySubtitle =>
@@ -1843,4 +1907,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productDetailViewDetails => 'View full details';
+
+  @override
+  String get routineReadyTitle => 'Your Routine Is Ready ✨';
+
+  @override
+  String routineReadyCounts(int total, int morning, int evening) {
+    return '$total products organized · $morning morning, $evening evening';
+  }
+
+  @override
+  String get routineReadyChangesHeader => 'What We Adjusted for You';
+
+  @override
+  String get routineReadyChangesExplainer =>
+      'Small adjustments for a safe and effective routine — you can always change them.';
+
+  @override
+  String get routineReadyAdvisoriesHeader => 'Worth Noting';
+
+  @override
+  String get routineReadyAdvisoriesExplainer =>
+      'We didn\'t block anything — just a small advisory note.';
+
+  @override
+  String get routineReadyNothingToReport =>
+      'No adjustments needed — your routine is organized and ready.';
+
+  @override
+  String get routineReadyCta => 'View My Routine';
+
+  @override
+  String routineReadyReviewSlotCta(String slot) {
+    return 'Let\'s start with your $slot routine';
+  }
+
+  @override
+  String get collectionAddRemoveProduct => 'Add / remove product';
+
+  @override
+  String get productSelUnsavedChangesBody =>
+      'You added or removed products. Going back without completing the flow won\'t update your routine.';
+
+  @override
+  String get productSelGoBackAnyway => 'Go back';
 }

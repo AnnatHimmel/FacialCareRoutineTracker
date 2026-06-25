@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -32,6 +33,27 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
+  /// go_router-safe default back action.
+  ///
+  /// A raw `Navigator.pop()` crashes ("no pages left to show") when the screen
+  /// was reached via `context.go(...)`, which replaces go_router's match list
+  /// with a single entry — popping it empties the configuration. Guard with
+  /// `canPop()` and fall back to the home tab so back never dead-ends on a
+  /// black screen. `GoRouter.maybeOf` keeps widget tests (plain MaterialApp,
+  /// no router) working via the plain Navigator.
+  void _defaultBack(BuildContext context) {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      if (router.canPop()) {
+        router.pop();
+      } else {
+        router.go('/today');
+      }
+    } else if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -50,7 +72,8 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? IconButton(
               icon: const Icon(Icons.arrow_back_rounded),
               color: AppColors.primary,
-              onPressed: onBack ?? () => Navigator.of(context).pop(),
+              tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+              onPressed: onBack ?? () => _defaultBack(context),
             )
           : null,
       title: title != null
