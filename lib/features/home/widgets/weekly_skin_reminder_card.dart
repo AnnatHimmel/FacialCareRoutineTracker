@@ -102,6 +102,7 @@ class _WeeklySkinReminderCardState
       maxWidth: 1080,
       maxHeight: 1080,
       imageQuality: 85,
+      preferredCameraDevice: CameraDevice.front,
     );
     if (file == null || !mounted) return;
 
@@ -131,8 +132,10 @@ class _WeeklySkinReminderCardState
           lastModified: DateTime.now(),
         ),
       );
-      // The host screen watches skin logs and will hide this card now that a
-      // photo exists for today — no explicit dismiss needed.
+      // Clear any debug force-show so the host's recent-photo rule takes over;
+      // the host watches skin logs and hides this card now that a photo exists
+      // for today — no explicit dismiss needed.
+      ref.read(weeklyReminderForceShowProvider.notifier).state = false;
     } finally {
       if (mounted) setState(() => _saving = false);
     }

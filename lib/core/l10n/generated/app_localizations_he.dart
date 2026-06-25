@@ -928,6 +928,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get skinStateOily => 'שומני';
 
   @override
+  String get skinStateDry => 'יבש';
+
+  @override
   String get weekdayOverCapWarning => 'מעבר למומלץ. כדאי להפחית.';
 
   @override
@@ -1906,6 +1909,16 @@ class AppLocalizationsHe extends AppLocalizations {
   String routineReadyReviewSlotCta(String slot) {
     return 'נתחיל עם שגרת ה$slot';
   }
+
+  @override
+  String get collectionAddRemoveProduct => 'הוספת/הסרת מוצר';
+
+  @override
+  String get productSelUnsavedChangesBody =>
+      'הוספת או הסרת מוצרים. חזרה אחורה לא תעדכן את השגרה שלך.';
+
+  @override
+  String get productSelGoBackAnyway => 'חזרה בכל זאת';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).

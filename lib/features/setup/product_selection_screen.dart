@@ -84,6 +84,7 @@ class _ProductSelectionScreenState
     extends ConsumerState<ProductSelectionScreen> {
   // V3 guided flow state
   String _v3Tab = 'search'; // 'search' | 'scan'
+  bool _hasChanges = false;
 
   // Browse view state (also reused by V3 search pane)
   final _searchController = TextEditingController();
@@ -128,6 +129,45 @@ class _ProductSelectionScreenState
     return map;
   }
 
+  Future<void> _confirmBack(BuildContext context) async {
+    if (!_hasChanges) {
+      _doBack(context);
+      return;
+    }
+    final l = AppLocalizations.of(context)!;
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.unsavedChangesTitle),
+        content: Text(l.productSelUnsavedChangesBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.cancelAction),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.productSelGoBackAnyway),
+          ),
+        ],
+      ),
+    );
+    if ((leave ?? false) && context.mounted) _doBack(context);
+  }
+
+  void _doBack(BuildContext context) {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      if (router.canPop()) {
+        router.pop();
+      } else {
+        router.go('/today');
+      }
+    } else if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
   Future<void> _toggleProduct(
     MasterProduct product,
     Map<String, Set<Slot>> selMap,
@@ -135,6 +175,7 @@ class _ProductSelectionScreenState
     List<ProductSelection> eveningSelections, {
     Slot? filterSlot,
   }) async {
+    _hasChanges = true;
     final isOn = selMap.containsKey(product.id);
     if (isOn) {
       await _setSlot(product, Slot.morning, false, morningSelections);
@@ -404,7 +445,12 @@ class _ProductSelectionScreenState
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: const GlowAppBar(),
+      appBar: widget.isTabDestination
+          ? const GlowAppBar()
+          : GlowAppBar(
+              showBack: true,
+              onBack: () => _confirmBack(context),
+            ),
       body: body,
       resizeToAvoidBottomInset: false,
       floatingActionButton: widget.isTabDestination && !kIsWeb

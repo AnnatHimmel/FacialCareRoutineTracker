@@ -37,8 +37,10 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
   void initState() {
     super.initState();
     _notesController = TextEditingController();
-    _notesController.addListener(() => setState(() => _dirty = true));
+    _notesController.addListener(_onTextChanged);
   }
+
+  void _onTextChanged() => setState(() => _dirty = true);
 
   @override
   void dispose() {
@@ -48,7 +50,9 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
 
   void _initFromEntry(SkinLogEntry entry) {
     if (!_dirty) {
+      _notesController.removeListener(_onTextChanged);
       _notesController.text = entry.notes ?? '';
+      _notesController.addListener(_onTextChanged);
       _selectedSkinState = entry.skinState;
     }
   }
@@ -107,6 +111,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
       maxWidth: 1080,
       maxHeight: 1080,
       imageQuality: 85,
+      preferredCameraDevice: CameraDevice.front,
     );
     if (file == null || !mounted) return;
 
@@ -199,10 +204,8 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
             }
           }
 
-          return Stack(
-            children: [
-              ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+          return ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                 children: [
                   GlowCard(
                     padding: const EdgeInsets.all(16),
@@ -306,7 +309,57 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
                                 _dirty = true;
                               }),
                             ),
+                            SkinStateChip(
+                              state: 'dry',
+                              selected: _selectedSkinState == 'dry',
+                              onTap: () => setState(() {
+                                _selectedSkinState =
+                                    _selectedSkinState == 'dry' ? null : 'dry';
+                                _dirty = true;
+                              }),
+                            ),
                           ],
+                        ),
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: _saving
+                              ? FilledButton(
+                                  onPressed: null,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor:
+                                        AppColors.primaryContainer,
+                                    shape: const StadiumBorder(),
+                                  ),
+                                  child: const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: AppColors.onPrimary,
+                                    ),
+                                  ),
+                                )
+                              : FilledButton(
+                                  onPressed: _dirty
+                                      ? () => _saveNotes(
+                                          skinLogAsync.valueOrNull)
+                                      : null,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: AppColors.onPrimary,
+                                    disabledBackgroundColor:
+                                        AppColors.outlineVariant
+                                            .withValues(alpha: 0.4),
+                                    disabledForegroundColor:
+                                        AppColors.onSurfaceVariant,
+                                    shape: const StadiumBorder(),
+                                  ),
+                                  child: Text(
+                                    l.saveAction,
+                                    style: AppTypography.labelMd,
+                                  ),
+                                ),
                         ),
                       ],
                     ),
@@ -375,59 +428,7 @@ class _SkinLogEntryScreenState extends ConsumerState<SkinLogEntryScreen> {
 
                   const SizedBox(height: 32),
                 ],
-              ),
-
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: AppColors.surface,
-                    boxShadow: AppColors.navGlow,
-                  ),
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: _saving
-                        ? FilledButton(
-                            onPressed: null,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.primaryContainer,
-                              shape: const StadiumBorder(),
-                            ),
-                            child: const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: AppColors.onPrimary,
-                              ),
-                            ),
-                          )
-                        : FilledButton(
-                            onPressed: _dirty
-                                ? () => _saveNotes(skinLogAsync.valueOrNull)
-                                : null,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: _dirty
-                                  ? AppColors.primary
-                                  : AppColors.outlineVariant,
-                              shape: const StadiumBorder(),
-                            ),
-                            child: Text(
-                              l.saveAction,
-                              style: AppTypography.labelMd.copyWith(
-                                color: AppColors.onPrimary,
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-            ],
-          );
+              );
         },
       ),
     );

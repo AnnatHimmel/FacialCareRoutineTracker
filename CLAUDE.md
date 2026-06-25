@@ -32,6 +32,15 @@ The living design docs under `doc/` must be kept in sync with the code on **ever
 
 A change is not complete until the docs above reflect it. Keep entries concise and accurate to the shipped code.
 
+## Git Workflow
+
+**Never commit automatically on the `main` branch.**
+
+- Before committing any changes, create a feature branch (e.g. `git checkout -b feat/your-feature-name`).
+- Only commit and open a PR once the feature branch has been successfully created.
+- All commits directly to `main` are **manual only** — performed by the user, never by Claude autonomously.
+- If branch creation fails for any reason, stop and report the error to the user instead of falling back to committing on `main`.
+
 ## Architecture Decisions
 
 ### Data Model (critical for long-term integrity)

@@ -1755,6 +1755,12 @@ abstract class AppLocalizations {
   /// **'שומני'**
   String get skinStateOily;
 
+  /// No description provided for @skinStateDry.
+  ///
+  /// In he, this message translates to:
+  /// **'יבש'**
+  String get skinStateDry;
+
   /// No description provided for @weekdayOverCapWarning.
   ///
   /// In he, this message translates to:
@@ -3494,6 +3500,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'נתחיל עם שגרת ה{slot}'**
   String routineReadyReviewSlotCta(String slot);
+
+  /// No description provided for @collectionAddRemoveProduct.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספת/הסרת מוצר'**
+  String get collectionAddRemoveProduct;
+
+  /// No description provided for @productSelUnsavedChangesBody.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספת או הסרת מוצרים. חזרה אחורה לא תעדכן את השגרה שלך.'**
+  String get productSelUnsavedChangesBody;
+
+  /// No description provided for @productSelGoBackAnyway.
+  ///
+  /// In he, this message translates to:
+  /// **'חזרה בכל זאת'**
+  String get productSelGoBackAnyway;
 }
 
 class _AppLocalizationsDelegate

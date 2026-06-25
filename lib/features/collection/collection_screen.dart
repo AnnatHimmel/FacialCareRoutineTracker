@@ -140,7 +140,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   ),
                   icon: const Icon(Icons.add_rounded, size: 22),
                   label: Text(
-                    l.addProductTitle,
+                    l.collectionAddRemoveProduct,
                     style: GoogleFonts.quicksand(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -1097,35 +1097,13 @@ class _FreeProductSliver extends StatelessWidget {
           // Section header
           Padding(
             padding: const EdgeInsets.only(bottom: 12, top: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l.collectionAllProducts,
-                  style: GoogleFonts.quicksand(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.onSurface,
-                  ),
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      l.collectionSortByCategory,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                    const Icon(
-                      Icons.expand_more_rounded,
-                      size: 18,
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ],
-                ),
-              ],
+            child: Text(
+              l.collectionAllProducts,
+              style: GoogleFonts.quicksand(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.onSurface,
+              ),
             ),
           ),
           // Product rows

@@ -863,6 +863,10 @@ class _DebugResumeReminderCard extends ConsumerWidget {
           await settings.setWeeklyReminderEnabled(true);
           // Clear today's snooze so the card is eligible again immediately.
           await settings.setWeeklyPhotoReminderDismissedDate('');
+          // Force-show overrides the recent-photo gate: the card reappears even
+          // if a skin photo was already logged this week (the common case when
+          // testing). Cleared automatically once a new photo is captured.
+          ref.read(weeklyReminderForceShowProvider.notifier).state = true;
           ref.invalidate(weeklyReminderEnabledProvider);
           ref.invalidate(weeklyReminderDismissedDateProvider);
           if (context.mounted) {

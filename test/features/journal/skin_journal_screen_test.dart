@@ -165,14 +165,16 @@ void main() {
       expect(find.text('entry-2024-01-15'), findsOneWidget);
     });
 
-    testWidgets('empty state CTA navigates to /skin-log/new', (tester) async {
+    testWidgets('empty state CTA navigates to /skin-log/<today-date>', (tester) async {
       await tester.pumpWidget(_wrap([]));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('התחל לתעד'));
       await tester.pumpAndSettle();
 
-      expect(find.text('new-entry-screen'), findsOneWidget);
+      // Should navigate to a dated route (/skin-log/YYYY-MM-DD), not the old /skin-log/new.
+      expect(find.textContaining('entry-'), findsOneWidget);
+      expect(find.text('new-entry-screen'), findsNothing);
     });
   });
 }

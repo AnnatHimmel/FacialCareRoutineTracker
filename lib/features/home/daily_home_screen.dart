@@ -94,11 +94,13 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     await ref
         .read(settingsRepositoryProvider)
         .setWeeklyPhotoReminderDismissedDate(today);
+    ref.read(weeklyReminderForceShowProvider.notifier).state = false;
     ref.invalidate(weeklyReminderDismissedDateProvider);
   }
 
   Future<void> _neverShowWeeklyReminder() async {
     await ref.read(settingsRepositoryProvider).setWeeklyReminderEnabled(false);
+    ref.read(weeklyReminderForceShowProvider.notifier).state = false;
     ref.invalidate(weeklyReminderEnabledProvider);
   }
 
@@ -107,14 +109,23 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
   bool _shouldShowWeeklyReminder(
     List<SkinLogEntry> skinLogs,
     String today,
-    String? dismissedDate,
-  ) {
+    String? dismissedDate, {
+    bool forceShow = false,
+  }) {
     if (dismissedDate == today) return false;
+    // Debug "Resume reminder" override: skip the recent-photo gate so the card
+    // can be re-triggered for testing even after a photo has been logged.
+    if (forceShow) return true;
     final boundary = ref.read(dayBoundaryServiceProvider);
     final todayDate = boundary.todayEffectiveDate;
     for (final entry in skinLogs) {
       if (entry.photoPaths.isEmpty) continue;
-      final d = boundary.parseDate(entry.date);
+      late final DateTime d;
+      try {
+        d = boundary.parseDate(entry.date);
+      } catch (_) {
+        continue;
+      }
       final diff = todayDate.difference(d).inDays;
       if (diff >= 0 && diff < 7) return false;
     }
@@ -242,11 +253,17 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
         ref.watch(weeklyReminderEnabledProvider).valueOrNull ?? true;
     final reminderDismissedDate =
         ref.watch(weeklyReminderDismissedDateProvider).valueOrNull;
+    final forceShowReminder = ref.watch(weeklyReminderForceShowProvider);
     final hasRoutine =
         morningProducts.isNotEmpty || eveningProducts.isNotEmpty;
     final showWeeklyReminder = reminderEnabled &&
         hasRoutine &&
-        _shouldShowWeeklyReminder(skinLogs, dateStr, reminderDismissedDate);
+        _shouldShowWeeklyReminder(
+          skinLogs,
+          dateStr,
+          reminderDismissedDate,
+          forceShow: forceShowReminder,
+        );
 
     final isLoading =
         morningRoutineAsync.isLoading && eveningRoutineAsync.isLoading;

@@ -940,6 +940,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skinStateOily => 'Oily';
 
   @override
+  String get skinStateDry => 'Dry';
+
+  @override
   String get weekdayOverCapWarning => 'Over recommended. Consider reducing.';
 
   @override
@@ -1938,4 +1941,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String routineReadyReviewSlotCta(String slot) {
     return 'Let\'s start with your $slot routine';
   }
+
+  @override
+  String get collectionAddRemoveProduct => 'Add / remove product';
+
+  @override
+  String get productSelUnsavedChangesBody =>
+      'You added or removed products. Going back without completing the flow won\'t update your routine.';
+
+  @override
+  String get productSelGoBackAnyway => 'Go back';
 }

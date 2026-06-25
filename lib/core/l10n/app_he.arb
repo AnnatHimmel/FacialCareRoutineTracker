@@ -452,6 +452,7 @@
   "skinStateCalm": "רגוע",
   "skinStateMoist": "לח",
   "skinStateOily": "שומני",
+  "skinStateDry": "יבש",
   "weekdayOverCapWarning": "מעבר למומלץ. כדאי להפחית.",
   "customProductTitle": "הוספת מוצר משלי",
   "customProductPhotoLabel": "הוספת תמונה (לא חובה)",
@@ -1027,5 +1028,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "collectionAddRemoveProduct": "הוספת/הסרת מוצר",
+  "productSelUnsavedChangesBody": "הוספת או הסרת מוצרים. חזרה אחורה לא תעדכן את השגרה שלך.",
+  "productSelGoBackAnyway": "חזרה בכל זאת"
 }

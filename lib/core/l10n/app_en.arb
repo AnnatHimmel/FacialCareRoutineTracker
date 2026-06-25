@@ -452,6 +452,7 @@
   "skinStateCalm": "Calm",
   "skinStateMoist": "Moist",
   "skinStateOily": "Oily",
+  "skinStateDry": "Dry",
   "weekdayOverCapWarning": "Over recommended. Consider reducing.",
   "customProductTitle": "Add Your Own Product",
   "customProductPhotoLabel": "Add photo (optional)",
@@ -1084,5 +1085,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "collectionAddRemoveProduct": "Add / remove product",
+  "productSelUnsavedChangesBody": "You added or removed products. Going back without completing the flow won't update your routine.",
+  "productSelGoBackAnyway": "Go back"
 }

@@ -241,6 +241,7 @@ Widget _wrap({
   required MasterContent master,
   required _FakeUDR udr,
   _FakeSettings? settings,
+  bool forceShowReminder = false,
 }) {
   final router = GoRouter(
     initialLocation: '/today',
@@ -261,6 +262,8 @@ Widget _wrap({
       userDataRepositoryProvider.overrideWithValue(udr),
       effectiveDateProvider.overrideWithValue(DateTime(2024, 1, 15)),
       settingsRepositoryProvider.overrideWithValue(settings ?? _FakeSettings()),
+      if (forceShowReminder)
+        weeklyReminderForceShowProvider.overrideWith((ref) => true),
     ],
     child: MaterialApp.router(
       routerConfig: router,
@@ -571,6 +574,25 @@ void main() {
 
         expect(find.byKey(cardKey), findsNothing);
         expect(settings.lastDismissSet, _todayDateStr());
+      });
+
+      testWidgets(
+          'debug force-show overrides the recent-photo suppression',
+          (tester) async {
+        _bigView(tester);
+        // A photo logged today would normally hide the card...
+        final udr = _FakeUDR(
+          morningSelections: [_sel('pm1', Slot.morning)],
+          morningRecord: _dayRecord(recorded: []),
+          skinLogs: [_skinLogWithPhoto(_todayDateStr())],
+        );
+        // ...but the debug "Resume reminder" force-show flag brings it back.
+        await tester.pumpWidget(
+          _wrap(master: _master, udr: udr, forceShowReminder: true),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(cardKey), findsOneWidget);
       });
 
       testWidgets('hidden when reminder disabled in settings', (tester) async {

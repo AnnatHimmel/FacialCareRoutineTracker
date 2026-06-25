@@ -26,6 +26,9 @@ class ProductSorter {
     String effectiveCatId(MasterProduct p) =>
         categoryOverrides?[p.id] ?? p.categoryId;
 
+    String? effectiveSubId(MasterProduct p) =>
+        subCategoryOverrides?[p.id] ?? p.subCategoryId;
+
     int subOrder(MasterProduct p) {
       final subId = subCategoryOverrides?[p.id] ?? p.subCategoryId;
       if (subId == null) return 9999;
@@ -50,10 +53,36 @@ class ProductSorter {
       final bothKnown = subA != 9999 && subB != 9999;
       if (bothKnown && subA != subB) return subA.compareTo(subB);
 
+      // Moisture weight rule: within cat-moisturizer and the same subcategory
+      // grouping, a "lotion" sorts before a "cream" — lotions are lighter and
+      // applied first. This takes precedence over the numeric slot order.
+      // (Products in different known subcategories already returned above.)
+      const moistureCategoryId = 'cat-moisturizer';
+      if (effectiveCatId(a) == moistureCategoryId &&
+          effectiveCatId(b) == moistureCategoryId &&
+          effectiveSubId(a) == effectiveSubId(b)) {
+        final wa = _moistureWeightRank(a.name);
+        final wb = _moistureWeightRank(b.name);
+        if (wa != null && wb != null && wa != wb) return wa.compareTo(wb);
+      }
+
       final slotCmp = slotOrder(a).compareTo(slotOrder(b));
       if (slotCmp != 0) return slotCmp;
 
       return a.id.compareTo(b.id);
     };
+  }
+
+  /// Weight rank for the moisture lotion-before-cream rule.
+  /// 0 = lotion (lighter, applied first), 1 = cream (heavier). Returns null
+  /// when the name carries neither keyword (or ambiguously both), so the
+  /// product keeps its existing slot order.
+  static int? _moistureWeightRank(String name) {
+    final lower = name.toLowerCase();
+    final hasLotion = lower.contains('lotion');
+    final hasCream = lower.contains('cream');
+    if (hasLotion && !hasCream) return 0;
+    if (hasCream && !hasLotion) return 1;
+    return null;
   }
 }

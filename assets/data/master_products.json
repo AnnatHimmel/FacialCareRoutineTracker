@@ -2,7 +2,7 @@
   "contentVersion": "1.1.0",
   "categories": [
     {"id":"cat-cleanser","name":{"he":"ניקוי","en":"Cleanser"},"order":1,"icon":"soap"},
-    {"id":"cat-exfoliate","name":{"he":"פילינג / חומצות","en":"Exfoliate"},"order":2,"icon":"grain"},
+    {"id":"cat-exfoliate","name":{"he":"פילינג","en":"Exfoliate"},"order":2,"icon":"grain"},
     {"id":"cat-toner","name":{"he":"טונר / אסנס","en":"Toner / Essence"},"order":3,"icon":"water_drop"},
     {"id":"cat-retinoid","name":{"he":"רטינואידים","en":"Retinoid"},"order":4,"icon":"science"},
     {"id":"cat-serum","name":{"he":"סרום / טיפול","en":"Serum / Active"},"order":5,"icon":"auto_awesome"},

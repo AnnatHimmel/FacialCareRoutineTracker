@@ -38,6 +38,11 @@ class SkinStateChip extends StatelessWidget {
             foreground: AppColors.primary,
             selectedBackground: AppColors.primaryFixedDim,
           ),
+        'dry' => (
+            background: const Color(0xFFEDE8E0),
+            foreground: const Color(0xFF6B5C4A),
+            selectedBackground: const Color(0xFFD4C4B0),
+          ),
         _ => null,
       };
 
@@ -48,6 +53,7 @@ class SkinStateChip extends StatelessWidget {
       'calm' => l.skinStateCalm,
       'moist' => l.skinStateMoist,
       'oily' => l.skinStateOily,
+      'dry' => l.skinStateDry,
       _ => null,
     };
     final info = _colorInfo(state);
@@ -55,7 +61,9 @@ class SkinStateChip extends StatelessWidget {
 
     final chip = AnimatedContainer(
       duration: const Duration(milliseconds: 180),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      padding: selected
+          ? const EdgeInsets.symmetric(horizontal: 20, vertical: 9)
+          : const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
         color: selected ? info.selectedBackground : info.background,
         borderRadius: BorderRadius.circular(9999),

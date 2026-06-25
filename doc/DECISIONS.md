@@ -8,6 +8,24 @@ Persists architectural and implementation decisions across task contexts. Each a
 
 ## Decisions
 
+### MOD-DEC-SORT-001: Lotion-before-cream weight rule in the Moisturizer category
+**Date**: 2026-06-26
+**Request**: In the Moisturizer category, when several products share a sub-category, products whose name contains "Lotion" should come before those containing "Cream" — a lotion is usually lighter than a cream and should be applied first.
+**Decision**: Added a name-based weight tier to `ProductSorter.adminComparator` (the single source of truth for admin ordering). The tier sits **between the sub-category tier and the slot `config.order` tier**, and fires only when both products are in `cat-moisturizer` and share the same sub-category grouping (same `effectiveSubId`, where both-null counts as the same group — matching the current bundled data where all moisture products have `subCategoryId: null`). A private `_moistureWeightRank(name)` returns 0 for "lotion", 1 for "cream", and `null` (no opinion) when a name has neither or both keywords. Because slot orders are always unique, the rule must — and does — take precedence over the numeric slot order to have any effect.
+**Rationale**: Encodes the lotion-lighter-than-cream heuristic once so newly-added moisture products auto-sort correctly, rather than relying on the admin hand-ordering each one. Pure logic change — no master-data edit needed, since the rule operates on the current null-subcategory data and is conservative (neither/both keyword names are untouched).
+**Alternatives Rejected**: Applying the rule to all categories (user scoped it to Moisturizer); making it a tiebreak *after* slot order (would never fire, since slot orders are unique); editing `master_products.json`/Supabase to bake in the order (doesn't future-proof new products).
+**Affects Files**: `lib/domain/services/product_sorter.dart`, `test/domain/services/product_sorter_test.dart`, `doc/ARCHITECTURE.md` (§3.0), `doc/FUNCTIONALITY.md`.
+
+### MOD-DEC-REM-001: Fix "new"-dated skin logs + debug force-show for weekly reminder
+**Date**: 2026-06-25
+**Request**: (1) The Daily Home screen crashed (`FormatException: int.parse("new")`) because some skin-log entries had `date = "new"`. (2) The Settings debug "Resume weekly reminder" action did not make the reminder reappear.
+**Decision**:
+- **Crash root cause**: `SkinJournalScreen` navigated to the literal route `/skin-log/new`, so GoRouter passed `"new"` as the `:date` param; `SkinLogEntryScreen` persisted it verbatim. Fix: both journal CTAs now push `/skin-log/<today>` via `dayBoundaryServiceProvider.formatDate(effectiveDate)`. Added a defensive `try/catch` around `DayBoundaryService.parseDate(entry.date)` in `_shouldShowWeeklyReminder` so any future malformed row is skipped, not fatal. Added schema migration **v16→v17** deleting rows where `date NOT LIKE '____-__-__'`.
+- **Debug reminder**: The reminder is gated by `reminderEnabled && hasRoutine && notSnoozedToday && (forceShow || noPhotoWithin7Days)`. The debug button only re-enabled + un-snoozed, so a photo logged this week silently kept the card hidden. Added in-memory `weeklyReminderForceShowProvider` (StateProvider<bool>) that overrides ONLY the recent-photo gate (not snooze/disabled). Set true by the debug action; cleared automatically when a photo is captured (in the reminder card) and on dismiss/never-show.
+**Rationale**: Stable date strings are the matching key for records (UC-17/18); a non-date value corrupts that and crashed the home screen. The force-show flag is in-memory (not persisted) because it is a transient debug/testing affordance that should reset on restart.
+**Alternatives Rejected**: Persisting force-show in SharedPreferences (debug-only, should not survive restart); having the debug action delete recent photos (destructive); guarding only at the crash site without a migration (leaves corrupt rows on-device).
+**Affects Files**: `skin_journal_screen.dart`, `daily_home_screen.dart`, `weekly_skin_reminder_card.dart`, `settings_screen.dart`, `root_providers.dart`, `app_database.dart` (schemaVersion 17 + migration), `daily_home_screen_test.dart`, `skin_journal_screen_test.dart`, and new e2e `test/playwright/tests/skin-log-photos.spec.ts`.
+
 ### MOD-DEC-BAR-001: Barcode Product Lookup via Open Beauty Facts + UPC Item DB
 **Date**: 2026-06-15
 **Request**: Wire live product lookups into the barcode scanning stub. Query Open Beauty Facts and UPC Item DB in parallel, merge results, and pre-fill AddCustomProductSheet with the retrieved name/brand/image/ingredients.

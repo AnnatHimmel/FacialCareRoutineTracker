@@ -135,8 +135,8 @@ class ConflictResolver {
     return ConflictResolution(
       mutations: [mutation],
       inverse: [inverse],
-      description: 'העברנו את ${mover.name} ל$slotName בלבד',
-      descriptionEn: 'Moved ${mover.name} to $slotNameEn only',
+      description: 'העברנו את "${mover.name}" ל$slotName בלבד',
+      descriptionEn: 'Moved "${mover.name}" to $slotNameEn only',
       isPartial: false,
     );
   }
@@ -226,12 +226,12 @@ class ConflictResolver {
       mutations: mutations,
       inverse: inverse,
       description: isPartial
-          ? 'פיזרנו את ${anchor.name} ו${yielder.name} לימים שונים (התאמה חלקית)'
-          : 'פיזרנו את ${anchor.name} ו${yielder.name} לימים שונים',
+          ? 'פיזרנו את "${anchor.name}" ו- "${yielder.name}" לימים שונים (התאמה חלקית)'
+          : 'פיזרנו את "${anchor.name}" ו- "${yielder.name}" לימים שונים',
       descriptionEn: isPartial
-          ? 'Spread ${anchor.name} and ${yielder.name} across different days '
+          ? 'Spread "${anchor.name}" and "${yielder.name}" across different days '
               '(partial fit)'
-          : 'Spread ${anchor.name} and ${yielder.name} across different days',
+          : 'Spread "${anchor.name}" and "${yielder.name}" across different days',
       isPartial: isPartial,
     );
   }

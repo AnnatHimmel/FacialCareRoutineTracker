@@ -154,6 +154,7 @@ A standalone local web app (`admin/`) that the admin runs on their machine to bu
 | Large master list | Selection remains scannable via category grouping; day view resolves promptly with up to ~100 products (PRD §10) |
 | Bidirectional text | Latin-script brand names (LTR) embedded in Hebrew lines (RTL) must render correctly — e.g., in routine rows, category headers, changelog, admin comments (NFR-L2) |
 | Order override vs. admin default | Effective order = personal override if set, else admin order. Occasional products sit in their admin position. Override state indicated; "Reset" action available (UC-6) |
+| Moisture lotion-before-cream | Within the Moisturizer category and the same sub-category grouping, a product whose name contains "lotion" is ordered before one containing "cream" (lotions are lighter, applied first), overriding the admin numeric order. Names with neither/both keywords keep their existing order; the rule does not apply across different sub-categories or outside the Moisturizer category |
 | Muted incompatibility conflict that no longer exists | If the user's selection/schedule changes so that the conflicting pair no longer coexists, any mute for that pair is cleared (UC-7) |
 
 ---

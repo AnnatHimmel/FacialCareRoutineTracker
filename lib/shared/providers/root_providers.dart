@@ -360,6 +360,13 @@ final weeklyReminderDismissedDateProvider = FutureProvider<String?>(
       ref.watch(settingsRepositoryProvider).getWeeklyPhotoReminderDismissedDate(),
 );
 
+/// Debug-only: forces the weekly reminder card to show even when a skin-log
+/// photo within the last 7 days would normally suppress it. In-memory only
+/// (resets on app restart); set true by the Settings "Resume reminder" debug
+/// action and cleared once a photo is captured. Does **not** override the
+/// "snoozed today" or "disabled" rules — only the recent-photo gate.
+final weeklyReminderForceShowProvider = StateProvider<bool>((ref) => false);
+
 /// Debug-only callback that empties the shelf (all owned products + their
 /// routine wiring) via [UserDataRepositoryImpl.clearShelf]. No-op when the
 /// repository is a test fake. Used by the debug Settings tool.

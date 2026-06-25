@@ -993,45 +993,6 @@ class _AddCustomProductSheetState
     }
   }
 
-  Future<void> _removeFromShelf(AppLocalizations l) async {
-    final product = widget.viewProduct;
-    if (product == null) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l.customProductDeleteConfirmTitle),
-        content: Text(l.productRemoveFromShelfConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l.cancelAction),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              l.customProductDeleteConfirmAction,
-              style: const TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      final scheduler = ref.read(routineSchedulerProvider);
-      await scheduler.removeProduct(productId: product.id, slot: Slot.morning);
-      await scheduler.removeProduct(productId: product.id, slot: Slot.evening);
-
-      // Hand off to the shared /routine-ready route (re-runs the auto-sorter and
-      // shows the summary, then returns to the shelf).
-      if (!mounted) return;
-      final router = GoRouter.maybeOf(context);
-      Navigator.of(context).pop();
-      router?.go('/routine-ready');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -1136,7 +1097,7 @@ class _AddCustomProductSheetState
                           ),
                         ),
                       ),
-                    // Edit pencil and remove — shown in view mode
+                    // Edit pencil — shown in view mode
                     if (widget.viewProduct != null && _readOnly) ...[
                       SoftIconButton(
                         icon: Icons.edit_rounded,
@@ -1148,15 +1109,6 @@ class _AddCustomProductSheetState
                             : null,
                         onTap:
                             widget.isUserProduct ? _enableEdit : null,
-                      ),
-                      const SizedBox(width: 8),
-                      SoftIconButton(
-                        icon: Icons.delete_outline_rounded,
-                        iconColor: AppColors.error,
-                        tooltip: l.customProductDeleteButton,
-                        onTap: () => widget.isUserProduct
-                            ? _deleteProduct(l)
-                            : _removeFromShelf(l),
                       ),
                       const SizedBox(width: 8),
                     ],
