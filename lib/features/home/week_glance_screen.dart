@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
@@ -9,12 +10,15 @@ import '../../features/setup/order_customization_screen.dart';
 import '../../features/setup/schedule_setup_screen.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
+import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/product_thumb.dart';
 
 // ── Main screen ────────────────────────────────────────────────────────────────
 
 class WeekGlanceScreen extends ConsumerStatefulWidget {
-  const WeekGlanceScreen({super.key});
+  final bool onboarding;
+
+  const WeekGlanceScreen({super.key, this.onboarding = false});
 
   @override
   ConsumerState<WeekGlanceScreen> createState() => _WeekGlanceScreenState();
@@ -272,7 +276,19 @@ class _WeekGlanceScreenState extends ConsumerState<WeekGlanceScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: GlowAppBar(title: l.weekGlanceTitle, showBack: true),
+      appBar: GlowAppBar(title: l.weekGlanceTitle, showBack: !widget.onboarding),
+      bottomNavigationBar: widget.onboarding
+          ? SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: PrimaryButton(
+                  label: l.weekGlanceStartGlowingCta,
+                  onTap: () => context.go('/today'),
+                ),
+              ),
+            )
+          : null,
       body: glanceAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),

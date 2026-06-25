@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../domain/services/routine_build_summary.dart';
@@ -19,9 +18,9 @@ import '../setup/schedule_setup_screen.dart';
 enum _SetupStage {
   products,
   categoryReview,
+  routineSummary,
   amSchedule,
   amOrder,
-  eveningTransition,
   pmSchedule,
   pmOrder,
 }
@@ -41,14 +40,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // Step 3 = product/schedule setup wizard
   int _step = 0;
   _SetupStage _stage = _SetupStage.products;
-  // When entering pmSchedule from amOrder (via evening transition), back goes
-  // to eveningTransition. When entering pmSchedule directly (no morning), back
-  // goes to categoryReview.
-  bool _pmScheduleFromTransition = false;
   String _name = '';
   String? _gender;
-  // When set, the auto-sorter's "routine ready" summary is shown over the
-  // wizard; its CTA hands off to the host (onFinish → home).
+  // The auto-sorter's "routine ready" summary, shown at the routineSummary
+  // stage after categoryReview. Cached so back-navigation from amSchedule
+  // reuses the already-built summary without a rebuild.
   RoutineBuildSummary? _summary;
 
   void _next() => setState(() => _step++);
@@ -93,57 +89,57 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     } catch (_) {
       // Repository may not be available in tests; always proceed.
     }
-    // Show the auto-sorter's "routine ready" summary, then hand off to the host
-    // (which routes to the home screen). If the summary can't be built, finish
-    // straight away so onboarding never dead-ends.
+    if (!mounted) return;
+    widget.onFinish();
+  }
+
+  // Populates _summary for the routineSummary stage. Mirrors the logic in
+  // RoutineReadyRoute._build(). Falls back to _afterRoutineSummary() if the
+  // summary cannot be built so the flow never dead-ends.
+  Future<void> _loadSummary() async {
     MasterContent? master = ref.read(masterContentProvider).valueOrNull;
     if (master == null) {
-      // Provider may be mid-refresh (Supabase) — await the value rather than
-      // dropping straight to the fallback.
       try {
         master = await ref.read(masterContentProvider.future);
-      } catch (_) {
-        master = null;
-      }
+      } catch (_) {}
     }
     if (!mounted) return;
     if (master == null) {
-      widget.onFinish();
+      _afterRoutineSummary();
       return;
     }
+    final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
+    final extraProducts = customProds.map((c) => c.toMasterProduct()).toList();
     RoutineBuildSummary? summary;
     try {
-      summary = await ref
-          .read(routineSchedulerProvider)
-          .buildRoutineSummary(master: master);
-    } catch (_) {
-      summary = null;
-    }
+      summary = await ref.read(routineSchedulerProvider).buildRoutineSummary(
+            master: master,
+            extraProducts: extraProducts,
+          );
+    } catch (_) {}
     if (!mounted) return;
     if (summary == null) {
-      widget.onFinish();
+      _afterRoutineSummary();
       return;
     }
-    // Render the summary in-tree (a view swap), not an imperative
-    // Navigator.push — pushing onto go_router's navigator here proved
-    // unreliable. The summary's CTA performs the host hand-off.
     setState(() => _summary = summary);
+  }
+
+  // Called from the routineSummary CTA — routes to the first schedule stage.
+  void _afterRoutineSummary() {
+    if (_hasMorning()) {
+      setState(() => _stage = _SetupStage.amSchedule);
+    } else if (_hasEvening()) {
+      setState(() => _stage = _SetupStage.pmSchedule);
+    } else {
+      _handleFinish();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // Step 0: language picker — rendered before any l10n text
     if (_step == 0) return _LanguageSelectionStep(onSelect: _onLanguageSelected);
-
-    // Terminal: the auto-sorter's "routine ready" summary, shown over the
-    // wizard once onboarding finishes building the routine.
-    final summary = _summary;
-    if (summary != null) {
-      return RoutineReadySummaryScreen(
-        summary: summary,
-        onContinue: widget.onFinish,
-      );
-    }
 
     final l = AppLocalizations.of(context)!;
     return Scaffold(
@@ -422,25 +418,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return sels.any((s) => s.isSelected);
   }
 
-  // Called from categoryReview → determine next stage based on slot selections
+  // Called from categoryReview → always go to routineSummary first, where the
+  // auto-sorter result is presented. _afterRoutineSummary then routes to the
+  // appropriate schedule stage.
   void _afterCategoryReview() {
-    if (_hasMorning()) {
-      setState(() => _stage = _SetupStage.amSchedule);
-    } else if (_hasEvening()) {
-      // No morning slot; go straight to pmSchedule (back target = categoryReview)
-      setState(() {
-        _pmScheduleFromTransition = false;
-        _stage = _SetupStage.pmSchedule;
-      });
-    } else {
-      _handleFinish();
-    }
+    setState(() {
+      _summary = null;
+      _stage = _SetupStage.routineSummary;
+    });
+    _loadSummary();
   }
 
-  // Called from amOrder → determine next stage
+  // Called from amOrder → go to pmSchedule directly if evening products exist.
   void _afterMorningOrder() {
     if (_hasEvening()) {
-      setState(() => _stage = _SetupStage.eveningTransition);
+      setState(() => _stage = _SetupStage.pmSchedule);
     } else {
       _handleFinish();
     }
@@ -457,10 +449,34 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           onBack: () => setState(() => _stage = _SetupStage.products),
           onNext: _afterCategoryReview,
         );
+      case _SetupStage.routineSummary:
+        final summary = _summary;
+        if (summary == null) {
+          return const Scaffold(
+            backgroundColor: AppColors.surface,
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final l = AppLocalizations.of(context)!;
+        final firstSlotLabel = _hasMorning() ? l.slotMorning : l.slotEvening;
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) {
+              setState(() => _stage = _SetupStage.categoryReview);
+            }
+          },
+          child: RoutineReadySummaryScreen(
+            summary: summary,
+            ctaLabel: l.routineReadyReviewSlotCta(firstSlotLabel),
+            onContinue: _afterRoutineSummary,
+          ),
+        );
       case _SetupStage.amSchedule:
+        // Back returns to routineSummary without rebuilding; cached _summary is reused.
         return ScheduleSetupScreen(
           onboardingSlot: Slot.morning,
-          onBack: () => setState(() => _stage = _SetupStage.categoryReview),
+          onBack: () => setState(() => _stage = _SetupStage.routineSummary),
           onContinue: () => setState(() => _stage = _SetupStage.amOrder),
         );
       case _SetupStage.amOrder:
@@ -469,21 +485,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           onBack: () => setState(() => _stage = _SetupStage.amSchedule),
           onContinue: _afterMorningOrder,
         );
-      case _SetupStage.eveningTransition:
-        return _EveningTransitionStep(
-          onBack: () => setState(() => _stage = _SetupStage.amOrder),
-          onContinue: () => setState(() {
-            _pmScheduleFromTransition = true;
-            _stage = _SetupStage.pmSchedule;
-          }),
-        );
       case _SetupStage.pmSchedule:
         return ScheduleSetupScreen(
           onboardingSlot: Slot.evening,
           onBack: () => setState(() {
-            _stage = _pmScheduleFromTransition
-                ? _SetupStage.eveningTransition
-                : _SetupStage.categoryReview;
+            _stage = _hasMorning()
+                ? _SetupStage.amOrder
+                : _SetupStage.routineSummary;
           }),
           onContinue: () => setState(() => _stage = _SetupStage.pmOrder),
         );
@@ -494,110 +502,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           onContinue: _handleFinish,
         );
     }
-  }
-}
-
-// ── Evening Transition Step ───────────────────────────────────────────────────
-// Shown after morning order is confirmed, before evening schedule setup.
-// Calm visual: back arrow, icon, title, body, and a continue button.
-
-class _EveningTransitionStep extends StatelessWidget {
-  final VoidCallback onBack;
-  final VoidCallback onContinue;
-
-  const _EveningTransitionStep({
-    required this.onBack,
-    required this.onContinue,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 80),
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: AppColors.tertiary.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.dark_mode_rounded,
-                        size: 40,
-                        color: AppColors.tertiary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      l.eveningTransitionTitle,
-                      style: AppTypography.headlineMd.copyWith(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l.eveningTransitionBody,
-                      style: AppTypography.bodyMd.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                        fontSize: 15,
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.outline),
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: InkWell(
-                        onTap: onBack,
-                        borderRadius: BorderRadius.circular(9999),
-                        child: const Icon(Icons.arrow_back,
-                            color: AppColors.primary),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: PrimaryButton(
-                      label: l.continueActionNeutral,
-                      trailingIcon: Icons.arrow_forward,
-                      onTap: onContinue,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

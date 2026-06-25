@@ -22,12 +22,10 @@ import '../../domain/enums/slot.dart';
 import '../../shared/widgets/product_thumb.dart' show userPhotoProvider;
 import '../../domain/services/category_helpers.dart';
 import '../../domain/services/default_schedule.dart';
-import '../../domain/services/routine_build_summary.dart';
 import '../../domain/services/routine_scheduler.dart';
 import '../../domain/services/product_classifier.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/soft_icon_button.dart';
-import 'routine_ready_summary_screen.dart';
 
 const _uuid = Uuid();
 
@@ -865,7 +863,15 @@ class _AddCustomProductSheetState
         await _seedSpreadSchedule(scheduler, id, inMorning, inEvening);
       }
 
-      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      // After a routine-affecting save, run the auto-sorter and show its
+      // "routine ready" summary (which then hands off to the shelf). A brand-new
+      // shelf product placed in no slot didn't change the routine — just close.
+      // GoRouter.maybeOf keeps widget tests (plain MaterialApp, no router) green.
+      final changedRoutine = inMorning || inEvening || _isEditing;
+      final router = changedRoutine ? GoRouter.maybeOf(context) : null;
+      Navigator.of(context).pop();
+      router?.go('/routine-ready');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -977,40 +983,13 @@ class _AddCustomProductSheetState
           .read(userDataRepositoryProvider)
           .deleteCustomProduct(deleteId);
 
-      // Re-run the auto-sorter and present its "routine ready" summary after the
-      // shelf change. Build it before closing the sheet; navigate via captured
-      // references so we don't touch a defunct context post-pop.
-      final master = ref.read(masterContentProvider).valueOrNull;
-      RoutineBuildSummary? summary;
-      if (master != null) {
-        try {
-          summary = await scheduler.buildRoutineSummary(master: master);
-        } catch (_) {
-          summary = null;
-        }
-      }
+      // Hand off to the shared /routine-ready route, which re-runs the
+      // auto-sorter (with custom products as extraProducts) and shows the
+      // "routine ready" summary before returning to the shelf.
       if (!mounted) return;
-      final rootNav = Navigator.of(context, rootNavigator: true);
-      final router = GoRouter.of(context);
+      final router = GoRouter.maybeOf(context);
       Navigator.of(context).pop(); // close the sheet
-      if (summary != null) {
-        void navigateAway() {
-          rootNav.pop();
-          router.go('/week-glance');
-        }
-        rootNav.push(MaterialPageRoute<void>(
-          builder: (_) => PopScope(
-            canPop: false,
-            onPopInvokedWithResult: (didPop, _) {
-              if (!didPop) navigateAway();
-            },
-            child: RoutineReadySummaryScreen(
-              summary: summary!,
-              onContinue: navigateAway,
-            ),
-          ),
-        ));
-      }
+      router?.go('/routine-ready');
     }
   }
 
@@ -1044,30 +1023,12 @@ class _AddCustomProductSheetState
       await scheduler.removeProduct(productId: product.id, slot: Slot.morning);
       await scheduler.removeProduct(productId: product.id, slot: Slot.evening);
 
-      final master = ref.read(masterContentProvider).valueOrNull;
-      RoutineBuildSummary? summary;
-      if (master != null) {
-        try {
-          summary = await scheduler.buildRoutineSummary(master: master);
-        } catch (_) {
-          summary = null;
-        }
-      }
+      // Hand off to the shared /routine-ready route (re-runs the auto-sorter and
+      // shows the summary, then returns to the shelf).
       if (!mounted) return;
-      final rootNav = Navigator.of(context, rootNavigator: true);
-      final router = GoRouter.of(context);
+      final router = GoRouter.maybeOf(context);
       Navigator.of(context).pop();
-      if (summary != null) {
-        rootNav.push(MaterialPageRoute<void>(
-          builder: (_) => RoutineReadySummaryScreen(
-            summary: summary!,
-            onContinue: () {
-              rootNav.pop();
-              router.go('/week-glance');
-            },
-          ),
-        ));
-      }
+      router?.go('/routine-ready');
     }
   }
 

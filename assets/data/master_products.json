@@ -440,13 +440,31 @@
       ]
     },
     {
+      "id": "sub-moisture-serum",
+      "name": {
+        "he": "סרום לחות",
+        "en": "Moisture Serum"
+      },
+      "categoryId": "cat-moisturizer",
+      "order": 1,
+      "keywords": [
+        "סרום לחות",
+        "hyaluronic acid",
+        "hyaluronic",
+        "HA serum",
+        "hydrating serum",
+        "moisture serum",
+        "חומצה היאלורונית"
+      ]
+    },
+    {
       "id": "sub-moisturizer",
       "name": {
         "he": "קרם לחות",
         "en": "Moisturizer"
       },
       "categoryId": "cat-moisturizer",
-      "order": 1,
+      "order": 2,
       "keywords": [
         "קרם לחות",
         "moisturizer",

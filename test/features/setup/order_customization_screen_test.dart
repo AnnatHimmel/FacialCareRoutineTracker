@@ -231,6 +231,10 @@ Widget _wrap({
         path: '/today',
         builder: (_, __) => const Scaffold(body: Text('home-screen')),
       ),
+      GoRoute(
+        path: '/routine-ready',
+        builder: (_, __) => const Scaffold(body: Text('routine-ready')),
+      ),
     ],
   );
   return ProviderScope(
@@ -301,7 +305,7 @@ void main() {
     });
 
     testWidgets(
-        'fromSetup: true → save sets onboardingCompleted and navigates to /today',
+        'fromSetup: true → save sets onboardingCompleted and navigates to /routine-ready',
         (tester) async {
       final sr = _FakeSR();
       final udr = _FakeUDR(
@@ -318,7 +322,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(sr.onboardingCompleted, isTrue);
-      expect(find.text('home-screen'), findsOneWidget);
+      expect(find.text('routine-ready'), findsOneWidget);
     });
 
     testWidgets('reset button visible when order override exists', (tester) async {

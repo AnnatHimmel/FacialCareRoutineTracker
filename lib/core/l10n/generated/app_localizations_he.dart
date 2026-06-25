@@ -1710,6 +1710,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get weekGlanceTitle => 'שגרת השבוע שלי';
 
   @override
+  String get weekGlanceStartGlowingCta => 'הכול מוכן, מתחילים לזרוח!';
+
+  @override
   String get weekGlanceEntrySubtitle => 'מה בשגרת הבוקר ומה בשגרת הערב בכל יום';
 
   @override
@@ -1898,6 +1901,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get routineReadyCta => 'הצגת השגרה שלי';
+
+  @override
+  String routineReadyReviewSlotCta(String slot) {
+    return 'נסקור את שגרת ה$slot';
+  }
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -2171,4 +2179,12 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   @override
   String get welcomeSubline30plus =>
       'חודש ויותר של שגרת טיפוח עקבית — אתה אגדה!';
+
+  @override
+  String get weekGlanceStartGlowingCta => 'הכול מוכן, מתחילים לזרוח!';
+
+  @override
+  String routineReadyReviewSlotCta(String slot) {
+    return 'נסקור את שגרת ה$slot';
+  }
 }

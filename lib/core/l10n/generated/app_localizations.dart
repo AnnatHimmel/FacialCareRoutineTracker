@@ -3141,6 +3141,12 @@ abstract class AppLocalizations {
   /// **'שגרת השבוע שלי'**
   String get weekGlanceTitle;
 
+  /// No description provided for @weekGlanceStartGlowingCta.
+  ///
+  /// In he, this message translates to:
+  /// **'הכול מוכן, מתחילים לזרוח!'**
+  String get weekGlanceStartGlowingCta;
+
   /// No description provided for @weekGlanceEntrySubtitle.
   ///
   /// In he, this message translates to:
@@ -3482,6 +3488,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הצגת השגרה שלי'**
   String get routineReadyCta;
+
+  /// No description provided for @routineReadyReviewSlotCta.
+  ///
+  /// In he, this message translates to:
+  /// **'נסקור את שגרת ה{slot}'**
+  String routineReadyReviewSlotCta(String slot);
 }
 
 class _AppLocalizationsDelegate

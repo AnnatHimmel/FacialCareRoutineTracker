@@ -92,7 +92,7 @@ Implemented in `lib/shared/widgets/glass_bottom_nav.dart` (`AppBottomNav`), wire
 | S14 | Update Review | Post-update new/deprecated products | Auto-shown on first run after update | S4 (dismiss) |
 | S15 | License Activation (stub) | Premium key entry (Web only, post-v1.0) | S11 → "הפעלת רישיון" | Back to S11 |
 | S16 | Backup Reminder | Persistent gentle nudge | Auto-shown when no recent export | Dismissed; or → S12 |
-| S17 | Routine Ready Summary | Auto-sorter decisions after a routine build | Onboarding finish; after add/remove product | "View my routine" → S4 (`/today`) |
+| S17 | Routine Ready Summary | Auto-sorter decisions after a routine build | Mid-onboarding (after sub-category approval); shelf add/remove (S1→S2 commit, custom add/remove); setup finish — all via the `/routine-ready` route | In-onboarding: advances to first active slot's schedule screen; post-setup: "View my routine" → shelf (`/collection`) |
 
 ---
 
@@ -898,7 +898,7 @@ Will be replaced post-v1.0 with a key-entry form + cloud backup controls.
 
 ### S17 — Routine Ready Summary
 
-**Purpose:** Shown every time the auto-sorter builds a routine — at onboarding completion, and after adding or removing a product — to surface the decisions the sorter made. Reference: `auto-reorder message ref.jpg`. Backed by `RoutineScheduler.buildRoutineSummary` → `RoutineBuildSummary`; pure presentation widget (`RoutineReadySummaryScreen`).
+**Purpose:** Shown every time the auto-sorter builds a routine — at onboarding/setup completion, and after each shelf add/remove — to surface the decisions the sorter made. Reference: `auto-reorder message ref.jpg`. Backed by `RoutineScheduler.buildRoutineSummary` → `RoutineBuildSummary`; pure presentation widget (`RoutineReadySummaryScreen`). Reached through the shared `/routine-ready` route (`RoutineReadyRoute`), which builds the summary and supplies the CTA — see MOD-DEC-SUM-003.
 
 **Wireframe:**
 ```
@@ -924,7 +924,7 @@ Will be replaced post-v1.0 with a key-entry form + cloud backup controls.
 │                                             │
 │  (אם אין שינויים: "לא נדרשו התאמות …")        │  ← Empty-state line replaces both sections
 │                                             │
-│           [  הצגת השגרה שלי  ]               │  ← Single CTA → /today
+│           [  הצגת השגרה שלי  ]               │  ← Single CTA → shelf (/collection)
 └─────────────────────────────────────────────┘
 ```
 
@@ -933,8 +933,8 @@ Will be replaced post-v1.0 with a key-entry form + cloud backup controls.
 - **No back, no Undo** — terminal screen; the explainer ("תמיד אפשר לשנות") points users to edit manually in S2/S3.
 - "מה סידרנו בשבילך" lists `summary.changes`; "כדאי לשים לב" lists `summary.advisories` (pairs the user kept together that still co-occur).
 - Slot badge reuses `TagChip` (morning = peach/sun, evening = rose/moon). Kind icons use `textDirection: TextDirection.ltr` (RTL no-mirror rule).
-- CTA `onContinue` is caller-supplied: onboarding hands off to the host (`onFinish`); add/remove product navigate to `/today`.
-- Onboarding renders it **in-tree** (a view swap) rather than an imperative push, so it composes cleanly with go_router.
+- CTA `onContinue` lands on the shelf (`/collection`): the `/routine-ready` route supplies `context.go('/collection')`. Onboarding's in-tree variant uses a slot-contextualized label via `routineReadyReviewSlotCta(slot)` — "נסקור את שגרת הבוקר" for a morning-first routine, "נסקור את שגרת הערב" for an evening-only routine — and advances to the first active slot's schedule screen instead of the shelf.
+- Onboarding renders it **in-tree** (a view swap shown immediately after sub-category approval, before the user reviews schedules and order) rather than at the end of the wizard, so the auto-sort framing is visible up front.
 
 ---
 
@@ -949,16 +949,26 @@ App Install
 Is setup complete?
     │ No
     ▼
-S1 Product Selection
-    │ User selects products; no occasional products?
-    ├──────────────────────────────────────┐
-    │                                      ▼
-    │ Has occasional products?        S4 Daily Home
-    ▼
-S2 Schedule Setup
+[Onboarding wizard — Step 3 sub-stages]
     │
-    ▼
-S3 Order Customization (skippable)
+    ├─ 1. Product selection (products)
+    │
+    ├─ 2. Sub-category approval (categoryReview)
+    │
+    ├─ 3. S17 Routine Ready Summary (routineSummary — auto-sort framing)
+    │         CTA: "נסקור את שגרת הבוקר" → morning timing
+    │         (evening-only: "נסקור את שגרת הערב" → PM schedule; skips stages 4–5)
+    │
+    ├─ 4. Morning weekly timing (amSchedule)
+    │
+    ├─ 5. Morning order override (amOrder)
+    │
+    ├─ 6. Evening weekly timing (pmSchedule)  ← reached directly; no transition screen
+    │
+    ├─ 7. Evening order override (pmOrder)
+    │
+    └─ 8. Week-at-a-Glance (onboarding mode)
+              CTA: "הכול מוכן, מתחילים לזרוח!" → /today
     │
     ▼
 S4 Daily Home ←──── Daily app open (subsequent launches)

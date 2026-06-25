@@ -323,6 +323,9 @@ class RoutineScheduler {
         ? null
         : {for (final o in catOverrideList) o.productId: o.categoryId};
 
+    final morningOrderOverride = await _repo.watchOrderOverride(Slot.morning).first;
+    final eveningOrderOverride = await _repo.watchOrderOverride(Slot.evening).first;
+
     return const WeekGlanceBuilder().build(
       allProducts: [...master.products, ...extraProducts],
       categories: master.categories,
@@ -333,6 +336,8 @@ class RoutineScheduler {
       schedules: schedules,
       mutedRuleIds: mutedRuleIds,
       categoryOverrides: catOverrides,
+      morningOrderOverride: morningOrderOverride,
+      eveningOrderOverride: eveningOrderOverride,
     );
   }
 
@@ -566,6 +571,7 @@ class RoutineScheduler {
   Future<RoutineFixResult> fixProblems({
     required MasterContent master,
     required Slot slot,
+    List<MasterProduct> extraProducts = const [],
   }) async {
     final morningSelections = await _repo.watchSelections(Slot.morning).first;
     final eveningSelections = await _repo.watchSelections(Slot.evening).first;
@@ -573,10 +579,12 @@ class RoutineScheduler {
     final mutedConflicts = await _repo.watchMutedConflicts().first;
     final mutedRuleIds = mutedConflicts.map((m) => m.ruleId).toSet();
 
+    final allProducts = [...master.products, ...extraProducts];
+
     Set<String> selectedIds(List<ProductSelection> sels) =>
         sels.where((s) => s.isSelected).map((s) => s.productId).toSet();
 
-    List<MasterProduct> slotProducts(Slot s, Set<String> ids) => master.products
+    List<MasterProduct> slotProducts(Slot s, Set<String> ids) => allProducts
         .where((p) =>
             !p.isDeprecated &&
             ids.contains(p.id) &&
@@ -723,7 +731,7 @@ class RoutineScheduler {
       // from the pre-persist snapshot, for the summary's change classification.
       final beforeDaysByKey = <String, Set<int>>{};
       for (final m in supplemented) {
-        final p = master.products.where((p) => p.id == m.productId).firstOrNull;
+        final p = allProducts.where((p) => p.id == m.productId).firstOrNull;
         if (p == null) continue;
         beforeDaysByKey['${m.productId}|${m.slot.name}'] =
             sd.effectiveDays(p, m.slot, schedules);
@@ -773,7 +781,7 @@ class RoutineScheduler {
         if (before.isNotEmpty && after.isEmpty) {
           final otherSlot =
               m.slot == Slot.morning ? Slot.evening : Slot.morning;
-          final p = master.products.where((p) => p.id == m.productId).firstOrNull;
+          final p = allProducts.where((p) => p.id == m.productId).firstOrNull;
           if (p?.configForSlot(otherSlot) != null) movedSlot = true;
         }
         beforeTotal += before.length;
@@ -813,7 +821,11 @@ class RoutineScheduler {
     required MasterContent master,
     List<MasterProduct> extraProducts = const [],
   }) async {
-    final fix = await fixProblems(master: master, slot: Slot.morning);
+    final fix = await fixProblems(
+      master: master,
+      slot: Slot.morning,
+      extraProducts: extraProducts,
+    );
 
     final morningSelections = await _repo.watchSelections(Slot.morning).first;
     final eveningSelections = await _repo.watchSelections(Slot.evening).first;

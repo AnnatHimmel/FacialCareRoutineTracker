@@ -408,14 +408,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     ),
                   ),
 
-                if (morningProducts.isNotEmpty || eveningProducts.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                      child: _JournalCtaCard(dateStr: dateStr),
-                    ),
-                  ),
-
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
             ),
@@ -1040,77 +1032,6 @@ class _AttentionRow extends StatelessWidget {
 
 // ── Journal CTA card ──────────────────────────────────────────────────────────
 
-class _JournalCtaCard extends StatelessWidget {
-  final String dateStr;
-
-  const _JournalCtaCard({required this.dateStr});
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      decoration: BoxDecoration(
-        gradient: AppColors.streakGradient,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: AppColors.glowLg,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l.journalCtaTitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.start,
-                  style: AppTypography.bodyLg.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  l.journalCtaSubtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.start,
-                  style: AppTypography.labelMd.copyWith(
-                    color: const Color(0xCCFFFFFF),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () => context.push('/skin-log/$dateStr'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.inverseSurface,
-                foregroundColor: AppColors.inverseOnSurface,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                shape: const StadiumBorder(),
-                elevation: 0,
-              ),
-              child: Text(
-                l.journalCtaButton,
-                style: AppTypography.labelMd.copyWith(
-                  color: AppColors.inverseOnSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 final _dayRecordProvider =
     StreamProvider.family<DayRecord?, ({String date, Slot slot})>(

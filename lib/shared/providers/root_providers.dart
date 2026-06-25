@@ -382,6 +382,10 @@ final dailyRoutineProvider =
     final resolver = ref.watch(routineResolverProvider);
     final scheduler = ref.watch(routineSchedulerProvider);
     final userRepo = ref.watch(userDataRepositoryProvider);
+    // Re-run this stream generator whenever the order override changes so the
+    // daily routine immediately reflects a new drag order without requiring a
+    // selection change to trigger re-emission.
+    ref.watch(orderOverrideProvider(params.slot));
 
     final effectiveDate = boundary.parseDate(params.date);
     final dayOfWeek = effectiveDate.weekday % 7; // Sun=0…Sat=6
@@ -433,6 +437,8 @@ final weekGlanceProvider = FutureProvider<WeekGlance>((ref) async {
   ref.watch(allSchedulesProvider);
   final customProds = ref.watch(customProductsProvider).valueOrNull ?? [];
   ref.watch(mutedConflictsProvider);
+  ref.watch(orderOverrideProvider(Slot.morning));
+  ref.watch(orderOverrideProvider(Slot.evening));
   return ref.watch(routineSchedulerProvider).weekGlance(
     master: master,
     extraProducts: customProds.map((p) => p.toMasterProduct()).toList(),

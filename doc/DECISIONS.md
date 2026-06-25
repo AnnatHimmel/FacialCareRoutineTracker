@@ -47,6 +47,19 @@ The registered scrapers (`barcodeProductLookupServiceProvider` in `root_provider
 - `load()` is offline-first and never hits the network: it loads the bundled asset, then prefers the SharedPreferences cache **only if its `contentVersion` is ≥ the bundled version** (the version guard from MOD-DEC-BAR-002); otherwise it clears the stale cache and uses bundled.
 - `refresh()` (separate from `load()`) fetches from Supabase and **merges by ID — remote wins on collision, bundled-only items are appended** (so a Supabase lag never drops bundled products), then writes the merged result to cache. The repo implements `RefreshableRepository`.
 
+### MOD-DEC-SUM-003: Unify the "Routine Ready" Summary on a Single `/routine-ready` Route
+**Date**: 2026-06-25
+**Request**: The summary screen was inconsistent — "not all paths of adding / removing / selecting show the summary screen." The main shelf "add products" path never showed it at all.
+**Decision**: Replace the three divergent mechanisms (onboarding in-tree view swap; the never-reached `/add-product` in-tree swap; a bespoke `rootNavigator.push` / `/routine-summary?extra=` for custom add/remove) with **one** go_router route, `/routine-ready` (`RoutineReadyRoute`, `lib/features/setup/routine_ready_route.dart`). The route **builds the summary itself** from `routineSchedulerProvider.buildRoutineSummary(master, extraProducts: customProducts.map(toMasterProduct))`, renders `RoutineReadySummaryScreen`, and its single CTA hands off to the shelf via `context.go('/collection')`. If the summary can't be built it redirects to `/collection` so the flow never dead-ends. Every routine-changing commit point now `context.go('/routine-ready')` once its mutations are persisted:
+- `ScheduleSetupScreen._handleContinue` products-flow branch (was `/today`) — covers the home "add products" button and the Collection "+" FAB (both funnel S1→S2).
+- `AddCustomProductSheet._save` (add/edit, when a slot is touched) and both remove/delete flows (was `rootNav.push`/`/routine-summary`). Uses `GoRouter.maybeOf` so plain-`MaterialApp` widget tests stay green.
+- `OrderCustomizationScreen._save` `fromSetup` branch (was `/today`) — setup ends with the summary once.
+- Onboarding keeps its in-tree summary (well-tested, reliable); only its CTA destination moved to `/collection` via the router's `onFinish`.
+The redundant `/routine-summary` route was removed.
+**Rationale**: Centralizing the build in the route (a) kills the duplication where each caller re-built the summary, (b) fixes a latent repeat of the MOD-DEC-SUM-002 bug — the custom add/remove callers built the summary **without** `extraProducts`, so any *other* custom product in the routine could still make `buildRoutineSummary` throw, and (c) survives a web refresh (no reliance on `GoRouter` `extra`, which is null after reload). CTA → shelf and "summary after each shelf add/remove, once at setup end" per the product owner's explicit choice.
+**Alternatives Rejected**: Passing the pre-built summary via `GoRouter` `extra` (the removed `/routine-summary` approach — loses data on web refresh, re-duplicates the build, keeps the extraProducts bug); migrating onboarding's in-tree swap to the route (working + heavily tested, not worth the regression risk); showing the summary after every individual barcode scan (a scan is mid-session, not a commit point — it surfaces at the S2 continue instead).
+**Affects Files**: `lib/features/setup/routine_ready_route.dart` (new), `lib/core/routing/app_router.dart`, `lib/features/setup/schedule_setup_screen.dart`, `lib/features/setup/add_custom_product_sheet.dart`, `lib/features/setup/order_customization_screen.dart`, and the matching tests (`routine_ready_route_test.dart` new, `schedule_setup_screen_test.dart`, `order_customization_screen_test.dart`).
+
 ### MOD-DEC-SUM-001: "Routine Ready" Summary After the Auto-Sorter
 **Date**: 2026-06-24
 **Request**: Every time the auto-sorter builds a routine — onboarding completion, after adding a product, after removing a product — show the user a screen summarizing the decisions the sorter made (reference: `auto-reorder message ref.jpg`).
@@ -80,6 +93,32 @@ Additionally, `_save()` in `AddProductFlowScreen` was wrapped in an outer `try/c
 **Rationale**: `_save()` was called without `await` from `_advance()`, so any exception thrown before `buildRoutineSummary` (e.g., in `addProduct` for custom-product IDs) became an unhandled future — the success step was never reached and the screen froze. The outer catch ensures the screen always advances. Adding `collection` as a direct dependency makes the `firstWhereOrNull` import explicit and resilient to transitive-dependency changes.
 **Alternatives Rejected**: Merging custom products into `MasterContent` at the provider level (couples two independent data domains); routing custom-product reads through `UserDataRepository` directly from the screen (violates the single-source-of-truth rule for routine data in §3.0); awaiting `_save()` in `_advance()` (would require converting `_advance` to async and propagating through all callers).
 **Affects Files**: `lib/domain/services/routine_scheduler.dart`, `lib/shared/providers/root_providers.dart`, `lib/features/setup/add_product_flow_screen.dart`, `pubspec.yaml`.
+
+### MOD-DEC-ONB-001: Reorder Onboarding Setup-Wizard Stage Sequence
+**Date**: 2026-06-25
+**Request**: The onboarding wizard showed the auto-sort "routine ready" summary at the very end of Step 3, after the user had already hand-customized every schedule and order — making the auto-sort framing too late to be useful. An evening-transition interstitial between AM and PM steps was also unwanted. The user requested the summary be moved up front (right after category approval) so it frames the per-slot review, and the flow to end on the week-at-a-glance screen with a celebratory CTA.
+**Decision**: Reordered the `_SetupStage` enum in `OnboardingScreen` and rewired stage transitions as follows:
+
+1. `products` — product selection (unchanged)
+2. `categoryReview` — sub-category approval (unchanged)
+3. `routineSummary` (NEW position) — auto-sort summary shown in-tree; CTA label `routineReadyReviewSlotCta(slot)` → first active slot's schedule step
+4. `amSchedule` — morning weekly timing
+5. `amOrder` — morning order override
+6. `pmSchedule` — evening weekly timing (reached directly from `amOrder`; no transition screen)
+7. `pmOrder` — evening order override
+8. `WeekGlanceScreen` (onboarding mode: `onboarding: true`, no back button) — CTA `weekGlanceStartGlowingCta` ("הכול מוכן, מתחילים לזרוח!") → `/today`
+
+The `eveningTransition` stage and its `_EveningTransitionStep` widget are removed. `_afterMorningOrder()` advances directly to `pmSchedule`. `pmSchedule` back-target is `amOrder` when morning exists, else `routineSummary`. `_handleFinish()` drops all summary-building; it persists name/gender + `setOnboardingCompleted(true)` then calls `widget.onFinish()` which routes to `/week-glance?onboarding=true`. The `/week-glance` route builder reads `state.uri.queryParameters['onboarding'] == 'true'` and passes it to `WeekGlanceScreen(onboarding: ...)`.
+
+Edge case — evening-only routine (no morning products): stages 4–5 (amSchedule, amOrder) are skipped; the `routineSummary` CTA reads "נסקור את שגרת הערב" and navigates directly to `pmSchedule`.
+
+Two new localization keys: `routineReadyReviewSlotCta(slot)` (he/he_MA: "נסקור את שגרת ה{slot}"; en: "Let's review the {slot} routine") and `weekGlanceStartGlowingCta` (he/he_MA: "הכול מוכן, מתחילים לזרוח!"; en: "All set, start glowing!").
+
+`RoutineReadySummaryScreen` gains an optional `String? ctaLabel` parameter (defaults to existing `routineReadyCta` when null) to support the in-onboarding slot-specific label without changing existing non-onboarding call sites.
+
+**Rationale**: Showing the auto-sort result up front gives the user context before they start tweaking schedules and order — otherwise they see optimized schedule advice without knowing what the sorter did to their routine. Removing the evening-transition interstitial reduces friction with no information loss. Ending on the week-at-a-glance screen gives a celebratory, at-a-glance confirmation that the whole routine is wired up before entering daily use.
+**Alternatives Rejected**: Keeping the summary at the end (too late — user has already made changes on top of an unseen base); keeping the evening-transition screen (per user request, no value added); routing from onboarding directly to `/today` without a week-glance step (loses the celebratory end-of-setup moment and the "see your whole week" orientation).
+**Affects Files**: `lib/features/onboarding/onboarding_screen.dart`, `lib/features/setup/routine_ready_summary_screen.dart`, `lib/features/home/week_glance_screen.dart`, `lib/core/routing/app_router.dart`, `lib/l10n/app_he.arb`, `lib/l10n/app_he_MA.arb`, `lib/l10n/app_en.arb`.
 
 ### Flutter / Dart
 
@@ -246,3 +285,19 @@ Additionally, `_save()` in `AddProductFlowScreen` was wrapped in an outer `try/c
 **Rationale**: Deriving "has a recent photo" from the actual skin logs keeps a single source of truth — a photo taken anywhere (S8 or the card) satisfies the reminder, with no separate counter to keep in sync. Only the dismiss-snooze needs persisted state, so the feature adds exactly one local settings key. Gating on an existing routine avoids overflowing the pre-setup empty state and matches the journal CTA's visibility rule.
 **Alternatives Rejected**: A dedicated "last weekly photo" timestamp counter (duplicates state already implied by skin logs; can drift); calendar-week (Sun–Sat) cadence and full-week dismiss (rejected per product owner in favor of rolling-7-day cadence + dismiss-until-tomorrow).
 **Affects Files**: `daily_home_screen.dart`, `weekly_skin_reminder_card.dart`, `settings_screen.dart`, `settings_repository.dart`, `settings_repository_impl.dart`, `root_providers.dart` (`weeklyReminderEnabledProvider`), l10n ARBs.
+
+#### DEC-017: Debug-Only Settings Tools (Resume Reminder, Clear Shelf)
+**Date**: 2026-06-25
+**Context**: Development/testing needs quick ways to re-trigger the weekly reminder and to reset the user's product shelf to an empty state, without wiping history or reinstalling.
+**Decision**: Settings hosts a `kDebugMode`-gated block (stripped from release/profile builds) with two actions: (1) **Resume weekly reminder** (see DEC-016); (2) **Clear the shelf** — empties every product the user owns (selections, custom products, collection-item lifecycle) plus the routine wiring tied to those products (schedules, order overrides, category overrides), while **preserving history** (day records, skin logs, muted conflicts). Clear-shelf is implemented as `UserDataRepositoryImpl.clearShelf()` (one Drift transaction of `deleteAll`s) — **deliberately not added to the `UserDataRepository` abstract interface** to avoid touching the 24 test fakes that implement it; it is reached through `debugClearShelfProvider`, which no-ops when the repository is not the concrete impl (e.g. test fakes). The Drift `watch*` streams make the shelf/routine UI refresh automatically after the wipe; a confirmation dialog guards the destructive tap.
+**Rationale**: Interface-level churn across 24 fakes (and merge risk against concurrent work) outweighs the purity benefit of a contract method for a debug-only utility. Preserving history matches the semantic of "shelf" (= products), not "all data".
+**Alternatives Rejected**: Adding `clearShelf()` to the abstract `UserDataRepository` (24-fake churn); reusing `replaceAllData` with an emptied export (does not clear custom products and would also wipe history); per-item iteration via public methods (soft-delete leaves custom products visible; leaves deselected selection rows).
+**Affects Files**: `user_data_repository_impl.dart` (`clearShelf`), `root_providers.dart` (`debugClearShelfProvider`), `settings_screen.dart`, l10n ARBs, `user_data_repository_clear_test.dart`.
+
+#### DEC-018: go_router-Safe Back Navigation (No More Black Screen)
+**Date**: 2026-06-25
+**Context**: Pressing the `GlowAppBar` back arrow on a screen reached via `context.go(...)` crashed with *"You have popped the last page off of the stack, there are no pages left to show"* (`GoRouterDelegate._debugAssertMatchListNotEmpty`) and dropped the user onto a black screen (the bleed-through showed the `WelcomeScreen` streak number / system status bar). `go()` replaces go_router's match list with a single entry; the old `GlowAppBar` default `onPressed: () => Navigator.of(context).pop()` popped that lone entry and emptied `currentConfiguration`. The routine-changing flows (`/routine-ready`, reached from the add/remove-from-shelf sheet via `go('/routine-ready')`) had the same exposure on system back.
+**Decision**: (1) `GlowAppBar`'s default back action is now go_router-aware — `_defaultBack` uses `GoRouter.maybeOf(context)`; with a router it calls `router.pop()` only when `router.canPop()`, otherwise `router.go('/today')`; with no router (plain-`MaterialApp` widget tests) it falls back to a guarded `Navigator.pop()`. An explicit `onBack` still overrides everything. (2) `RoutineReadyRoute` (which has no `GlowAppBar`) wraps its body in `PopScope(canPop: false)` and, on intercepted back, routes to `/collection`; `_goToShelf` is idempotent (`_navigatedAway` guard) and defers the `context.go` via `addPostFrameCallback` to avoid the `!_debugLocked` re-entrancy assertion (navigating synchronously from inside a pop handler is illegal).
+**Rationale**: The fix belongs at the shared `GlowAppBar` level because *every* screen reachable via `go()` had the latent crash, not just the shelf flow. A safe home fallback (`/today`) guarantees back never dead-ends. Deferring navigation out of the pop callback is the correct pattern for go_router + `PopScope`.
+**Alternatives Rejected**: Per-screen `onBack` handlers (would have to be added to ~10 screens and is easy to forget on the next one); switching the shelf flow from `go()` to `push()` (the routine-ready summary is intentionally terminal — it should not leave the mutating screen underneath); raw `context.pop()` without the `canPop()` guard (still crashes when the stack is a single entry).
+**Affects Files**: `lib/shared/widgets/glow_app_bar.dart` (`_defaultBack`), `lib/features/setup/routine_ready_route.dart` (`PopScope` + guarded/deferred `_goToShelf`), `test/shared/widgets/glow_app_bar_back_test.dart`.

@@ -930,6 +930,7 @@
   },
   "welcomeSubline30plus": "A month or more of consistent skincare — you're a legend!",
   "weekGlanceTitle": "My Week's Routine",
+  "weekGlanceStartGlowingCta": "All set, start glowing!",
   "weekGlanceEntrySubtitle": "Morning and evening routines, day by day",
   "weekGlanceEditButton": "Edit",
   "weekGlanceStatusOkTitle": "Routine looks good",
@@ -1075,5 +1076,13 @@
   "routineReadyAdvisoriesHeader": "Worth Noting",
   "routineReadyAdvisoriesExplainer": "We didn't block anything — just a small advisory note.",
   "routineReadyNothingToReport": "No adjustments needed — your routine is organized and ready.",
-  "routineReadyCta": "View My Routine"
+  "routineReadyCta": "View My Routine",
+  "routineReadyReviewSlotCta": "Let's review the {slot} routine",
+  "@routineReadyReviewSlotCta": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  }
 }

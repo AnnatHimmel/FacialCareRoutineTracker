@@ -17,11 +17,13 @@ import '../../shared/widgets/radiant_chips.dart';
 class RoutineReadySummaryScreen extends StatelessWidget {
   final RoutineBuildSummary summary;
   final VoidCallback onContinue;
+  final String? ctaLabel;
 
   const RoutineReadySummaryScreen({
     super.key,
     required this.summary,
     required this.onContinue,
+    this.ctaLabel,
   });
 
   @override
@@ -106,7 +108,7 @@ class RoutineReadySummaryScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: PrimaryButton(
-                label: l.routineReadyCta,
+                label: ctaLabel ?? l.routineReadyCta,
                 onTap: onContinue,
               ),
             ),

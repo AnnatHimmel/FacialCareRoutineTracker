@@ -250,11 +250,6 @@ Widget _wrap({
         builder: (_, __) => const DailyHomeScreen(),
       ),
       GoRoute(
-        path: '/skin-log/:date',
-        builder: (_, state) =>
-            Scaffold(body: Text('journal-${state.pathParameters['date']}')),
-      ),
-      GoRoute(
         path: '/setup/selection',
         builder: (_, __) => const Scaffold(body: Text('setup-screen')),
       ),
@@ -325,24 +320,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(udr.updateCalled, isTrue);
-    });
-
-    testWidgets('journal CTA navigates to /skin-log/:date', (tester) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      final udr = _FakeUDR(
-        morningSelections: [_sel('pm1', Slot.morning)],
-        morningRecord: _dayRecord(recorded: []),
-      );
-      await tester.pumpWidget(_wrap(master: _master, udr: udr));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('תעד עכשיו'));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('journal-'), findsOneWidget);
     });
 
     group('view mode toggle', () {

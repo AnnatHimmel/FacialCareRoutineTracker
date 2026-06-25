@@ -1734,6 +1734,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekGlanceTitle => 'My Week\'s Routine';
 
   @override
+  String get weekGlanceStartGlowingCta => 'All set, start glowing!';
+
+  @override
   String get weekGlanceEntrySubtitle =>
       'Morning and evening routines, day by day';
 
@@ -1929,4 +1932,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get routineReadyCta => 'View My Routine';
+
+  @override
+  String routineReadyReviewSlotCta(String slot) {
+    return 'Let\'s review the $slot routine';
+  }
 }

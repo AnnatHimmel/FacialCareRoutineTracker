@@ -89,5 +89,14 @@
   "welcomeGreeting": "ברוך השב, {name} · {weekday}",
   "welcomeSubline5to9": "שמרת על השגרה {streak} ימים ברצף — אתה בדרך הנכונה לזוהר מושלם.",
   "welcomeHeadline10to29": "{streak} ימים — אתה מבריק! ✨",
-  "welcomeSubline30plus": "חודש ויותר של שגרת טיפוח עקבית — אתה אגדה!"
+  "welcomeSubline30plus": "חודש ויותר של שגרת טיפוח עקבית — אתה אגדה!",
+  "routineReadyReviewSlotCta": "נסקור את שגרת ה{slot}",
+  "@routineReadyReviewSlotCta": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "weekGlanceStartGlowingCta": "הכול מוכן, מתחילים לזרוח!"
 }

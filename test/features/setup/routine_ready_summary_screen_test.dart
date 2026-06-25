@@ -48,7 +48,11 @@ const _summaryNothingToReport = RoutineBuildSummary(
 
 // ── Test harness ──────────────────────────────────────────────────────────────
 
-Widget _wrap(RoutineBuildSummary summary, {VoidCallback? onContinue}) {
+Widget _wrap(
+  RoutineBuildSummary summary, {
+  VoidCallback? onContinue,
+  String? ctaLabel,
+}) {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -58,6 +62,7 @@ Widget _wrap(RoutineBuildSummary summary, {VoidCallback? onContinue}) {
       child: RoutineReadySummaryScreen(
         summary: summary,
         onContinue: onContinue ?? () {},
+        ctaLabel: ctaLabel,
       ),
     ),
   );
@@ -168,6 +173,27 @@ void main() {
       });
 
       testWidgets('CTA is still present', (tester) async {
+        await tester.pumpWidget(_wrap(_summaryNothingToReport));
+        await tester.pumpAndSettle();
+
+        expect(find.text('הצגת השגרה שלי'), findsOneWidget);
+      });
+    });
+
+    group('ctaLabel override', () {
+      testWidgets('shows custom CTA label when ctaLabel is provided',
+          (tester) async {
+        await tester.pumpWidget(
+          _wrap(_summaryNothingToReport, ctaLabel: 'CUSTOM_CTA'),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('CUSTOM_CTA'), findsOneWidget);
+        expect(find.text('הצגת השגרה שלי'), findsNothing);
+      });
+
+      testWidgets('shows default CTA label when ctaLabel is omitted',
+          (tester) async {
         await tester.pumpWidget(_wrap(_summaryNothingToReport));
         await tester.pumpAndSettle();
 

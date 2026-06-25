@@ -156,13 +156,17 @@ Widget _wrap({
   required MasterContent master,
   _FakeUDR? udr,
   bool fromSetup = false,
+  bool fromProducts = false,
 }) {
   final router = GoRouter(
     initialLocation: '/setup/schedule',
     routes: [
       GoRoute(
         path: '/setup/schedule',
-        builder: (_, __) => ScheduleSetupScreen(fromSetup: fromSetup),
+        builder: (_, __) => ScheduleSetupScreen(
+          fromSetup: fromSetup,
+          fromProducts: fromProducts,
+        ),
       ),
       GoRoute(
         path: '/setup/order',
@@ -171,6 +175,10 @@ Widget _wrap({
             'order-from=${state.uri.queryParameters['from'] ?? 'none'}',
           ),
         ),
+      ),
+      GoRoute(
+        path: '/routine-ready',
+        builder: (_, __) => const Scaffold(body: Text('ROUTINE-READY')),
       ),
     ],
   );
@@ -277,6 +285,26 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('order-from=setup'), findsOneWidget);
+    });
+
+    testWidgets(
+        'products flow CTA navigates to /routine-ready (auto-sorter summary)',
+        (tester) async {
+      final product = _weeklyProduct('p1', 'סרום');
+      final udr = _FakeUDR(
+        morningSelections: [_sel('p1', Slot.morning)],
+        schedules: [_sched('p1', Slot.morning, {0, 2, 4})],
+      );
+
+      await tester.pumpWidget(
+        _wrap(master: _master([product]), udr: udr, fromProducts: true),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('סיום ושמירת השגרה'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ROUTINE-READY'), findsOneWidget);
     });
 
     testWidgets('tapping weekday chip calls upsertSchedule', (tester) async {

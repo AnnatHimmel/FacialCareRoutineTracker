@@ -925,6 +925,7 @@
   },
   "welcomeSubline30plus": "חודש ויותר של שגרת טיפוח עקבית — את אגדה!",
   "weekGlanceTitle": "שגרת השבוע שלי",
+  "weekGlanceStartGlowingCta": "הכול מוכן, מתחילים לזרוח!",
   "weekGlanceEntrySubtitle": "מה בשגרת הבוקר ומה בשגרת הערב בכל יום",
   "weekGlanceEditButton": "עריכה",
   "weekGlanceStatusOkTitle": "השגרה נראית תקינה",
@@ -1018,5 +1019,13 @@
   "routineReadyAdvisoriesHeader": "כדאי לשים לב",
   "routineReadyAdvisoriesExplainer": "לא חסמנו — רק המלצה קטנה לתשומת ליבך.",
   "routineReadyNothingToReport": "לא נדרשו התאמות — השגרה מסודרת ומוכנה.",
-  "routineReadyCta": "הצגת השגרה שלי"
+  "routineReadyCta": "הצגת השגרה שלי",
+  "routineReadyReviewSlotCta": "נסקור את שגרת ה{slot}",
+  "@routineReadyReviewSlotCta": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  }
 }
