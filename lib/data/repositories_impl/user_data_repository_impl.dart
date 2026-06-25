@@ -387,6 +387,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
           id: Value(o.id),
           productId: Value(o.productId),
           categoryId: Value(o.categoryId),
+          subCategoryId: Value(o.subCategoryId),
           lastModifiedMs: Value(o.lastModified.millisecondsSinceEpoch),
         ),
       );
@@ -604,6 +605,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
         id: r.id,
         productId: r.productId,
         categoryId: r.categoryId,
+        subCategoryId: r.subCategoryId,
         lastModified: DateTime.fromMillisecondsSinceEpoch(r.lastModifiedMs),
       );
 }
