@@ -123,23 +123,27 @@ Delegate each phase to the matching specialized subagent to protect the main con
 
 Hand each subagent a self-contained prompt: the requirement text, the relevant file paths, and what the previous phase produced. Do not re-derive in the main context what a subagent already found.
 
-## RTL Icon Rules
+## Chevron Icon Rules
 
-All Flutter chevron `IconData` values (`Icons.chevron_left`, `Icons.chevron_right`, and their `_rounded`/`_outlined`/`_sharp` variants) have `matchTextDirection: true`. In an RTL app this causes the icon to be **automatically mirrored** — `chevron_left` renders as `>` and `chevron_right` renders as `<`.
+All Flutter chevron `IconData` values (`Icons.chevron_left`, `Icons.chevron_right`, and their `_rounded`/`_outlined`/`_sharp` variants) have `matchTextDirection: true`. In an RTL layout this causes the icon to be **automatically mirrored** — `chevron_left` renders as `>` and `chevron_right` renders as `<`.
 
 **Always add `textDirection: TextDirection.ltr` to every chevron `Icon` widget.** This suppresses the auto-mirror and lets you control the visual direction explicitly with the icon name.
 
+For trailing navigation indicators (list rows, cards, banners), the correct icon depends on ambient text direction:
+
 ```dart
-// Correct — left-pointing chevron that stays left-pointing in RTL
-const Icon(
-  Icons.chevron_left,
+// Direction-aware trailing nav chevron — correct in both RTL and LTR
+Icon(
+  Directionality.of(context) == TextDirection.rtl
+      ? Icons.chevron_left        // < points left — correct trailing indicator in RTL
+      : Icons.chevron_right,      // > points right — correct trailing indicator in LTR
   textDirection: TextDirection.ltr,
   size: 22,
   color: AppColors.outline,
 )
 ```
 
-Use `Icons.chevron_left` (pointing `<`) for all trailing navigation indicators in list rows — this is the correct RTL direction for "navigate to detail." Never use `Icons.chevron_right` without `textDirection: TextDirection.ltr`, or it will appear as `<` due to mirroring and create confusion.
+Never use a bare `Icons.chevron_left` or `Icons.chevron_right` on a trailing indicator without this direction check — it will be wrong in one of the two locales.
 
 The `Icon` widget in this Flutter version does **not** accept `matchTextDirection` as a constructor parameter — that is a property of `IconData`, not `Icon`.
 

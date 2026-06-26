@@ -276,7 +276,14 @@ class _ConflictOption extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.chevron_left, textDirection: TextDirection.ltr, color: color, size: 20),
+          Icon(
+            Directionality.of(context) == TextDirection.rtl
+                ? Icons.chevron_left
+                : Icons.chevron_right,
+            textDirection: TextDirection.ltr,
+            color: color,
+            size: 20,
+          ),
         ],
       ),
     );

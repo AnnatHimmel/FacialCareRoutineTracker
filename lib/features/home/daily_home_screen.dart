@@ -1034,8 +1034,10 @@ class _AttentionRow extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(
-              Icons.chevron_left,
+            Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left
+                  : Icons.chevron_right,
               size: 18,
               color: AppColors.outline,
               textDirection: TextDirection.ltr,

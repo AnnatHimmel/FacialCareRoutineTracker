@@ -345,8 +345,10 @@ class _HealthCardPro extends StatelessWidget {
                     ),
                   ),
                   if (attentionCount > 0)
-                    const Icon(
-                      Icons.chevron_left,
+                    Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_left
+                          : Icons.chevron_right,
                       textDirection: TextDirection.ltr,
                       size: 18,
                       color: Color(0xff8a5a17),
@@ -627,8 +629,10 @@ class _CollectionRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(
-              Icons.chevron_left,
+            Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left
+                  : Icons.chevron_right,
               textDirection: TextDirection.ltr,
               size: 22,
               color: AppColors.outline,
@@ -974,8 +978,10 @@ class _HealthCardFree extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_left,
+                  Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? Icons.chevron_left
+                        : Icons.chevron_right,
                     textDirection: TextDirection.ltr,
                     size: 18,
                     color: Color(0xffa8821f),
@@ -1218,8 +1224,10 @@ class _FreeRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(
-              Icons.chevron_left,
+            Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left
+                  : Icons.chevron_right,
               textDirection: TextDirection.ltr,
               size: 22,
               color: AppColors.outline,
@@ -1296,10 +1304,10 @@ class WeekGlanceEntryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // RTL chevron: textDirection.ltr is mandatory per project rules
-            // (chevron_left has matchTextDirection:true; ltr prevents auto-mirror)
-            const Icon(
-              Icons.chevron_left,
+            Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left
+                  : Icons.chevron_right,
               textDirection: TextDirection.ltr,
               size: 20,
               color: AppColors.outline,

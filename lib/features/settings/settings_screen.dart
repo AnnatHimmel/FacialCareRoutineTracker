@@ -100,8 +100,10 @@ class SettingsScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const Icon(
-                      Icons.chevron_left_rounded,
+                    Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_left_rounded
+                          : Icons.chevron_right_rounded,
                       textDirection: TextDirection.ltr,
                       color: Colors.white,
                       size: 22,
@@ -1121,8 +1123,10 @@ class _SettingsTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
-              Icons.chevron_left,
+            Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left
+                  : Icons.chevron_right,
               textDirection: TextDirection.ltr,
               color: AppColors.onSurfaceVariant,
               size: 20,

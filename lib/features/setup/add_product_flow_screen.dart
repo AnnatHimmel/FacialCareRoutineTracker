@@ -511,9 +511,14 @@ class _ProductPickRow extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_left_rounded,
-                textDirection: TextDirection.ltr,
-                color: AppColors.onSurfaceVariant, size: 20),
+            Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left_rounded
+                  : Icons.chevron_right_rounded,
+              textDirection: TextDirection.ltr,
+              color: AppColors.onSurfaceVariant,
+              size: 20,
+            ),
           ],
         ),
       ),
