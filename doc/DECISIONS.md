@@ -8,6 +8,17 @@ Persists architectural and implementation decisions across task contexts. Each a
 
 ## Decisions
 
+### MOD-DEC-RACE-001: Flush in-flight writes before navigating from product selection
+**Date**: 2026-06-26
+**Request**: After selecting/removing products on `ProductSelectionScreen`, tapping the "Next" CTA could navigate to the routine-summary screen before the `upsertSelection` / `_ensureCappedSchedule` / `_resolveSlotConflicts` writes had committed to the DB, causing stale reads in `buildRoutineSummary` or silent skip of the summary screen.
+**Decision**: Three-part fix:
+1. **Part A — write-drain guard in `ProductSelectionScreen`**: Added `_pendingWrites: Set<Future<void>>` + `_track(op)` + `_flushWrites()` to `_ProductSelectionScreenState`. Every toggle call site that previously discarded its `Future` now passes it through `_track(...)`. The `_V3BottomTray.onNext` closure is now `async` and `await _flushWrites()` before invoking `onDone`/`_goToSchedule`.
+2. **Part B — logged retry in `_loadSummary`**: Both `_ProductsWizardScreenState` and `_OnboardingScreenState` replace the bare `catch (_) {}` around `buildRoutineSummary` with a `_tryBuild` helper that logs via `debugPrint`. On a first failure the callers wait `Future.delayed(Duration.zero)` (one event-loop tick) and retry once before falling back to `_afterRoutineSummary()`.
+3. **Part C — no other behavioral changes**: Summary screen, scheduler, and schedule screen untouched.
+**Rationale**: The root cause is a fire-and-forget write followed by an immediate read. Draining all tracked writes at the CTA boundary is the minimal, correct fix. The logged retry is defense-in-depth: if a race slips through (e.g. via `widget.onDone` which bypasses the screen), the error is now visible in debug output instead of silently routing the user past the summary screen.
+**Alternatives Rejected**: Making `_summary` a stream/provider (architectural change, would affect summary screen and scheduler); locking the CTA while writes are pending (poorer UX — user can't tap immediately); catching and ignoring all errors without logging (current state — hides bugs).
+**Affects Files**: `lib/features/setup/product_selection_screen.dart`, `lib/features/setup/products_wizard_screen.dart`, `lib/features/onboarding/onboarding_screen.dart`, `test/features/setup/product_selection_write_race_test.dart` (new).
+
 ### MOD-DEC-SORT-001: Lotion-before-cream weight rule in the Moisturizer category
 **Date**: 2026-06-26
 **Request**: In the Moisturizer category, when several products share a sub-category, products whose name contains "Lotion" should come before those containing "Cream" — a lotion is usually lighter than a cream and should be applied first.

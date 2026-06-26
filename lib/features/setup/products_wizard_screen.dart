@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../domain/entities/master_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../domain/services/routine_build_summary.dart';
@@ -47,6 +48,19 @@ class _ProductsWizardScreenState extends ConsumerState<ProductsWizardScreen> {
     return sels.any((s) => s.isSelected);
   }
 
+  Future<RoutineBuildSummary?> _tryBuild(
+      MasterContent master, List<MasterProduct> extraProducts) async {
+    try {
+      return await ref.read(routineSchedulerProvider).buildRoutineSummary(
+            master: master,
+            extraProducts: extraProducts,
+          );
+    } catch (e, st) {
+      debugPrint('[ProductsWizard] buildRoutineSummary failed: $e\n$st');
+      return null;
+    }
+  }
+
   Future<void> _loadSummary() async {
     MasterContent? master = ref.read(masterContentProvider).valueOrNull;
     if (master == null) {
@@ -61,13 +75,11 @@ class _ProductsWizardScreenState extends ConsumerState<ProductsWizardScreen> {
     }
     final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
     final extraProducts = customProds.map((c) => c.toMasterProduct()).toList();
-    RoutineBuildSummary? summary;
-    try {
-      summary = await ref.read(routineSchedulerProvider).buildRoutineSummary(
-            master: master,
-            extraProducts: extraProducts,
-          );
-    } catch (_) {}
+    RoutineBuildSummary? summary = await _tryBuild(master, extraProducts);
+    if (summary == null && mounted) {
+      await Future<void>.delayed(Duration.zero);
+      summary = await _tryBuild(master, extraProducts);
+    }
     if (!mounted) return;
     if (summary == null) {
       _afterRoutineSummary();

@@ -91,6 +91,22 @@ class _ProductSelectionScreenState
   String _searchQuery = '';
   Slot? _slotFilter;
 
+  // ── Write-drain guard ──────────────────────────────────────────────────────
+  // Tracks every in-flight mutation future so the CTA can await them all
+  // before navigating (prevents the write/read race on the summary screen).
+  final Set<Future<void>> _pendingWrites = {};
+
+  void _track(Future<void> op) {
+    _pendingWrites.add(op);
+    op.whenComplete(() => _pendingWrites.remove(op));
+  }
+
+  Future<void> _flushWrites() async {
+    while (_pendingWrites.isNotEmpty) {
+      await Future.wait(_pendingWrites.toList());
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -570,10 +586,12 @@ class _ProductSelectionScreenState
                       selMap: selMap,
                       selectedInCat: selectedInCat,
                       catUsage: _getCatUsage(cat.id, l),
-                      onToggle: (p) =>
-                          _toggleProduct(p, selMap, morning, evening),
-                      onTimingChange: (p, slot, enabled) =>
-                          _setTiming(p, slot, enabled, morning, evening),
+                      onToggle: (p) async {
+                        _track(_toggleProduct(p, selMap, morning, evening));
+                      },
+                      onTimingChange: (p, slot, enabled) async {
+                        _track(_setTiming(p, slot, enabled, morning, evening));
+                      },
                       onEdit: (p) => _editCustomProduct(context, p),
                       onOpenDetail: (p) => _openProductDetail(context, p),
                       l: l,
@@ -674,7 +692,7 @@ class _ProductSelectionScreenState
                   products: searchResults ?? popularProducts,
                   isSearchResult: searchResults != null,
                   selMap: selMap,
-                  onToggle: (p) => _toggleProduct(p, selMap, morning, evening),
+                  onToggle: (p) async { _track(_toggleProduct(p, selMap, morning, evening)); },
                   onAddCustom: () => showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,
@@ -694,7 +712,9 @@ class _ProductSelectionScreenState
           selectedCountLabel: l.productSelV3SelectedCount(selectedCount),
           ctaLabel: l.productSelV3ShelfCTA,
           ctaEnabled: selectedCount > 0,
-          onNext: () {
+          onNext: () async {
+            await _flushWrites();
+            if (!mounted) return;
             if (widget.onDone != null) {
               widget.onDone!();
             } else {
