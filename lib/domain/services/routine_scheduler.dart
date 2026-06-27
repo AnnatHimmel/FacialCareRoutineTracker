@@ -82,9 +82,9 @@ class MovedProduct {
   const MovedProduct({required this.product, required this.targetPosition});
 }
 
-/// Describes the manual reordering currently in effect for a slot on a given
-/// day, relative to the order it would fall back to on revert. Used by the
-/// Daily Home "manual changes" chip + revert sheet.
+/// Describes how a slot's manual (global) order deviates from the recommended
+/// order. Used by the Order Customization screen's "manual changes" chip +
+/// revert sheet.
 class ManualOrderChanges {
   /// Whether a manual override (per-day or global) is in effect for the day.
   final bool hasOverride;
@@ -238,43 +238,72 @@ class RoutineScheduler {
     );
   }
 
-  // ── manualOrderChanges / revertEffectiveOrder ───────────────────────────────
+  // ── manualOrderChangesForSlot ───────────────────────────────────────────────
 
-  /// Describes the manual reordering in effect for [slot] on [weekday], diffed
-  /// against the order it would fall back to on revert (a per-day override
-  /// falls back to the global order; a global override falls back to the
-  /// recommended/admin order). The single source of truth for the Daily Home
-  /// "manual changes" chip + revert sheet.
-  Future<ManualOrderChanges> manualOrderChanges({
+  /// Describes how the slot's **global** custom order (as edited on the Order
+  /// Customization screen) deviates from the recommended/admin order, over the
+  /// full set of selected products for [slot] (not day-filtered — matching the
+  /// reorderable list that screen shows). `moved` lists the products whose
+  /// position differs, each tagged with its 1-based position in the recommended
+  /// order (where it returns to on revert). Single source of truth for the
+  /// order-screen "manual changes" chip + revert sheet. Revert is a plain
+  /// [deleteOrderOverride] (the global row).
+  Future<ManualOrderChanges> manualOrderChangesForSlot({
     required MasterContent master,
     required Slot slot,
-    required int weekday,
   }) async {
-    final effective = await getEffectiveOrderOverride(slot, weekday);
-    if (effective == null) return ManualOrderChanges.none;
+    final override = await _repo.watchOrderOverride(slot).first; // global
+    if (override == null) return ManualOrderChanges.none;
 
-    // The order we'd revert to: per-day → global (if any), else recommended.
-    final OrderOverride? fallback = effective.weekday != null
-        ? await _repo.watchOrderOverride(slot).first
-        : null;
+    final selections = await _repo.watchSelections(slot).first;
+    final schedules = await _repo.watchAllSchedules().first;
+    final catOverrideList = await _repo.watchCategoryOverrides().first;
+    final catOverrides = catOverrideList.isEmpty
+        ? null
+        : {for (final o in catOverrideList) o.productId: o.categoryId};
 
-    final currentOrder = await _resolveForWeekday(
-      master: master,
+    final selectedIds = selections
+        .where((s) => s.isSelected)
+        .map((s) => s.productId)
+        .toSet();
+    // Exclude products whose schedule for this slot was explicitly cleared to
+    // empty (mirrors the Order screen's _sortedProducts filter).
+    bool isExcluded(String id) => schedules.any(
+          (s) => s.productId == id && s.slot == slot && s.weekdays.isEmpty,
+        );
+
+    final products = master.products
+        .where((p) =>
+            !p.isDeprecated &&
+            selectedIds.contains(p.id) &&
+            p.configForSlot(slot) != null &&
+            !isExcluded(p.id))
+        .toList();
+
+    final adminCmp = ProductSorter.adminComparator(
+      categories: master.categories,
+      subcategories: master.subcategories,
       slot: slot,
-      weekday: weekday,
-      orderOverride: effective,
+      categoryOverrides: catOverrides,
     );
-    final targetOrder = await _resolveForWeekday(
-      master: master,
-      slot: slot,
-      weekday: weekday,
-      orderOverride: fallback,
-    );
+
+    // Recommended (target) order vs. the order with the override applied.
+    final adminOrder = List<MasterProduct>.from(products)..sort(adminCmp);
+    final overrideIds = override.orderedProductIds;
+    final currentOrder = List<MasterProduct>.from(products)
+      ..sort((a, b) {
+        final ai = overrideIds.indexOf(a.id);
+        final bi = overrideIds.indexOf(b.id);
+        if (ai >= 0 && bi >= 0) return ai.compareTo(bi);
+        if (ai >= 0) return -1;
+        if (bi >= 0) return 1;
+        return adminCmp(a, b);
+      });
 
     final currentIds = currentOrder.map((p) => p.id).toList();
     final moved = <MovedProduct>[];
-    for (var i = 0; i < targetOrder.length; i++) {
-      final product = targetOrder[i];
+    for (var i = 0; i < adminOrder.length; i++) {
+      final product = adminOrder[i];
       if (currentIds.indexOf(product.id) != i) {
         moved.add(MovedProduct(product: product, targetPosition: i + 1));
       }
@@ -282,25 +311,10 @@ class RoutineScheduler {
 
     return ManualOrderChanges(
       hasOverride: true,
-      isGlobalScope: effective.weekday == null,
-      weekday: effective.weekday,
+      isGlobalScope: true,
+      weekday: null,
       moved: moved,
     );
-  }
-
-  /// Removes whichever order override is *in effect* for [slot] on [weekday]:
-  /// a per-day override if one exists for that weekday (only that day reverts),
-  /// otherwise the global override (every day returns to the recommended order).
-  Future<void> revertEffectiveOrder({
-    required Slot slot,
-    required int weekday,
-  }) async {
-    final perDays = await _repo.watchPerDayOrderOverrides(slot).first;
-    if (perDays.any((o) => o.weekday == weekday)) {
-      await _repo.deletePerDayOrderOverride(slot, weekday);
-    } else {
-      await _repo.deleteOrderOverride(slot);
-    }
   }
 
   // ── warningsForDayFrom (pure / synchronous) ─────────────────────────────────

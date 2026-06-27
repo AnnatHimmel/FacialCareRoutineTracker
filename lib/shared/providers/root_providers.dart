@@ -430,53 +430,28 @@ final dailyRoutineProvider =
   },
 );
 
-// ── Manual order changes (Daily Home chip + revert sheet) ─────────────────────
+// ── Manual order changes (Order Customization chip + revert sheet) ────────────
 
-/// Per-day custom order overrides for a slot (weekday != null rows).
-final perDayOrderOverridesProvider =
-    StreamProvider.family<List<OrderOverride>, Slot>(
-  (ref, slot) =>
-      ref.watch(routineSchedulerProvider).watchPerDayOrderOverrides(slot),
-);
-
-/// Describes the manual reordering in effect for [slot] on the day [date],
-/// relative to the order it would revert to. Drives the Daily Home "manual
-/// changes" chip (count of moved products) and the revert sheet. Recomputes
-/// when overrides, selections, schedules, or custom products change.
-final manualOrderChangesProvider =
-    FutureProvider.family<ManualOrderChanges, _DailyRoutineParams>(
-  (ref, params) async {
+/// Describes how a slot's global manual order deviates from the recommended
+/// order, over the full set of selected products for that slot. Drives the
+/// Order Customization screen's "manual changes" chip (count of moved products)
+/// and the revert sheet. Recomputes when the slot's order override, selections,
+/// schedules, or category overrides change.
+final slotManualOrderChangesProvider =
+    FutureProvider.family<ManualOrderChanges, Slot>(
+  (ref, slot) async {
     final masterContent = await ref.watch(masterContentProvider.future);
-    final boundary = ref.watch(dayBoundaryServiceProvider);
     final scheduler = ref.watch(routineSchedulerProvider);
-    final customProds = await ref.watch(customProductsProvider.future);
 
-    // Recompute whenever anything that affects the order or active set changes.
-    ref.watch(orderOverrideProvider(params.slot));
-    ref.watch(perDayOrderOverridesProvider(params.slot));
-    ref.watch(selectionsProvider(params.slot));
+    // Recompute whenever anything that affects the order or product set changes.
+    ref.watch(orderOverrideProvider(slot));
+    ref.watch(selectionsProvider(slot));
     ref.watch(allSchedulesProvider);
     ref.watch(categoryOverridesProvider);
 
-    final dayOfWeek = boundary.parseDate(params.date).weekday % 7; // Sun=0…Sat=6
-
-    // Resolve against master + custom products, mirroring dailyRoutineProvider,
-    // so a moved custom product is also counted.
-    final combinedMaster = MasterContent(
-      products: [
-        ...masterContent.products,
-        ...customProds.map((p) => p.toMasterProduct()),
-      ],
-      categories: masterContent.categories,
-      subcategories: masterContent.subcategories,
-      rules: masterContent.rules,
-      manifest: masterContent.manifest,
-    );
-
-    return scheduler.manualOrderChanges(
-      master: combinedMaster,
-      slot: params.slot,
-      weekday: dayOfWeek,
+    return scheduler.manualOrderChangesForSlot(
+      master: masterContent,
+      slot: slot,
     );
   },
 );

@@ -155,7 +155,6 @@ Implemented in `lib/shared/widgets/glass_bottom_nav.dart` (`AppBottomNav`), wire
 | Weekly skin-reminder card | `WeeklySkinReminderCard` | `_allSkinLogsProvider` (skin logs) + dismiss-date & enabled settings (`weeklyReminderEnabledProvider`) | Camera badge (right) + eyebrow + title; inline note field + photo-capture box; soft-peach "אחר כך" pill (snooze for the day) + "אל תציג שוב" text link (disable permanently). Shown only when the reminder is enabled, a routine exists, no skin-log photo within 7 days, and not dismissed today. Re-enable via Settings → "תזכורת תיעוד שבועי" |
 | Slot header (Morning) | Section header | Static Hebrew string | Tap → collapse/expand slot; secondary-container bg |
 | Slot header (Evening) | Section header | Static Hebrew string | Tap → collapse/expand slot; tertiary-container bg |
-| Manual-changes chip | `ManualOrderChip` (outlined pill, slot-tinted, on the slot-header line, pushed to the end — left in RTL) | `manualOrderChangesProvider((date, slot))` | Shown only when a manual order is in effect today (moved count > 0). Leading info icon + label "{N} מוצרים הוזזו ידנית"; tap → `showManualOrderSheet` (lists moved products + position; "ביטול השינויים הידניים" reverts the in-effect override) |
 | Routine item row | `RoutineItemRow` | `dailyRoutineProvider` + `dayRecordProvider` | Tap row body → expand (S5); tap checkbox → toggleDone |
 | Done checkbox | Checkbox (pill style) | `DayRecord.recordedProductIds` | Toggle (reversible) |
 | Conflict marker ⚠️ | Icon + tooltip | `conflictsForDayProvider` | Tap → soft warning bottom sheet |
@@ -456,11 +455,21 @@ Expanded deprecated: shows banner "מוצר זה אינו מומלץ עוד — 
 └─────────────────────────────────────────────┘
 ```
 
+**Manual-changes chip (onboarding per-slot screens, titled "סדר המריחה בבוקר/בערב"):**
+On the "general order" row sits a slot-tinted outlined `ManualOrderChip`
+(`slotManualOrderChangesProvider(slot)`), pushed to the end (left in RTL). Shown
+only when the slot's global order differs from the recommended one (moved count
+> 0). Leading info icon + label "{N} מוצרים הוזזו ידנית"; tap →
+`showManualOrderSheet` (bottom sheet listing the moved products with their
+recommended position + a "ביטול השינויים הידניים" button that calls
+`deleteOrderOverride(slot)` and clears the screen's local order). This replaces
+the former inline "reset to recommended" button.
+
 **States:**
 | State | Description |
 |-------|-------------|
-| Default (no override) | List in admin order; no "reset" notice |
-| Override active | "סדר מותאם אישית פעיל" notice + "אפס לסדר מומלץ" action |
+| Default (no override) | List in admin order; no chip |
+| Override active (onboarding) | Manual-changes chip on the "general order" row; opens revert sheet |
 | No products in slot | "אין מוצרים שנבחרו עבור בוקר" empty state |
 
 ---

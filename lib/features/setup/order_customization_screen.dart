@@ -15,6 +15,8 @@ import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
+import '../../shared/widgets/manual_order_chip.dart';
+import '../../shared/widgets/manual_order_sheet.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
@@ -170,6 +172,14 @@ class _OrderCustomizationScreenState
                 slot == Slot.morning ? morningProducts : eveningProducts;
             final override =
                 slot == Slot.morning ? morningOverride : eveningOverride;
+            // Manual-changes indicator: products whose position differs from the
+            // recommended order for this slot's global custom order.
+            final movedCount = ref
+                    .watch(slotManualOrderChangesProvider(slot))
+                    .valueOrNull
+                    ?.moved
+                    .length ??
+                0;
             return SafeArea(
               child: Column(
                 children: [
@@ -189,7 +199,7 @@ class _OrderCustomizationScreenState
                               const EdgeInsets.only(bottom: 8),
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.format_list_bulleted_rounded,
                                 size: 14,
                                 color: AppColors.onSurfaceVariant,
@@ -206,6 +216,25 @@ class _OrderCustomizationScreenState
                             ],
                           ),
                         ),
+                        // Manual-changes chip on its own line, aligned to the end
+                        // (left in RTL). Opens the revert sheet.
+                        if (movedCount > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: ManualOrderChip(
+                                slot: slot,
+                                count: movedCount,
+                                onTap: () => showManualOrderSheet(
+                                  context,
+                                  slot: slot,
+                                  onReverted: () => setState(
+                                      () => _localOrder[slot] = null),
+                                ),
+                              ),
+                            ),
+                          ),
                         // Reorderable list for this slot
                         GlowCard(
                           padding: const EdgeInsets.symmetric(
@@ -238,11 +267,8 @@ class _OrderCustomizationScreenState
                         _AdvancedOptionsPanel(
                           slot: slot,
                           expanded: _advancedExpanded,
-                          hasCustomOrder: _localOrder[slot] != null ||
-                              override != null,
                           onToggle: () => setState(
                               () => _advancedExpanded = !_advancedExpanded),
-                          onReset: () => _resetOrder(slot),
                           products: products,
                           globalOverride: override,
                           l: l,
@@ -569,15 +595,14 @@ class _OnboardingOrderHeader extends StatelessWidget {
 
 // ── Advanced options collapsible (onboarding order screen) ───────────────────
 // Collapsed by default. Header shows orderAdvancedTitle + sub.
-// When expanded: global reset button (if custom order exists) + per-day section
-// with 7 tappable weekday rows that open a drag-to-reorder bottom sheet.
+// When expanded: per-day section with 7 tappable weekday rows that open a
+// drag-to-reorder bottom sheet. (The global reset moved to the manual-changes
+// chip + revert sheet on the header row.)
 
 class _AdvancedOptionsPanel extends ConsumerWidget {
   final Slot slot;
   final bool expanded;
-  final bool hasCustomOrder;
   final VoidCallback onToggle;
-  final VoidCallback onReset;
   final List<MasterProduct> products;
   final OrderOverride? globalOverride;
   final AppLocalizations l;
@@ -585,9 +610,7 @@ class _AdvancedOptionsPanel extends ConsumerWidget {
   const _AdvancedOptionsPanel({
     required this.slot,
     required this.expanded,
-    required this.hasCustomOrder,
     required this.onToggle,
-    required this.onReset,
     required this.products,
     required this.globalOverride,
     required this.l,
@@ -670,42 +693,8 @@ class _AdvancedOptionsPanel extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // Global reset button
-                  if (hasCustomOrder) ...[
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: OutlinedButton.icon(
-                        onPressed: onReset,
-                        icon: const Icon(Icons.restart_alt_rounded, size: 16),
-                        label: Text(l.orderResetToRecommended,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(
-                            color: AppColors.primaryFixed,
-                            width: 1.5,
-                          ),
-                          textStyle: AppTypography.labelMd
-                              .copyWith(fontWeight: FontWeight.w700),
-                          backgroundColor: AppColors.surfaceLow,
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Divider(
-                      height: 1,
-                      color: AppColors.outlineVariant.withValues(alpha: 0.4),
-                    ),
-                    const SizedBox(height: 10),
-                  ],
+                  // (Global reset moved to the manual-changes chip + revert sheet
+                  // on the order-screen header row.)
 
                   // Per-day section title
                   Text(

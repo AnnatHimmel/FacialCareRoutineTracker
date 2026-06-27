@@ -19,8 +19,6 @@ import '../../shared/widgets/pro_tag.dart';
 import '../../core/config/feature_flags.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/routine_item_row.dart';
-import '../../shared/widgets/manual_order_chip.dart';
-import '../../shared/widgets/manual_order_sheet.dart';
 import '../../shared/widgets/slot_section_header.dart';
 import 'widgets/weekly_skin_reminder_card.dart';
 enum _ViewMode { list, images }
@@ -444,15 +442,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     final isExpanded = _sectionExpanded[slot] ?? true;
     final recorded = record?.recordedProductIds.toSet() ?? {};
 
-    // Manual-order indicator: number of products whose position differs from the
-    // recommended order, for the override in effect today. Shown only when > 0.
-    final movedCount = ref
-            .watch(manualOrderChangesProvider((date: _todayStr, slot: slot)))
-            .valueOrNull
-            ?.moved
-            .length ??
-        0;
-
     // Find first undone morning product to show one-time tap hint.
     String? hintTargetId;
     if (!_tapHintSeen && slot == Slot.morning) {
@@ -469,33 +458,13 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SlotSectionHeader(
-                    slot: slot,
-                    productCount: products.length,
-                    doneCount: doneCount,
-                    isExpanded: isExpanded,
-                    onToggle: () =>
-                        setState(() => _sectionExpanded[slot] = !isExpanded),
-                  ),
-                ),
-                // Manual-order chip sits on the same line as the header, pushed
-                // to the end (left in RTL, right in LTR).
-                if (movedCount > 0) ...[
-                  const SizedBox(width: 8),
-                  ManualOrderChip(
-                    slot: slot,
-                    count: movedCount,
-                    onTap: () => showManualOrderSheet(
-                      context,
-                      slot: slot,
-                      date: _todayStr,
-                    ),
-                  ),
-                ],
-              ],
+            child: SlotSectionHeader(
+              slot: slot,
+              productCount: products.length,
+              doneCount: doneCount,
+              isExpanded: isExpanded,
+              onToggle: () =>
+                  setState(() => _sectionExpanded[slot] = !isExpanded),
             ),
           ),
         ),

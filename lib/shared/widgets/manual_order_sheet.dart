@@ -9,32 +9,32 @@ import '../../domain/services/routine_scheduler.dart';
 import '../providers/root_providers.dart';
 import 'product_thumb.dart';
 
-/// Opens the "manual changes" revert sheet for [slot] on [date] (yyyy-MM-dd).
+/// Opens the "manual changes" revert sheet for [slot]'s global custom order.
 /// Lists the products whose position was changed manually and offers to revert
-/// to the app's automatic order.
+/// to the app's recommended order. [onReverted] runs after the override is
+/// deleted (e.g. to clear the order screen's local order state).
 Future<void> showManualOrderSheet(
   BuildContext context, {
   required Slot slot,
-  required String date,
+  VoidCallback? onReverted,
 }) =>
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _ManualOrderSheet(slot: slot, date: date),
+      builder: (_) => _ManualOrderSheet(slot: slot, onReverted: onReverted),
     );
 
 class _ManualOrderSheet extends ConsumerWidget {
   final Slot slot;
-  final String date;
+  final VoidCallback? onReverted;
 
-  const _ManualOrderSheet({required this.slot, required this.date});
+  const _ManualOrderSheet({required this.slot, this.onReverted});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
-    final changesAsync =
-        ref.watch(manualOrderChangesProvider((date: date, slot: slot)));
+    final changesAsync = ref.watch(slotManualOrderChangesProvider(slot));
     final moved = changesAsync.valueOrNull?.moved ?? const <MovedProduct>[];
 
     return Container(
@@ -60,11 +60,7 @@ class _ManualOrderSheet extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded),
-                  color: AppColors.onSurfaceVariant,
-                ),
+                // Title at the start (right in RTL); close at the end (left).
                 Expanded(
                   child: Text(
                     l.manualOrderSheetTitle,
@@ -73,6 +69,11 @@ class _ManualOrderSheet extends ConsumerWidget {
                       fontSize: 18,
                     ),
                   ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded),
+                  color: AppColors.onSurfaceVariant,
                 ),
               ],
             ),
@@ -102,11 +103,10 @@ class _ManualOrderSheet extends ConsumerWidget {
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed: () async {
-                  final boundary = ref.read(dayBoundaryServiceProvider);
-                  final weekday = boundary.parseDate(date).weekday % 7;
                   await ref
                       .read(routineSchedulerProvider)
-                      .revertEffectiveOrder(slot: slot, weekday: weekday);
+                      .deleteOrderOverride(slot);
+                  onReverted?.call();
                   if (context.mounted) Navigator.of(context).pop();
                 },
                 style: FilledButton.styleFrom(
@@ -153,24 +153,8 @@ class _MovedRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: badgeBg.withAlpha(128),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '${moved.targetPosition}',
-              style: AppTypography.labelSm.copyWith(
-                color: badgeFg,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
+          // Text at the start (right in RTL); thumbnail + position badge at the
+          // end (left in RTL).
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,6 +185,24 @@ class _MovedRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           ProductThumb(imageAsset: product.imageAsset, size: 44),
+          const SizedBox(width: 10),
+          Container(
+            width: 28,
+            height: 28,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: badgeBg.withAlpha(128),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              '${moved.targetPosition}',
+              style: AppTypography.labelSm.copyWith(
+                color: badgeFg,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ),
         ],
       ),
     );
