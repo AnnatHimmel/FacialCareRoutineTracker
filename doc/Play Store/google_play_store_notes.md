@@ -4,42 +4,49 @@ This document tracks what needs to be done in the Play Console for each release 
 
 ---
 
-## Next release: Bug fixes — onboarding summary & chevron icons
+## Next release: Contact us, override order indication & bug fixes
 
-**Version:** `1.3.1+7` (from `1.3.0+6`). Patch bump — bug fixes only, no new features, no schema changes.
+**Version:** `1.4.0+8` (from `1.3.1+7`). Minor bump — two new user-facing capabilities, several bug fixes, no schema changes.
 
-### What changed since `1.3.0+6`
+### What changed since `1.3.1+7`
 
-Bug fixes:
-- **Routine summary not appearing during onboarding** — a write-race condition caused the summary screen to skip; fixed and covered by a regression test.
-- **Flipped chevron icons in LTR (English) layout** — chevrons on list rows and navigation elements were mirrored incorrectly when the UI language was set to English. Fixed across all affected screens.
-- Minor UI tweaks to week-glance screen, schedule setup, and shared button widget.
+New features:
+- **"Contact us" option in Settings** — users can now reach the developer directly from within the app.
+- **Manual order override indicator on My Day screen** — when a product's order has been manually overridden, a visual chip now appears on the daily routine to make the override visible.
+- **Manual order notification moved to order screens** — the chip/notification for overridden order now appears in the Order Customization and related screens, improving discoverability.
+
+Bug fixes (also in this build, from the earlier `1.3.1+7` prep):
+- **Routine summary not appearing during onboarding** — write-race condition fixed.
+- **Flipped chevron icons in LTR (English) layout** — fixed across all affected screens.
+- **Vertical day headers in Weekly Glance (Hebrew)** — day labels now display correctly.
+- **Products order bug with removed manually-overridden products** — order is now stable when overridden products are removed.
+- **Home icon in app bar when navigating from My Shelf** — tapping the Weekly Glance card from My Shelf now correctly shows a home icon instead of a back arrow.
 
 **No new Android permissions.** No `AndroidManifest.xml` changes.
 
-**No new external network calls.** All changes are local UI fixes.
+**No new external network calls.** All changes are local.
 
 ---
 
 ### App description update
 
-No change — no new user-facing features.
+Updated `doc/Play Store/full_description.md` to add "contact us" capability to the feature list.
 
 ---
 
 ### Screenshots
 
-Refreshed screenshot set already in place under `assets/for_play_store/screenshots/` (7 each, **English + Hebrew**) from the `1.3.0+6` prep. Upload both locales if not already done in Play Console.
+Refreshed screenshot set in place under `assets/for_play_store/screenshots/` (EN + HE). Consider updating My Day screen screenshot if the override chip is visually prominent.
 
 ---
 
 ### What's New (250-char limit)
 
 **Hebrew:**
-> תיקוני באגים: מסך הסיכום של השגרה מוצג כהלכה בהטמעה, ואייקוני הניווט מוצגים בכיוון הנכון בממשק האנגלי.
+> עכשיו ניתן ליצור קשר מתוך האפליקציה. שגרת היום מציגה אינדיקציה על מוצרים שסדרם שונה ידנית. תיקוני באגים ושיפורי ממשק.
 
 **English (if maintained):**
-> Bug fixes: the routine summary screen now shows correctly during onboarding, and navigation chevrons display in the right direction in the English UI.
+> New: contact us from the app. Manual order overrides are now shown on the daily screen. Bug fixes and UI improvements.
 
 ---
 
@@ -57,18 +64,22 @@ Refreshed screenshot set already in place under `assets/for_play_store/screensho
 
 ### Internal checklist before submission
 
-- [x] `version` in `pubspec.yaml` updated to `1.3.1+7` (versionCode 6 → 7)
+- [ ] `version` in `pubspec.yaml` updated to `1.4.0+8` (versionCode 7 → 8)
 - [ ] Signed with the same keystore (never change the signing key)
 - [ ] `flutter build appbundle --release` completes without errors
-- [ ] Smoke-test: onboarding summary screen appears; chevrons point correctly in both Hebrew and English
-- [x] Refreshed screenshot set ready (EN + HE) under `assets/for_play_store/screenshots/`; upload both locales in Play Console if not yet done
-- [ ] `doc/Play Store/full_description.md` — no change this release
+- [ ] Smoke-test: "Contact us" visible in Settings; override chip appears on My Day screen for overridden products; onboarding summary screen appears; chevrons correct in both Hebrew and English
+- [ ] Screenshots updated if the override chip is visually prominent on My Day
+- [ ] `doc/Play Store/full_description.md` updated — copy the new "contact us" bullet into Play Console
 - [ ] `doc/Play Store/short_description.md` — no change this release
 - [ ] No Data safety / permissions / privacy-policy actions needed this release
 
 ---
 
 ## Release history
+
+### Released as `1.3.1+7` — Bug fixes (onboarding summary & chevron icons)
+
+Patch over `1.3.0+6` (which was never submitted standalone). Bug fixes only — routine summary write-race, flipped chevrons in English UI, miscellaneous UI tweaks. No schema changes, no new permissions, no new features. Superseded immediately by `1.4.0+8` before submission.
 
 ### Drafted `1.3.0+6` — Weekly skin reminder, routine summary & product wizard (never submitted — superseded by `1.3.1+7`)
 

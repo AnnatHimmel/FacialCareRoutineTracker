@@ -1104,5 +1104,6 @@
   "settingsContactUsSheetTitle": "Contact Us",
   "settingsContactUsMessageHint": "Write your message here...",
   "settingsContactUsSend": "Send",
-  "settingsContactUsCannotSend": "Could not open email app"
+  "settingsContactUsCannotSend": "Could not open email app",
+  "commonDone": "Done"
 }

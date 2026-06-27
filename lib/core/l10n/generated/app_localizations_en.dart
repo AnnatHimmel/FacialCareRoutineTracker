@@ -1663,7 +1663,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get commonDone => 'סיום';
+  String get commonDone => 'Done';
 
   @override
   String get welcomeAppName => 'The Glow Protocol';

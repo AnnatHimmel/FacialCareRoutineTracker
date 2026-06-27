@@ -20,6 +20,7 @@ This is the live store copy. Update before each release when features change, th
 - סטריק שגרה — מוטיבציה להמשיך
 - סריקת ברקוד — זהי מוצרים מהירות וקבלי פרטים אוטומטית
 - מוצרים מותאמים אישית — הוסיפי מוצרים שלא ברשימה ועדכני את הפרטים ידנית
+- יצירת קשר — שלחי לנו הודעה ישירות מתוך האפליקציה
 
 **ללא חשבון, ללא רשת** — כל הנתונים שמורים במכשיר שלך בלבד.
 
@@ -41,5 +42,6 @@ Choose the products you own, and the app builds your morning and evening routine
 - Routine streak — motivation to keep going
 - Barcode scanning — quickly identify products and auto-fill details
 - Custom products — add products not in the list and edit their details manually
+- Contact us — send us a message directly from the app
 
 **No account, no network required** — all data stays on your device.
