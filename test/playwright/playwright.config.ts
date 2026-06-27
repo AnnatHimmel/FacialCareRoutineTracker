@@ -50,11 +50,6 @@ export default defineConfig({
     url: BASE_URL,
     timeout: 600_000,
     reuseExistingServer: !process.env.CI,
-    // Prepend flutter bin so cmd.exe (used by VS Code's Node.js process) can find it.
-    env: {
-      ...process.env,
-      PATH: `C:\\workspace\\utilities\\flutter\\bin;${process.env.PATH ?? ''}`,
-    },
     stdout: 'pipe',
     stderr: 'pipe',
   },
