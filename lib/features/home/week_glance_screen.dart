@@ -17,8 +17,13 @@ import '../../shared/widgets/product_thumb.dart';
 
 class WeekGlanceScreen extends ConsumerStatefulWidget {
   final bool onboarding;
+  final bool fromCollection;
 
-  const WeekGlanceScreen({super.key, this.onboarding = false});
+  const WeekGlanceScreen({
+    super.key,
+    this.onboarding = false,
+    this.fromCollection = false,
+  });
 
   @override
   ConsumerState<WeekGlanceScreen> createState() => _WeekGlanceScreenState();
@@ -276,7 +281,13 @@ class _WeekGlanceScreenState extends ConsumerState<WeekGlanceScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: GlowAppBar(title: l.weekGlanceTitle, showBack: !widget.onboarding),
+      appBar: GlowAppBar(
+        title: l.weekGlanceTitle,
+        showBack: !widget.onboarding,
+        backIcon: widget.fromCollection
+            ? Icons.arrow_back_rounded
+            : Icons.home_rounded,
+      ),
       bottomNavigationBar: widget.onboarding
           ? SafeArea(
               top: false,
@@ -849,13 +860,19 @@ class _WWeekMatrix extends StatelessWidget {
               SizedBox(
                 width: _kDayColW,
                 child: Center(
-                  child: RotatedBox(
-                    quarterTurns: 1,
-                    child: Text(
-                      dayAbbrevs[i],
-                      style: dayHeaderStyle,
-                    ),
-                  ),
+                  child: dayAbbrevs[i].length > 2
+                      ? RotatedBox(
+                          quarterTurns: 1,
+                          child: Text(
+                            dayAbbrevs[i],
+                            style: dayHeaderStyle,
+                          ),
+                        )
+                      : Text(
+                          dayAbbrevs[i],
+                          style: dayHeaderStyle,
+                          textAlign: TextAlign.center,
+                        ),
                 ),
               ),
           ],

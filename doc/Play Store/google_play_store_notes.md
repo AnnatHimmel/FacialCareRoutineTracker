@@ -4,85 +4,82 @@ This document tracks what needs to be done in the Play Console for each release 
 
 ---
 
-## Next release: Weekly skin reminder, routine summary & product wizard
+## Next release: Bug fixes — onboarding summary & chevron icons
 
-**Proposed version:** `1.3.0+6` (from `1.2.0+5`). Minor bump — new user-facing screens and capabilities, all local-only, backward compatible, no data-schema break.
+**Version:** `1.3.1+7` (from `1.3.0+6`). Patch bump — bug fixes only, no new features, no schema changes.
 
-### What changed since the last shipped release (`1.2.0+5`)
-
-User-facing features:
-- **Weekly skin-tracking reminder** — a gentle, dismissible card near the top of the home screen prompts the user once a week to photograph and note her skin. Capture is inline (one tap appends a photo + note to today's skin log). The card auto-hides once a skin-log photo exists in the last 7 days, and can be turned off entirely from **Settings**.
-- **Routine summary screen** — after picking products, a new summary screen shows the auto-built routine (correct order, morning/evening) before the user fine-tunes scheduling. Used in onboarding and the new product wizard.
-- **Product wizard for returning users** — a streamlined re-entry flow to add or remove products (and review the resulting routine) without redoing the full onboarding.
+### What changed since `1.3.0+6`
 
 Bug fixes:
-- Reverted to the system photo picker (`image_picker`) for skin-log capture; removed the experimental in-app camera screen.
-- `subCategoryId` correctly carried through product handling; assorted UI fixes.
+- **Routine summary not appearing during onboarding** — a write-race condition caused the summary screen to skip; fixed and covered by a regression test.
+- **Flipped chevron icons in LTR (English) layout** — chevrons on list rows and navigation elements were mirrored incorrectly when the UI language was set to English. Fixed across all affected screens.
+- Minor UI tweaks to week-glance screen, schedule setup, and shared button widget.
 
-Data / storage:
-- New **local** settings flags for the weekly-reminder enable/dismiss state. No schema break; existing user data is preserved.
+**No new Android permissions.** No `AndroidManifest.xml` changes.
 
-Content (master list):
-- Minor master-catalog touch-ups, applied to both Supabase and the bundled `assets/data/master_products.json`.
-
-**No new Android permissions.** No `AndroidManifest.xml` changes this release. The weekly reminder uses the existing system photo picker — no new camera/storage permission is introduced.
-
-**No new external network calls.** All new features are local-only. Product lookup is unchanged from `1.2.0+5` (same nine services, same barcode/name flow — already declared).
+**No new external network calls.** All changes are local UI fixes.
 
 ---
 
 ### App description update
 
-See `doc/Play Store/full_description.md`. Added a feature bullet for the weekly skin-tracking reminder (Hebrew + English). No other copy changes.
+No change — no new user-facing features.
 
 ---
 
 ### Screenshots
 
-A refreshed screenshot set is ready under `assets/for_play_store/screenshots/` (7 each, **English + Hebrew**): Add Custom Product, Barcode Scan, Fetched Data, My Shelf, Routine – grid, Routine – List, Week Glance. Upload both locales in Play Console.
-
-Not yet captured (optional to add this release): the weekly skin-tracking reminder card and the new routine summary screen.
-
-Play Console minimum: 2 screenshots per form factor.
+Refreshed screenshot set already in place under `assets/for_play_store/screenshots/` (7 each, **English + Hebrew**) from the `1.3.0+6` prep. Upload both locales if not already done in Play Console.
 
 ---
 
 ### What's New (250-char limit)
 
 **Hebrew:**
-> חדש: תזכורת שבועית לתיעוד מצב העור — צילום והערה בלחיצה אחת מהמסך הראשי. נוסף מסך סיכום שמציג את השגרה שנבנתה עבורך, ואשף נוח להוספת והסרת מוצרים בלי להגדיר הכול מחדש. כולל תיקוני ממשק.
+> תיקוני באגים: מסך הסיכום של השגרה מוצג כהלכה בהטמעה, ואייקוני הניווט מוצגים בכיוון הנכון בממשק האנגלי.
 
 **English (if maintained):**
-> New: a weekly reminder to track your skin — snap a photo and note in one tap from the home screen. Plus a routine summary screen, and a wizard to add or remove products without redoing setup. Includes UI fixes.
+> Bug fixes: the routine summary screen now shows correctly during onboarding, and navigation chevrons display in the right direction in the English UI.
 
 ---
 
 ### Data safety section
 
-**No change required this release.** No new data types, no new recipients, no new network calls. Product lookup (barcode + product name to nine external services) is unchanged from `1.2.0+5` and remains declared as before. The weekly reminder stores photos and notes **locally only** — nothing is transmitted.
+**No change required.** No new data types, recipients, or network calls.
 
 ---
 
 ### Privacy policy
 
-**No change required.** No new data flows. `web/privacy.html` already covers local photo/note storage and the product-lookup data flow.
+**No change required.** No new data flows.
 
 ---
 
 ### Internal checklist before submission
 
-- [ ] Bump `version` in `pubspec.yaml` to `1.3.0+6` (versionCode 5 → 6)
+- [x] `version` in `pubspec.yaml` updated to `1.3.1+7` (versionCode 6 → 7)
 - [ ] Signed with the same keystore (never change the signing key)
 - [ ] `flutter build appbundle --release` completes without errors
-- [ ] Smoke-test: weekly reminder appears → capture photo+note → card hides; Settings toggle hides it; routine summary screen renders; product wizard add/remove → routine rebuilds
-- [x] Refreshed screenshot set ready (EN + HE) under `assets/for_play_store/screenshots/`; upload both locales in Play Console
-- [ ] `doc/Play Store/full_description.md` updated and copy-pasted into Play Console
+- [ ] Smoke-test: onboarding summary screen appears; chevrons point correctly in both Hebrew and English
+- [x] Refreshed screenshot set ready (EN + HE) under `assets/for_play_store/screenshots/`; upload both locales in Play Console if not yet done
+- [ ] `doc/Play Store/full_description.md` — no change this release
 - [ ] `doc/Play Store/short_description.md` — no change this release
 - [ ] No Data safety / permissions / privacy-policy actions needed this release
 
 ---
 
 ## Release history
+
+### Drafted `1.3.0+6` — Weekly skin reminder, routine summary & product wizard (never submitted — superseded by `1.3.1+7`)
+
+User-facing features added over `1.2.0+5`:
+- **Weekly skin-tracking reminder** — dismissible home-screen card; inline photo+note capture; auto-hides when a skin-log photo exists in the last 7 days; toggle in Settings.
+- **Routine summary screen** — auto-built routine preview (ordered, morning/evening) shown after product selection, used in onboarding and the new product wizard.
+- **Product wizard for returning users** — streamlined re-entry flow to add/remove products without redoing full onboarding.
+
+Bug fixes: reverted to system photo picker (`image_picker`); `subCategoryId` carried correctly; assorted UI fixes.
+
+Data: new local settings flags for weekly-reminder state; no schema break. No new permissions, no new network calls.
 
 ### Shipped `1.2.0+5` — Custom products, manual editing & much wider product lookup
 

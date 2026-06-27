@@ -641,6 +641,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderResetToRecommended => 'Reset to recommended order';
 
   @override
+  String manualOrderChip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count products moved manually',
+      one: '1 product moved manually',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get manualOrderSheetTitle =>
+      'These are the products whose position you changed manually.';
+
+  @override
+  String get manualOrderRevert => 'Undo the manual changes';
+
+  @override
   String get orderSaveFinish => 'Finish & Start';
 
   @override
@@ -1951,4 +1969,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productSelGoBackAnyway => 'Go back';
+
+  @override
+  String get settingsContactUs => 'Contact Us';
+
+  @override
+  String get settingsContactUsSubtitle => 'Send us your feedback or questions';
+
+  @override
+  String get settingsContactUsSheetTitle => 'Contact Us';
+
+  @override
+  String get settingsContactUsMessageHint => 'Write your message here...';
+
+  @override
+  String get settingsContactUsSend => 'Send';
+
+  @override
+  String get settingsContactUsCannotSend => 'Could not open email app';
 }

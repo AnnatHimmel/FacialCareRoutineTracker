@@ -180,7 +180,12 @@ final appRouter = GoRouter(
       path: '/week-glance',
       builder: (context, state) {
         final onboarding = state.uri.queryParameters['onboarding'] == 'true';
-        return _withSafeZone(WeekGlanceScreen(onboarding: onboarding));
+        final fromCollection =
+            state.uri.queryParameters['from'] == 'collection';
+        return _withSafeZone(WeekGlanceScreen(
+          onboarding: onboarding,
+          fromCollection: fromCollection,
+        ));
       },
     ),
 

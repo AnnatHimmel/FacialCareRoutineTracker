@@ -194,8 +194,9 @@ class _ProductSelectionScreenState
     _hasChanges = true;
     final isOn = selMap.containsKey(product.id);
     if (isOn) {
-      await _setSlot(product, Slot.morning, false, morningSelections);
-      await _setSlot(product, Slot.evening, false, eveningSelections);
+      final scheduler = ref.read(routineSchedulerProvider);
+      await scheduler.removeProduct(productId: product.id, slot: Slot.morning);
+      await scheduler.removeProduct(productId: product.id, slot: Slot.evening);
     } else {
       if (filterSlot != null && product.configForSlot(filterSlot) != null) {
         final list = filterSlot == Slot.morning ? morningSelections : eveningSelections;
@@ -218,8 +219,13 @@ class _ProductSelectionScreenState
     List<ProductSelection> morningSelections,
     List<ProductSelection> eveningSelections,
   ) async {
-    final list = slot == Slot.morning ? morningSelections : eveningSelections;
-    await _setSlot(product, slot, enabled, list);
+    if (!enabled) {
+      final scheduler = ref.read(routineSchedulerProvider);
+      await scheduler.removeProduct(productId: product.id, slot: slot);
+    } else {
+      final list = slot == Slot.morning ? morningSelections : eveningSelections;
+      await _setSlot(product, slot, true, list);
+    }
   }
 
   Future<void> _setSlot(

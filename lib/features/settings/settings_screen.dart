@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -130,6 +131,12 @@ class SettingsScreen extends ConsumerWidget {
                 label: l.settingsAbout,
                 subtitle: l.settingsAboutSubtitle(appVersion),
                 onTap: () => context.push('/about'),
+              ),
+              _SettingsTile(
+                icon: Icons.mail_outline_rounded,
+                label: l.settingsContactUs,
+                subtitle: l.settingsContactUsSubtitle,
+                onTap: () => _showContactUsSheet(context, l),
               ),
             ],
           ),
@@ -564,6 +571,155 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   Future<void> _doSave() async {
     setState(() => _saving = true);
     await widget.onSave(_nameCtrl.text, _gender);
+    if (mounted) Navigator.of(context).pop();
+  }
+}
+
+// ── Contact Us Sheet ───────────────────────────────────────────────────────────
+
+Future<void> _showContactUsSheet(
+    BuildContext context, AppLocalizations l) async {
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => _ContactUsSheet(l: l),
+  );
+}
+
+class _ContactUsSheet extends StatefulWidget {
+  final AppLocalizations l;
+  const _ContactUsSheet({required this.l});
+
+  @override
+  State<_ContactUsSheet> createState() => _ContactUsSheetState();
+}
+
+class _ContactUsSheetState extends State<_ContactUsSheet> {
+  final TextEditingController _msgCtrl = TextEditingController();
+  bool _sending = false;
+
+  @override
+  void dispose() {
+    _msgCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = widget.l;
+    final hasText = _msgCtrl.text.trim().isNotEmpty;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l.settingsContactUsSheetTitle,
+              style: AppTypography.headlineMd.copyWith(
+                color: AppColors.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.start,
+            ),
+            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.outlineVariant),
+              ),
+              child: TextField(
+                controller: _msgCtrl,
+                maxLines: 5,
+                minLines: 3,
+                textAlign: TextAlign.start,
+                onChanged: (_) => setState(() {}),
+                style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+                decoration: InputDecoration(
+                  hintText: l.settingsContactUsMessageHint,
+                  hintStyle: AppTypography.bodyMd.copyWith(
+                    color: AppColors.outline.withAlpha(153),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 150),
+              opacity: hasText ? 1.0 : 0.5,
+              child: GestureDetector(
+                onTap: (!hasText || _sending) ? null : _doSend,
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: hasText ? AppColors.primaryGlowGradient : null,
+                    color: !hasText ? AppColors.surfaceHigh : null,
+                    borderRadius: BorderRadius.circular(9999),
+                    boxShadow: hasText ? AppColors.glowSm : null,
+                  ),
+                  alignment: Alignment.center,
+                  child: _sending
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.onPrimary,
+                          ),
+                        )
+                      : Text(
+                          l.settingsContactUsSend,
+                          style: AppTypography.labelMd.copyWith(
+                            color: AppColors.onPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _doSend() async {
+    setState(() => _sending = true);
+    final subject = Uri.encodeComponent('Feedback from application');
+    final body = Uri.encodeComponent(_msgCtrl.text.trim());
+    final uri = Uri.parse(
+        'mailto:opengridstudio@gmail.com?subject=$subject&body=$body');
+    final launched =
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.l.settingsContactUsCannotSend)),
+      );
+    }
     if (mounted) Navigator.of(context).pop();
   }
 }

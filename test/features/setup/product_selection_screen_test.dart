@@ -140,15 +140,12 @@ class _CapturingUDR implements UserDataRepository {
   @override Stream<WeekdaySchedule?> watchSchedule(String p, Slot s) =>
       throw UnimplementedError();
   @override Stream<List<WeekdaySchedule>> watchAllSchedules() =>
-      throw UnimplementedError();
-  @override Future<void> upsertSchedule(WeekdaySchedule s) =>
-      throw UnimplementedError();
+      Stream.value([]);
+  @override Future<void> upsertSchedule(WeekdaySchedule s) async {}
   @override Stream<OrderOverride?> watchOrderOverride(Slot s) =>
-      throw UnimplementedError();
-  @override Future<void> upsertOrderOverride(OrderOverride o) =>
-      throw UnimplementedError();
-  @override Future<void> deleteOrderOverride(Slot s) =>
-      throw UnimplementedError();
+      Stream.value(null);
+  @override Future<void> upsertOrderOverride(OrderOverride o) async {}
+  @override Future<void> deleteOrderOverride(Slot s) async {}
 
   @override
   Stream<List<OrderOverride>> watchPerDayOrderOverrides(Slot slot) => Stream.value([]);

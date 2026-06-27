@@ -306,6 +306,16 @@
   "orderInstruction": "גררי את המוצרים כדי לסדר את השגרה שלך",
   "orderNoProducts": "לא נבחרו מוצרים",
   "orderResetToRecommended": "איפוס לסדר המומלץ",
+  "manualOrderChip": "{count, plural, =1{מוצר אחד הוזז ידנית} other{{count} מוצרים הוזזו ידנית}}",
+  "@manualOrderChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "manualOrderSheetTitle": "אלה המוצרים שהמיקום שלהם שונה ידנית.",
+  "manualOrderRevert": "ביטול השינויים הידניים",
   "orderSaveFinish": "סיום והתחלה",
   "orderSaveNew": "שמירת הסדר החדש",
   "settingsGreeting": "שלום",
@@ -1031,5 +1041,11 @@
   },
   "collectionAddRemoveProduct": "הוספת/הסרת מוצר",
   "productSelUnsavedChangesBody": "הוספת או הסרת מוצרים. חזרה אחורה לא תעדכן את השגרה שלך.",
-  "productSelGoBackAnyway": "חזרה בכל זאת"
+  "productSelGoBackAnyway": "חזרה בכל זאת",
+  "settingsContactUs": "צרי קשר",
+  "settingsContactUsSubtitle": "שלחי לנו משוב או שאלות",
+  "settingsContactUsSheetTitle": "יצירת קשר",
+  "settingsContactUsMessageHint": "כתבי את הודעתך כאן...",
+  "settingsContactUsSend": "שלחי",
+  "settingsContactUsCannotSend": "לא ניתן לפתוח את אפליקציית המייל"
 }

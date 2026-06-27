@@ -71,6 +71,53 @@ class RoutineFixResult {
   bool get isEmpty => applied.isEmpty;
 }
 
+/// A product whose position in the effective order differs from the order it
+/// would return to if the active manual override were reverted.
+class MovedProduct {
+  final MasterProduct product;
+
+  /// 1-based position the product takes in the post-revert (recommended) order.
+  final int targetPosition;
+
+  const MovedProduct({required this.product, required this.targetPosition});
+}
+
+/// Describes the manual reordering currently in effect for a slot on a given
+/// day, relative to the order it would fall back to on revert. Used by the
+/// Daily Home "manual changes" chip + revert sheet.
+class ManualOrderChanges {
+  /// Whether a manual override (per-day or global) is in effect for the day.
+  final bool hasOverride;
+
+  /// True when the effective override is the global (all-days) one; false when
+  /// a per-day override is in effect.
+  final bool isGlobalScope;
+
+  /// The weekday of the effective override (null when global).
+  final int? weekday;
+
+  /// Products that actually changed position vs. the post-revert order, sorted
+  /// by [MovedProduct.targetPosition]. Empty when the override matches the
+  /// recommended order.
+  final List<MovedProduct> moved;
+
+  const ManualOrderChanges({
+    required this.hasOverride,
+    required this.isGlobalScope,
+    required this.weekday,
+    required this.moved,
+  });
+
+  static const none = ManualOrderChanges(
+    hasOverride: false,
+    isGlobalScope: false,
+    weekday: null,
+    moved: [],
+  );
+
+  int get count => moved.length;
+}
+
 // ── RoutineScheduler ──────────────────────────────────────────────────────────
 
 class RoutineScheduler {
@@ -142,9 +189,34 @@ class RoutineScheduler {
     required Slot slot,
     required int weekday,
   }) async {
+    final orderOverride = await _repo.watchOrderOverride(slot).first;
+    return _resolveForWeekday(
+      master: master,
+      slot: slot,
+      weekday: weekday,
+      orderOverride: orderOverride,
+    );
+  }
+
+  /// Builds a deterministic calendar date for our [weekday] (0=Sun … 6=Sat).
+  /// 2026-01-05 is a Monday; map our weekday onto that week.
+  static DateTime _dateForWeekday(int weekday) {
+    final mondayBase = DateTime(2026, 1, 5); // Monday
+    // our weekday: 0=Sun=6 days after Mon; 1=Mon=0 days; ... 6=Sat=5 days
+    final daysFromMonday = weekday == 0 ? 6 : weekday - 1;
+    return mondayBase.add(Duration(days: daysFromMonday));
+  }
+
+  /// Resolves the active products for [weekday]+[slot] applying the given
+  /// [orderOverride] (pass null for the recommended/admin order).
+  Future<List<MasterProduct>> _resolveForWeekday({
+    required MasterContent master,
+    required Slot slot,
+    required int weekday,
+    required OrderOverride? orderOverride,
+  }) async {
     final selections = await _repo.watchSelections(slot).first;
     final schedules = await _repo.watchAllSchedules().first;
-    final orderOverride = await _repo.watchOrderOverride(slot).first;
     // Fetch category overrides so all surfaces (Daily Home, Order screen, Week
     // Glance) sort identically to dailyRoutineProvider.
     final catOverrideList = await _repo.watchCategoryOverrides().first;
@@ -152,18 +224,8 @@ class RoutineScheduler {
         ? null
         : {for (final o in catOverrideList) o.productId: o.categoryId};
 
-    // Build a deterministic date for the weekday.
-    // 2026-01-04 is Sunday (weekday=0 in our scheme). 0=Sun..6=Sat.
-    // Dart DateTime.weekday: Mon=1..Sun=7; so our weekday 0 = Sun = Dart 7.
-    // Map our weekday to a concrete Monday-anchored week starting 2026-01-05.
-    // weekday 0 (Sun) → 2026-01-11; 1 (Mon) → 2026-01-05; ... 6 (Sat) → 2026-01-10
-    final mondayBase = DateTime(2026, 1, 5); // Monday
-    // our weekday: 0=Sun=6 days after Mon; 1=Mon=0 days; ... 6=Sat=5 days
-    final daysFromMonday = weekday == 0 ? 6 : weekday - 1;
-    final date = mondayBase.add(Duration(days: daysFromMonday));
-
     return RoutineResolver().resolve(
-      date: date,
+      date: _dateForWeekday(weekday),
       slot: slot,
       allProducts: master.products,
       categories: master.categories,
@@ -174,6 +236,71 @@ class RoutineScheduler {
       boundary: DayBoundaryService(),
       categoryOverrides: catOverrides,
     );
+  }
+
+  // ── manualOrderChanges / revertEffectiveOrder ───────────────────────────────
+
+  /// Describes the manual reordering in effect for [slot] on [weekday], diffed
+  /// against the order it would fall back to on revert (a per-day override
+  /// falls back to the global order; a global override falls back to the
+  /// recommended/admin order). The single source of truth for the Daily Home
+  /// "manual changes" chip + revert sheet.
+  Future<ManualOrderChanges> manualOrderChanges({
+    required MasterContent master,
+    required Slot slot,
+    required int weekday,
+  }) async {
+    final effective = await getEffectiveOrderOverride(slot, weekday);
+    if (effective == null) return ManualOrderChanges.none;
+
+    // The order we'd revert to: per-day → global (if any), else recommended.
+    final OrderOverride? fallback = effective.weekday != null
+        ? await _repo.watchOrderOverride(slot).first
+        : null;
+
+    final currentOrder = await _resolveForWeekday(
+      master: master,
+      slot: slot,
+      weekday: weekday,
+      orderOverride: effective,
+    );
+    final targetOrder = await _resolveForWeekday(
+      master: master,
+      slot: slot,
+      weekday: weekday,
+      orderOverride: fallback,
+    );
+
+    final currentIds = currentOrder.map((p) => p.id).toList();
+    final moved = <MovedProduct>[];
+    for (var i = 0; i < targetOrder.length; i++) {
+      final product = targetOrder[i];
+      if (currentIds.indexOf(product.id) != i) {
+        moved.add(MovedProduct(product: product, targetPosition: i + 1));
+      }
+    }
+
+    return ManualOrderChanges(
+      hasOverride: true,
+      isGlobalScope: effective.weekday == null,
+      weekday: effective.weekday,
+      moved: moved,
+    );
+  }
+
+  /// Removes whichever order override is *in effect* for [slot] on [weekday]:
+  /// a per-day override if one exists for that weekday (only that day reverts),
+  /// otherwise the global override (every day returns to the recommended order).
+  Future<void> revertEffectiveOrder({
+    required Slot slot,
+    required int weekday,
+  }) async {
+    final perDays = await _repo.watchPerDayOrderOverrides(slot).first;
+    if (perDays.any((o) => o.weekday == weekday)) {
+      await _repo.deletePerDayOrderOverride(slot, weekday);
+    } else {
+      await _repo.deleteOrderOverride(slot);
+    }
   }
 
   // ── warningsForDayFrom (pure / synchronous) ─────────────────────────────────
@@ -456,12 +583,12 @@ class RoutineScheduler {
     required String productId,
     required Slot slot,
   }) async {
-    // Deselect
+    // Deselect all matching rows (defensive against duplicate DB records)
     final existingSelections = await _repo.watchSelections(slot).first;
-    final existingSel =
-        existingSelections.where((s) => s.productId == productId).firstOrNull;
-    if (existingSel != null) {
-      await _repo.upsertSelection(existingSel.copyWith(
+    final matches =
+        existingSelections.where((s) => s.productId == productId).toList();
+    for (final match in matches) {
+      await _repo.upsertSelection(match.copyWith(
         isSelected: false,
         lastModified: DateTime.now(),
       ));
@@ -477,6 +604,34 @@ class RoutineScheduler {
         weekdays: const {},
         lastModified: DateTime.now(),
       ));
+    }
+
+    // Strip product from order overrides for this slot
+    final globalOverride = await _repo.watchOrderOverride(slot).first;
+    if (globalOverride != null &&
+        globalOverride.orderedProductIds.contains(productId)) {
+      final updated = globalOverride.orderedProductIds
+          .where((id) => id != productId)
+          .toList();
+      if (updated.isEmpty) {
+        await _repo.deleteOrderOverride(slot);
+      } else {
+        await setOrder(slot: slot, weekday: null, orderedIds: updated);
+      }
+    }
+    final perDayOverrides = await _repo.watchPerDayOrderOverrides(slot).first;
+    for (final perDay in perDayOverrides) {
+      if (perDay.orderedProductIds.contains(productId)) {
+        final updated = perDay.orderedProductIds
+            .where((id) => id != productId)
+            .toList();
+        if (updated.isEmpty) {
+          await _repo.deletePerDayOrderOverride(slot, perDay.weekday!);
+        } else {
+          await setOrder(
+              slot: slot, weekday: perDay.weekday, orderedIds: updated);
+        }
+      }
     }
   }
 

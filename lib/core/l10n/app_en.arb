@@ -306,6 +306,16 @@
   "orderInstruction": "Drag products to reorder your routine",
   "orderNoProducts": "No products selected",
   "orderResetToRecommended": "Reset to recommended order",
+  "manualOrderChip": "{count, plural, =1{1 product moved manually} other{{count} products moved manually}}",
+  "@manualOrderChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "manualOrderSheetTitle": "These are the products whose position you changed manually.",
+  "manualOrderRevert": "Undo the manual changes",
   "orderSaveFinish": "Finish & Start",
   "orderSaveNew": "Save New Order",
   "settingsGreeting": "Hello",
@@ -1088,5 +1098,11 @@
   },
   "collectionAddRemoveProduct": "Add / remove product",
   "productSelUnsavedChangesBody": "You added or removed products. Going back without completing the flow won't update your routine.",
-  "productSelGoBackAnyway": "Go back"
+  "productSelGoBackAnyway": "Go back",
+  "settingsContactUs": "Contact Us",
+  "settingsContactUsSubtitle": "Send us your feedback or questions",
+  "settingsContactUsSheetTitle": "Contact Us",
+  "settingsContactUsMessageHint": "Write your message here...",
+  "settingsContactUsSend": "Send",
+  "settingsContactUsCannotSend": "Could not open email app"
 }

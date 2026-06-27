@@ -98,5 +98,11 @@
       }
     }
   },
-  "weekGlanceStartGlowingCta": "הכול מסודר, אפשר להתחיל"
+  "weekGlanceStartGlowingCta": "הכול מסודר, אפשר להתחיל",
+  "settingsContactUs": "צור קשר",
+  "settingsContactUsSubtitle": "שלח לנו משוב או שאלות",
+  "settingsContactUsSheetTitle": "יצירת קשר",
+  "settingsContactUsMessageHint": "כתוב את הודעתך כאן...",
+  "settingsContactUsSend": "שלח",
+  "settingsContactUsCannotSend": "לא ניתן לפתוח את אפליקציית המייל"
 }

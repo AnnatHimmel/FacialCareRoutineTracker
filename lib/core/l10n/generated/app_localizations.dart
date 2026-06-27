@@ -1221,6 +1221,24 @@ abstract class AppLocalizations {
   /// **'איפוס לסדר המומלץ'**
   String get orderResetToRecommended;
 
+  /// No description provided for @manualOrderChip.
+  ///
+  /// In he, this message translates to:
+  /// **'{count, plural, =1{מוצר אחד הוזז ידנית} other{{count} מוצרים הוזזו ידנית}}'**
+  String manualOrderChip(int count);
+
+  /// No description provided for @manualOrderSheetTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אלה המוצרים שהמיקום שלהם שונה ידנית.'**
+  String get manualOrderSheetTitle;
+
+  /// No description provided for @manualOrderRevert.
+  ///
+  /// In he, this message translates to:
+  /// **'ביטול השינויים הידניים'**
+  String get manualOrderRevert;
+
   /// No description provided for @orderSaveFinish.
   ///
   /// In he, this message translates to:
@@ -3518,6 +3536,42 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'חזרה בכל זאת'**
   String get productSelGoBackAnyway;
+
+  /// No description provided for @settingsContactUs.
+  ///
+  /// In he, this message translates to:
+  /// **'צרי קשר'**
+  String get settingsContactUs;
+
+  /// No description provided for @settingsContactUsSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שלחי לנו משוב או שאלות'**
+  String get settingsContactUsSubtitle;
+
+  /// No description provided for @settingsContactUsSheetTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'יצירת קשר'**
+  String get settingsContactUsSheetTitle;
+
+  /// No description provided for @settingsContactUsMessageHint.
+  ///
+  /// In he, this message translates to:
+  /// **'כתבי את הודעתך כאן...'**
+  String get settingsContactUsMessageHint;
+
+  /// No description provided for @settingsContactUsSend.
+  ///
+  /// In he, this message translates to:
+  /// **'שלחי'**
+  String get settingsContactUsSend;
+
+  /// No description provided for @settingsContactUsCannotSend.
+  ///
+  /// In he, this message translates to:
+  /// **'לא ניתן לפתוח את אפליקציית המייל'**
+  String get settingsContactUsCannotSend;
 }
 
 class _AppLocalizationsDelegate

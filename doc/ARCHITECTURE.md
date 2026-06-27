@@ -204,6 +204,11 @@ orderForDay({master, slot, weekday: int}) → Future<List<MasterProduct>>
 warningsForDay({master, slot, weekday: int}) → Future<DayWarnings>
   // DayWarnings: {conflicts: List<ConflictInfo>, overused: List<OveruseEntry>, zeroDayCount: int}
 weekGlance({master}) → Future<WeekGlance>
+manualOrderChanges({master, slot, weekday: int}) → Future<ManualOrderChanges>
+  // ManualOrderChanges: {hasOverride, isGlobalScope, weekday: int?, moved: List<MovedProduct>}
+  // MovedProduct: {product: MasterProduct, targetPosition: int}  // 1-based position in the post-revert order
+  // Diffs the effective order against the order it would fall back to on revert
+  // (per-day → global; global → admin). Drives the Daily Home "manual changes" chip.
 
 // Product mutations (named params)
 addProduct({master, productId: String, slot: Slot}) → Future<int>
@@ -218,6 +223,8 @@ toggleDay({productId: String, slot: Slot, weekday: int}) → Future<void>
 removeDay({productId: String, slot: Slot, weekday: int}) → Future<void>
 setOrder({slot: Slot, int? weekday, required List<String> orderedIds}) → Future<void>
 resetOrder({slot: Slot, int? weekday}) → Future<void>
+revertEffectiveOrder({slot: Slot, weekday: int}) → Future<void>
+  // removes the override in effect for the day: per-day if one exists for weekday, else global
 applyMutationsPersisting(mutations: List<ScheduleMutation>) → Future<void>
 ensureDefaultSchedules({master}) → Future<void>
 
@@ -263,6 +270,8 @@ Only `RoutineScheduler` (`lib/domain/services/routine_scheduler.dart`) may read 
 **`effectiveDays` is the canonical rule.** The rule "which weekdays is a product active on for a given slot" was previously implemented independently in `RoutineResolver.resolve`, `WeekGlanceBuilder._buildActiveDays`, and the schedule setup screen's `_effectiveDays` helper. It is now defined once as `RoutineScheduler.effectiveDays(product, slot, schedules)` and called from all three sites. The semantics are: an explicit `WeekdaySchedule` row wins regardless of value (even an empty set means intentionally excluded); a `DailyRule` product with no row defaults to `{0..6}`; a `WeeklyMaxRule` product with no row defaults to `{}`.
 
 **`ProductSorter.adminComparator` is the canonical admin ordering.** All admin-default product ordering (the fallback when no user `OrderOverride` exists) runs through one comparator in `lib/domain/services/product_sorter.dart`. Its tiers, in order: (1) `category.order`; (2) `subCategory.order`, applied only when *both* products have a known sub-category (mixed null/unknown skips this tier so asymmetric Supabase data can't invert intent); (3) **moisture weight rule** — within `cat-moisturizer` and the same sub-category grouping, a product whose name contains "lotion" sorts before one containing "cream" (lotions are lighter, applied first), taking precedence over the numeric slot order; names with neither/both keywords are unaffected; (4) slot-specific `config.order`; (5) product id as a stable tiebreak.
+
+**Manual-order indicator is derived, not stored.** The Daily Home "manual changes" chip + revert sheet read `manualOrderChangesProvider((date, slot))` (`root_providers.dart`), which calls `RoutineScheduler.manualOrderChanges`. The scheduler resolves the slot twice for the day — once with the effective override, once with the order it would revert to (a per-day override falls back to the global order; a global override falls back to the admin order) — and reports the products whose position differs (`MovedProduct.targetPosition` = where each returns to). Reverting calls `RoutineScheduler.revertEffectiveOrder`, which deletes exactly the one override in effect (per-day for that weekday if present, else the global row). No new persisted state is introduced — the chip is a pure read over existing `OrderOverride` rows.
 
 **Write-drain-before-navigation contract on `ProductSelectionScreen`.** `_ProductSelectionScreenState` tracks every in-flight mutation future in `_pendingWrites: Set<Future<void>>` via `_track(op)`. The "Next" CTA (`_V3BottomTray.onNext`) is an `async` closure that calls `await _flushWrites()` before invoking `onDone` or navigating. This guarantees all `upsertSelection` / `_ensureCappedSchedule` / `_resolveSlotConflicts` writes have committed before `buildRoutineSummary` reads the database. Mutation call sites (`onToggle`, `onTimingChange`) pass their futures through `_track(...)` rather than discarding them (MOD-DEC-RACE-001).
 

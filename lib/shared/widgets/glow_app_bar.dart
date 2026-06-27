@@ -22,12 +22,16 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// When set, replaces the default "The Glow Protocol" wordmark + sun icon.
   final String? title;
 
+  /// Icon used for the back button. Defaults to [Icons.arrow_back_rounded].
+  final IconData backIcon;
+
   const GlowAppBar({
     super.key,
     this.showBack = false,
     this.onBack,
     this.action,
     this.title,
+    this.backIcon = Icons.arrow_back_rounded,
   });
 
   @override
@@ -70,7 +74,7 @@ class GlowAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       leading: showBack
           ? IconButton(
-              icon: const Icon(Icons.arrow_back_rounded),
+              icon: Icon(backIcon),
               color: AppColors.primary,
               tooltip: MaterialLocalizations.of(context).backButtonTooltip,
               onPressed: onBack ?? () => _defaultBack(context),

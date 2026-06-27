@@ -1250,7 +1250,7 @@ class WeekGlanceEntryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GestureDetector(
-      onTap: () => context.push('/week-glance'),
+      onTap: () => context.push('/week-glance?from=collection'),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(

@@ -272,13 +272,17 @@ Widget _wrapWithRouter({
   required MasterContent master,
   required _FakeUDR udr,
   required bool onboarding,
+  bool fromCollection = false,
 }) {
   final router = GoRouter(
     initialLocation: '/week-glance',
     routes: [
       GoRoute(
         path: '/week-glance',
-        builder: (context, state) => WeekGlanceScreen(onboarding: onboarding),
+        builder: (context, state) => WeekGlanceScreen(
+          onboarding: onboarding,
+          fromCollection: fromCollection,
+        ),
       ),
       GoRoute(
         path: '/today',
@@ -510,7 +514,99 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('הכול מסודר, אפשר להתחיל'), findsNothing);
+      // Default (not from collection) shows home icon
+      expect(find.byIcon(Icons.home_rounded), findsOneWidget);
+    });
+  });
+
+  group('WeekGlanceScreen (day abbreviation orientation)', () {
+    Widget wrapWithLocale({
+      required MasterContent master,
+      required _FakeUDR udr,
+      required Locale locale,
+    }) {
+      return ProviderScope(
+        overrides: [
+          masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
+          userDataRepositoryProvider.overrideWithValue(udr),
+        ],
+        child: MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const WeekGlanceScreen(),
+        ),
+      );
+    }
+
+    testWidgets('hebrew_day_abbrevs_render_horizontally_without_rotation',
+        (tester) async {
+      final udr = _FakeUDR(morningSelections: [_sel('pm1', Slot.morning)]);
+      await tester.pumpWidget(wrapWithLocale(
+        master: _masterNoConflicts,
+        udr: udr,
+        locale: const Locale('he'),
+      ));
+      await tester.pumpAndSettle();
+
+      // Hebrew abbrev "א׳" is ≤ 2 chars — must NOT be inside a RotatedBox
+      final hebrewSunday = find.text('א׳');
+      expect(hebrewSunday, findsOneWidget);
+      expect(
+        find.ancestor(of: hebrewSunday, matching: find.byType(RotatedBox)),
+        findsNothing,
+      );
+    });
+
+    testWidgets('english_day_abbrevs_render_vertically_inside_rotated_box',
+        (tester) async {
+      final udr = _FakeUDR(morningSelections: [_sel('pm1', Slot.morning)]);
+      await tester.pumpWidget(wrapWithLocale(
+        master: _masterNoConflicts,
+        udr: udr,
+        locale: const Locale('en'),
+      ));
+      await tester.pumpAndSettle();
+
+      // English abbrev "Sun" is > 2 chars — must be inside a RotatedBox
+      final englishSunday = find.text('Sun');
+      expect(englishSunday, findsOneWidget);
+      expect(
+        find.ancestor(of: englishSunday, matching: find.byType(RotatedBox)),
+        findsOneWidget,
+      );
+    });
+  });
+
+  group('WeekGlanceScreen (fromCollection parameter)', () {
+    testWidgets('fromCollection_true_shows_arrow_not_home_icon',
+        (tester) async {
+      final udr = _FakeUDR();
+      await tester.pumpWidget(_wrapWithRouter(
+        master: _masterNoConflicts,
+        udr: udr,
+        onboarding: false,
+        fromCollection: true,
+      ));
+      await tester.pumpAndSettle();
+
       expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.home_rounded), findsNothing);
+    });
+
+    testWidgets('fromCollection_false_shows_home_icon_not_arrow',
+        (tester) async {
+      final udr = _FakeUDR();
+      await tester.pumpWidget(_wrapWithRouter(
+        master: _masterNoConflicts,
+        udr: udr,
+        onboarding: false,
+        fromCollection: false,
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.home_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_rounded), findsNothing);
     });
   });
 }

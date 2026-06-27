@@ -360,6 +360,70 @@ void main() {
         );
       }
     });
+
+    test('removes product from global order override on removeProduct',
+        () async {
+      final master = _buildMaster();
+      await scheduler.addProduct(
+          master: master, productId: _dailyProduct.id, slot: Slot.morning);
+      await scheduler.setOrder(
+          slot: Slot.morning, weekday: null, orderedIds: [_dailyProduct.id]);
+
+      await scheduler.removeProduct(
+          productId: _dailyProduct.id, slot: Slot.morning);
+
+      final override = await repo.watchOrderOverride(Slot.morning).first;
+      expect(
+        override == null || !override.orderedProductIds.contains(_dailyProduct.id),
+        isTrue,
+        reason: 'global override must not contain removed product ID',
+      );
+    });
+
+    test('removes product from per-day order overrides on removeProduct',
+        () async {
+      final master = _buildMaster();
+      await scheduler.addProduct(
+          master: master, productId: _dailyProduct.id, slot: Slot.morning);
+      await scheduler.setOrder(
+          slot: Slot.morning, weekday: 1, orderedIds: [_dailyProduct.id]);
+
+      await scheduler.removeProduct(
+          productId: _dailyProduct.id, slot: Slot.morning);
+
+      final overrides =
+          await repo.watchPerDayOrderOverrides(Slot.morning).first;
+      for (final o in overrides) {
+        expect(
+          o.orderedProductIds,
+          isNot(contains(_dailyProduct.id)),
+          reason: 'per-day override must not contain removed product ID',
+        );
+      }
+    });
+
+    test('re-adding product after removal inserts at admin position not stale position',
+        () async {
+      final master = _buildMaster();
+      await scheduler.addProduct(
+          master: master, productId: _dailyProduct.id, slot: Slot.morning);
+      await scheduler.setOrder(
+          slot: Slot.morning, weekday: null, orderedIds: [_dailyProduct.id]);
+      await scheduler.removeProduct(
+          productId: _dailyProduct.id, slot: Slot.morning);
+
+      await scheduler.addProduct(
+          master: master, productId: _dailyProduct.id, slot: Slot.morning);
+
+      final override = await repo.watchOrderOverride(Slot.morning).first;
+      if (override != null) {
+        final count = override.orderedProductIds
+            .where((id) => id == _dailyProduct.id)
+            .length;
+        expect(count, equals(1),
+            reason: 'product must appear exactly once in override after re-add');
+      }
+    });
   });
 
   // ── Group 4: orderForDay ─────────────────────────────────────────────────
@@ -1185,6 +1249,165 @@ void main() {
               'applying inverse must restore schedule for ${mutation.productId}',
         );
       }
+    });
+  });
+
+  // ── Group 9: manualOrderChanges ─────────────────────────────────────────
+  //
+  // Admin order for the three DailyRule products (active every day, no
+  // schedule rows needed): _dailyProduct (cat-cleanse, order 1) <
+  // _conflictA (cat-treat, slot order 2) < _conflictB (cat-treat, slot order 3).
+
+  group('manualOrderChanges', () {
+    Future<void> selectThree() async {
+      for (final p in [_dailyProduct, _conflictA, _conflictB]) {
+        await repo.upsertSelection(ProductSelection(
+          id: 'sel-${p.id}',
+          productId: p.id,
+          slot: Slot.morning,
+          isSelected: true,
+          lastModified: DateTime(2026),
+        ));
+      }
+    }
+
+    test('returns hasOverride false and no moved products when no override',
+        () async {
+      final master = _buildMaster();
+      await selectThree();
+
+      final result = await scheduler.manualOrderChanges(
+        master: master,
+        slot: Slot.morning,
+        weekday: 0,
+      );
+
+      expect(result.hasOverride, isFalse);
+      expect(result.moved, isEmpty);
+    });
+
+    test(
+        'global override that swaps two products reports them as moved with target positions',
+        () async {
+      final master = _buildMaster();
+      await selectThree();
+      // Admin order: [daily, conflictA, conflictB]. Swap the first two.
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: [_conflictA.id, _dailyProduct.id, _conflictB.id],
+      );
+
+      final result = await scheduler.manualOrderChanges(
+        master: master,
+        slot: Slot.morning,
+        weekday: 0,
+      );
+
+      expect(result.hasOverride, isTrue);
+      expect(result.isGlobalScope, isTrue);
+      expect(result.weekday, isNull);
+      // Only the two swapped products are "moved"; conflictB keeps its slot.
+      expect(
+        result.moved.map((m) => m.product.id).toList(),
+        equals([_dailyProduct.id, _conflictA.id]),
+        reason: 'moved list is sorted by target (recommended) position',
+      );
+      // Target positions are 1-based positions in the post-revert (admin) order.
+      expect(result.moved[0].targetPosition, equals(1));
+      expect(result.moved[1].targetPosition, equals(2));
+    });
+
+    test('reports empty moved list when override matches the recommended order',
+        () async {
+      final master = _buildMaster();
+      await selectThree();
+      // Override identical to admin order — nothing actually moved.
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: [_dailyProduct.id, _conflictA.id, _conflictB.id],
+      );
+
+      final result = await scheduler.manualOrderChanges(
+        master: master,
+        slot: Slot.morning,
+        weekday: 0,
+      );
+
+      expect(result.hasOverride, isTrue);
+      expect(result.moved, isEmpty,
+          reason: 'an override equal to the recommended order moves nothing');
+    });
+
+    test('per-day override reports per-day scope and diffs against fallback',
+        () async {
+      final master = _buildMaster();
+      await selectThree();
+      // Only a per-day override for Monday (weekday 1); no global override, so
+      // the fallback is the admin order.
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: 1,
+        orderedIds: [_conflictA.id, _dailyProduct.id, _conflictB.id],
+      );
+
+      final result = await scheduler.manualOrderChanges(
+        master: master,
+        slot: Slot.morning,
+        weekday: 1,
+      );
+
+      expect(result.hasOverride, isTrue);
+      expect(result.isGlobalScope, isFalse);
+      expect(result.weekday, equals(1));
+      expect(
+        result.moved.map((m) => m.product.id).toSet(),
+        equals({_dailyProduct.id, _conflictA.id}),
+      );
+    });
+  });
+
+  // ── Group 10: revertEffectiveOrder ──────────────────────────────────────
+
+  group('revertEffectiveOrder', () {
+    test('removes the global override when it is the one in effect', () async {
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: ['prod-daily', 'prod-weekly'],
+      );
+
+      await scheduler.revertEffectiveOrder(slot: Slot.morning, weekday: 3);
+
+      final effective =
+          await scheduler.getEffectiveOrderOverride(Slot.morning, 3);
+      expect(effective, isNull,
+          reason: 'reverting a global-in-effect order clears the global row');
+    });
+
+    test('removes only the per-day override and keeps the global', () async {
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: ['prod-daily', 'prod-weekly'],
+      );
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: 1,
+        orderedIds: ['prod-weekly', 'prod-daily'],
+      );
+
+      await scheduler.revertEffectiveOrder(slot: Slot.morning, weekday: 1);
+
+      // The per-day override for Monday is gone…
+      final perDays =
+          await scheduler.watchPerDayOrderOverrides(Slot.morning).first;
+      expect(perDays.any((o) => o.weekday == 1), isFalse);
+      // …but the global override survives.
+      final global = await scheduler.watchOrderOverride(Slot.morning).first;
+      expect(global, isNotNull);
+      expect(global!.orderedProductIds, equals(['prod-daily', 'prod-weekly']));
     });
   });
 }

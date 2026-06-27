@@ -5,6 +5,7 @@ import {
   tapButton,
   tapText,
   tapNavTab,
+  navTab,
   button,
   text,
   textContaining,
@@ -54,10 +55,21 @@ const PNG_1X1 = Buffer.from(
  * both morning and evening configs with `frequency.type === "daily"`, so it
  * will automatically be scheduled every day in both slots.
  *
- * The flow from the Shelf "Add / remove product" button varies by app state:
- * it may traverse 0-3 intermediate screens before returning to My Day. We use
- * a lenient multi-CTA loop that looks for known forward CTAs and taps the
- * first one visible, up to 12 times, before falling back to the nav tab.
+ * The flow from the Shelf "Add / remove product" button runs the returning-user
+ * wizard (ProductsWizardScreen, lib/features/setup/products_wizard_screen.dart):
+ *
+ *   product selection → routine-ready summary → AM schedule → AM order →
+ *   PM schedule → PM order → week-at-a-glance → My Day
+ *
+ * Each screen carries a single forward CTA whose label comes straight from
+ * app_en.arb; the labels below MUST stay in sync with that file. We tap the
+ * first visible forward CTA each iteration until the bottom-nav "My Day" tab
+ * re-appears (i.e. we are back in the app shell).
+ *
+ * The wizard's terminal week-glance is the non-onboarding variant: it shows a
+ * home/back button in the app bar rather than a "let's glow" CTA, so we detect
+ * that screen by its title and tap the app-bar "Back" button (which routes to
+ * /today because the week-glance route can't pop).
  */
 async function setupRoutine(page: import('@playwright/test').Page): Promise<void> {
   // Start from Shelf tab.
@@ -68,7 +80,7 @@ async function setupRoutine(page: import('@playwright/test').Page): Promise<void
   await button(page, 'Add / remove product').first().dispatchEvent('click');
   await expectText(page, 'Which products do you have?');
 
-  // Select one daily-frequency product.
+  // Select one daily-frequency product (scheduled morning AND evening, daily).
   await selectProduct(
     page,
     'Search product or brand...',
@@ -79,53 +91,58 @@ async function setupRoutine(page: import('@playwright/test').Page): Promise<void
   // The "Organize my shelf" CTA appears after selecting at least one product.
   await tapText(page, 'Organize my shelf');
 
-  // Walk through however many screens appear between the selection CTA and
-  // the home screen. Known forward CTAs in approximate flow order:
-  const finishCtAs = [
-    "Let's plan your routine",   // category review
-    'View My Routine',            // routine ready summary
-    "You're all set, let's glow", // week glance
-    "Let's review your week",     // order screen finish
-    'Continue to Evening',        // morning schedule → evening
-    'Continue to Evening Routine',
-    'Finish & Save Routine',      // schedule setup save
-    'Finish & Start',
-    'Save New Order',
-    'Continue',
+  // Forward CTAs across the wizard, in flow order. These are the exact
+  // app_en.arb strings; if a screen's CTA changes, update it here.
+  const forwardCtAs = [
+    "Let's plan your routine",                            // category review (onboarding only)
+    "Let's start with your Morning routine",              // routine-ready (AM-first)
+    "Let's start with your Evening routine",              // routine-ready (PM-first)
+    'View My Routine',                                    // routine-ready (no-slot fallback)
+    "Let's review the layering order",                    // schedule setup → order (AM & PM)
+    "Looks good, let's continue to your evening routine", // AM order → PM schedule
+    "Let's review your week",                             // PM order → week glance
+    "You're all set, let's glow",                         // week glance (onboarding variant)
   ];
 
-  // Allow up to 12 CTA taps to reach the home screen.
-  for (let step = 0; step < 12; step++) {
-    await page.waitForTimeout(600);
+  // Walk forward until the "My Day" bottom-nav tab exists again.
+  for (let step = 0; step < 20; step++) {
+    if (await navTab(page, 'My Day').first().isVisible().catch(() => false)) {
+      break;
+    }
 
-    // Check if we're on My Day (routine or empty state visible).
-    const morningVisible = await text(page, 'Morning Routine').isVisible().catch(() => false);
-    const eveningVisible = await text(page, 'Evening Routine').isVisible().catch(() => false);
-    const emptyVisible   = await textContaining(page, 'No products for today').isVisible().catch(() => false);
-    if (morningVisible || eveningVisible || emptyVisible) break;
+    // Wizard week-glance terminal: no CTA, just an app-bar home/back button.
+    if (
+      await textContaining(page, "My Week's Routine")
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await button(page, 'Back').first().dispatchEvent('click').catch(() => {});
+      await page.waitForTimeout(700);
+      continue;
+    }
 
     let tapped = false;
-    for (const label of finishCtAs) {
-      // Try text locator first (tapText uses clickCenter for non-button widgets).
-      const loc = text(page, label).first();
-      if (await loc.isVisible().catch(() => false)) {
-        await tapText(page, label);
-        tapped = true;
-        break;
-      }
-      // Also try role=button (some CTAs are FilledButton/TextButton).
+    for (const label of forwardCtAs) {
+      // role=button first (most wizard CTAs are PrimaryButton => button role).
       const btn = button(page, label).first();
       if (await btn.isVisible().catch(() => false)) {
         await btn.dispatchEvent('click');
         tapped = true;
         break;
       }
+      // Fall back to a plain text tap for CTAs that expose no button role.
+      const txt = text(page, label).first();
+      if (await txt.isVisible().catch(() => false)) {
+        await tapText(page, label);
+        tapped = true;
+        break;
+      }
     }
 
-    if (!tapped) {
-      // No known CTA visible — wait another moment for the screen to settle.
-      await page.waitForTimeout(1_200);
-    }
+    // Settle: shorter pause after a tap, longer while a screen is still loading
+    // (e.g. the routine-ready summary builds asynchronously).
+    await page.waitForTimeout(tapped ? 600 : 1_000);
   }
 
   // Land on My Day tab.
@@ -143,14 +160,26 @@ async function supplyPhoto(
   trigger: () => Promise<void>,
 ): Promise<void> {
   // image_picker_for_web creates a hidden <input type="file"> and calls
-  // .click() on it, which fires the 'filechooser' Playwright event.
-  const [chooser] = await Promise.all([
-    page.waitForEvent('filechooser', { timeout: 8_000 }),
-    trigger(),
-  ]);
-  await chooser.setFiles([
-    { name: 'skin-photo.png', mimeType: 'image/png', buffer: PNG_1X1 },
-  ]);
+  // .click() on it, which fires the 'filechooser' Playwright event. The tap can
+  // occasionally miss Flutter's gesture recognizer (semantics still settling),
+  // so re-trigger up to 3 times before giving up.
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const [chooser] = await Promise.all([
+        page.waitForEvent('filechooser', { timeout: 10_000 }),
+        trigger(),
+      ]);
+      await chooser.setFiles([
+        { name: 'skin-photo.png', mimeType: 'image/png', buffer: PNG_1X1 },
+      ]);
+      return;
+    } catch (err) {
+      lastErr = err;
+      await page.waitForTimeout(500);
+    }
+  }
+  throw lastErr;
 }
 
 test.describe('Skin-log photo regression: both photos land on today\'s entry', () => {

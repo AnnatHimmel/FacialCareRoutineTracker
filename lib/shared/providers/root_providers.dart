@@ -430,6 +430,57 @@ final dailyRoutineProvider =
   },
 );
 
+// ── Manual order changes (Daily Home chip + revert sheet) ─────────────────────
+
+/// Per-day custom order overrides for a slot (weekday != null rows).
+final perDayOrderOverridesProvider =
+    StreamProvider.family<List<OrderOverride>, Slot>(
+  (ref, slot) =>
+      ref.watch(routineSchedulerProvider).watchPerDayOrderOverrides(slot),
+);
+
+/// Describes the manual reordering in effect for [slot] on the day [date],
+/// relative to the order it would revert to. Drives the Daily Home "manual
+/// changes" chip (count of moved products) and the revert sheet. Recomputes
+/// when overrides, selections, schedules, or custom products change.
+final manualOrderChangesProvider =
+    FutureProvider.family<ManualOrderChanges, _DailyRoutineParams>(
+  (ref, params) async {
+    final masterContent = await ref.watch(masterContentProvider.future);
+    final boundary = ref.watch(dayBoundaryServiceProvider);
+    final scheduler = ref.watch(routineSchedulerProvider);
+    final customProds = await ref.watch(customProductsProvider.future);
+
+    // Recompute whenever anything that affects the order or active set changes.
+    ref.watch(orderOverrideProvider(params.slot));
+    ref.watch(perDayOrderOverridesProvider(params.slot));
+    ref.watch(selectionsProvider(params.slot));
+    ref.watch(allSchedulesProvider);
+    ref.watch(categoryOverridesProvider);
+
+    final dayOfWeek = boundary.parseDate(params.date).weekday % 7; // Sun=0…Sat=6
+
+    // Resolve against master + custom products, mirroring dailyRoutineProvider,
+    // so a moved custom product is also counted.
+    final combinedMaster = MasterContent(
+      products: [
+        ...masterContent.products,
+        ...customProds.map((p) => p.toMasterProduct()),
+      ],
+      categories: masterContent.categories,
+      subcategories: masterContent.subcategories,
+      rules: masterContent.rules,
+      manifest: masterContent.manifest,
+    );
+
+    return scheduler.manualOrderChanges(
+      master: combinedMaster,
+      slot: params.slot,
+      weekday: dayOfWeek,
+    );
+  },
+);
+
 // ── Week glance & day warnings ────────────────────────────────────────────────
 
 /// Bug 4 fix: watch all backing stream providers so Riverpod re-runs the future

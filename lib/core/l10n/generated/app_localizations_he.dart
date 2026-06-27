@@ -634,6 +634,23 @@ class AppLocalizationsHe extends AppLocalizations {
   String get orderResetToRecommended => 'איפוס לסדר המומלץ';
 
   @override
+  String manualOrderChip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count מוצרים הוזזו ידנית',
+      one: 'מוצר אחד הוזז ידנית',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get manualOrderSheetTitle => 'אלה המוצרים שהמיקום שלהם שונה ידנית.';
+
+  @override
+  String get manualOrderRevert => 'ביטול השינויים הידניים';
+
+  @override
   String get orderSaveFinish => 'סיום והתחלה';
 
   @override
@@ -1919,6 +1936,24 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get productSelGoBackAnyway => 'חזרה בכל זאת';
+
+  @override
+  String get settingsContactUs => 'צרי קשר';
+
+  @override
+  String get settingsContactUsSubtitle => 'שלחי לנו משוב או שאלות';
+
+  @override
+  String get settingsContactUsSheetTitle => 'יצירת קשר';
+
+  @override
+  String get settingsContactUsMessageHint => 'כתבי את הודעתך כאן...';
+
+  @override
+  String get settingsContactUsSend => 'שלחי';
+
+  @override
+  String get settingsContactUsCannotSend => 'לא ניתן לפתוח את אפליקציית המייל';
 }
 
 /// The translations for Hebrew, as used in Morocco (`he_MA`).
@@ -2200,4 +2235,22 @@ class AppLocalizationsHeMa extends AppLocalizationsHe {
   String routineReadyReviewSlotCta(String slot) {
     return 'נתחיל עם שגרת ה$slot';
   }
+
+  @override
+  String get settingsContactUs => 'צור קשר';
+
+  @override
+  String get settingsContactUsSubtitle => 'שלח לנו משוב או שאלות';
+
+  @override
+  String get settingsContactUsSheetTitle => 'יצירת קשר';
+
+  @override
+  String get settingsContactUsMessageHint => 'כתוב את הודעתך כאן...';
+
+  @override
+  String get settingsContactUsSend => 'שלח';
+
+  @override
+  String get settingsContactUsCannotSend => 'לא ניתן לפתוח את אפליקציית המייל';
 }
