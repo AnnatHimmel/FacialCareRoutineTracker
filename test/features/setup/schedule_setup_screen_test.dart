@@ -163,7 +163,7 @@ Widget _wrap({
     routes: [
       GoRoute(
         path: '/setup/schedule',
-        builder: (_, __) => ScheduleSetupScreen(
+        builder: (_, _) => ScheduleSetupScreen(
           fromSetup: fromSetup,
           fromProducts: fromProducts,
         ),
@@ -178,7 +178,7 @@ Widget _wrap({
       ),
       GoRoute(
         path: '/routine-ready',
-        builder: (_, __) => const Scaffold(body: Text('ROUTINE-READY')),
+        builder: (_, _) => const Scaffold(body: Text('ROUTINE-READY')),
       ),
     ],
   );
@@ -204,11 +204,11 @@ Widget _wrapDirect({required MasterContent master, _FakeUDR? udr}) {
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
       userDataRepositoryProvider.overrideWithValue(udr ?? _FakeUDR()),
     ],
-    child: MaterialApp(
+    child: const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('he', 'MA'),
-      home: const ScheduleSetupScreen(fromProducts: true),
+      locale: Locale('he', 'MA'),
+      home: ScheduleSetupScreen(fromProducts: true),
     ),
   );
 }
@@ -343,7 +343,7 @@ void main() {
       final product1 = _dailyProduct('p1', 'סרום ויטמין C');
       final product2 = _dailyProduct('p2', 'נייר רך');
 
-      final conflictRule = IncompatibilityRule(
+      const conflictRule = IncompatibilityRule(
         id: 'rule1',
         entityA: RuleTarget(type: RuleTargetType.product, id: 'p1'),
         entityB: RuleTarget(type: RuleTargetType.product, id: 'p2'),
@@ -401,42 +401,42 @@ void main() {
         (tester) async {
       /// Given: Morning AND evening products each with a conflict rule, all scheduled every day
 
-      final morningProd1 = MasterProduct(
+      const morningProd1 = MasterProduct(
         id: 'pm1',
         name: 'סרום ויטמין C',
         categoryId: 'cat1',
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
-      final morningProd2 = MasterProduct(
+      const morningProd2 = MasterProduct(
         id: 'pm2',
         name: 'נייר רך',
         categoryId: 'cat1',
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 2, frequencyRule: DailyRule()),
+        morningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
       );
-      final eveningProd1 = MasterProduct(
+      const eveningProd1 = MasterProduct(
         id: 'pe1',
         name: 'קרם לילה',
         categoryId: 'cat1',
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        eveningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
-      final eveningProd2 = MasterProduct(
+      const eveningProd2 = MasterProduct(
         id: 'pe2',
         name: 'שמן',
         categoryId: 'cat1',
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        eveningConfig: const SlotConfig(order: 2, frequencyRule: DailyRule()),
+        eveningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
       );
 
-      final master = MasterContent(
+      const master = MasterContent(
         products: [morningProd1, morningProd2, eveningProd1, eveningProd2],
-        categories: [const Category(id: 'cat1', name: 'לחות', order: 1)],
+        categories: [Category(id: 'cat1', name: 'לחות', order: 1)],
         rules: [
           IncompatibilityRule(
             id: 'rule_morning',
@@ -453,7 +453,7 @@ void main() {
             reason: 'conflict in evening',
           ),
         ],
-        manifest: const MasterListManifest(
+        manifest: MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
           changelog: [],
@@ -502,13 +502,13 @@ void main() {
         (tester) async {
       /// Given: One weekly product (cap=2) scheduled on all 7 days (overuse).
       /// No conflicts. The overuse day should show a badge in the strip.
-      final product = MasterProduct(
+      const product = MasterProduct(
         id: 'p_over',
         name: 'סרום רטינול',
         categoryId: 'cat1',
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(2)),
+        morningConfig: SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(2)),
       );
 
       final udr = _FakeUDR(
@@ -543,13 +543,13 @@ void main() {
         (tester) async {
       /// Given: One weekly product (cap=2) scheduled on all 7 days.
       /// No conflict rule. Day summary should show the combined note count.
-      final product = MasterProduct(
+      const product = MasterProduct(
         id: 'p_over2',
         name: 'סרום רטינול 2',
         categoryId: 'cat1',
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(2)),
+        morningConfig: SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(2)),
       );
 
       final udr = _FakeUDR(
@@ -587,7 +587,7 @@ void main() {
       final product1 = _dailyProduct('p1', 'סרום ויטמין C');
       final product2 = _dailyProduct('p2', 'נייר רך');
 
-      final conflictRule = IncompatibilityRule(
+      const conflictRule = IncompatibilityRule(
         id: 'rule1',
         entityA: RuleTarget(type: RuleTargetType.product, id: 'p1'),
         entityB: RuleTarget(type: RuleTargetType.product, id: 'p2'),
@@ -648,13 +648,13 @@ void main() {
         (tester) async {
       /// Given: One weekly product (cap=1) scheduled on days 3 and 4 only (count=2 > cap=1).
       /// Today (0=Sun) has no product scheduled. Day 3 is the first issue day.
-      final product = MasterProduct(
+      const product = MasterProduct(
         id: 'p_def',
         name: 'פילינג',
         categoryId: 'cat1',
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(1)),
+        morningConfig: SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(1)),
       );
 
       final udr = _FakeUDR(

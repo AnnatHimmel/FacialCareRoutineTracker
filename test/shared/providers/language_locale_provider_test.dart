@@ -4,17 +4,15 @@ import 'package:skincare_tracker/domain/repositories/settings_repository.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
 
 class _FakeSettings implements SettingsRepository {
-  String _language;
-  String? _gender;
+  String language;
+  String? gender;
 
-  _FakeSettings({String language = 'he', String? gender})
-      : _language = language,
-        _gender = gender;
+  _FakeSettings({this.language = 'he', this.gender});
 
-  @override Future<String> getAppLanguage() async => _language;
-  @override Future<void> setAppLanguage(String code) async => _language = code;
-  @override Future<String?> getUserGender() async => _gender;
-  @override Future<void> setUserGender(String gender) async => _gender = gender;
+  @override Future<String> getAppLanguage() async => language;
+  @override Future<void> setAppLanguage(String code) async => language = code;
+  @override Future<String?> getUserGender() async => gender;
+  @override Future<void> setUserGender(String gender) async => this.gender = gender;
   @override Future<String?> getLastExportDate() async => null;
   @override Future<void> setLastExportDate(String d) async {}
   @override Future<String?> getLastKnownMasterVersion() async => null;

@@ -16,7 +16,6 @@ import 'package:skincare_tracker/domain/entities/user_data_export.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/user_data_repository.dart';
-import 'package:skincare_tracker/domain/services/day_boundary_service.dart';
 import 'package:skincare_tracker/features/welcome/welcome_screen.dart';
 import 'package:skincare_tracker/shared/providers/root_providers.dart';
 
@@ -177,12 +176,11 @@ void main() {
        * When: The welcome screen renders
        * Then: The app brand name (l10n.welcomeAppName) is visible
        */
-      bool callbackCalled = false;
       await _pumpPhone(
         tester,
         _wrap(
           dayRecords: const [],
-          onContinue: () => callbackCalled = true,
+          onContinue: () {},
         ),
       );
       await tester.pump(const Duration(milliseconds: 1500));
@@ -197,8 +195,6 @@ void main() {
        * When: The welcome screen renders
        * Then: The streak count (5) is displayed as a large number
        */
-      bool callbackCalled = false;
-
       // Mock day records to simulate a 5-day streak
       final dayRecords = List.generate(
         5,
@@ -220,7 +216,7 @@ void main() {
         tester,
         _wrap(
           dayRecords: dayRecords,
-          onContinue: () => callbackCalled = true,
+          onContinue: () {},
         ),
       );
       await tester.pump(const Duration(milliseconds: 1500));
@@ -235,12 +231,11 @@ void main() {
        * When: The screen renders
        * Then: The streak label (l10n.welcomeStreakLabel = "ימים ברצף") is visible
        */
-      bool callbackCalled = false;
       await _pumpPhone(
         tester,
         _wrap(
           dayRecords: const [],
-          onContinue: () => callbackCalled = true,
+          onContinue: () {},
         ),
       );
       await tester.pump(const Duration(milliseconds: 1500));
@@ -350,12 +345,11 @@ void main() {
        * When: The welcome screen renders
        * Then: 2 filled hearts and 1 empty heart are displayed
        */
-      bool callbackCalled = false;
       await _pumpPhone(
         tester,
         _wrap(
           dayRecords: const [],
-          onContinue: () => callbackCalled = true,
+          onContinue: () {},
         ),
       );
       await tester.pump(const Duration(milliseconds: 1500));
@@ -372,12 +366,11 @@ void main() {
        * When: The screen renders
        * Then: The personal best label (l10n.welcomePersonalBestLabel) is visible
        */
-      bool callbackCalled = false;
       await _pumpPhone(
         tester,
         _wrap(
           dayRecords: const [],
-          onContinue: () => callbackCalled = true,
+          onContinue: () {},
         ),
       );
       await tester.pump(const Duration(milliseconds: 1500));

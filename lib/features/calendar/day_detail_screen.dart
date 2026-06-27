@@ -7,7 +7,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
 import '../../domain/entities/master_product.dart';
-import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';

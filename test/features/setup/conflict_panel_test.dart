@@ -172,11 +172,11 @@ Widget _wrapDirect({required MasterContent master, _FakeUDR? udr}) =>
         masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
         userDataRepositoryProvider.overrideWithValue(udr ?? _FakeUDR()),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('he', 'MA'),
-        home: const ScheduleSetupScreen(fromProducts: true),
+        locale: Locale('he', 'MA'),
+        home: ScheduleSetupScreen(fromProducts: true),
       ),
     );
 
@@ -459,7 +459,7 @@ void main() {
                   slot: Slot.morning,
                   categories: const [],
                   isEnglish: false,
-                  onRemoveFromDay: (_, __) async {},
+                  onRemoveFromDay: (_, _) async {},
                   l: l,
                 ),
               );

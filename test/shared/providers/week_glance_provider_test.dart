@@ -5,11 +5,9 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/collection_item.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
 import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
-import 'package:skincare_tracker/domain/entities/master_product.dart';
 import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
@@ -174,24 +172,15 @@ class _ReactiveUDR implements UserDataRepository {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-MasterContent _emptyMaster() => MasterContent(
-      products: const [],
-      categories: const [],
-      rules: const [],
-      manifest: const MasterListManifest(
+MasterContent _emptyMaster() => const MasterContent(
+      products: [],
+      categories: [],
+      rules: [],
+      manifest: MasterListManifest(
         contentVersion: '1.0.0',
         appVersion: '1.0.0',
         changelog: [],
       ),
-    );
-
-MasterProduct _amProduct(String id) => MasterProduct(
-      id: id,
-      name: 'Test $id',
-      categoryId: 'cat1',
-      isDeprecated: false,
-      addedInVersion: '1.0.0',
-      morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
 
 // ── Tests ────────────────────────────────────────────────────────────────────

@@ -46,7 +46,7 @@ void main() {
             200,
           );
         }
-        return http.Response(jsonEncode({'code': 'NOT_FOUND', 'items': []}), 200);
+        return http.Response(jsonEncode({'code': 'NOT_FOUND', 'items': <dynamic>[]}), 200);
       });
 
       final service = BarcodeProductLookupService(client: client);
@@ -281,7 +281,7 @@ void main() {
           return http.Response(jsonEncode({'status': 0}), 200);
         }
         return http.Response(
-          jsonEncode({'code': 'NOT_FOUND', 'items': []}),
+          jsonEncode({'code': 'NOT_FOUND', 'items': <dynamic>[]}),
           200,
         );
       });

@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/domain/entities/day_record.dart';
-import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
 import 'package:skincare_tracker/domain/entities/master_product.dart';
 import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
@@ -139,15 +138,15 @@ Widget _wrap(_FakeReconciliationService service) {
     routes: [
       GoRoute(
         path: '/update-review',
-        builder: (_, __) => const UpdateReviewScreen(),
+        builder: (_, _) => const UpdateReviewScreen(),
       ),
       GoRoute(
         path: '/today',
-        builder: (_, __) => const Scaffold(body: Text('today-screen')),
+        builder: (_, _) => const Scaffold(body: Text('today-screen')),
       ),
       GoRoute(
         path: '/export-import',
-        builder: (_, __) => const Scaffold(body: Text('export-import-screen')),
+        builder: (_, _) => const Scaffold(body: Text('export-import-screen')),
       ),
     ],
   );

@@ -22,9 +22,9 @@ class RemoteCachedMasterContentRepositoryImpl
     required MasterContentRepository bundled,
     required RemoteContentDataSource remote,
     required MasterContentCache cache,
-  })  : _bundled = bundled,
-        _remote = remote,
-        _cache = cache;
+  })  : _bundled = bundled, // ignore: prefer_initializing_formals
+        _remote = remote, // ignore: prefer_initializing_formals
+        _cache = cache; // ignore: prefer_initializing_formals
 
   /// Returns master content, fetching from Supabase first.
   /// The Supabase result is merged with the bundled JSON so that any products

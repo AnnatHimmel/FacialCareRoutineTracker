@@ -13,11 +13,11 @@ Widget _wrap() {
     routes: [
       GoRoute(
         path: '/export-import',
-        builder: (_, __) => const ExportImportScreen(),
+        builder: (_, _) => const ExportImportScreen(),
       ),
       GoRoute(
         path: '/export-import/merge',
-        builder: (_, __) => const Scaffold(body: Text('merge-screen')),
+        builder: (_, _) => const Scaffold(body: Text('merge-screen')),
       ),
     ],
   );

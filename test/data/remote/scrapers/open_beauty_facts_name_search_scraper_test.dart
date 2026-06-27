@@ -52,7 +52,7 @@ void main() {
       // Arrange
       final client = MockClient((request) async {
         return http.Response(
-          jsonEncode({'count': 0, 'products': []}),
+          jsonEncode({'count': 0, 'products': <dynamic>[]}),
           200,
         );
       });

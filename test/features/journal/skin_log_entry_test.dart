@@ -143,11 +143,11 @@ Widget _buildScreen(_FakeUserDataRepo repo) => ProviderScope(
         userDataRepositoryProvider.overrideWithValue(repo),
         photoRepositoryProvider.overrideWithValue(_FakePhotoRepo()),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('he', 'MA'),
-        home: const SkinLogEntryScreen(date: '2024-01-15'),
+        locale: Locale('he', 'MA'),
+        home: SkinLogEntryScreen(date: '2024-01-15'),
       ),
     );
 

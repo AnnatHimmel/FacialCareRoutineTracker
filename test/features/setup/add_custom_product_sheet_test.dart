@@ -147,11 +147,11 @@ Widget _wrap({
       userDataRepositoryProvider.overrideWithValue(udr),
       productClassifierProvider.overrideWith((ref) async => classifier),
     ],
-    child: MaterialApp(
+    child: const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('he'),
-      home: const Scaffold(
+      locale: Locale('he'),
+      home: Scaffold(
         // These pre-gate tests exercise the full manual form directly; skip the
         // smart-completion gate. The gate has its own dedicated test group.
         body: AddCustomProductSheet(startRevealed: true),
@@ -193,11 +193,11 @@ Widget _wrapGated({
       if (lookup != null)
         barcodeProductLookupServiceProvider.overrideWithValue(lookup),
     ],
-    child: MaterialApp(
+    child: const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('he'),
-      home: const Scaffold(
+      locale: Locale('he'),
+      home: Scaffold(
         body: AddCustomProductSheet(),
       ),
     ),
@@ -796,18 +796,18 @@ void main() {
       order: 1,
     );
 
-    ProductClassifier _spfClassifier() => ProductClassifier.fromSubcategories([
+    ProductClassifier spfClassifier() => ProductClassifier.fromSubcategories([
           {'id': 'sub-spf', 'keywords': ['sunscreen', 'spf']},
         ]);
-    ProductClassifier _retinoidClassifier() =>
+    ProductClassifier retinoidClassifier() =>
         ProductClassifier.fromSubcategories([
           {'id': 'sub-retinoid', 'keywords': ['retinol', 'retinoid']},
         ]);
-    ProductClassifier _cleanserClassifier() =>
+    ProductClassifier cleanserClassifier() =>
         ProductClassifier.fromSubcategories([
           {'id': 'sub-second-cleanser', 'keywords': ['face wash', 'cleanser']},
         ]);
-    ProductClassifier _moisturizerClassifier() =>
+    ProductClassifier moisturizerClassifier() =>
         ProductClassifier.fromSubcategories([
           {
             'id': 'sub-moisturizer',
@@ -825,7 +825,7 @@ void main() {
       await tester.pumpWidget(_wrap(
         master: master,
         udr: udr,
-        classifier: _spfClassifier(),
+        classifier: spfClassifier(),
       ));
       await tester.pumpAndSettle();
 
@@ -862,7 +862,7 @@ void main() {
       await tester.pumpWidget(_wrap(
         master: master,
         udr: udr,
-        classifier: _retinoidClassifier(),
+        classifier: retinoidClassifier(),
       ));
       await tester.pumpAndSettle();
 
@@ -900,7 +900,7 @@ void main() {
       await tester.pumpWidget(_wrap(
         master: master,
         udr: udr,
-        classifier: _cleanserClassifier(),
+        classifier: cleanserClassifier(),
       ));
       await tester.pumpAndSettle();
 
@@ -935,7 +935,7 @@ void main() {
       await tester.pumpWidget(_wrap(
         master: master,
         udr: udr,
-        classifier: _moisturizerClassifier(),
+        classifier: moisturizerClassifier(),
       ));
       await tester.pumpAndSettle();
 
@@ -971,7 +971,7 @@ void main() {
       await tester.pumpWidget(_wrap(
         master: master,
         udr: udr,
-        classifier: _cleanserClassifier(),
+        classifier: cleanserClassifier(),
       ));
       await tester.pumpAndSettle();
 
@@ -1268,14 +1268,14 @@ void main() {
 
   group('scan variant — scan again', () {
     // Scan info shared across the tests in this group.
-    const _reliefSunScan = ScannedProductInfo(
+    const reliefSunScan = ScannedProductInfo(
       barcode: 'scan-again-barcode',
       name: 'Relief Sun: Rice + Probiotics',
       brand: 'Beauty of Joseon',
     );
 
     /// Builds a scan-prefill sheet AND wires up an [onScanAgain] callback.
-    Widget _wrapScanWithAgain({
+    Widget wrapScanWithAgain({
       required MasterContent master,
       required UserDataRepository udr,
       required ProductClassifier classifier,
@@ -1313,11 +1313,11 @@ void main() {
       final udr = _FakeUDR();
       final master = _masterWith([serumCat], []);
 
-      await tester.pumpWidget(_wrapScanWithAgain(
+      await tester.pumpWidget(wrapScanWithAgain(
         master: master,
         udr: udr,
         classifier: _emptyClassifier(),
-        scanInfo: _reliefSunScan,
+        scanInfo: reliefSunScan,
         onScanAgain: () {},
       ));
       await tester.pumpAndSettle();
@@ -1339,11 +1339,11 @@ void main() {
       final master = _masterWith([serumCat], []);
       int callCount = 0;
 
-      await tester.pumpWidget(_wrapScanWithAgain(
+      await tester.pumpWidget(wrapScanWithAgain(
         master: master,
         udr: udr,
         classifier: _emptyClassifier(),
-        scanInfo: _reliefSunScan,
+        scanInfo: reliefSunScan,
         onScanAgain: () => callCount++,
       ));
       await tester.pumpAndSettle();
@@ -1628,11 +1628,11 @@ void main() {
           productClassifierProvider
               .overrideWith((ref) async => _emptyClassifier()),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('he'),
-          home: const Scaffold(
+          locale: Locale('he'),
+          home: Scaffold(
             // initialName param does not exist yet — this should fail to compile
             body: AddCustomProductSheet(initialName: 'My Serum'),
           ),
@@ -1666,11 +1666,11 @@ void main() {
               .overrideWith((ref) async => _emptyClassifier()),
           barcodeProductLookupServiceProvider.overrideWithValue(lookup),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('he'),
-          home: const Scaffold(
+          locale: Locale('he'),
+          home: Scaffold(
             body: AddCustomProductSheet(initialName: 'My Serum'),
           ),
         ),

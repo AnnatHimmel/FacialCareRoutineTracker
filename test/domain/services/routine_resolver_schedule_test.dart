@@ -8,12 +8,9 @@ import 'package:skincare_tracker/domain/services/day_boundary_service.dart';
 import 'package:skincare_tracker/domain/services/routine_resolver.dart';
 
 // Monday 2024-06-10 noon — dayOfWeek = 1 (Mon=1…Sun=7 → Mon%7=1)
-const _date = '2024-06-10';
 final _monday = DateTime(2024, 6, 10, 12);
 final _boundary = DayBoundaryService();
 final _resolver = RoutineResolver();
-
-Category _cat(String id) => Category(id: id, name: id, order: 1);
 
 MasterProduct _dailyBiSlot(String id) => MasterProduct(
       id: id,
@@ -23,16 +20,6 @@ MasterProduct _dailyBiSlot(String id) => MasterProduct(
       addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
       eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
-    );
-
-MasterProduct _dailyMorningOnly(String id) => MasterProduct(
-      id: id,
-      name: id,
-      categoryId: 'cat-serum',
-      isDeprecated: false,
-      addedInVersion: '1.0.0',
-      morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
-      eveningConfig: null,
     );
 
 ProductSelection _morningSelection(String productId) => ProductSelection(

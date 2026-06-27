@@ -240,7 +240,7 @@ Widget _wrap({
     routes: [
       GoRoute(
         path: '/setup/selection',
-        builder: (_, __) => ProductSelectionScreen(
+        builder: (_, _) => ProductSelectionScreen(
           fromSetup: fromSetup,
           isTabDestination: isTabDestination,
         ),
@@ -255,7 +255,7 @@ Widget _wrap({
       ),
       GoRoute(
         path: '/products/schedule',
-        builder: (_, __) => const Scaffold(body: Text('products-schedule')),
+        builder: (_, _) => const Scaffold(body: Text('products-schedule')),
       ),
     ],
   );
@@ -275,8 +275,8 @@ Widget _wrap({
 
 void main() {
   // Categories for tests
-  final cat1 = const Category(id: 'cat-serum', name: 'סרום', order: 5);
-  final cat2 = const Category(id: 'cat-spf', name: 'הגנה', order: 8);
+  const cat1 = Category(id: 'cat-serum', name: 'סרום', order: 5);
+  const cat2 = Category(id: 'cat-spf', name: 'הגנה', order: 8);
 
   group('ProductSelectionScreen — guided step', () {
     testWidgets('shows all products in guided step (V3 unified view)',
@@ -769,13 +769,13 @@ void main() {
     });
 
     testWidgets('deprecated products are hidden in browse mode', (tester) async {
-      final deprecated = MasterProduct(
+      const deprecated = MasterProduct(
         id: 'p_old',
         name: 'מוצר ישן',
         categoryId: 'cat-serum',
         isDeprecated: true,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
       final master = _masterWith([
         _amProduct('p1', 'קרם טוב', 'cat-serum'),
@@ -799,20 +799,19 @@ void main() {
 // A UDR that pre-seeds selections + schedules and captures all upsertSchedule
 // calls so the test can assert which product IDs had schedule rows written.
 class _ConflictResolvingUDR implements UserDataRepository {
-  final Map<Slot, List<ProductSelection>> _selections;
-  final List<WeekdaySchedule> _schedules;
+  final Map<Slot, List<ProductSelection>> selections;
+  final List<WeekdaySchedule> schedules;
   final List<WeekdaySchedule> schedulesWritten = [];
   final List<ProductSelection> selectionsWritten = [];
 
   _ConflictResolvingUDR({
-    required Map<Slot, List<ProductSelection>> selections,
-    required List<WeekdaySchedule> schedules,
-  })  : _selections = selections,
-        _schedules = schedules;
+    required this.selections,
+    required this.schedules,
+  });
 
   @override
   Stream<List<ProductSelection>> watchSelections(Slot slot) =>
-      Stream.value(_selections[slot] ?? []);
+      Stream.value(selections[slot] ?? []);
 
   @override
   Stream<List<MutedConflict>> watchMutedConflicts() => Stream.value([]);
@@ -823,7 +822,7 @@ class _ConflictResolvingUDR implements UserDataRepository {
 
   @override
   Stream<List<WeekdaySchedule>> watchAllSchedules() =>
-      Stream.value(_schedules);
+      Stream.value(schedules);
 
   @override
   Future<void> upsertSchedule(WeekdaySchedule s) async =>
@@ -896,32 +895,32 @@ void _bug1Tests() {
         'selecting a new conflicting product does not write a schedule row '
         'for the already-existing product', (tester) async {
       const catId = 'cat-serum';
-      final cat = const Category(id: catId, name: 'סרום', order: 5);
+      const cat = Category(id: catId, name: 'סרום', order: 5);
 
       // productA is already selected in morning with a user-set schedule.
-      final productA = MasterProduct(
+      const productA = MasterProduct(
         id: 'prod-a',
         name: 'Product A',
         categoryId: catId,
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
       // productB is the new product being added; it conflicts with productA.
-      final productB = MasterProduct(
+      const productB = MasterProduct(
         id: 'prod-b',
         name: 'Product B',
         categoryId: catId,
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 2, frequencyRule: DailyRule()),
+        morningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
       );
 
       // Incompatibility rule: productA and productB cannot be in the same slot.
-      final rule = IncompatibilityRule(
+      const rule = IncompatibilityRule(
         id: 'rule-ab',
-        entityA: const RuleTarget(type: RuleTargetType.product, id: 'prod-a'),
-        entityB: const RuleTarget(type: RuleTargetType.product, id: 'prod-b'),
+        entityA: RuleTarget(type: RuleTargetType.product, id: 'prod-a'),
+        entityB: RuleTarget(type: RuleTargetType.product, id: 'prod-b'),
         scope: RuleScope.withinSlot,
       );
 
@@ -951,12 +950,12 @@ void _bug1Tests() {
         schedules: [schedA],
       );
 
-      final master = MasterContent(
+      const master = MasterContent(
         products: [productA, productB],
         categories: [cat],
         subcategories: [],
         rules: [rule],
-        manifest: const MasterListManifest(
+        manifest: MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
           changelog: [],

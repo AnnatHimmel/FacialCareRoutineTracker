@@ -56,8 +56,8 @@ class MergeSession {
     required this.photos,
     required UserDataRepository userRepo,
     required PhotoRepository photoRepo,
-  })  : _userRepo = userRepo,
-        _photoRepo = photoRepo;
+  })  : _userRepo = userRepo, // ignore: prefer_initializing_formals
+        _photoRepo = photoRepo; // ignore: prefer_initializing_formals
 
   void resolveConflict({required int index, required bool useArchive}) {
     _resolutions[conflicts[index].recordId] = useArchive;

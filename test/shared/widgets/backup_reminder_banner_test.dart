@@ -55,11 +55,11 @@ Widget _buildBanner({String? lastExportDate}) => ProviderScope(
           _FakeSettings(lastExportDate: lastExportDate),
         ),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('he', 'MA'),
-        home: const Scaffold(body: BackupReminderBanner()),
+        locale: Locale('he', 'MA'),
+        home: Scaffold(body: BackupReminderBanner()),
       ),
     );
 

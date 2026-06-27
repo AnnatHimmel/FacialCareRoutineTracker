@@ -174,38 +174,38 @@ class _FakeUDR implements UserDataRepository {
 // ── Test data ─────────────────────────────────────────────────────────────────
 
 // Real data fixtures: DISTINCT product names to guarantee failure against hardcoded screen
-final _morningProductRealData = MasterProduct(
+const _morningProductRealData = MasterProduct(
   id: 'pm1',
   name: 'RealData Morning Cleanser',
   categoryId: 'cat-cleanser',
   isDeprecated: false,
   addedInVersion: '1.0.0',
-  morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+  morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
 );
 
-final _eveningProductARealData = MasterProduct(
+const _eveningProductARealData = MasterProduct(
   id: 'pe1',
   name: 'RealData Evening Serum A',
   categoryId: 'cat-serum',
   isDeprecated: false,
   addedInVersion: '1.0.0',
-  eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+  eveningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
 );
 
-final _eveningProductBRealData = MasterProduct(
+const _eveningProductBRealData = MasterProduct(
   id: 'pe2',
   name: 'RealData Evening Serum B',
   categoryId: 'cat-serum',
   isDeprecated: false,
   addedInVersion: '1.0.0',
-  eveningConfig: const SlotConfig(order: 2, frequencyRule: DailyRule()),
+  eveningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
 );
 
-final _masterWithConflict = MasterContent(
+const _masterWithConflict = MasterContent(
   products: [_morningProductRealData, _eveningProductARealData, _eveningProductBRealData],
   categories: [
-    const Category(id: 'cat-cleanser', name: 'קלינזר', order: 1),
-    const Category(id: 'cat-serum', name: 'סרום', order: 2),
+    Category(id: 'cat-cleanser', name: 'קלינזר', order: 1),
+    Category(id: 'cat-serum', name: 'סרום', order: 2),
   ],
   rules: [
     IncompatibilityRule(
@@ -216,21 +216,21 @@ final _masterWithConflict = MasterContent(
       reason: 'בדיקת התנגשות ערב',
     ),
   ],
-  manifest: const MasterListManifest(
+  manifest: MasterListManifest(
     contentVersion: '1.0.0',
     appVersion: '1.0.0',
     changelog: [],
   ),
 );
 
-final _masterNoConflicts = MasterContent(
+const _masterNoConflicts = MasterContent(
   products: [_morningProductRealData, _eveningProductARealData, _eveningProductBRealData],
   categories: [
-    const Category(id: 'cat-cleanser', name: 'קלינזר', order: 1),
-    const Category(id: 'cat-serum', name: 'סרום', order: 2),
+    Category(id: 'cat-cleanser', name: 'קלינזר', order: 1),
+    Category(id: 'cat-serum', name: 'סרום', order: 2),
   ],
   rules: [],
-  manifest: const MasterListManifest(
+  manifest: MasterListManifest(
     contentVersion: '1.0.0',
     appVersion: '1.0.0',
     changelog: [],
@@ -254,13 +254,13 @@ Widget _wrap({
       masterContentRepositoryProvider.overrideWithValue(_FakeMCR(master)),
       userDataRepositoryProvider.overrideWithValue(udr),
     ],
-    child: MaterialApp(
-      locale: const Locale('he'),
+    child: const MaterialApp(
+      locale: Locale('he'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Directionality(
         textDirection: TextDirection.rtl,
-        child: const WeekGlanceScreen(),
+        child: WeekGlanceScreen(),
       ),
     ),
   );

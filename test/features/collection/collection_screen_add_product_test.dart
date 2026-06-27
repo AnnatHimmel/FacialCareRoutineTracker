@@ -6,7 +6,6 @@ import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/domain/entities/category.dart';
 import 'package:skincare_tracker/domain/entities/collection_item.dart';
 import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
-import 'package:skincare_tracker/domain/entities/master_product.dart';
 import 'package:skincare_tracker/domain/entities/muted_conflict.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
@@ -101,11 +100,11 @@ class _FakeUDR implements UserDataRepository {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-final _master = MasterContent(
+const _master = MasterContent(
   products: [],
-  categories: [const Category(id: 'cat1', name: 'לחות', order: 1)],
+  categories: [Category(id: 'cat1', name: 'לחות', order: 1)],
   rules: [],
-  manifest: const MasterListManifest(
+  manifest: MasterListManifest(
     contentVersion: '1.0.0',
     appVersion: '1.0.0',
     changelog: [],
@@ -120,15 +119,15 @@ Widget _wrap() {
     routes: [
       GoRoute(
         path: '/collection',
-        builder: (_, __) => const CollectionScreen(),
+        builder: (_, _) => const CollectionScreen(),
       ),
       GoRoute(
         path: '/add-product',
-        builder: (_, __) => const Scaffold(body: Text('add-product-screen')),
+        builder: (_, _) => const Scaffold(body: Text('add-product-screen')),
       ),
       GoRoute(
         path: '/products',
-        builder: (_, __) => const Scaffold(body: Text('products-screen')),
+        builder: (_, _) => const Scaffold(body: Text('products-screen')),
       ),
     ],
   );

@@ -101,7 +101,7 @@ void main() {
         final eveningSelections = <ProductSelection>[];
         final schedules = <WeekdaySchedule>[];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1],
           categories: categories,
@@ -134,7 +134,7 @@ void main() {
           schedule('p1', Slot.morning, {}), // empty weekdays = excluded
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1],
           categories: categories,
@@ -164,7 +164,7 @@ void main() {
           schedule('p1', Slot.morning, {1, 3, 5}),
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1],
           categories: categories,
@@ -195,7 +195,7 @@ void main() {
           'p1',
           'catEvening',
           eveningOrder: 1,
-          eveningFreq: WeeklyMaxRule(3),
+          eveningFreq: const WeeklyMaxRule(3),
         );
         final morningSelections = <ProductSelection>[];
         final eveningSelections = [selection('p1', Slot.evening, true)];
@@ -203,7 +203,7 @@ void main() {
           schedule('p1', Slot.evening, {1, 3, 5}),
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1],
           categories: categories,
@@ -235,13 +235,13 @@ void main() {
           'p1',
           'catEvening',
           eveningOrder: 1,
-          eveningFreq: WeeklyMaxRule(3),
+          eveningFreq: const WeeklyMaxRule(3),
         );
         final morningSelections = <ProductSelection>[];
         final eveningSelections = [selection('p1', Slot.evening, true)];
         final schedules = <WeekdaySchedule>[];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1],
           categories: categories,
@@ -273,7 +273,7 @@ void main() {
         final morningSelections = [selection('p1', Slot.morning, true)];
         final eveningSelections = [selection('p2', Slot.evening, true)];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1, p2],
           categories: categories,
@@ -327,7 +327,7 @@ void main() {
           selection('pe2', Slot.evening, true),
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [pe1, pe2],
           categories: categories,
@@ -384,7 +384,7 @@ void main() {
           selection('pe2', Slot.evening, true),
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [pe1, pe2],
           categories: categories,
@@ -418,7 +418,7 @@ void main() {
           'pe2',
           'catEvening',
           eveningOrder: 2,
-          eveningFreq: WeeklyMaxRule(2),
+          eveningFreq: const WeeklyMaxRule(2),
         );
         final rule = productRule(
           'rule1',
@@ -435,7 +435,7 @@ void main() {
           schedule('pe2', Slot.evening, {2, 4}),
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [pe1, pe2],
           categories: categories,
@@ -476,7 +476,7 @@ void main() {
           selection('p2', Slot.morning, false), // not selected
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1, p2],
           categories: categories,
@@ -500,7 +500,7 @@ void main() {
 
         final morningSelections = [selection('p1', Slot.morning, true)];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1],
           categories: categories,
@@ -521,18 +521,18 @@ void main() {
         /// Given: One morning product without morningConfig (eveningConfig only)
         /// When: WeekGlanceBuilder builds the glance
         /// Then: morning.products should be empty (no config for slot)
-        final p1 = MasterProduct(
+        const p1 = MasterProduct(
           id: 'p1',
           name: 'p1',
           categoryId: 'catEvening',
           isDeprecated: false,
           addedInVersion: '1.0.0',
-          eveningConfig: SlotConfig(order: 1, frequencyRule: const DailyRule()),
+          eveningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
         );
 
         final morningSelections = [selection('p1', Slot.morning, true)];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1],
           categories: categories,
@@ -565,7 +565,7 @@ void main() {
           selection('p2', Slot.morning, true),
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1, p2],
           categories: cats,
@@ -609,7 +609,7 @@ void main() {
           lastModified: DateTime(2026, 1, 1),
         );
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [p1, p2],
           categories: cats,
@@ -642,7 +642,7 @@ void main() {
           'pe2',
           'catEvening',
           eveningOrder: 2,
-          eveningFreq: WeeklyMaxRule(2),
+          eveningFreq: const WeeklyMaxRule(2),
         );
         final rule = productRule(
           'rule1',
@@ -659,7 +659,7 @@ void main() {
           schedule('pe2', Slot.evening, {1, 2}),
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [pe1, pe2],
           categories: categories,
@@ -698,7 +698,7 @@ void main() {
           selection('pe2', Slot.evening, true),
         ];
 
-        final builder = WeekGlanceBuilder();
+        const builder = WeekGlanceBuilder();
         final glance = builder.build(
           allProducts: [pe1, pe2],
           categories: categories,

@@ -7,9 +7,9 @@ import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
 import 'package:skincare_tracker/domain/entities/master_product.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 
-MasterContent _minimal() => MasterContent(
+MasterContent _minimal() => const MasterContent(
       products: [
-        const MasterProduct(
+        MasterProduct(
           id: 'p1',
           brand: 'COSRX',
           name: 'Snail Cream',
@@ -19,10 +19,10 @@ MasterContent _minimal() => MasterContent(
         ),
       ],
       categories: [
-        const Category(id: 'cat-1', name: 'לחות', order: 1),
+        Category(id: 'cat-1', name: 'לחות', order: 1),
       ],
       rules: [],
-      manifest: const MasterListManifest(
+      manifest: MasterListManifest(
         contentVersion: '1.0.0',
         appVersion: '1.0.0',
         changelog: [],
@@ -66,9 +66,9 @@ void main() {
 
     test('second write overwrites first', () async {
       final first = _minimal();
-      final second = MasterContent(
+      const second = MasterContent(
         products: [
-          const MasterProduct(
+          MasterProduct(
             id: 'p2',
             brand: null,
             name: 'Other',
@@ -78,10 +78,10 @@ void main() {
           ),
         ],
         categories: [
-          const Category(id: 'cat-1', name: 'לחות', order: 1),
+          Category(id: 'cat-1', name: 'לחות', order: 1),
         ],
         rules: [],
-        manifest: const MasterListManifest(
+        manifest: MasterListManifest(
           contentVersion: '1.0.1',
           appVersion: '1.0.0',
           changelog: [],

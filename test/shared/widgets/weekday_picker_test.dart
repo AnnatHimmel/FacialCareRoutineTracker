@@ -5,21 +5,14 @@ import 'package:skincare_tracker/shared/widgets/weekday_picker.dart';
 
 // Stateful wrapper so we can track the live selection
 class _PickerHarness extends StatefulWidget {
-  final Set<int> initial;
-  const _PickerHarness({this.initial = const {}});
+  const _PickerHarness();
 
   @override
   State<_PickerHarness> createState() => _PickerHarnessState();
 }
 
 class _PickerHarnessState extends State<_PickerHarness> {
-  late Set<int> _selected;
-
-  @override
-  void initState() {
-    super.initState();
-    _selected = Set<int>.from(widget.initial);
-  }
+  Set<int> _selected = <int>{};
 
   @override
   Widget build(BuildContext context) => WeekdayPicker(

@@ -96,15 +96,15 @@ Widget _wrap() {
     routes: [
       GoRoute(
         path: '/settings',
-        builder: (_, __) => const SettingsScreen(),
+        builder: (_, _) => const SettingsScreen(),
       ),
       GoRoute(
         path: '/export-import',
-        builder: (_, __) => const Scaffold(body: Text('export-import')),
+        builder: (_, _) => const Scaffold(body: Text('export-import')),
       ),
       GoRoute(
         path: '/about',
-        builder: (_, __) => const Scaffold(body: Text('about')),
+        builder: (_, _) => const Scaffold(body: Text('about')),
       ),
     ],
   );

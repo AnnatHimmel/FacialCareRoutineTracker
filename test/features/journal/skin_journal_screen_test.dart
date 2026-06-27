@@ -92,11 +92,11 @@ Widget _wrap(List<SkinLogEntry> logs, {List<RouteBase> extra = const []}) {
     routes: [
       GoRoute(
         path: '/journal',
-        builder: (_, __) => const SkinJournalScreen(),
+        builder: (_, _) => const SkinJournalScreen(),
       ),
       GoRoute(
         path: '/skin-log/new',
-        builder: (_, __) => const Scaffold(body: Text('new-entry-screen')),
+        builder: (_, _) => const Scaffold(body: Text('new-entry-screen')),
       ),
       GoRoute(
         path: '/skin-log/:date',

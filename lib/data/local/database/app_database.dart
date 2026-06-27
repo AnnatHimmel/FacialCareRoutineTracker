@@ -65,6 +65,7 @@ class AppDatabase extends _$AppDatabase {
             // Recreate day_records in case an early dev database was missing
             // resolved_at_master_version (added before the first formal version).
             await m.alterTable(
+              // ignore: experimental_member_use
               TableMigration(
                 dayRecords,
                 columnTransformer: {

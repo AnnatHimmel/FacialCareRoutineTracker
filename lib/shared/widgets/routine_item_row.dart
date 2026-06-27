@@ -183,7 +183,7 @@ class _RoutineItemRowState extends State<RoutineItemRow> {
           boxShadow: checkedDone ? null : AppColors.glowSm,
           border: Border.all(
             color: (widget.isHintTarget && !checkedDone)
-                ? AppColors.primary.withOpacity(0.4)
+                ? AppColors.primary.withValues(alpha: 0.4)
                 : (checkedDone
                     ? Colors.transparent
                     : AppColors.outlineVariant.withAlpha(51)),
@@ -422,7 +422,7 @@ class _PingOverlayState extends State<_PingOverlay>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, __) => CustomPaint(
+      builder: (_, _) => CustomPaint(
         painter: _PingRingPainter(progress: _ctrl.value, color: AppColors.primary),
       ),
     );
@@ -447,7 +447,7 @@ class _PingRingPainter extends CustomPainter {
       center,
       radius,
       Paint()
-        ..color = color.withOpacity(opacity.clamp(0.0, 1.0))
+        ..color = color.withValues(alpha: opacity.clamp(0.0, 1.0))
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0,
     );

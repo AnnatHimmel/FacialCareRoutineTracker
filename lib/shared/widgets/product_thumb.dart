@@ -45,14 +45,14 @@ class ProductThumb extends ConsumerWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        placeholder: (_, __) => Image.asset(
+        placeholder: (_, _) => Image.asset(
           localAsset,
           width: size,
           height: size,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _fallback(),
+          errorBuilder: (_, _, _) => _fallback(),
         ),
-        errorWidget: (_, __, ___) => _fallback(),
+        errorWidget: (_, _, _) => _fallback(),
       );
     } else if (asset != null) {
       child = Image.asset(

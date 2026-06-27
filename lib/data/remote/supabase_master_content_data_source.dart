@@ -10,7 +10,7 @@ class SupabaseMasterContentDataSource implements RemoteContentDataSource {
 
   @override
   Future<MasterContent> fetchContent() async {
-    final dynamic response = await _client.rpc('get_master_content');
+    final dynamic response = await _client.rpc<dynamic>('get_master_content');
     final json = response as Map<String, dynamic>;
     return MasterContentSerializer.fromCombinedJson(json);
   }

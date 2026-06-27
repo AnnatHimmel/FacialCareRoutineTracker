@@ -12,7 +12,7 @@ class BarcodeProductLookupService {
     http.Client? client,
     List<RetailerSearchScraper> scrapers = const [],
   })  : _client = client ?? http.Client(),
-        _scrapers = scrapers;
+        _scrapers = scrapers; // ignore: prefer_initializing_formals
 
   Future<ScannedProductInfo?> lookup(String barcode) async {
     try {

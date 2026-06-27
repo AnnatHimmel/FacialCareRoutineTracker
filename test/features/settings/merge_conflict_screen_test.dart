@@ -118,11 +118,11 @@ Widget _wrap({MergeSession? session}) {
     routes: [
       GoRoute(
         path: '/merge',
-        builder: (_, __) => const MergeConflictScreen(),
+        builder: (_, _) => const MergeConflictScreen(),
       ),
       GoRoute(
         path: '/settings',
-        builder: (_, __) => const Scaffold(body: Text('settings-screen')),
+        builder: (_, _) => const Scaffold(body: Text('settings-screen')),
       ),
     ],
   );

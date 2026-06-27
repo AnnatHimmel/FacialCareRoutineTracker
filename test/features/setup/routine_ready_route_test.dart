@@ -33,8 +33,7 @@ class _FakeMCR implements MasterContentRepository {
 }
 
 class _FakeUDR implements UserDataRepository {
-  final List<ProductSelection> selections;
-  _FakeUDR({this.selections = const []});
+  final List<ProductSelection> selections = const [];
 
   @override
   Stream<List<ProductSelection>> watchSelections(Slot slot) =>
@@ -108,11 +107,11 @@ Widget _wrap({required MasterContent master, UserDataRepository? udr}) {
     routes: [
       GoRoute(
         path: '/routine-ready',
-        builder: (_, __) => const RoutineReadyRoute(),
+        builder: (_, _) => const RoutineReadyRoute(),
       ),
       GoRoute(
         path: '/collection',
-        builder: (_, __) => const Scaffold(body: Text('SHELF')),
+        builder: (_, _) => const Scaffold(body: Text('SHELF')),
       ),
     ],
   );

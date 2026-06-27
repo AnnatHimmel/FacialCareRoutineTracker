@@ -13,7 +13,7 @@ void main() {
          * When: compute() is called
          * Then: isOpened should be false
          */
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: null,
           paoMonths: 12,
@@ -29,7 +29,7 @@ void main() {
          * When: compute() is called
          * Then: fraction should be 0.0
          */
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: null,
           paoMonths: 12,
@@ -45,7 +45,7 @@ void main() {
          * When: compute() is called
          * Then: monthsRemaining should equal paoMonths
          */
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: null,
           paoMonths: 12,
@@ -61,7 +61,7 @@ void main() {
          * When: compute() is called
          * Then: tone should be PaoTone.ok
          */
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: null,
           paoMonths: 12,
@@ -80,7 +80,7 @@ void main() {
          * Then: tone should be PaoTone.ok
          */
         final openedDate = now.subtract(const Duration(days: 122));
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: openedDate,
           paoMonths: 12,
@@ -97,7 +97,7 @@ void main() {
          * Then: monthsRemaining should be between 7 and 8
          */
         final openedDate = now.subtract(const Duration(days: 122));
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: openedDate,
           paoMonths: 12,
@@ -114,7 +114,7 @@ void main() {
          * Then: fraction should be between 0.3 and 0.4
          */
         final openedDate = now.subtract(const Duration(days: 122));
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: openedDate,
           paoMonths: 12,
@@ -133,7 +133,7 @@ void main() {
          * Then: tone should be PaoTone.warn (fraction ≈ 0.917)
          */
         final openedDate = now.subtract(const Duration(days: 335));
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: openedDate,
           paoMonths: 12,
@@ -150,7 +150,7 @@ void main() {
          * Then: fraction should be >= 0.8 and < 1.0
          */
         final openedDate = now.subtract(const Duration(days: 335));
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: openedDate,
           paoMonths: 12,
@@ -170,7 +170,7 @@ void main() {
          * Then: tone should be PaoTone.bad
          */
         final openedDate = now.subtract(const Duration(days: 396));
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: openedDate,
           paoMonths: 12,
@@ -187,7 +187,7 @@ void main() {
          * Then: monthsRemaining should be 0
          */
         final openedDate = now.subtract(const Duration(days: 396));
-        final calculator = PaoCalculator();
+        const calculator = PaoCalculator();
         final result = calculator.compute(
           openedDate: openedDate,
           paoMonths: 12,

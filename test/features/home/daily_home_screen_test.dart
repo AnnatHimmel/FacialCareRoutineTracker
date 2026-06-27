@@ -83,24 +83,20 @@ class _FakeMCR implements MasterContentRepository {
 
 class _FakeUDR implements UserDataRepository {
   final List<ProductSelection> morningSelections;
-  final List<ProductSelection> eveningSelections;
   final DayRecord? morningRecord;
-  final DayRecord? eveningRecord;
   final List<SkinLogEntry> skinLogs;
   bool updateCalled = false;
   DayRecord? lastUpdate;
 
   _FakeUDR({
     this.morningSelections = const [],
-    this.eveningSelections = const [],
     this.morningRecord,
-    this.eveningRecord,
     this.skinLogs = const [],
   });
 
   @override
   Stream<List<ProductSelection>> watchSelections(Slot slot) => Stream.value(
-        slot == Slot.morning ? morningSelections : eveningSelections,
+        slot == Slot.morning ? morningSelections : const [],
       );
 
   @override
@@ -111,12 +107,11 @@ class _FakeUDR implements UserDataRepository {
 
   @override
   Stream<DayRecord?> watchDayRecord(String date, Slot slot) =>
-      Stream.value(slot == Slot.morning ? morningRecord : eveningRecord);
+      Stream.value(slot == Slot.morning ? morningRecord : null);
 
   @override
   Stream<List<DayRecord>> watchAllDayRecords() => Stream.value([
-        if (morningRecord != null) morningRecord!,
-        if (eveningRecord != null) eveningRecord!,
+        ?morningRecord,
       ]);
 
   @override
@@ -185,20 +180,20 @@ class _FakeUDR implements UserDataRepository {
 
 // ── Test data ─────────────────────────────────────────────────────────────────
 
-final _morningProduct = MasterProduct(
+const _morningProduct = MasterProduct(
   id: 'pm1',
   name: 'קרם בוקר',
   categoryId: 'cat1',
   isDeprecated: false,
   addedInVersion: '1.0.0',
-  morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+  morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
 );
 
-final _master = MasterContent(
+const _master = MasterContent(
   products: [_morningProduct],
-  categories: [const Category(id: 'cat1', name: 'לחות', order: 1)],
+  categories: [Category(id: 'cat1', name: 'לחות', order: 1)],
   rules: [],
-  manifest: const MasterListManifest(
+  manifest: MasterListManifest(
     contentVersion: '1.0.0',
     appVersion: '1.0.0',
     changelog: [],
@@ -248,11 +243,11 @@ Widget _wrap({
     routes: [
       GoRoute(
         path: '/today',
-        builder: (_, __) => const DailyHomeScreen(),
+        builder: (_, _) => const DailyHomeScreen(),
       ),
       GoRoute(
         path: '/setup/selection',
-        builder: (_, __) => const Scaffold(body: Text('setup-screen')),
+        builder: (_, _) => const Scaffold(body: Text('setup-screen')),
       ),
     ],
   );
@@ -501,7 +496,7 @@ void main() {
     group('weekly skin reminder', () {
       const cardKey = ValueKey('weekly_skin_reminder');
 
-      void _bigView(WidgetTester tester) {
+      void bigView(WidgetTester tester) {
         tester.view.physicalSize = const Size(900, 2200);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(tester.view.reset);
@@ -509,7 +504,7 @@ void main() {
 
       testWidgets('shown when no recent photo and not dismissed',
           (tester) async {
-        _bigView(tester);
+        bigView(tester);
         final udr = _FakeUDR(
           morningSelections: [_sel('pm1', Slot.morning)],
           morningRecord: _dayRecord(recorded: []),
@@ -524,7 +519,7 @@ void main() {
 
       testWidgets('hidden when a skin-log photo exists within 7 days',
           (tester) async {
-        _bigView(tester);
+        bigView(tester);
         final udr = _FakeUDR(
           morningSelections: [_sel('pm1', Slot.morning)],
           morningRecord: _dayRecord(recorded: []),
@@ -537,7 +532,7 @@ void main() {
       });
 
       testWidgets('hidden when dismissed today', (tester) async {
-        _bigView(tester);
+        bigView(tester);
         final udr = _FakeUDR(
           morningSelections: [_sel('pm1', Slot.morning)],
           morningRecord: _dayRecord(recorded: []),
@@ -555,7 +550,7 @@ void main() {
 
       testWidgets('tapping אחר כך hides card and persists today as dismissed',
           (tester) async {
-        _bigView(tester);
+        bigView(tester);
         final settings = _FakeSettings();
         final udr = _FakeUDR(
           morningSelections: [_sel('pm1', Slot.morning)],
@@ -579,7 +574,7 @@ void main() {
       testWidgets(
           'debug force-show overrides the recent-photo suppression',
           (tester) async {
-        _bigView(tester);
+        bigView(tester);
         // A photo logged today would normally hide the card...
         final udr = _FakeUDR(
           morningSelections: [_sel('pm1', Slot.morning)],
@@ -596,7 +591,7 @@ void main() {
       });
 
       testWidgets('hidden when reminder disabled in settings', (tester) async {
-        _bigView(tester);
+        bigView(tester);
         final udr = _FakeUDR(
           morningSelections: [_sel('pm1', Slot.morning)],
           morningRecord: _dayRecord(recorded: []),
@@ -614,7 +609,7 @@ void main() {
 
       testWidgets('tapping never-show hides card and disables reminder',
           (tester) async {
-        _bigView(tester);
+        bigView(tester);
         final settings = _FakeSettings();
         final udr = _FakeUDR(
           morningSelections: [_sel('pm1', Slot.morning)],

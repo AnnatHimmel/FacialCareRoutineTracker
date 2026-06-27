@@ -452,12 +452,12 @@ void main() {
         'exportDate': '',
         'appVersion': '1.0.0',
         'masterContentVersion': '1.2.0',
-        'selections': [],
-        'schedules': [],
-        'overrides': [],
-        'dayRecords': [],
-        'skinLogs': [],
-        'mutedConflicts': [],
+        'selections': <dynamic>[],
+        'schedules': <dynamic>[],
+        'overrides': <dynamic>[],
+        'dayRecords': <dynamic>[],
+        'skinLogs': <dynamic>[],
+        'mutedConflicts': <dynamic>[],
       });
       expect(legacy.collectionItems, isEmpty);
       // Reference svc so the analyzer keeps the import meaningful.

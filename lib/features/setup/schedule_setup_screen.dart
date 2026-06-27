@@ -258,20 +258,6 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     });
   }
 
-  void _openAndScrollToProduct(String id) {
-    setState(() => _openProductId = id);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final key = _rowKeys[id];
-      if (key?.currentContext != null) {
-        Scrollable.ensureVisible(
-          key!.currentContext!,
-          alignment: 0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -603,7 +589,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                     right: 4, left: 4, bottom: 8),
                                 child: Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.checklist_rounded,
                                       size: 14,
                                       color: AppColors.onSurfaceVariant,
@@ -650,7 +636,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                     opacity: 0.9,
                                     child: Row(
                                       children: [
-                                        Icon(
+                                        const Icon(
                                           Icons.remove_circle_outline_rounded,
                                           size: 14,
                                           color: AppColors.onSurfaceVariant,
@@ -1764,7 +1750,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.info_outline_rounded,
+        const Icon(Icons.info_outline_rounded,
             size: 13, color: AppColors.onSurfaceVariant),
         const SizedBox(width: 6),
         Text(
@@ -1932,7 +1918,7 @@ class _ConflictSheetCard extends StatelessWidget {
           // Header
           Row(
             children: [
-              Icon(Icons.block_rounded,
+              const Icon(Icons.block_rounded,
                   size: 14, color: AppColors.error),
               const SizedBox(width: 6),
               Flexible(
@@ -2112,334 +2098,6 @@ class _SheetProductRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ── ConflictPairCard (kept for products mode / existing _IssuesPanel ref) ───
-
-class _ConflictPairCard extends StatelessWidget {
-  final ConflictInfo conflict;
-  final String dayLabel;
-  final String dayAbbrLabel;
-  final List<Category> categories;
-  final bool isEnglish;
-  final VoidCallback onRemoveA;
-  final VoidCallback onRemoveB;
-  final AppLocalizations l;
-
-  const _ConflictPairCard({
-    required this.conflict,
-    required this.dayLabel,
-    required this.dayAbbrLabel,
-    required this.categories,
-    required this.isEnglish,
-    required this.onRemoveA,
-    required this.onRemoveB,
-    required this.l,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final catA = categories
-        .where((c) => c.id == conflict.productA.categoryId)
-        .firstOrNull;
-    final catB = categories
-        .where((c) => c.id == conflict.productB.categoryId)
-        .firstOrNull;
-    final reason = conflict.localizedReason(isEnglish ? 'en' : 'he');
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.15)),
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // day chip
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6, right: 2, left: 2),
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  l.scheduleDayChip(dayLabel),
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.error,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 9,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          _ConflictFixRow(
-            product: conflict.productA,
-            category: catA,
-            dayLabel: dayLabel,
-            dayAbbrLabel: dayAbbrLabel,
-            onRemove: onRemoveA,
-            isEnglish: isEnglish,
-            l: l,
-          ),
-          _connector(),
-          _ConflictFixRow(
-            product: conflict.productB,
-            category: catB,
-            dayLabel: dayLabel,
-            dayAbbrLabel: dayAbbrLabel,
-            onRemove: onRemoveB,
-            isEnglish: isEnglish,
-            l: l,
-          ),
-          if (reason != null) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.only(top: 8),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                      color: AppColors.error.withValues(alpha: 0.10)),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 1),
-                    child: Icon(Icons.info_rounded,
-                        size: 12,
-                        color: AppColors.error.withValues(alpha: 0.7)),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      reason,
-                      style: AppTypography.labelSm.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                        fontWeight: FontWeight.w400,
-                        fontSize: 10,
-                        height: 1.375,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _connector() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      child: Row(
-        children: [
-          Expanded(
-            child: CustomPaint(
-              painter: _DashedLinePainter(),
-              child: const SizedBox(height: 1),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.block_rounded,
-                    size: 10, color: AppColors.error.withValues(alpha: 0.8)),
-                const SizedBox(width: 4),
-                Text(
-                  l.scheduleNoMix,
-                  style: AppTypography.labelSm.copyWith(
-                    fontSize: 8,
-                    color: AppColors.error.withValues(alpha: 0.8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: CustomPaint(
-              painter: _DashedLinePainter(),
-              child: const SizedBox(height: 1),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConflictFixRow extends StatelessWidget {
-  final MasterProduct product;
-  final Category? category;
-  final String dayLabel;
-  final String dayAbbrLabel;
-  final VoidCallback onRemove;
-  final bool isEnglish;
-  final AppLocalizations l;
-
-  const _ConflictFixRow({
-    required this.product,
-    required this.category,
-    required this.dayLabel,
-    required this.dayAbbrLabel,
-    required this.onRemove,
-    required this.isEnglish,
-    required this.l,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          ProductThumb(imageAsset: product.imageAsset, size: 32),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _productName(product, fontSize: 11),
-                if (category != null)
-                  Text(
-                    category!.localizedName(isEnglish ? 'en' : 'he'),
-                    textAlign: TextAlign.start,
-                    style: AppTypography.labelSm.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 9,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onRemove,
-            child: Container(
-              padding: const EdgeInsetsDirectional.fromSTEB(8, 6, 10, 6),
-              decoration: BoxDecoration(
-                color: AppColors.error,
-                borderRadius: BorderRadius.circular(999),
-                boxShadow: AppColors.glowSm,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Icon(Icons.event_busy_rounded,
-                      color: Colors.white, size: 13),
-                  const SizedBox(width: 4),
-                  Text(
-                    isEnglish
-                        ? 'Remove from\n$dayAbbrLabel'
-                        : l.scheduleRemoveFrom(dayLabel),
-                    textAlign: TextAlign.center,
-                    style: AppTypography.labelSm.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 10.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OverFreqRow extends StatelessWidget {
-  final MasterProduct product;
-  final Slot slot;
-  final int count;
-  final int cap;
-  final VoidCallback onTap;
-  final AppLocalizations l;
-
-  const _OverFreqRow({
-    required this.product,
-    required this.slot,
-    required this.count,
-    required this.cap,
-    required this.onTap,
-    required this.l,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.error.withValues(alpha: 0.15)),
-        ),
-        padding: const EdgeInsets.all(10),
-        child: Row(
-          children: [
-            ProductThumb(imageAsset: product.imageAsset, size: 32),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _productName(product, fontSize: 11),
-                  Text(
-                    l.scheduleRecommendedWeekly(cap),
-                    textAlign: TextAlign.start,
-                    style: AppTypography.labelSm.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 9,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.errorContainer,
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                '$count/$cap×',
-                textDirection: TextDirection.ltr,
-                style: AppTypography.labelSm.copyWith(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 11.5,
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(Icons.keyboard_arrow_down_rounded,
-                size: 16, color: AppColors.error.withValues(alpha: 0.5)),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -2811,19 +2469,19 @@ class _DailyGroup extends StatelessWidget {
 
 class _StackedThumbs extends StatelessWidget {
   final List<MasterProduct> products;
-  final double size;
   final int max;
 
-  const _StackedThumbs({required this.products, this.size = 24, this.max = 5});
+  const _StackedThumbs({required this.products, this.max = 5});
 
   @override
   Widget build(BuildContext context) {
     final shown = products.take(max).toList();
-    const step = 16.0; // overlap step (size - 8)
-    final width = shown.isEmpty ? 0.0 : size + (shown.length - 1) * step;
+    const thumbSize = 24.0;
+    const step = 16.0;
+    final width = shown.isEmpty ? 0.0 : thumbSize + (shown.length - 1) * step;
     return SizedBox(
       width: width,
-      height: size,
+      height: thumbSize,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -2837,32 +2495,13 @@ class _StackedThumbs extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.all(1.5),
                 child: ProductThumb(
-                    imageAsset: shown[i].imageAsset, size: size - 3),
+                    imageAsset: shown[i].imageAsset, size: thumbSize - 3),
               ),
             ),
         ],
       ),
     );
   }
-}
-
-class _DashedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    const dashWidth = 4.0;
-    const dashSpace = 4.0;
-    final paint = Paint()
-      ..color = const Color(0x4DBA1A1A)
-      ..strokeWidth = 1.0;
-    double x = 0;
-    while (x < size.width) {
-      canvas.drawLine(Offset(x, 0), Offset(x + dashWidth, 0), paint);
-      x += dashWidth + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ── Slot tab switcher ───────────────────────────────────────────────────────

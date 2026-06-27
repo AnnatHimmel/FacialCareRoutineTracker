@@ -86,13 +86,13 @@ class _FakeUDR implements UserDataRepository {
 
 // ── Test data ─────────────────────────────────────────────────────────────────
 
-final _product = MasterProduct(
+const _product = MasterProduct(
   id: 'p1',
   name: 'קרם לחות',
   categoryId: 'cat1',
   isDeprecated: false,
   addedInVersion: '1.0.0',
-  morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+  morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
 );
 
 final _customProduct = UserCustomProduct(
@@ -106,11 +106,11 @@ final _customProduct = UserCustomProduct(
   isDeprecated: true,
 );
 
-final _master = MasterContent(
+const _master = MasterContent(
   products: [_product],
-  categories: [const Category(id: 'cat1', name: 'לחות', order: 1)],
+  categories: [Category(id: 'cat1', name: 'לחות', order: 1)],
   rules: [],
-  manifest: const MasterListManifest(
+  manifest: MasterListManifest(
     contentVersion: '1.0.0',
     appVersion: '1.0.0',
     changelog: [],

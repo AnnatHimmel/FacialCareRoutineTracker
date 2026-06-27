@@ -44,9 +44,9 @@ void main() {
     testWidgets('custom action widget is rendered when provided',
         (tester) async {
       await tester.pumpWidget(_wrap(
-        SoftWarningBanner(
+        const SoftWarningBanner(
           message: 'warning',
-          customAction: const Text('custom-action'),
+          customAction: Text('custom-action'),
         ),
       ));
 

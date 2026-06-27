@@ -37,9 +37,7 @@ class _FakeUDR implements UserDataRepository {
   final List<ProductSelection> morningSelections;
   final List<ProductSelection> eveningSelections;
   final OrderOverride? morningOverride;
-  final OrderOverride? eveningOverride;
   final List<OrderOverride> morningPerDayOverrides;
-  final List<OrderOverride> eveningPerDayOverrides;
   final List<WeekdaySchedule> schedules;
   bool deleteOverrideCalled = false;
   bool deletePerDayOverrideCalled = false;
@@ -49,9 +47,7 @@ class _FakeUDR implements UserDataRepository {
     this.morningSelections = const [],
     this.eveningSelections = const [],
     this.morningOverride,
-    this.eveningOverride,
     this.morningPerDayOverrides = const [],
-    this.eveningPerDayOverrides = const [],
     this.schedules = const [],
   });
 
@@ -62,21 +58,21 @@ class _FakeUDR implements UserDataRepository {
 
   @override
   Stream<OrderOverride?> watchOrderOverride(Slot slot) => Stream.value(
-        slot == Slot.morning ? morningOverride : eveningOverride,
+        slot == Slot.morning ? morningOverride : null,
       );
 
   @override
   Stream<List<OrderOverride>> watchPerDayOrderOverrides(Slot slot) => Stream.value(
-        slot == Slot.morning ? morningPerDayOverrides : eveningPerDayOverrides,
+        slot == Slot.morning ? morningPerDayOverrides : const [],
       );
 
   @override
   Future<OrderOverride?> getEffectiveOrderOverride(Slot slot, int weekday) async {
-    final perDay = (slot == Slot.morning ? morningPerDayOverrides : eveningPerDayOverrides)
+    final perDay = (slot == Slot.morning ? morningPerDayOverrides : const <OrderOverride>[])
         .where((o) => o.weekday == weekday)
         .firstOrNull;
     if (perDay != null) return perDay;
-    return slot == Slot.morning ? morningOverride : eveningOverride;
+    return slot == Slot.morning ? morningOverride : null;
   }
 
   @override
@@ -225,15 +221,15 @@ Widget _wrap({
     routes: [
       GoRoute(
         path: '/setup/order',
-        builder: (_, __) => OrderCustomizationScreen(fromSetup: fromSetup),
+        builder: (_, _) => OrderCustomizationScreen(fromSetup: fromSetup),
       ),
       GoRoute(
         path: '/today',
-        builder: (_, __) => const Scaffold(body: Text('home-screen')),
+        builder: (_, _) => const Scaffold(body: Text('home-screen')),
       ),
       GoRoute(
         path: '/routine-ready',
-        builder: (_, __) => const Scaffold(body: Text('routine-ready')),
+        builder: (_, _) => const Scaffold(body: Text('routine-ready')),
       ),
     ],
   );
@@ -380,7 +376,7 @@ void main() {
   });
 
   group('OrderCustomizationScreen — per-day panel (onboarding mode)', () {
-    Widget _wrapOnboarding({
+    Widget wrapOnboarding({
       required MasterContent master,
       required _FakeUDR udr,
       _FakeSR? sr,
@@ -408,7 +404,7 @@ void main() {
       final udr = _FakeUDR(morningSelections: [_sel('p1', Slot.morning)]);
       final master = _master([_product('p1', 'קרם')]);
 
-      await tester.pumpWidget(_wrapOnboarding(master: master, udr: udr));
+      await tester.pumpWidget(wrapOnboarding(master: master, udr: udr));
       await tester.pumpAndSettle();
 
       expect(find.text('אפשרויות מתקדמות'), findsOneWidget);
@@ -418,7 +414,7 @@ void main() {
       final udr = _FakeUDR(morningSelections: [_sel('p1', Slot.morning)]);
       final master = _master([_product('p1', 'קרם')]);
 
-      await tester.pumpWidget(_wrapOnboarding(master: master, udr: udr));
+      await tester.pumpWidget(wrapOnboarding(master: master, udr: udr));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('אפשרויות מתקדמות'));
@@ -432,7 +428,7 @@ void main() {
       final udr = _FakeUDR(morningSelections: [_sel('p1', Slot.morning)]);
       final master = _master([_product('p1', 'קרם')]);
 
-      await tester.pumpWidget(_wrapOnboarding(master: master, udr: udr));
+      await tester.pumpWidget(wrapOnboarding(master: master, udr: udr));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('אפשרויות מתקדמות'));
@@ -458,7 +454,7 @@ void main() {
       );
       final master = _master([_product('p1', 'קרם')]);
 
-      await tester.pumpWidget(_wrapOnboarding(master: master, udr: udr));
+      await tester.pumpWidget(wrapOnboarding(master: master, udr: udr));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('אפשרויות מתקדמות'));

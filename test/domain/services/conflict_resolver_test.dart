@@ -37,7 +37,7 @@ WeekdaySchedule _sched(String productId, Slot slot, Set<int> days) =>
 const _allDays = {0, 1, 2, 3, 4, 5, 6};
 
 void main() {
-  final resolver = ConflictResolver();
+  const resolver = ConflictResolver();
 
   group('ConflictResolver — slot separation', () {
     test(
@@ -317,7 +317,6 @@ void main() {
       final argireline =
           _product('argireline', morning: _daily, evening: _daily);
       final vitC = _product('vitC', morning: _daily);
-      final bha = _product('bha', evening: _capped(3));
 
       var schedules = [
         _sched('argireline', Slot.morning, _allDays),

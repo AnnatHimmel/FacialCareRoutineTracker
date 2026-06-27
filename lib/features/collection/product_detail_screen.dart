@@ -114,20 +114,17 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           return;
         }
         final action = await _showSaveDialog(context);
-        if (!mounted) return;
-        if (action == 'save') {
-          await _save();
-          if (mounted) Navigator.of(context).pop();
-        } else if (action == 'discard') {
-          Navigator.of(context).pop();
-        }
+        if (!context.mounted) return;
+        if (action == 'save') await _save();
+        if (!context.mounted) return;
+        if (action == 'save' || action == 'discard') Navigator.of(context).pop();
         // null = stay on screen
       },
       child: masterAsync.when(
-        loading: () => Scaffold(
+        loading: () => const Scaffold(
           backgroundColor: AppColors.surface,
-          appBar: const GlowAppBar(showBack: true),
-          body: const Center(child: CircularProgressIndicator()),
+          appBar: GlowAppBar(showBack: true),
+          body: Center(child: CircularProgressIndicator()),
         ),
         error: (e, _) => Scaffold(
           backgroundColor: AppColors.surface,
@@ -186,14 +183,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   behavior: HitTestBehavior.opaque,
                   onTap: () async {
                     await _save();
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(l.saveAction),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    }
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(l.saveAction),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
                   },
                   child: Padding(
                     padding:

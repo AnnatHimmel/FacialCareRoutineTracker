@@ -51,7 +51,7 @@ class StreakWidget extends StatelessWidget {
             child: Text(
               '✦',
               style: TextStyle(
-                color: _white.withOpacity(0.6),
+                color: _white.withValues(alpha: 0.6),
                 fontSize: 20,
               ),
             ),
@@ -62,7 +62,7 @@ class StreakWidget extends StatelessWidget {
             child: Text(
               '✧',
               style: TextStyle(
-                color: _white.withOpacity(0.4),
+                color: _white.withValues(alpha: 0.4),
                 fontSize: 16,
               ),
             ),
@@ -155,7 +155,7 @@ class StreakWidget extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTypography.labelSm.copyWith(
-                              color: _white.withOpacity(0.85),
+                              color: _white.withValues(alpha: 0.85),
                               fontSize: 12,
                             ),
                           ),

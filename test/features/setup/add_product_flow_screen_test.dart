@@ -131,15 +131,6 @@ MasterProduct _amProduct(String id, String name, String catId) => MasterProduct(
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
 
-MasterProduct _pmProduct(String id, String name, String catId) => MasterProduct(
-      id: id,
-      name: name,
-      categoryId: catId,
-      isDeprecated: false,
-      addedInVersion: '1.0.0',
-      eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
-    );
-
 MasterProduct _flexProduct(String id, String name, String catId) =>
     MasterProduct(
       id: id,
@@ -173,11 +164,11 @@ Widget _wrap({
     routes: [
       GoRoute(
         path: '/add-product',
-        builder: (_, __) => const AddProductFlowScreen(),
+        builder: (_, _) => const AddProductFlowScreen(),
       ),
       GoRoute(
         path: '/today',
-        builder: (_, __) => const Scaffold(body: Text('today')),
+        builder: (_, _) => const Scaffold(body: Text('today')),
       ),
     ],
   );
@@ -196,8 +187,8 @@ Widget _wrap({
 }
 
 void main() {
-  final cat1 = const Category(id: 'cat-serum', name: 'סרום', order: 5);
-  final cat2 = const Category(id: 'cat-moisturizer', name: 'לחות', order: 6);
+  const cat1 = Category(id: 'cat-serum', name: 'סרום', order: 5);
+  const cat2 = Category(id: 'cat-moisturizer', name: 'לחות', order: 6);
 
   group('AddProductFlowScreen — step 1 (search)', () {
     testWidgets('renders step 1 with search field', (tester) async {
@@ -226,13 +217,13 @@ void main() {
     });
 
     testWidgets('deprecated products are hidden in step 1', (tester) async {
-      final deprecated = MasterProduct(
+      const deprecated = MasterProduct(
         id: 'p_old',
         name: 'מוצר ישן',
         categoryId: 'cat-serum',
         isDeprecated: true,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
       final master = _masterWith([
         _amProduct('p1', 'קרם טוב', 'cat-serum'),
@@ -310,7 +301,6 @@ void main() {
       await tester.pumpAndSettle();
 
       // Step 2: tap CTA to go to step 3
-      final cta = find.byType(ElevatedButton).last;
       // Use the primary button which is the main CTA
       // In step 2 the bottom CTA advances the wizard
       await tester.tap(find.text('המשך'), warnIfMissed: false);
@@ -322,7 +312,7 @@ void main() {
   });
 
   group('AddProductFlowScreen — slot step', () {
-    Future<void> _navigateToSlotStep(
+    Future<void> navigateToSlotStep(
         WidgetTester tester, MasterContent master) async {
       await tester.pumpWidget(_wrap(master: master));
       await tester.pumpAndSettle();
@@ -340,7 +330,7 @@ void main() {
         _flexProduct('p1', 'קרם לחות', 'cat-serum'),
       ], [cat1]);
 
-      await _navigateToSlotStep(tester, master);
+      await navigateToSlotStep(tester, master);
 
       expect(find.text('בוקר'), findsWidgets);
       expect(find.text('ערב'), findsWidgets);

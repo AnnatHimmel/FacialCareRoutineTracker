@@ -38,18 +38,6 @@ const _catIcon = <String, IconData>{
   'cat-spf': Icons.wb_sunny,
 };
 
-
-String? _getCatHint(String catId, AppLocalizations l) => switch (catId) {
-  'cat-cleanser' => l.catHintCleanser,
-  'cat-retinoid' => l.catHintRetinoid,
-  'cat-toner' => l.catHintToner,
-  'cat-serum' => l.catHintSerum,
-  'cat-moisturizer' => l.catHintMoisturizer,
-  'cat-oil' => l.catHintOil,
-  'cat-spf' => l.catHintSpf,
-  _ => null,
-};
-
 String _getCatUsage(String catId, AppLocalizations l) => switch (catId) {
   'cat-cleanser' => l.catUsageCleanser,
   'cat-retinoid' => l.catUsageRetinoid,
@@ -623,7 +611,6 @@ class _ProductSelectionScreenState
     AppLocalizations l,
   ) {
     final selectedCount = selMap.length;
-    final selectedPids = selMap.keys.toList();
 
     // Popular products: all non-deprecated, sorted by canonical admin order.
     // Guided view has no active slot filter; morning order used as the primary key.
@@ -724,6 +711,7 @@ class _ProductSelectionScreenState
             if (widget.onDone != null) {
               widget.onDone!();
             } else {
+              if (!context.mounted) return;
               _goToSchedule(context);
             }
           },
@@ -1432,38 +1420,6 @@ class _BarcodeFAB extends StatelessWidget {
           fontSize: 14,
         ),
       ),
-    );
-  }
-}
-
-// ── Progress bar ───────────────────────────────────────────────────────────────
-
-class _ProgressBar extends StatelessWidget {
-  final int step;
-  final int total;
-
-  const _ProgressBar({required this.step, required this.total});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (int i = 0; i < total; i++) ...[
-          if (i > 0) const SizedBox(width: 4),
-          Expanded(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: 6,
-              decoration: BoxDecoration(
-                color: i <= step
-                    ? AppColors.primary
-                    : AppColors.primaryFixed.withAlpha(102),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-        ],
-      ],
     );
   }
 }

@@ -105,11 +105,11 @@ void main() {
     });
 
     test('round-trips subCategory rule target type', () {
-      final content = MasterContent(
+      const content = MasterContent(
         products: [],
         categories: [],
         rules: [
-          const IncompatibilityRule(
+          IncompatibilityRule(
             id: 'r-sub',
             entityA:
                 RuleTarget(type: RuleTargetType.subCategory, id: 'sub-argireline'),
@@ -120,7 +120,7 @@ void main() {
             reasonEn: 'Not together',
           ),
         ],
-        manifest: const MasterListManifest(
+        manifest: MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
           changelog: [],
@@ -135,11 +135,11 @@ void main() {
     });
 
     test('fromCombinedJson with empty products list returns empty list', () {
-      final content = MasterContent(
+      const content = MasterContent(
         products: [],
         categories: [],
         rules: [],
-        manifest: const MasterListManifest(
+        manifest: MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
           changelog: [],
@@ -207,9 +207,9 @@ void main() {
     });
 
     test('round-trips ingredients through toJson/fromCombinedJson', () {
-      final content = MasterContent(
+      const content = MasterContent(
         products: [
-          const MasterProduct(
+          MasterProduct(
             id: 'p4',
             name: 'Moisturizer',
             categoryId: 'cat-1',
@@ -219,11 +219,11 @@ void main() {
           ),
         ],
         categories: [
-          const Category(
+          Category(
               id: 'cat-1', name: 'לחות', nameEn: 'Moisturizer', order: 1),
         ],
         rules: [],
-        manifest: const MasterListManifest(
+        manifest: MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
           changelog: [],
@@ -276,9 +276,9 @@ void main() {
     });
 
     test('round-trips barcodes through toJson/fromCombinedJson', () {
-      final content = MasterContent(
+      const content = MasterContent(
         products: [
-          const MasterProduct(
+          MasterProduct(
             id: 'p7',
             name: 'Rice Toner',
             categoryId: 'cat-1',
@@ -288,11 +288,11 @@ void main() {
           ),
         ],
         categories: [
-          const Category(
+          Category(
               id: 'cat-1', name: 'טונר', nameEn: 'Toner', order: 1),
         ],
         rules: [],
-        manifest: const MasterListManifest(
+        manifest: MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
           changelog: [],
@@ -330,9 +330,9 @@ void main() {
     });
 
     test('round-trips subCategoryId through toJson/fromCombinedJson', () {
-      final content = MasterContent(
+      const content = MasterContent(
         products: [
-          const MasterProduct(
+          MasterProduct(
             id: 'p10',
             name: 'Niacinamide Serum',
             categoryId: 'cat-serum',
@@ -342,10 +342,10 @@ void main() {
           ),
         ],
         categories: [
-          const Category(id: 'cat-serum', name: 'סרום', nameEn: 'Serum', order: 5),
+          Category(id: 'cat-serum', name: 'סרום', nameEn: 'Serum', order: 5),
         ],
         rules: [],
-        manifest: const MasterListManifest(
+        manifest: MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
           changelog: [],
@@ -359,13 +359,13 @@ void main() {
 
   group('subcategories field', () {
     test('round-trips subcategories through toJson/fromCombinedJson', () {
-      final content = MasterContent(
+      const content = MasterContent(
         products: [],
         categories: [
-          const Category(id: 'cat-serum', name: 'סרום', nameEn: 'Serum', order: 5),
+          Category(id: 'cat-serum', name: 'סרום', nameEn: 'Serum', order: 5),
         ],
         subcategories: [
-          const SubCategory(
+          SubCategory(
             id: 'sub-niacinamide',
             name: 'ניאצינמיד',
             nameEn: 'Niacinamide',
@@ -374,7 +374,7 @@ void main() {
           ),
         ],
         rules: [],
-        manifest: const MasterListManifest(
+        manifest: MasterListManifest(
           contentVersion: '1.0.0',
           appVersion: '1.0.0',
           changelog: [],

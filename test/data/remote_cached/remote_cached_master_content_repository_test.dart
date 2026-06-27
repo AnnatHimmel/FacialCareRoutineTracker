@@ -108,7 +108,7 @@ void main() {
         products: [supabaseProduct],
         categories: [const Category(id: 'cat-1', name: 'Test', order: 1)],
         rules: [],
-        manifest: MasterListManifest(
+        manifest: const MasterListManifest(
             contentVersion: '1.0.0', appVersion: '1.0.0', changelog: []),
       );
 

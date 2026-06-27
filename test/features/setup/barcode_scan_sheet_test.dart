@@ -155,7 +155,7 @@ ProductSelection _selectedIn(String productId, Slot slot) => ProductSelection(
 
 const _matchingBarcode = '8809968130239';
 
-final _morningProduct = MasterProduct(
+const _morningProduct = MasterProduct(
   id: 'prod-morning',
   name: 'Morning Serum',
   imageAsset: null,
@@ -163,11 +163,11 @@ final _morningProduct = MasterProduct(
   isDeprecated: false,
   addedInVersion: '1.0.0',
   barcodes: [_matchingBarcode],
-  morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+  morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
   eveningConfig: null,
 );
 
-final _eveningProduct = MasterProduct(
+const _eveningProduct = MasterProduct(
   id: 'prod-evening',
   name: 'Evening Cream',
   imageAsset: null,
@@ -176,10 +176,10 @@ final _eveningProduct = MasterProduct(
   addedInVersion: '1.0.0',
   barcodes: [_matchingBarcode],
   morningConfig: null,
-  eveningConfig: const SlotConfig(order: 5, frequencyRule: DailyRule()),
+  eveningConfig: SlotConfig(order: 5, frequencyRule: DailyRule()),
 );
 
-final _bothSlotsProduct = MasterProduct(
+const _bothSlotsProduct = MasterProduct(
   id: 'prod-both',
   name: 'Rice Toner',
   imageAsset: null,
@@ -187,8 +187,8 @@ final _bothSlotsProduct = MasterProduct(
   isDeprecated: false,
   addedInVersion: '1.0.0',
   barcodes: [_matchingBarcode],
-  morningConfig: const SlotConfig(order: 2, frequencyRule: DailyRule()),
-  eveningConfig: const SlotConfig(order: 6, frequencyRule: DailyRule()),
+  morningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
+  eveningConfig: SlotConfig(order: 6, frequencyRule: DailyRule()),
 );
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -274,10 +274,10 @@ void main() {
           barcodeProductLookupServiceProvider.overrideWithValue(lookup),
           userDataRepositoryProvider.overrideWithValue(_CapturingUDR()),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('he'),
+          locale: Locale('he'),
           home: Scaffold(
             body: BarcodeScanSheet(testBarcodeToScan: _matchingBarcode),
           ),
@@ -343,7 +343,7 @@ void main() {
       // Then:  spy is called exactly once with the scanned info;
       //        the intermediate "מוצר נמצא" card never renders
       final lookup = _TrackingLookupService()
-        ..stubbedResult = ScannedProductInfo(
+        ..stubbedResult = const ScannedProductInfo(
           barcode: 'unknown-barcode-999',
           name: 'External Product',
           brand: 'Some Brand',
@@ -392,7 +392,7 @@ void main() {
   });
 
   group('BarcodeScanSheet — add to routine', () {
-    Future<_CapturingUDR> _tapAddAndSettle(
+    Future<_CapturingUDR> tapAddAndSettle(
       WidgetTester tester, {
       required MasterProduct product,
       Map<Slot, List<ProductSelection>> existing = const {},
@@ -416,7 +416,7 @@ void main() {
 
     testWidgets('morning-only product → upserts only morning selection',
         (tester) async {
-      final udr = await _tapAddAndSettle(tester, product: _morningProduct);
+      final udr = await tapAddAndSettle(tester, product: _morningProduct);
 
       expect(udr.captured.length, 1);
       expect(udr.captured.first.productId, 'prod-morning');
@@ -426,7 +426,7 @@ void main() {
 
     testWidgets('evening-only product → upserts only evening selection',
         (tester) async {
-      final udr = await _tapAddAndSettle(tester, product: _eveningProduct);
+      final udr = await tapAddAndSettle(tester, product: _eveningProduct);
 
       expect(udr.captured.length, 1);
       expect(udr.captured.first.productId, 'prod-evening');
@@ -436,7 +436,7 @@ void main() {
 
     testWidgets('both-slot product → upserts morning and evening selections',
         (tester) async {
-      final udr = await _tapAddAndSettle(tester, product: _bothSlotsProduct);
+      final udr = await tapAddAndSettle(tester, product: _bothSlotsProduct);
 
       expect(udr.captured.length, 2);
       final slots = udr.captured.map((s) => s.slot).toSet();
@@ -450,7 +450,7 @@ void main() {
     testWidgets(
         'product already selected in morning → only evening is upserted',
         (tester) async {
-      final udr = await _tapAddAndSettle(
+      final udr = await tapAddAndSettle(
         tester,
         product: _bothSlotsProduct,
         existing: {
@@ -465,7 +465,7 @@ void main() {
     testWidgets(
         'product already selected in evening → only morning is upserted',
         (tester) async {
-      final udr = await _tapAddAndSettle(
+      final udr = await tapAddAndSettle(
         tester,
         product: _bothSlotsProduct,
         existing: {
@@ -509,7 +509,7 @@ void main() {
         isSelected: false, // explicitly deselected, not currently active
         lastModified: DateTime(2025),
       );
-      final udr = await _tapAddAndSettle(
+      final udr = await tapAddAndSettle(
         tester,
         product: _bothSlotsProduct,
         existing: {
@@ -523,7 +523,7 @@ void main() {
     });
 
     testWidgets('each upserted selection has a unique UUID id', (tester) async {
-      final udr = await _tapAddAndSettle(tester, product: _bothSlotsProduct);
+      final udr = await tapAddAndSettle(tester, product: _bothSlotsProduct);
 
       expect(udr.captured.length, 2);
       final ids = udr.captured.map((s) => s.id).toSet();
@@ -539,7 +539,7 @@ void main() {
   //   @visibleForTesting final ({String? code})? testGalleryResult;
   // to BarcodeScanSheet and wires up the gallery-decode path.
 
-  Widget _wrapGallery({
+  Widget wrapGallery({
     required MasterContent master,
     required _TrackingLookupService lookup,
     _CapturingUDR? udr,
@@ -575,7 +575,7 @@ void main() {
       // Then:  masterProductFound state is shown; external lookup is never called
       final lookup = _TrackingLookupService();
 
-      await tester.pumpWidget(_wrapGallery(
+      await tester.pumpWidget(wrapGallery(
         master: _contentWith([_bothSlotsProduct]),
         lookup: lookup,
         galleryResult: (code: _matchingBarcode),
@@ -601,7 +601,7 @@ void main() {
       //        intermediate "מוצר נמצא" card is never rendered;
       //        external lookup called exactly once
       final lookup = _TrackingLookupService()
-        ..stubbedResult = ScannedProductInfo(
+        ..stubbedResult = const ScannedProductInfo(
           barcode: 'unknown-gallery-barcode',
           name: 'Gallery External Product',
           brand: 'Gallery Brand',
@@ -610,7 +610,7 @@ void main() {
       ScannedProductInfo? capturedInfo;
       int spyCallCount = 0;
 
-      await tester.pumpWidget(_wrapGallery(
+      await tester.pumpWidget(wrapGallery(
         master: _contentWith([_bothSlotsProduct]),
         lookup: lookup,
         galleryResult: (code: 'unknown-gallery-barcode'),
@@ -641,7 +641,7 @@ void main() {
       // Then:  productNotFound state is shown; external lookup called once
       final lookup = _TrackingLookupService(); // stubbedResult = null by default
 
-      await tester.pumpWidget(_wrapGallery(
+      await tester.pumpWidget(wrapGallery(
         master: _contentWith([_bothSlotsProduct]),
         lookup: lookup,
         galleryResult: (code: 'unknown-gallery-barcode-404'),
@@ -663,7 +663,7 @@ void main() {
       // Then:  productNotFound state is shown immediately; external lookup skipped
       final lookup = _TrackingLookupService();
 
-      await tester.pumpWidget(_wrapGallery(
+      await tester.pumpWidget(wrapGallery(
         master: _contentWith([_bothSlotsProduct]),
         lookup: lookup,
         galleryResult: (code: null),
@@ -686,7 +686,7 @@ void main() {
   // the scanning state shows a gallery-first view instead of launching the
   // MobileScannerController.
 
-  Widget _wrapScanningWeb({
+  Widget wrapScanningWeb({
     MasterContent? master,
     _TrackingLookupService? lookup,
     _CapturingUDR? udr,
@@ -724,7 +724,7 @@ void main() {
       //        and no testBarcodeToScan / testGalleryResult provided
       // Then:  the widget renders without error and shows the gallery-first
       //        button labelled "סריקה מתמונה בגלריה"
-      await tester.pumpWidget(_wrapScanningWeb());
+      await tester.pumpWidget(wrapScanningWeb());
       await tester.pumpAndSettle();
 
       // The gallery button label is the existing l10n key barcodeScanFromGallery.
@@ -742,7 +742,7 @@ void main() {
       // When:  the sheet is built with testForceCameraUnavailable: true
       // Then:  no MobileScanner widget is rendered — the uninitialized
       //        MobileScannerController must never be touched
-      await tester.pumpWidget(_wrapScanningWeb());
+      await tester.pumpWidget(wrapScanningWeb());
       await tester.pumpAndSettle();
 
       expect(

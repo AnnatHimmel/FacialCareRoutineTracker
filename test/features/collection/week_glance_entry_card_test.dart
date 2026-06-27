@@ -10,10 +10,10 @@ Widget _wrap(Widget w) {
   final router = GoRouter(
     initialLocation: '/test',
     routes: [
-      GoRoute(path: '/test', builder: (_, __) => w),
+      GoRoute(path: '/test', builder: (_, _) => w),
       GoRoute(
         path: '/week-glance',
-        builder: (_, __) => const Scaffold(body: Text('week-glance')),
+        builder: (_, _) => const Scaffold(body: Text('week-glance')),
       ),
     ],
   );

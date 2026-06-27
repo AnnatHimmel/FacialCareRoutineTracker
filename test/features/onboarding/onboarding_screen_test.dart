@@ -34,18 +34,17 @@ class _FakeMCR implements MasterContentRepository {
 }
 
 class _FakeUDR implements UserDataRepository {
-  final List<ProductSelection> _morning;
-  final List<ProductSelection> _evening;
+  final List<ProductSelection> morning;
+  final List<ProductSelection> evening;
 
   _FakeUDR({
-    List<ProductSelection> morning = const [],
-    List<ProductSelection> evening = const [],
-  })  : _morning = morning,
-        _evening = evening;
+    this.morning = const [],
+    this.evening = const [],
+  });
 
   @override
   Stream<List<ProductSelection>> watchSelections(Slot slot) =>
-      Stream.value(slot == Slot.morning ? _morning : _evening);
+      Stream.value(slot == Slot.morning ? morning : evening);
   @override
   Stream<List<MutedConflict>> watchMutedConflicts() => Stream.value([]);
   @override
@@ -201,7 +200,7 @@ Widget _wrap({
     routes: [
       GoRoute(
         path: '/',
-        builder: (_, __) => OnboardingScreen(onFinish: onFinish),
+        builder: (_, _) => OnboardingScreen(onFinish: onFinish),
       ),
     ],
   );
@@ -652,14 +651,14 @@ void main() {
         'pmSchedule appears directly (no transition) when evening products exist after morning order',
         (tester) async {
       // Product with both morning and evening config
-      final masterProduct = MasterProduct(
+      const masterProduct = MasterProduct(
         id: 'p1',
         name: 'קרם לחות',
         categoryId: 'cat1',
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
-        eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
+        eveningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
       final master = _masterWith([masterProduct], [cat1]);
       final morningPre = [
@@ -716,13 +715,13 @@ void main() {
     testWidgets(
         'Evening-only selection skips morning steps and goes straight to pmSchedule',
         (tester) async {
-      final eveningProduct = MasterProduct(
+      const eveningProduct = MasterProduct(
         id: 'p2',
         name: 'שמן ערב',
         categoryId: 'cat1',
         isDeprecated: false,
         addedInVersion: '1.0.0',
-        eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        eveningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
       final master = _masterWith([eveningProduct], [cat1]);
       final eveningPre = [

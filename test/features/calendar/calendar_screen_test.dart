@@ -75,7 +75,7 @@ Widget _wrap({List<DayRecord> records = const []}) {
     routes: [
       GoRoute(
         path: '/calendar',
-        builder: (_, __) => const CalendarScreen(),
+        builder: (_, _) => const CalendarScreen(),
       ),
       GoRoute(
         path: '/day/:date',

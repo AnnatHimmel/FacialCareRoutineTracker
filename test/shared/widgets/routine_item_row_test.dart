@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:skincare_tracker/core/l10n/generated/app_localizations.dart';
 import 'package:skincare_tracker/domain/entities/master_product.dart';
-import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/shared/widgets/routine_item_row.dart';
 
 MasterProduct _product({bool deprecated = false, String name = 'Test Product'}) =>
@@ -166,11 +165,11 @@ void main() {
 
     testWidgets('fixed morning-only product shows slot chip (בוקר בלבד)',
         (tester) async {
-      final product = MasterProduct(
+      const product = MasterProduct(
         id: 'p1',
         name: 'Morning Only',
         categoryId: 'cat1',
-        morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
+        morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
         isDeprecated: false,
         addedInVersion: '1.0.0',
       );
