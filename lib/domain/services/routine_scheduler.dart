@@ -1118,6 +1118,64 @@ class RoutineScheduler {
     }
   }
 
+  // ── healStaleAutoSpreadSchedules ─────────────────────────────────────────────
+
+  /// One-time migration: when a product's master frequency has been corrected
+  /// from a weekly cap to [DailyRule] (e.g. prod-007 sunscreen, `weeklyMax 3` →
+  /// `daily`), an explicit [WeekdaySchedule] row written by the old default
+  /// spread still wins over the new rule (`effectiveDays`), pinning the product
+  /// to the stale cap. This heals any **selected** product whose **current**
+  /// master rule is [DailyRule] and whose stored row is exactly the auto-spread
+  /// `spreadN7(n)` for its own size — i.e. machine-generated, never hand-picked —
+  /// by promoting it to all-7 days. Empty (intentionally suppressed), already
+  /// all-7, and hand-picked rows are left untouched. Custom products are out of
+  /// scope (their frequency is user-authored, not subject to master drift).
+  ///
+  /// Returns the number of rows healed. Callers must guard this so it runs once
+  /// (see the user schema-version migration in root_providers).
+  Future<int> healStaleAutoSpreadSchedules({
+    required MasterContent master,
+  }) async {
+    final schedules = await _repo.watchAllSchedules().first;
+    const all7 = {0, 1, 2, 3, 4, 5, 6};
+    var healed = 0;
+
+    for (final slot in const [Slot.morning, Slot.evening]) {
+      final selections = await _repo.watchSelections(slot).first;
+      final selectedIds = selections
+          .where((s) => s.isSelected)
+          .map((s) => s.productId)
+          .toSet();
+
+      for (final p in master.products) {
+        if (!selectedIds.contains(p.id)) continue;
+        if (p.configForSlot(slot)?.frequencyRule is! DailyRule) continue;
+
+        final row = schedules
+            .where((s) => s.productId == p.id && s.slot == slot)
+            .firstOrNull;
+        if (row == null) continue;
+
+        final days = row.weekdays;
+        if (days.isEmpty) continue; // intentional suppression — never touch
+        if (days.length == 7) continue; // already daily-equivalent
+        // Heal only rows that match a machine-generated even spread; a
+        // hand-picked schedule (which never starts at day 0 unless deliberate)
+        // is preserved.
+        if (!const SetEquality<int>().equals(days, sd.spreadN7(days.length))) {
+          continue;
+        }
+
+        await _repo.upsertSchedule(
+          row.copyWith(weekdays: all7, lastModified: DateTime.now()),
+        );
+        healed++;
+      }
+    }
+
+    return healed;
+  }
+
   // ── ensureDefaultSchedules ───────────────────────────────────────────────────
 
   /// Ensures all capped products without a schedule row get the default spread.

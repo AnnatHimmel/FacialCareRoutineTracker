@@ -36,10 +36,19 @@ A separate **Admin Portal** (`admin/`) is a local Node.js web tool used exclusiv
                     ┌───────────────────────────────────────────┐
                     │    RemoteCachedMasterContentRepositoryImpl │
                     │  1. in-memory (_inMemory)                  │
-                    │  2. SharedPrefs cache (contentVersion guard)│
+                    │  2. SharedPrefs cache (key-versioned: v2)  │
                     │  3. bundled JSON fallback (always works)   │
                     └───────────────────────────────────────────┘
 ```
+
+**The bundled `assets/data/*.json` are a generated artifact — never hand-edit them.** They are
+regenerated from Supabase (the source of truth) by `scripts/sync_from_supabase.dart` (Supabase
+wins per id) and should be re-run as part of `release-prep` with a `git diff --exit-code
+assets/data/` guard. The SharedPrefs cache key is version-suffixed (`master_content_cache_v2`):
+bump it whenever bundled content changes shape without a `contentVersion` increase (e.g. adding
+per-product `subCategoryId`), since the `contentVersion` guard alone won't discard an equal-version
+stale cache. Product `imageAsset` may be a Supabase Storage URL; offline, `ProductThumb` falls back
+to `assets/images/products/<url-basename>`, so every product must ship a matching local image.
 
 ### 1.1 Architecture Style
 
@@ -271,6 +280,8 @@ Only `RoutineScheduler` (`lib/domain/services/routine_scheduler.dart`) may read 
 **`ProductSorter.adminComparator` is the canonical admin ordering.** All admin-default product ordering (the fallback when no user `OrderOverride` exists) runs through one comparator in `lib/domain/services/product_sorter.dart`. Its tiers, in order: (1) `category.order`; (2) `subCategory.order`, applied only when *both* products have a known sub-category (mixed null/unknown skips this tier so asymmetric Supabase data can't invert intent); (3) **moisture weight rule** — within `cat-moisturizer` and the same sub-category grouping, a product whose name contains "lotion" sorts before one containing "cream" (lotions are lighter, applied first), taking precedence over the numeric slot order; names with neither/both keywords are unaffected; (4) slot-specific `config.order`; (5) product id as a stable tiebreak.
 
 **Manual-order indicator is derived, not stored.** The Order Customization screen's "manual changes" chip + revert sheet read `slotManualOrderChangesProvider(slot)` (`root_providers.dart`), which calls `RoutineScheduler.manualOrderChangesForSlot`. The scheduler sorts the full selected slot set two ways — by the slot's global `OrderOverride` and by the admin/recommended comparator — and reports the products whose position differs (`MovedProduct.targetPosition` = the recommended position each returns to). Reverting is a plain `RoutineScheduler.deleteOrderOverride(slot)` (the global row); the screen also clears its local order state. No new persisted state is introduced — the chip is a pure read over the existing `OrderOverride` row.
+
+**One-time user-data migrations are gated by the user schema version.** `startupMigrationProvider` (`root_providers.dart`), watched fire-and-forget in `SkincareApp`, runs pending migrations when the persisted user schema version (`SettingsRepository.getUserSchemaVersion`, default 1) is below `_currentUserSchemaVersion`, then bumps it. **v2** calls `RoutineScheduler.healStaleAutoSpreadSchedules({master})`: when a master frequency is corrected from a weekly cap to `DailyRule` (e.g. prod-007), the old default-spread `WeekdaySchedule` row keeps winning via `effectiveDays`; the heal promotes any selected daily product whose row equals exactly `spreadN7(n)` to all-7, leaving empty (suppressed), all-7, and hand-picked rows untouched. Routine writes still go through the scheduler per §3.0.
 
 **Write-drain-before-navigation contract on `ProductSelectionScreen`.** `_ProductSelectionScreenState` tracks every in-flight mutation future in `_pendingWrites: Set<Future<void>>` via `_track(op)`. The "Next" CTA (`_V3BottomTray.onNext`) is an `async` closure that calls `await _flushWrites()` before invoking `onDone` or navigating. This guarantees all `upsertSelection` / `_ensureCappedSchedule` / `_resolveSlotConflicts` writes have committed before `buildRoutineSummary` reads the database. Mutation call sites (`onToggle`, `onTimingChange`) pass their futures through `_track(...)` rather than discarding them (MOD-DEC-RACE-001).
 

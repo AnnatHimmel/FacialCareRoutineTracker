@@ -60,8 +60,22 @@ void main() {
 
     test('read returns null when stored string is corrupt', () async {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('master_content_cache_v1', 'NOT_VALID_JSON{{{{');
+      await prefs.setString('master_content_cache_v2', 'NOT_VALID_JSON{{{{');
       expect(await cache.read(), isNull);
+    });
+
+    test('ignores legacy v1 cache and purges it on write', () async {
+      final prefs = await SharedPreferences.getInstance();
+      // A stale v1 payload (e.g. written before per-product subCategoryId).
+      await prefs.setString('master_content_cache_v1', '{"stale":true}');
+
+      // v1 must never be read by the current cache.
+      expect(await cache.read(), isNull);
+
+      // Writing current content purges the orphaned legacy key.
+      await cache.write(_minimal());
+      expect(prefs.containsKey('master_content_cache_v1'), isFalse);
+      expect(await cache.read(), equals(_minimal()));
     });
 
     test('second write overwrites first', () async {

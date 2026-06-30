@@ -39,6 +39,7 @@ class _FakeUDR implements UserDataRepository {
   final OrderOverride? morningOverride;
   final List<OrderOverride> morningPerDayOverrides;
   final List<WeekdaySchedule> schedules;
+  final List<UserCustomProduct> customProducts;
   bool deleteOverrideCalled = false;
   bool deletePerDayOverrideCalled = false;
   int? deletedPerDayWeekday;
@@ -49,6 +50,7 @@ class _FakeUDR implements UserDataRepository {
     this.morningOverride,
     this.morningPerDayOverrides = const [],
     this.schedules = const [],
+    this.customProducts = const [],
   });
 
   @override
@@ -107,7 +109,7 @@ class _FakeUDR implements UserDataRepository {
   @override Future<UserDataExport> exportAllData() => throw UnimplementedError();
   @override Future<void> replaceAllData(UserDataExport e) => throw UnimplementedError();
   @override Future<void> clearRoutineData() async {}
-  @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value([]);
+  @override Stream<List<UserCustomProduct>> watchCustomProducts() => Stream.value(customProducts);
   @override Future<void> upsertCustomProduct(UserCustomProduct p) async {}
   @override Future<void> deleteCustomProduct(String id) async {}
   @override Stream<List<CollectionItem>> watchCollectionItems() => throw UnimplementedError();
@@ -348,6 +350,31 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(udr.deleteOverrideCalled, isTrue);
+    });
+
+    // Regression: the Order screen was the only routine surface that ignored
+    // custom products (built its list from master.products alone), so an owned
+    // custom product appeared in Week Glance / Daily Home but vanished here.
+    testWidgets('custom product shown in the order list', (tester) async {
+      final custom = UserCustomProduct(
+        id: 'c1',
+        name: 'מוצר מותאם אישית',
+        categoryId: 'cat1',
+        inMorning: true,
+        inEvening: false,
+        isDaily: true,
+        lastModified: DateTime(2024, 1, 1),
+      );
+      final udr = _FakeUDR(
+        morningSelections: [_sel('c1', Slot.morning)],
+        customProducts: [custom],
+      );
+      final master = _master([_product('p1', 'קרם לחות')]);
+
+      await tester.pumpWidget(_wrap(master: master, udr: udr));
+      await tester.pumpAndSettle();
+
+      expect(find.text('מוצר מותאם אישית'), findsOneWidget);
     });
 
     // Regression: conflict resolver clears a product's morning schedule (sets

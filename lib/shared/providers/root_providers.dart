@@ -268,6 +268,28 @@ final masterContentProvider = FutureProvider<MasterContent>(
   (ref) => ref.watch(masterContentRepositoryProvider).load(),
 );
 
+/// One-time user-data migrations, gated by the persisted user schema version.
+/// Fire-and-forget from the app root (like [localeSyncProvider]); the routine
+/// streams re-emit reactively after any rows are healed.
+///
+/// v2: heal stale auto-spread schedules left behind when a product's master
+/// frequency was corrected to daily (see
+/// [RoutineScheduler.healStaleAutoSpreadSchedules]).
+const _currentUserSchemaVersion = 2;
+
+final startupMigrationProvider = FutureProvider<void>((ref) async {
+  final settings = ref.read(settingsRepositoryProvider);
+  final version = await settings.getUserSchemaVersion();
+  if (version >= _currentUserSchemaVersion) return;
+
+  final master = await ref.read(masterContentProvider.future);
+  await ref
+      .read(routineSchedulerProvider)
+      .healStaleAutoSpreadSchedules(master: master);
+
+  await settings.setUserSchemaVersion(_currentUserSchemaVersion);
+});
+
 final effectiveDateProvider = Provider<DateTime>(
   (ref) => ref.watch(dayBoundaryServiceProvider).todayEffectiveDate,
 );

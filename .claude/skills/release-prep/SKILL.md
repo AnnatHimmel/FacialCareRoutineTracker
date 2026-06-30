@@ -12,13 +12,45 @@ description: >
 
 # Release Prep Skill
 
-End-to-end release preparation for The Glow Protocol. Five phases, in order:
+End-to-end release preparation for The Glow Protocol. Phases, in order:
 
+0. **Bundle sync & drift guard** — regenerate the bundled master JSON from Supabase so the offline fallback can't ship stale
 1. **Analyze** — what changed since the last version bump
 2. **Play Store files** — update `doc/Play Store/google_play_store_notes.md`, `full_description.md`, and `short_description.md`
 3. **Privacy policy** — update `web/privacy.html` only if new data flows require it
 4. **Version bump** — propose and confirm with user, then apply to `pubspec.yaml`
 5. **Build** — `flutter build appbundle --release`
+
+---
+
+## Phase 0: Bundle Sync & Drift Guard
+
+The bundled `assets/data/*.json` are the offline-first fallback and are a **generated artifact —
+never hand-edited**. Supabase (`ddrxzzeplokmkzizailn`) is the source of truth. Every release must
+regenerate them so a stale bundle (e.g. missing per-product `subCategoryId`, an outdated frequency)
+can't ship.
+
+```bash
+SUPABASE_URL="https://ddrxzzeplokmkzizailn.supabase.co" \
+SUPABASE_ANON_KEY="<anon/publishable key>" \
+dart scripts/sync_from_supabase.dart
+```
+
+Get the anon key from the Supabase project (publishable/anon API key); never commit it into the
+repo. The script is **field-preserving** (Supabase wins each shared key; bundle-local keys like
+subcategory `keywords` survive) and **idempotent**.
+
+Then enforce the guard:
+
+```bash
+git diff --exit-code assets/data/
+```
+
+- **Exit 0 (no diff):** bundle already matches Supabase — proceed.
+- **Non-zero (diff):** the bundle was stale. Review the diff (expect only legitimate Supabase
+  content), then **include the regenerated `assets/data/*.json` in this release commit**. After
+  regenerating, run `flutter test` once — the classifier and serializer tests are the canary for a
+  bad bundle (e.g. lost `keywords`).
 
 ---
 

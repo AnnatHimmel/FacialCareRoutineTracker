@@ -1,14 +1,78 @@
 {
   "contentVersion": "1.1.0",
   "categories": [
-    {"id":"cat-cleanser","name":{"he":"ניקוי","en":"Cleanser"},"order":1,"icon":"soap"},
-    {"id":"cat-exfoliate","name":{"he":"פילינג","en":"Exfoliate"},"order":2,"icon":"grain"},
-    {"id":"cat-toner","name":{"he":"טונר / אסנס","en":"Toner / Essence"},"order":3,"icon":"water_drop"},
-    {"id":"cat-retinoid","name":{"he":"רטינואידים","en":"Retinoid"},"order":4,"icon":"science"},
-    {"id":"cat-serum","name":{"he":"סרום / טיפול","en":"Serum / Active"},"order":5,"icon":"auto_awesome"},
-    {"id":"cat-moisturizer","name":{"he":"לחות","en":"Moisturizer"},"order":6,"icon":"opacity"},
-    {"id":"cat-oil","name":{"he":"שמנים","en":"Face Oil"},"order":7,"icon":"spa"},
-    {"id":"cat-spf","name":{"he":"הגנה","en":"Protect (SPF)"},"order":8,"icon":"wb_sunny"}
+    {
+      "id": "cat-cleanser",
+      "name": {
+        "he": "ניקוי",
+        "en": "Cleanser"
+      },
+      "order": 1,
+      "icon": "soap"
+    },
+    {
+      "id": "cat-exfoliate",
+      "name": {
+        "he": "פילינג",
+        "en": "Exfoliate"
+      },
+      "order": 2,
+      "icon": "grain"
+    },
+    {
+      "id": "cat-toner",
+      "name": {
+        "he": "טונר / אסנס",
+        "en": "Toner / Essence"
+      },
+      "order": 3,
+      "icon": "water_drop"
+    },
+    {
+      "id": "cat-retinoid",
+      "name": {
+        "he": "רטינואידים",
+        "en": "Retinoid"
+      },
+      "order": 4,
+      "icon": "science"
+    },
+    {
+      "id": "cat-serum",
+      "name": {
+        "he": "סרום",
+        "en": "Serum / Active"
+      },
+      "order": 5,
+      "icon": "auto_awesome"
+    },
+    {
+      "id": "cat-moisturizer",
+      "name": {
+        "he": "לחות",
+        "en": "Moisturizer"
+      },
+      "order": 6,
+      "icon": "opacity"
+    },
+    {
+      "id": "cat-oil",
+      "name": {
+        "he": "שמנים",
+        "en": "Face Oil"
+      },
+      "order": 7,
+      "icon": "spa"
+    },
+    {
+      "id": "cat-spf",
+      "name": {
+        "he": "הגנה",
+        "en": "Protect (SPF)"
+      },
+      "order": 8,
+      "icon": "wb_sunny"
+    }
   ],
   "subcategories": [
     {
@@ -135,43 +199,52 @@
       ]
     },
     {
-      "id": "sub-galactomyces-toner",
+      "id": "sub-moisture-serum",
       "name": {
-        "he": "טונר גלוטומייסיס",
-        "en": "Galactomyces toner"
+        "he": "סרום לחות",
+        "en": "Moisture Serum"
       },
-      "categoryId": "cat-toner",
+      "categoryId": "cat-moisturizer",
       "order": 1,
       "keywords": [
-        "galactomyces",
-        "גלקטומיסס",
-        "ferment filtrate"
-      ],
-      "formKeywords": [
-        "toner",
-        "טונר",
-        "essence",
-        "אסנס"
+        "סרום לחות",
+        "hyaluronic acid",
+        "hyaluronic",
+        "HA serum",
+        "hydrating serum",
+        "moisture serum",
+        "חומצה היאלורונית"
       ]
     },
     {
-      "id": "sub-toner",
+      "id": "sub-moisturizer",
       "name": {
-        "he": "טונר / אסנס",
-        "en": "Toner / Essence"
+        "he": "קרם לחות",
+        "en": "Moisturizer"
       },
-      "categoryId": "cat-toner",
+      "categoryId": "cat-moisturizer",
       "order": 2,
       "keywords": [
-        "toner",
-        "tonic",
-        "essence",
-        "first essence",
-        "mist",
-        "טונר",
-        "אסנס",
-        "מהות",
-        "lotion toner"
+        "קרם לחות",
+        "moisturizer",
+        "moisturiser",
+        "cream",
+        "lotion",
+        "emulsion"
+      ]
+    },
+    {
+      "id": "sub-face-oil",
+      "name": {
+        "he": "שמן פנים",
+        "en": "Face oil"
+      },
+      "categoryId": "cat-oil",
+      "order": 1,
+      "keywords": [
+        "שמן פנים",
+        "face oil",
+        "facial oil"
       ]
     },
     {
@@ -440,53 +513,13 @@
       ]
     },
     {
-      "id": "sub-moisture-serum",
+      "id": "sub-unclassified",
       "name": {
-        "he": "סרום לחות",
-        "en": "Moisture Serum"
+        "he": "אחר",
+        "en": "Unclassified"
       },
-      "categoryId": "cat-moisturizer",
-      "order": 1,
-      "keywords": [
-        "סרום לחות",
-        "hyaluronic acid",
-        "hyaluronic",
-        "HA serum",
-        "hydrating serum",
-        "moisture serum",
-        "חומצה היאלורונית"
-      ]
-    },
-    {
-      "id": "sub-moisturizer",
-      "name": {
-        "he": "קרם לחות",
-        "en": "Moisturizer"
-      },
-      "categoryId": "cat-moisturizer",
-      "order": 2,
-      "keywords": [
-        "קרם לחות",
-        "moisturizer",
-        "moisturiser",
-        "cream",
-        "lotion",
-        "emulsion"
-      ]
-    },
-    {
-      "id": "sub-face-oil",
-      "name": {
-        "he": "שמן פנים",
-        "en": "Face oil"
-      },
-      "categoryId": "cat-oil",
-      "order": 1,
-      "keywords": [
-        "שמן פנים",
-        "face oil",
-        "facial oil"
-      ]
+      "categoryId": "cat-serum",
+      "order": 99
     },
     {
       "id": "sub-spf",
@@ -506,337 +539,51 @@
       ]
     },
     {
-      "id": "sub-unclassified",
+      "id": "sub-galactomyces-toner",
       "name": {
-        "he": "אחר",
-        "en": "Unclassified"
+        "he": "טונר גלוטומייסיס",
+        "en": "Galactomyces toner"
       },
-      "categoryId": "cat-serum",
-      "order": 99
+      "categoryId": "cat-toner",
+      "order": 1,
+      "keywords": [
+        "galactomyces",
+        "גלקטומיסס",
+        "ferment filtrate"
+      ],
+      "formKeywords": [
+        "toner",
+        "טונר",
+        "essence",
+        "אסנס"
+      ]
+    },
+    {
+      "id": "sub-toner",
+      "name": {
+        "he": "טונר / אסנס",
+        "en": "Toner / Essence"
+      },
+      "categoryId": "cat-toner",
+      "order": 2,
+      "keywords": [
+        "toner",
+        "tonic",
+        "essence",
+        "first essence",
+        "mist",
+        "טונר",
+        "אסנס",
+        "מהות",
+        "lotion toner"
+      ]
     }
   ],
   "products": [
     {
-      "id": "prod-039",
-      "name": "Generic Cleansing Gel",
-      "imageAsset": "assets/images/products/generic_cleansing_gel.jpg",
-      "categoryId": "cat-cleanser",
-      "comment": {
-        "he": "ג'ל ניקוי פנים עדין על בסיס מים לניקוי יסודי של העור, הסרת שאריות לכלוך ורענון מבלי לייבש",
-        "en": "Gentle water-based facial cleansing gel for thorough cleansing, removing dirt residue and refreshing without drying"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": null,
-      "eveningConfig": {
-        "order": 0,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-007",
-      "name": "Relief Sun: Rice + Probiotics",
-      "imageAsset": "assets/images/products/prod-007.jpg",
-      "categoryId": "cat-spf",
-      "comment": {
-        "he": "קרם הגנה קוריאני קל ומרגיע עם אורז ופרוביוטיקה, SPF50+ PA+++",
-        "en": "Lightweight, soothing Korean sunscreen with rice and probiotics, SPF50+ PA+++"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 20,
-        "frequency": {
-          "type": "weeklyMax",
-          "maxPerWeek": 3
-        }
-      },
-      "eveningConfig": null
-    },
-    {
-      "id": "prod-008",
-      "name": "All Clean Balm",
-      "imageAsset": "assets/images/products/heimish_all_clean_balm.jpg",
-      "categoryId": "cat-cleanser",
-      "comment": {
-        "he": "באלם ניקוי להסרת איפור ומסנני הגנה",
-        "en": "Cleansing balm for removing makeup and sunscreen"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": null,
-      "eveningConfig": {
-        "order": 0,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-009",
-      "name": "All Clean Green Foam",
-      "imageAsset": "assets/images/products/heimish_all_clean_green_foam.jpg",
-      "categoryId": "cat-cleanser",
-      "comment": {
-        "he": "סבון פנים עדין ומאזן לחומציות מומלצת",
-        "en": "Gentle, pH-balancing facial cleanser"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": null,
-      "eveningConfig": {
-        "order": 1,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-010",
-      "name": "Anti-Aging Marula Oil",
-      "imageAsset": "assets/images/products/marulalab_marula_oil.jpg",
-      "categoryId": "cat-oil",
-      "comment": {
-        "he": "שמן מרולה טהור להזנה מוגברת ואנטי אייג'ינג",
-        "en": "Pure marula oil for intensive nourishment and anti-aging"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": null,
-      "eveningConfig": {
-        "order": 25,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-011",
-      "name": "Ceramide Ato Concentrate Cream",
-      "imageAsset": "assets/images/products/illiyoon_ceramide_ato_cream.jpg",
-      "categoryId": "cat-moisturizer",
-      "comment": {
-        "he": "קרם לחות עשיר בסרמידים לשיקום והרגעת מחסום העור",
-        "en": "Ceramide-rich moisturizer for repairing and soothing the skin barrier"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 19,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 24,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-012",
-      "name": "Daily Soft Touch Sunscreen",
-      "imageAsset": "assets/images/products/purito_seoul_soft_touch_sunscreen.jpg",
-      "categoryId": "cat-spf",
-      "comment": {
-        "he": "קרם הגנה לחותי במרקם קל ונעים לשימוש יומיומי",
-        "en": "Moisturizing sunscreen with a light, pleasant texture for daily use"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 23,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": null
-    },
-    {
-      "id": "prod-013",
-      "name": "Heartleaf My-Type Calming Cream",
-      "imageAsset": "assets/images/products/axis_y_heartleaf_calming_cream.jpg",
-      "categoryId": "cat-moisturizer",
-      "comment": {
-        "he": "קרם לחות קליל ומרגיע עם הארטליף להפחתת אדמומיות",
-        "en": "Light, calming moisturizer with heartleaf extract to reduce redness"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 17,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 21,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-014",
-      "name": "Tea Tree Relief Serum",
-      "imageAsset": "assets/images/products/iunik_tea_tree_relief_serum.jpg",
-      "categoryId": "cat-serum",
-      "comment": {
-        "he": "סרום עץ התה להרגעה, איזון והפחתת פגמים בעור",
-        "en": "Tea tree serum for soothing, balancing, and reducing blemishes"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 11,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 14,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-015",
-      "name": "Aqua Squalane Moisturizing Cream",
-      "imageAsset": "assets/images/products/snature_aqua_squalane_cream.jpg",
-      "categoryId": "cat-moisturizer",
-      "comment": {
-        "he": "קרם לחות עשיר בסקוואלן להזנה, ריכוך ושמירה על לחות העור",
-        "en": "Squalane-rich moisturizer for nourishing, softening, and maintaining skin hydration"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 18,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 22,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-016",
-      "name": "Light On Serum Centella + Vita C",
-      "imageAsset": "assets/images/products/beauty_of_joseon_light_on_serum.jpg",
-      "categoryId": "cat-serum",
-      "comment": {
-        "he": "סרום ויטמין C וסנטלה להבהרה, האחדת גוון העור והגנה אנטיאוקסידנטית",
-        "en": "Vitamin C and centella serum for brightening, evening skin tone, and antioxidant protection"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 4,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": null
-    },
-    {
-      "id": "prod-017",
-      "name": "Hyper Acid 4 AHA BHA PHA LHA 30 Serum",
-      "imageAsset": "assets/images/products/isntree_hyper_acid_30_serum.jpg",
-      "categoryId": "cat-exfoliate",
-      "comment": {
-        "he": "סרום פילינג עוצמתי המשלב 4 חומצות לחידוש מרקם העור, ניקוי נקבוביות והבהרה",
-        "en": "Powerful exfoliating serum combining 4 acids for skin texture renewal, pore cleansing, and brightening"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": null,
-      "eveningConfig": {
-        "order": 18,
-        "frequency": {
-          "type": "weeklyMax",
-          "maxPerWeek": 3
-        }
-      }
-    },
-    {
-      "id": "prod-018",
-      "name": "Cicapair Intensive Soothing Repair Treatment Lotion",
-      "imageAsset": "assets/images/products/dr_jart_cicapair_treatment_lotion.jpg",
-      "categoryId": "cat-moisturizer",
-      "comment": {
-        "he": "תחליב טיפולי אינטנסיבי להרגעה מהירה, שיקום מחסום העור והפחתת אדמומיות עם קומפלקס סינטלה",
-        "en": "Intensive treatment lotion for rapid soothing, skin barrier repair, and redness reduction with centella complex"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 14,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 23,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-019",
-      "name": "Relief Sun Aqua Fresh Rice+B5",
-      "imageAsset": "assets/images/products/beauty_of_joseon_relief_sun_aqua_fresh.jpg",
-      "categoryId": "cat-spf",
-      "comment": {
-        "he": "קרם הגנה קליל במרקם קל ומרענן, מועשר באורז וויטמין B5 להגנה ולחות מוגברת",
-        "en": "Lightweight, refreshing sunscreen enriched with rice and vitamin B5 for protection and enhanced hydration"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 21,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": null
-    },
-    {
-      "id": "prod-020",
-      "name": "Azelaic Acid Cream 20%",
-      "imageAsset": "assets/images/products/kisocare_azelaic_acid_cream_20.jpg",
-      "categoryId": "cat-serum",
-      "comment": {
-        "he": "קרם טיפולי פעיל בריכוז 20% חומצה אזלאית להבהרת כתמים, טיפול בפגמי עור ושיפור מרקם העור",
-        "en": "Active treatment cream with 20% azelaic acid for brightening dark spots, treating blemishes, and improving skin texture"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 6,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 9,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
       "id": "prod-021",
       "name": "Niacinamide 20 Serum",
-      "imageAsset": "assets/images/products/jumiso_niacinamide_20_serum.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/jumiso_niacinamide_20_serum.jpg",
       "categoryId": "cat-serum",
       "comment": {
         "he": "סרום פעיל בריכוז 20% ניאצינמיד להבהרה, איזון סבום, כיווץ נקבוביות ושיפור מרקם העור",
@@ -855,84 +602,24 @@
         "frequency": {
           "type": "daily"
         }
-      }
-    },
-    {
-      "id": "prod-022",
-      "name": "88B/mL L-Glutathione Flexible Liposome",
-      "imageAsset": "assets/images/products/purcell_l_glutathione_liposome.jpg",
-      "categoryId": "cat-serum",
-      "comment": {
-        "he": "סרום אנטיאוקסידנטי מתקדם עם גלוטתיון ליפוזומלי להבהרה, הגנה מפני רדיקלים חופשיים והאחדת גוון העור",
-        "en": "Advanced antioxidant serum with liposomal glutathione for brightening, free radical protection, and evening skin tone"
       },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 0,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 4,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-023",
-      "name": "T15 Serum",
-      "imageAsset": "assets/images/products/cos_de_baha_t15_serum.jpg",
-      "categoryId": "cat-serum",
-      "comment": {
-        "he": "סרום טיפולי פעיל בריכוז 15% חומצה טרנקסמית להבהרת פיגמנטציה, טיפול בכתמי עור עקשניים והאחדת גוון העור",
-        "en": "Active treatment serum with 15% tranexamic acid for fading pigmentation, treating stubborn dark spots, and evening skin tone"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 8,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 11,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-024",
-      "name": "PDRN 3% Hyper Boost Ampoule",
-      "imageAsset": "assets/images/products/genabelle_pdrn_hyper_boost_ampoule.jpg",
-      "categoryId": "cat-serum",
-      "comment": {
-        "he": "אמפולה טיפולית מרוכזת עם 3% PDRN לשיקום עמוק, שיפור אלסטיות העור, עידוד התחדשות התאים וחיזוק מחסום העור",
-        "en": "Concentrated treatment ampoule with 3% PDRN for deep repair, improving skin elasticity, stimulating cell renewal, and strengthening the skin barrier"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 12,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 15,
-        "frequency": {
-          "type": "daily"
-        }
-      }
+      "brand": "JUMISO",
+      "subCategoryId": "sub-niacinamide",
+      "ingredients": [
+        "Niacinamide 20%",
+        "Zinc PCA",
+        "Panthenol",
+        "Glycerin",
+        "Hyaluronic Acid"
+      ],
+      "barcodes": [
+        "8809655952236"
+      ]
     },
     {
       "id": "prod-025",
       "name": "Acne Blemish Control Treatment Serum",
-      "imageAsset": "assets/images/products/derma_e_acne_blemish_control_serum.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/derma_e_acne_blemish_control_serum.jpg",
       "categoryId": "cat-serum",
       "comment": {
         "he": "סרום טיפולי לעור מעורב עד שמן, מסייע במניעה וטיפול בפגמי עור, ניקוי נקבוביות והאיזון בלוטות החלב",
@@ -947,12 +634,24 @@
           "type": "weeklyMax",
           "maxPerWeek": 3
         }
-      }
+      },
+      "brand": "DERMA E",
+      "subCategoryId": "sub-tea-tree",
+      "ingredients": [
+        "Salicylic Acid",
+        "Tea Tree Leaf Oil",
+        "Niacinamide",
+        "Willow Bark Extract",
+        "Glycerin"
+      ],
+      "barcodes": [
+        "030985038514"
+      ]
     },
     {
       "id": "prod-026",
       "name": "AZ15 Serum",
-      "imageAsset": "assets/images/products/cos_de_baha_az15_serum.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/cos_de_baha_az15_serum.jpg",
       "categoryId": "cat-serum",
       "comment": {
         "he": "סרום טיפולי המכיל 15% חומצה אזלאית להרגעת אדמומיות, טיפול בדלקתיות ועור מגורה, והבהרת פגמי עור",
@@ -971,60 +670,24 @@
         "frequency": {
           "type": "daily"
         }
-      }
-    },
-    {
-      "id": "prod-027",
-      "name": "Ectoin Moisturizing Soothing Sensitivity Repair Cream",
-      "imageAsset": "assets/images/products/boben_ectoin_sensitivity_repair_cream.jpg",
-      "categoryId": "cat-moisturizer",
-      "comment": {
-        "he": "קרם לחות טיפולי משקם להרגעת עור רגיש ומגורה, חיזוק מחסום העור והפחתת רגישות בעזרת אקטואין",
-        "en": "Restorative treatment moisturizer for soothing sensitive and irritated skin, strengthening the skin barrier, and reducing sensitivity with ectoin"
       },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 15,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 19,
-        "frequency": {
-          "type": "daily"
-        }
-      }
-    },
-    {
-      "id": "prod-028",
-      "name": "Rice Toner",
-      "imageAsset": "assets/images/products/im_from_rice_toner.jpg",
-      "categoryId": "cat-toner",
-      "comment": {
-        "he": "טונר אורז עשיר להזנה אינטנסיבית, הבהרה, והענקת מראה חיוני וקורן לעור",
-        "en": "Rich rice toner for intensive nourishment, brightening, and a healthy, radiant complexion"
-      },
-      "isDeprecated": false,
-      "addedInVersion": "1.0.0",
-      "morningConfig": {
-        "order": 1,
-        "frequency": {
-          "type": "daily"
-        }
-      },
-      "eveningConfig": {
-        "order": 5,
-        "frequency": {
-          "type": "daily"
-        }
-      }
+      "brand": "Cos De BAHA",
+      "subCategoryId": "sub-azelaic",
+      "ingredients": [
+        "Azelaic Acid 15%",
+        "Panthenol",
+        "Niacinamide",
+        "Glycerin",
+        "Allantoin"
+      ],
+      "barcodes": [
+        "8809240318126"
+      ]
     },
     {
       "id": "prod-029",
       "name": "Vitamin A-mazing Bakuchiol Night Cream",
-      "imageAsset": "assets/images/products/by_wishtrend_vitamin_amazing_bakuchiol_cream.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/by_wishtrend_vitamin_amazing_bakuchiol_cream.jpg",
       "categoryId": "cat-retinoid",
       "comment": {
         "he": "קרם לילה טיפולי המשלב רטינאל ובקוצ'יול לחידוש אינטנסיבי של תאי העור, טשטוש קמטוטים ושיפור מוצקות העור ללא גירוי",
@@ -1038,12 +701,24 @@
         "frequency": {
           "type": "daily"
         }
-      }
+      },
+      "brand": "By Wishtrend",
+      "subCategoryId": "sub-retinoid",
+      "ingredients": [
+        "Retinal (Retinaldehyde)",
+        "Bakuchiol",
+        "Squalane",
+        "Vitamin E (Tocopherol)",
+        "Panthenol"
+      ],
+      "barcodes": [
+        "8809572891328"
+      ]
     },
     {
       "id": "prod-030",
       "name": "Niacinamide 10% + TXA 4% Serum",
-      "imageAsset": "assets/images/products/anua_niacinamide_txa_serum.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/anua_niacinamide_txa_serum.jpg",
       "categoryId": "cat-serum",
       "comment": {
         "he": "סרום מתקדם המשלב 10% ניאצינמיד ו-4% חומצה טרנקסמית להבהרה עוצמתית של פיגמנטציה, טשטוש כתמים כהים והאחדת גוון העור",
@@ -1062,12 +737,24 @@
         "frequency": {
           "type": "daily"
         }
-      }
+      },
+      "brand": "Anua",
+      "subCategoryId": "sub-niacinamide",
+      "ingredients": [
+        "Niacinamide 10%",
+        "Tranexamic Acid 4%",
+        "Panthenol",
+        "Glycerin",
+        "Hyaluronic Acid"
+      ],
+      "barcodes": [
+        "8809640734526"
+      ]
     },
     {
       "id": "prod-031",
       "name": "Dynasty Cream",
-      "imageAsset": "assets/images/products/beauty_of_joseon_dynasty_cream.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/beauty_of_joseon_dynasty_cream.jpg",
       "categoryId": "cat-moisturizer",
       "comment": {
         "he": "קרם לחות עשיר ומזין המבוסס על רכיבים קוריאניים מסורתיים להזנה עמוקה, הבהרה וחיזוק מחסום הלחות של העור",
@@ -1086,12 +773,24 @@
         "frequency": {
           "type": "daily"
         }
-      }
+      },
+      "brand": "Beauty of Joseon",
+      "subCategoryId": "sub-moisturizer",
+      "ingredients": [
+        "Ginseng Extract",
+        "Niacinamide",
+        "Glycerin",
+        "Honey Extract",
+        "Adenosine"
+      ],
+      "barcodes": [
+        "8809525249565"
+      ]
     },
     {
       "id": "prod-032",
       "name": "Deep Vita A Retinol Serum",
-      "imageAsset": "assets/images/products/medicube_deep_vita_a_retinol_serum.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/medicube_deep_vita_a_retinol_serum.jpg",
       "categoryId": "cat-retinoid",
       "comment": {
         "he": "סרום אנטי-אייג'ינג מרוכז עם רטינול (ויטמין A) המסייע בצמצום מראה קמטים, מיצוק העור, שיפור האלסטיות וחידוש המרקם יחד עם הזנה עמוקה",
@@ -1105,12 +804,24 @@
         "frequency": {
           "type": "daily"
         }
-      }
+      },
+      "brand": "Medicube",
+      "subCategoryId": "sub-retinoid",
+      "ingredients": [
+        "Retinol (Vitamin A)",
+        "Squalane",
+        "Vitamin E (Tocopherol)",
+        "Panthenol",
+        "Hyaluronic Acid"
+      ],
+      "barcodes": [
+        "8809960356620"
+      ]
     },
     {
       "id": "prod-033",
       "name": "Black Rice Moisture Airyfit Sunscreen",
-      "imageAsset": "assets/images/products/haruharu_wonder_black_rice_airyfit_sunscreen.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/haruharu_wonder_black_rice_airyfit_sunscreen.jpg",
       "categoryId": "cat-spf",
       "comment": {
         "he": "קרם הגנה קליל במרקם אוורירי, מועשר בתמצית אורז שחור מותסס להגנה גבוהה מפני השמש והזנת העור בנוגדי חמצון",
@@ -1124,12 +835,24 @@
           "type": "daily"
         }
       },
-      "eveningConfig": null
+      "eveningConfig": null,
+      "brand": "haruharu wonder",
+      "subCategoryId": "sub-spf",
+      "ingredients": [
+        "Fermented Black Rice Extract",
+        "Niacinamide",
+        "Zinc Oxide",
+        "Glycerin",
+        "Panthenol"
+      ],
+      "barcodes": [
+        "8809532221707"
+      ]
     },
     {
       "id": "prod-034",
       "name": "Glow Replenishing Rice Milk",
-      "imageAsset": "assets/images/products/beauty_of_joseon_glow_replenishing_rice_milk.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/beauty_of_joseon_glow_replenishing_rice_milk.jpg",
       "categoryId": "cat-toner",
       "comment": {
         "he": "טונר חלבי מזין המבוסס על תמצית אורז להענקת לחות עמוקה, ריכוך מרקם העור ומראה קורן וגלוסי",
@@ -1148,31 +871,55 @@
         "frequency": {
           "type": "daily"
         }
-      }
+      },
+      "brand": "Beauty of Joseon",
+      "subCategoryId": "sub-toner",
+      "ingredients": [
+        "Rice Extract",
+        "Niacinamide",
+        "Glycerin",
+        "Panthenol",
+        "Beta-Glucan"
+      ],
+      "barcodes": [
+        "8809968130239"
+      ]
     },
     {
-      "id": "prod-038",
-      "name": "Revive Eye Serum Ginseng + Retinal",
-      "imageAsset": "assets/images/products/beauty_of_joseon_revive_eye_serum.jpg",
-      "categoryId": "cat-retinoid",
+      "id": "prod-007",
+      "name": "Relief Sun: Rice + Probiotics",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/prod-007.jpg",
+      "categoryId": "cat-spf",
       "comment": {
-        "he": "סרום עיניים טיפולי המשלב רטינאל וג'ינסנג לחידוש עדין של עור העיניים, הפחתת מראה קמטוטים ושיפור האלסטיות",
-        "en": "Treatment eye serum combining retinal and ginseng for gentle renewal of the eye area, reducing the appearance of fine lines, and improving elasticity"
+        "he": "קרם הגנה קוריאני קל ומרגיע עם אורז ופרוביוטיקה, SPF50+ PA+++",
+        "en": "Lightweight, soothing Korean sunscreen with rice and probiotics, SPF50+ PA+++"
       },
       "isDeprecated": false,
       "addedInVersion": "1.0.0",
-      "morningConfig": null,
-      "eveningConfig": {
-        "order": 0,
+      "morningConfig": {
+        "order": 20,
         "frequency": {
           "type": "daily"
         }
-      }
+      },
+      "eveningConfig": null,
+      "brand": "Beauty of Joseon",
+      "subCategoryId": "sub-spf",
+      "ingredients": [
+        "Rice Extract",
+        "Lactobacillus Ferment",
+        "Niacinamide",
+        "Zinc Oxide",
+        "Panthenol"
+      ],
+      "barcodes": [
+        "8809782555508"
+      ]
     },
     {
       "id": "prod-035",
       "name": "The 6 Peptide Skin Booster",
-      "imageAsset": "assets/images/products/cosrx_the_6_peptide_skin_booster.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/cosrx_the_6_peptide_skin_booster.jpg",
       "categoryId": "cat-toner",
       "comment": {
         "he": "סרום-בוסטר קליל המשלב 6 סוגי פפטידים לשיפור גמישות העור, החלקת מרקם העור, הבהרה והכנת העור לספיגה מיטבית של השלבים הבאים בשגרה",
@@ -1191,12 +938,24 @@
         "frequency": {
           "type": "daily"
         }
-      }
+      },
+      "brand": "COSRX",
+      "subCategoryId": "sub-toner",
+      "ingredients": [
+        "Copper Tripeptide-1",
+        "Hexapeptide-11",
+        "Niacinamide",
+        "Adenosine",
+        "Glycerin"
+      ],
+      "barcodes": [
+        "8809598455658"
+      ]
     },
     {
       "id": "prod-036",
       "name": "PDRN Pink Peptide Serum",
-      "imageAsset": "assets/images/products/medicube_pdrn_pink_peptide_serum.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/medicube_pdrn_pink_peptide_serum.jpg",
       "categoryId": "cat-serum",
       "comment": {
         "he": "סרום אנטי-אייג'ינג מתקדם המשלב PDRN וקומפלקס פפטידים לשיפור מוצקות וצפיפות העור, הבהרת גוון העור והענקת מראה חיוני וקורן",
@@ -1215,12 +974,651 @@
         "frequency": {
           "type": "daily"
         }
-      }
+      },
+      "brand": "Medicube",
+      "subCategoryId": "sub-pdrn",
+      "ingredients": [
+        "PDRN (Polydeoxyribonucleotide)",
+        "Copper Tripeptide-1",
+        "Niacinamide",
+        "Adenosine",
+        "Panthenol"
+      ],
+      "barcodes": [
+        "8800256108053"
+      ]
+    },
+    {
+      "id": "prod-039",
+      "name": "Generic Cleansing Gel",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/generic_cleansing_gel.jpg",
+      "categoryId": "cat-cleanser",
+      "comment": {
+        "he": "ג'ל ניקוי פנים עדין על בסיס מים לניקוי יסודי של העור, הסרת שאריות לכלוך ורענון מבלי לייבש",
+        "en": "Gentle water-based facial cleansing gel for thorough cleansing, removing dirt residue and refreshing without drying"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": null,
+      "eveningConfig": {
+        "order": 0,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": null,
+      "subCategoryId": "sub-second-cleanser",
+      "ingredients": [
+        "Glycerin",
+        "Cocamidopropyl Betaine",
+        "Panthenol",
+        "Allantoin",
+        "Sodium Hyaluronate"
+      ],
+      "barcodes": []
+    },
+    {
+      "id": "prod-010",
+      "name": "Anti-Aging Marula Oil",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/marulalab_marula_oil.jpg",
+      "categoryId": "cat-oil",
+      "comment": {
+        "he": "שמן מרולה טהור להזנה מוגברת ואנטי אייג'ינג",
+        "en": "Pure marula oil for intensive nourishment and anti-aging"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": null,
+      "eveningConfig": {
+        "order": 25,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "MarulaLab",
+      "subCategoryId": "sub-face-oil",
+      "ingredients": [
+        "Marula Oil (Sclerocarya Birrea)",
+        "Vitamin E (Tocopherol)",
+        "Oleic Acid",
+        "Squalane",
+        "Omega-9 Fatty Acids"
+      ],
+      "barcodes": []
+    },
+    {
+      "id": "prod-013",
+      "name": "Heartleaf My-Type Calming Cream",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/axis_y_heartleaf_calming_cream.jpg",
+      "categoryId": "cat-moisturizer",
+      "comment": {
+        "he": "קרם לחות קליל ומרגיע עם הארטליף להפחתת אדמומיות",
+        "en": "Light, calming moisturizer with heartleaf extract to reduce redness"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 17,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 21,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "AXIS-Y",
+      "subCategoryId": "sub-moisturizer",
+      "ingredients": [
+        "Houttuynia Cordata (Heartleaf) Extract",
+        "Centella Asiatica Extract",
+        "Panthenol",
+        "Glycerin",
+        "Ceramide NP"
+      ],
+      "barcodes": []
+    },
+    {
+      "id": "prod-008",
+      "name": "All Clean Balm",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/heimish_all_clean_balm.jpg",
+      "categoryId": "cat-cleanser",
+      "comment": {
+        "he": "באלם ניקוי להסרת איפור ומסנני הגנה",
+        "en": "Cleansing balm for removing makeup and sunscreen"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": null,
+      "eveningConfig": {
+        "order": 0,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "Heimish",
+      "subCategoryId": "sub-first-cleanser",
+      "ingredients": [
+        "Sunflower Seed Oil",
+        "Shea Butter",
+        "Vitamin E",
+        "Glycerin",
+        "Beeswax"
+      ],
+      "barcodes": [
+        "8809481760678"
+      ]
+    },
+    {
+      "id": "prod-009",
+      "name": "All Clean Green Foam",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/heimish_all_clean_green_foam.jpg",
+      "categoryId": "cat-cleanser",
+      "comment": {
+        "he": "סבון פנים עדין ומאזן לחומציות מומלצת",
+        "en": "Gentle, pH-balancing facial cleanser"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": null,
+      "eveningConfig": {
+        "order": 1,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "Heimish",
+      "subCategoryId": "sub-second-cleanser",
+      "ingredients": [
+        "Glycerin",
+        "Cocamidopropyl Betaine",
+        "Green Tea Extract",
+        "Panthenol",
+        "Allantoin"
+      ],
+      "barcodes": [
+        "8809481760722"
+      ]
+    },
+    {
+      "id": "prod-011",
+      "name": "Ceramide Ato Concentrate Cream",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/illiyoon_ceramide_ato_cream.jpg",
+      "categoryId": "cat-moisturizer",
+      "comment": {
+        "he": "קרם לחות עשיר בסרמידים לשיקום והרגעת מחסום העור",
+        "en": "Ceramide-rich moisturizer for repairing and soothing the skin barrier"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 19,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 24,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "ILLIYOON",
+      "subCategoryId": "sub-moisturizer",
+      "ingredients": [
+        "Ceramide NP",
+        "Panthenol",
+        "Glycerin",
+        "Shea Butter",
+        "Madecassoside"
+      ],
+      "barcodes": [
+        "8806390500050"
+      ]
+    },
+    {
+      "id": "prod-012",
+      "name": "Daily Soft Touch Sunscreen",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/purito_seoul_soft_touch_sunscreen.jpg",
+      "categoryId": "cat-spf",
+      "comment": {
+        "he": "קרם הגנה לחותי במרקם קל ונעים לשימוש יומיומי",
+        "en": "Moisturizing sunscreen with a light, pleasant texture for daily use"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 23,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": null,
+      "brand": "Purito SEOUL",
+      "subCategoryId": "sub-spf",
+      "ingredients": [
+        "Tinosorb S (Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine)",
+        "Uvinul A Plus",
+        "Niacinamide",
+        "Glycerin",
+        "Panthenol"
+      ],
+      "barcodes": [
+        "8809563102600"
+      ]
+    },
+    {
+      "id": "prod-018",
+      "name": "Cicapair Intensive Soothing Repair Treatment Lotion",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/dr_jart_cicapair_treatment_lotion.jpg",
+      "categoryId": "cat-moisturizer",
+      "comment": {
+        "he": "תחליב טיפולי אינטנסיבי להרגעה מהירה, שיקום מחסום העור והפחתת אדמומיות עם קומפלקס סינטלה",
+        "en": "Intensive treatment lotion for rapid soothing, skin barrier repair, and redness reduction with centella complex"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 14,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 23,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "Dr.Jart+",
+      "subCategoryId": "sub-moisture-serum",
+      "ingredients": [
+        "Centella Asiatica Extract",
+        "Madecassoside",
+        "Panthenol",
+        "Glycerin",
+        "Ceramide NP"
+      ],
+      "barcodes": []
+    },
+    {
+      "id": "prod-020",
+      "name": "Azelaic Acid Cream 20%",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/kisocare_azelaic_acid_cream_20.jpg",
+      "categoryId": "cat-serum",
+      "comment": {
+        "he": "קרם טיפולי פעיל בריכוז 20% חומצה אזלאית להבהרת כתמים, טיפול בפגמי עור ושיפור מרקם העור",
+        "en": "Active treatment cream with 20% azelaic acid for brightening dark spots, treating blemishes, and improving skin texture"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 6,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 9,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "Kisocare",
+      "subCategoryId": "sub-azelaic",
+      "ingredients": [
+        "Azelaic Acid 20%",
+        "Glycerin",
+        "Panthenol",
+        "Niacinamide",
+        "Allantoin"
+      ],
+      "barcodes": []
+    },
+    {
+      "id": "prod-023",
+      "name": "T15 Serum",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/cos_de_baha_t15_serum.jpg",
+      "categoryId": "cat-serum",
+      "comment": {
+        "he": "סרום טיפולי פעיל בריכוז 15% חומצה טרנקסמית להבהרת פיגמנטציה, טיפול בכתמי עור עקשניים והאחדת גוון העור",
+        "en": "Active treatment serum with 15% tranexamic acid for fading pigmentation, treating stubborn dark spots, and evening skin tone"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 8,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 11,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "Cos De BAHA",
+      "subCategoryId": "sub-tranexamic",
+      "ingredients": [
+        "Tranexamic Acid 15%",
+        "Niacinamide",
+        "Glycerin",
+        "Panthenol",
+        "Hyaluronic Acid"
+      ],
+      "barcodes": []
+    },
+    {
+      "id": "prod-024",
+      "name": "PDRN 3% Hyper Boost Ampoule",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/genabelle_pdrn_hyper_boost_ampoule.jpg",
+      "categoryId": "cat-serum",
+      "comment": {
+        "he": "אמפולה טיפולית מרוכזת עם 3% PDRN לשיקום עמוק, שיפור אלסטיות העור, עידוד התחדשות התאים וחיזוק מחסום העור",
+        "en": "Concentrated treatment ampoule with 3% PDRN for deep repair, improving skin elasticity, stimulating cell renewal, and strengthening the skin barrier"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 12,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 15,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "Genabelle",
+      "subCategoryId": "sub-pdrn",
+      "ingredients": [
+        "PDRN (Polydeoxyribonucleotide) 3%",
+        "Adenosine",
+        "Hyaluronic Acid",
+        "Panthenol",
+        "Glycerin"
+      ],
+      "barcodes": []
+    },
+    {
+      "id": "prod-027",
+      "name": "Ectoin Moisturizing Soothing Sensitivity Repair Cream",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/boben_ectoin_sensitivity_repair_cream.jpg",
+      "categoryId": "cat-moisturizer",
+      "comment": {
+        "he": "קרם לחות טיפולי משקם להרגעת עור רגיש ומגורה, חיזוק מחסום העור והפחתת רגישות בעזרת אקטואין",
+        "en": "Restorative treatment moisturizer for soothing sensitive and irritated skin, strengthening the skin barrier, and reducing sensitivity with ectoin"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 15,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 19,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "boben",
+      "subCategoryId": "sub-moisturizer",
+      "ingredients": [
+        "Ectoin",
+        "Panthenol",
+        "Glycerin",
+        "Ceramide NP",
+        "Allantoin"
+      ],
+      "barcodes": []
+    },
+    {
+      "id": "prod-028",
+      "name": "Rice Toner",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/im_from_rice_toner.jpg",
+      "categoryId": "cat-toner",
+      "comment": {
+        "he": "טונר אורז עשיר להזנה אינטנסיבית, הבהרה, והענקת מראה חיוני וקורן לעור",
+        "en": "Rich rice toner for intensive nourishment, brightening, and a healthy, radiant complexion"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 1,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 5,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "I'm from",
+      "subCategoryId": "sub-toner",
+      "ingredients": [
+        "Rice Extract",
+        "Niacinamide",
+        "Glycerin",
+        "Inositol",
+        "Ferulic Acid"
+      ],
+      "barcodes": [
+        "8809581074767"
+      ]
+    },
+    {
+      "id": "prod-022",
+      "name": "88B/mL L-Glutathione Flexible Liposome",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/purcell_l_glutathione_liposome.jpg",
+      "categoryId": "cat-serum",
+      "comment": {
+        "he": "סרום אנטיאוקסידנטי מתקדם עם גלוטתיון ליפוזומלי להבהרה, הגנה מפני רדיקלים חופשיים והאחדת גוון העור",
+        "en": "Advanced antioxidant serum with liposomal glutathione for brightening, free radical protection, and evening skin tone"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 0,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 4,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "PURCELL",
+      "subCategoryId": "sub-glutathione",
+      "ingredients": [
+        "L-Glutathione (Liposomal)",
+        "Niacinamide",
+        "Ascorbic Acid (Vitamin C)",
+        "Glycerin",
+        "Panthenol"
+      ],
+      "barcodes": []
+    },
+    {
+      "id": "prod-014",
+      "name": "Tea Tree Relief Serum",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/iunik_tea_tree_relief_serum.jpg",
+      "categoryId": "cat-serum",
+      "comment": {
+        "he": "סרום עץ התה להרגעה, איזון והפחתת פגמים בעור",
+        "en": "Tea tree serum for soothing, balancing, and reducing blemishes"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 11,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 14,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "iUNIK",
+      "subCategoryId": "sub-tea-tree",
+      "ingredients": [
+        "Tea Tree Leaf Oil",
+        "Centella Asiatica Extract",
+        "Salicylic Acid",
+        "Niacinamide",
+        "Panthenol"
+      ],
+      "barcodes": [
+        "8809728080071"
+      ]
+    },
+    {
+      "id": "prod-015",
+      "name": "Aqua Squalane Moisturizing Cream",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/snature_aqua_squalane_cream.jpg",
+      "categoryId": "cat-moisturizer",
+      "comment": {
+        "he": "קרם לחות עשיר בסקוואלן להזנה, ריכוך ושמירה על לחות העור",
+        "en": "Squalane-rich moisturizer for nourishing, softening, and maintaining skin hydration"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 18,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": {
+        "order": 22,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "S.NATURE",
+      "subCategoryId": "sub-moisturizer",
+      "ingredients": [
+        "Squalane",
+        "Glycerin",
+        "Hyaluronic Acid",
+        "Panthenol",
+        "Ceramide NP"
+      ],
+      "barcodes": [
+        "8809506310406"
+      ]
+    },
+    {
+      "id": "prod-016",
+      "name": "Light On Serum Centella + Vita C",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/beauty_of_joseon_light_on_serum.jpg",
+      "categoryId": "cat-serum",
+      "comment": {
+        "he": "סרום ויטמין C וסנטלה להבהרה, האחדת גוון העור והגנה אנטיאוקסידנטית",
+        "en": "Vitamin C and centella serum for brightening, evening skin tone, and antioxidant protection"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 4,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": null,
+      "brand": "Beauty of Joseon",
+      "subCategoryId": "sub-vitamin-c",
+      "ingredients": [
+        "Ascorbic Acid (Vitamin C)",
+        "Centella Asiatica Extract",
+        "Niacinamide",
+        "Vitamin E (Tocopherol)",
+        "Glycerin"
+      ],
+      "barcodes": [
+        "8809875906477"
+      ]
+    },
+    {
+      "id": "prod-019",
+      "name": "Relief Sun Aqua Fresh Rice+B5",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/beauty_of_joseon_relief_sun_aqua_fresh.jpg",
+      "categoryId": "cat-spf",
+      "comment": {
+        "he": "קרם הגנה קליל במרקם קל ומרענן, מועשר באורז וויטמין B5 להגנה ולחות מוגברת",
+        "en": "Lightweight, refreshing sunscreen enriched with rice and vitamin B5 for protection and enhanced hydration"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": {
+        "order": 21,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "eveningConfig": null,
+      "brand": "Beauty of Joseon",
+      "subCategoryId": "sub-spf",
+      "ingredients": [
+        "Rice Extract",
+        "Panthenol (Vitamin B5)",
+        "Niacinamide",
+        "Zinc Oxide",
+        "Glycerin"
+      ],
+      "barcodes": [
+        "8809968130277"
+      ]
+    },
+    {
+      "id": "prod-017",
+      "name": "Hyper Acid 4 AHA BHA PHA LHA 30 Serum",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/isntree_hyper_acid_30_serum.jpg",
+      "categoryId": "cat-exfoliate",
+      "comment": {
+        "he": "סרום פילינג עוצמתי המשלב 4 חומצות לחידוש מרקם העור, ניקוי נקבוביות והבהרה",
+        "en": "Powerful exfoliating serum combining 4 acids for skin texture renewal, pore cleansing, and brightening"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": null,
+      "eveningConfig": {
+        "order": 18,
+        "frequency": {
+          "type": "weeklyMax",
+          "maxPerWeek": 3
+        }
+      },
+      "brand": "Isntree",
+      "subCategoryId": "sub-aha-lactic",
+      "ingredients": [
+        "Glycolic Acid (AHA)",
+        "Salicylic Acid (BHA)",
+        "Gluconolactone (PHA)",
+        "Lactobionic Acid (LHA)",
+        "Niacinamide"
+      ],
+      "barcodes": [
+        "8809800940880"
+      ]
     },
     {
       "id": "prod-037",
       "name": "Argireline Solution 10%",
-      "imageAsset": "assets/images/products/the_ordinary_argireline_solution_10.jpg",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/the_ordinary_argireline_solution_10.jpg",
       "categoryId": "cat-serum",
       "comment": {
         "he": "תמיסת פפטידים מרוכזת המכילה 10% ארגירלין, המיועדת לטיפול ממוקד במראה קמטי הבעה דינמיים וקמטוטים באזורי המצח ומסביב לעיניים",
@@ -1239,7 +1637,50 @@
         "frequency": {
           "type": "daily"
         }
-      }
+      },
+      "brand": "THE ORDINARY",
+      "subCategoryId": "sub-argireline",
+      "ingredients": [
+        "Argireline (Acetyl Hexapeptide-3) 10%",
+        "Leuphasyl",
+        "Hyaluronic Acid",
+        "Glycerin",
+        "Panthenol"
+      ],
+      "barcodes": [
+        "0769915190946"
+      ]
+    },
+    {
+      "id": "prod-038",
+      "name": "Revive Eye Serum Ginseng + Retinal",
+      "imageAsset": "https://ddrxzzeplokmkzizailn.supabase.co/storage/v1/object/public/product-images/beauty_of_joseon_revive_eye_serum.jpg",
+      "categoryId": "cat-retinoid",
+      "comment": {
+        "he": "סרום עיניים טיפולי המשלב רטינאל וג'ינסנג לחידוש עדין של עור העיניים, הפחתת מראה קמטוטים ושיפור האלסטיות",
+        "en": "Treatment eye serum combining retinal and ginseng for gentle renewal of the eye area, reducing the appearance of fine lines, and improving elasticity"
+      },
+      "isDeprecated": false,
+      "addedInVersion": "1.0.0",
+      "morningConfig": null,
+      "eveningConfig": {
+        "order": 0,
+        "frequency": {
+          "type": "daily"
+        }
+      },
+      "brand": "Beauty of Joseon",
+      "subCategoryId": "sub-retinoid",
+      "ingredients": [
+        "Retinal (Retinaldehyde)",
+        "Ginseng Extract",
+        "Niacinamide",
+        "Adenosine",
+        "Panthenol"
+      ],
+      "barcodes": [
+        "8809738316146"
+      ]
     }
   ]
 }

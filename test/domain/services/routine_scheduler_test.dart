@@ -1360,4 +1360,101 @@ void main() {
       expect(result.moved.length, equals(3));
     });
   });
+
+  // ── Group: healStaleAutoSpreadSchedules (one-time migration) ───────────────
+
+  group('healStaleAutoSpreadSchedules', () {
+    Future<void> select(MasterProduct p, Slot slot) => repo.upsertSelection(
+          ProductSelection(
+            id: 's-${p.id}-${slot.name}',
+            productId: p.id,
+            slot: slot,
+            isSelected: true,
+            lastModified: DateTime.now(),
+          ),
+        );
+
+    Future<void> setRow(MasterProduct p, Slot slot, Set<int> days) =>
+        repo.upsertSchedule(WeekdaySchedule(
+          id: 'w-${p.id}-${slot.name}',
+          productId: p.id,
+          slot: slot,
+          weekdays: days,
+          lastModified: DateTime.now(),
+        ));
+
+    Future<Set<int>?> rowDays(MasterProduct p, Slot slot) async {
+      final all = await repo.watchAllSchedules().first;
+      final matches =
+          all.where((s) => s.productId == p.id && s.slot == slot).toList();
+      return matches.isEmpty ? null : matches.first.weekdays;
+    }
+
+    test('heals a daily product whose schedule equals an auto-spread → all 7',
+        () async {
+      await select(_dailyProduct, Slot.morning);
+      await setRow(_dailyProduct, Slot.morning, {0, 2, 4}); // spreadN7(3)
+
+      final healed =
+          await scheduler.healStaleAutoSpreadSchedules(master: _buildMaster());
+
+      expect(healed, 1);
+      expect(await rowDays(_dailyProduct, Slot.morning), {0, 1, 2, 3, 4, 5, 6});
+    });
+
+    test('leaves an explicitly emptied (suppressed) row untouched', () async {
+      await select(_dailyProduct, Slot.morning);
+      await setRow(_dailyProduct, Slot.morning, <int>{});
+
+      final healed =
+          await scheduler.healStaleAutoSpreadSchedules(master: _buildMaster());
+
+      expect(healed, 0);
+      expect(await rowDays(_dailyProduct, Slot.morning), <int>{});
+    });
+
+    test('leaves an already all-7 daily row untouched', () async {
+      await select(_dailyProduct, Slot.morning);
+      await setRow(_dailyProduct, Slot.morning, {0, 1, 2, 3, 4, 5, 6});
+
+      final healed =
+          await scheduler.healStaleAutoSpreadSchedules(master: _buildMaster());
+
+      expect(healed, 0);
+    });
+
+    test('leaves a hand-picked (non-spread) daily row untouched', () async {
+      await select(_dailyProduct, Slot.morning);
+      // {1,3,5} omits day 0, so it can never equal any spreadN7(n).
+      await setRow(_dailyProduct, Slot.morning, {1, 3, 5});
+
+      final healed =
+          await scheduler.healStaleAutoSpreadSchedules(master: _buildMaster());
+
+      expect(healed, 0);
+      expect(await rowDays(_dailyProduct, Slot.morning), {1, 3, 5});
+    });
+
+    test('leaves a weeklyMax product untouched even if it matches a spread',
+        () async {
+      await select(_weeklyProduct, Slot.morning);
+      await setRow(_weeklyProduct, Slot.morning, {0, 2, 4});
+
+      final healed =
+          await scheduler.healStaleAutoSpreadSchedules(master: _buildMaster());
+
+      expect(healed, 0);
+      expect(await rowDays(_weeklyProduct, Slot.morning), {0, 2, 4});
+    });
+
+    test('ignores unselected products', () async {
+      await setRow(_dailyProduct, Slot.morning, {0, 2, 4}); // not selected
+
+      final healed =
+          await scheduler.healStaleAutoSpreadSchedules(master: _buildMaster());
+
+      expect(healed, 0);
+      expect(await rowDays(_dailyProduct, Slot.morning), {0, 2, 4});
+    });
+  });
 }

@@ -112,6 +112,12 @@ class _OrderCustomizationScreenState
         ref.watch(_orderOverrideProvider(Slot.evening));
 
     final schedulesAsync = ref.watch(allSchedulesProvider);
+    // Custom products participate in the routine everywhere else (Daily Home,
+    // Week Glance, Schedule Setup) — include them here too so they can be
+    // reordered instead of silently tailing the admin order.
+    final customProducts = (ref.watch(customProductsProvider).valueOrNull ?? [])
+        .map((c) => c.toMasterProduct())
+        .toList();
     // Category overrides so the Order screen sorts identically to Daily Home.
     final catOverrideList =
         ref.watch(categoryOverridesProvider).valueOrNull ?? [];
@@ -148,6 +154,7 @@ class _OrderCustomizationScreenState
 
           final morningProducts = _sortedProducts(
             master,
+            customProducts,
             morningSelectedIds,
             Slot.morning,
             morningOverride,
@@ -157,6 +164,7 @@ class _OrderCustomizationScreenState
           );
           final eveningProducts = _sortedProducts(
             master,
+            customProducts,
             eveningSelectedIds,
             Slot.evening,
             eveningOverride,
@@ -374,6 +382,7 @@ class _OrderCustomizationScreenState
 
   List<MasterProduct> _sortedProducts(
     MasterContent master,
+    List<MasterProduct> customProducts,
     Set<String> selectedIds,
     Slot slot,
     OrderOverride? override,
@@ -387,7 +396,7 @@ class _OrderCustomizationScreenState
           (s) => s.productId == id && s.slot == slot && s.weekdays.isEmpty,
         );
 
-    final products = master.products
+    final products = [...master.products, ...customProducts]
         .where((p) =>
             !p.isDeprecated &&
             selectedIds.contains(p.id) &&

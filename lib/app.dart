@@ -13,6 +13,8 @@ class SkincareApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Sync locale from saved gender on first build; ignored once resolved.
     ref.watch(localeSyncProvider);
+    // Run one-time user-data migrations (fire-and-forget; non-blocking).
+    ref.watch(startupMigrationProvider);
     final locale = ref.watch(appLocaleProvider);
 
     final isRtl = locale.languageCode != 'en';

@@ -192,22 +192,26 @@ Future<Map<String, dynamic>> _fetchFromSupabase(
 // ---------------------------------------------------------------------------
 
 /// Merges [remote] and [local] lists of JSON objects keyed by "id".
-/// Remote items take precedence. Local-only items are appended at the end.
+/// For an id present in both, fields are merged per-key with **Supabase winning
+/// each shared key**, while **local-only keys are preserved** (e.g. subcategory
+/// `keywords`, which drive the on-device classifier and have no Supabase column).
+/// Local-only items (id absent from Supabase) are appended at the end.
 List<dynamic> _mergeById({
   required List<dynamic> remote,
   required List<dynamic> local,
   required String label,
 }) {
-  final localIds = <String>{};
-  for (final item in local) {
-    localIds.add((item as Map<String, dynamic>)['id'] as String);
-  }
+  final localById = <String, Map<String, dynamic>>{
+    for (final item in local)
+      (item as Map<String, dynamic>)['id'] as String: item,
+  };
 
   final remoteIds = <String>{};
   for (final item in remote) {
     remoteIds.add((item as Map<String, dynamic>)['id'] as String);
   }
 
+  final localIds = localById.keys.toSet();
   final addedFromRemote = remoteIds.difference(localIds);
   final localOnlyIds = localIds.difference(remoteIds);
 
@@ -220,8 +224,14 @@ List<dynamic> _mergeById({
         '  ! $label: ${localOnlyIds.length} item(s) only in local JSON — preserved: $localOnlyIds');
   }
 
-  // Remote items first (Supabase wins), then local-only items
-  final merged = [...remote];
+  // Matched ids: {...local, ...remote} so Supabase wins each shared key but
+  // local-only keys (e.g. `keywords`) survive. Then local-only items appended.
+  final merged = <dynamic>[];
+  for (final item in remote) {
+    final m = item as Map<String, dynamic>;
+    final localItem = localById[m['id'] as String];
+    merged.add(localItem == null ? m : {...localItem, ...m});
+  }
   for (final item in local) {
     final m = item as Map<String, dynamic>;
     if (!remoteIds.contains(m['id'] as String)) {
