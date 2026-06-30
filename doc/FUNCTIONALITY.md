@@ -108,7 +108,7 @@ The Admin authors content at **build time** (bundled data, not a runtime UI). Th
 16. **Deprecation Handling (UC-12):** Deprecated products not offered for new selection; if user already uses one, it's marked "no longer recommended" everywhere it appears, but continues to function until removed. History preserved regardless.
 
 ### Admin Authoring (at build time — not a runtime UI)
-17. **Master List Authoring (UC-1):** Admin defines products (stable ID, name, optional brand, optional image, optional comment, category/subcategory, slot membership, canonical order, frequency rule, optional barcodes). Content is maintained in Supabase (live source) and mirrored to the bundled JSON (`assets/data/master_products.json`) shipped as the offline fallback — Supabase updated first.
+17. **Master List Authoring (UC-1):** Admin defines products (stable ID, name, optional brand, optional image, optional comment, category/subcategory, slot membership, canonical order, frequency rule, optional barcodes). Content is maintained in Supabase (the single source of truth). The bundled JSON (`assets/data/master_products.json`) shipped as the offline fallback is a **generated artifact — never hand-edited**; regenerate it from Supabase with `dart scripts/sync_from_supabase.dart` (also run as `release-prep` Phase 0 with a drift guard).
 18. **Incompatibility Rule Authoring (UC-1b):** Admin defines advisory product/category pair rules with scope. Bundled into the release.
 19. **Product Deprecation (UC-2):** Admin marks a product deprecated. Ships in next release. Product remains in data forever (never deleted).
 20. **Release (UC-3):** Admin assigns version ID and master-list content version; records changelog. Distributed as APK (Android) or updated web host.

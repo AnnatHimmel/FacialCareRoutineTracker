@@ -50,9 +50,7 @@ A change is not complete until the docs above reflect it. Keep entries concise a
 - The "replace or merge" import flow (UC-17) and the post-update reconciliation (UC-18) are related: both use stable product IDs to match records.
 
 ### Two Conceptually Distinct Data Domains
-1. **Master list** — admin-authored, Supabase is the live source; the bundled JSON files are offline fallbacks only. **Any change to master content must be applied to BOTH Supabase (`ddrxzzeplokmkzizailn`) AND the corresponding bundled file — Supabase first:**
-   - Products / categories / subcategories → `assets/data/master_products.json`
-   - Incompatibility rules → `assets/data/incompatibility_rules.json`
+1. **Master list** — admin-authored, Supabase (`ddrxzzeplokmkzizailn`) is the single source of truth; the bundled JSON files are offline fallbacks. **The bundled JSON is a GENERATED ARTIFACT — never hand-edit it (humans or Claude).** To change master content: edit it in Supabase first, then regenerate the bundle by running `dart scripts/sync_from_supabase.dart` (Supabase-wins-per-key; preserves bundle-local keys like subcategory `keywords`; idempotent). This rewrites both `assets/data/master_products.json` and `assets/data/incompatibility_rules.json`. The script is also wired into the `release-prep` skill (Phase 0) with a `git diff --exit-code assets/data/` drift guard. See `doc/DECISIONS.md` (MOD-DEC-MASTER-SYNC-001).
 2. **User personalization** — per-device local storage, independently versioned schema, must outlast app updates and Android APK upgrades.
 
 ### Routine Data Access — `RoutineScheduler` is the single source of truth

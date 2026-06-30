@@ -1,4 +1,5 @@
 {
+  "_generated": "DO NOT EDIT MANUALLY (humans or Claude). Generated artifact / offline-first fallback. Edit content in Supabase (ddrxzzeplokmkzizailn), then regenerate with: dart scripts/sync_from_supabase.dart. See doc/ARCHITECTURE.md and doc/DECISIONS.md (MOD-DEC-MASTER-SYNC-001).",
   "rules": [
     {
       "id": "rule-001",

@@ -16,7 +16,7 @@ End-to-end release preparation for The Glow Protocol. Phases, in order:
 
 0. **Bundle sync & drift guard** — regenerate the bundled master JSON from Supabase so the offline fallback can't ship stale
 1. **Analyze** — what changed since the last version bump
-2. **Play Store files** — update `doc/Play Store/google_play_store_notes.md`, `full_description.md`, and `short_description.md`
+2. **Play Store files** — update `doc/Play Store/google_play_store_notes.md`, `full_description.md`, `short_description.md`, and `release_notes.md`
 3. **Privacy policy** — update `web/privacy.html` only if new data flows require it
 4. **Version bump** — propose and confirm with user, then apply to `pubspec.yaml`
 5. **Build** — `flutter build appbundle --release`
@@ -147,6 +147,28 @@ Update only if something meaningfully changed for users. Bug fixes and internal 
 
 Read the current file. Update only if the one-line positioning of the app has changed (rare). The short description rarely changes between releases — most releases leave it untouched.
 
+### 2d. `doc/Play Store/release_notes.md` (always overwrite)
+
+**Always regenerate this file** — it holds the Play Console upload-ready release notes for this release. Overwrite the entire file with:
+
+```
+<en-US>
+[English release notes — 1–3 short sentences, very appealing to customers. Lead with user benefit. No jargon.]
+</en-US>
+<iw-IL>
+[Hebrew release notes — same content, same length. Lead with user benefit.]
+</iw-IL>
+```
+
+**Writing rules:**
+- Start with the most exciting user-facing change (new capability > bug fix)
+- Use active, positive phrasing: "You can now…" / "כעת ניתן ל…", or just state the improvement directly
+- Keep each locale to 2–3 punchy sentences max — under 500 chars
+- If the release is bug-fixes only, lead with the most visible fix to the user
+- Do **not** use bullet points or headers inside the tags — plain prose only
+
+This file is ready to paste directly into Play Console → Release notes.
+
 ---
 
 ## Phase 3: Privacy Policy Check
@@ -257,6 +279,7 @@ Files updated:
   • doc/Play Store/google_play_store_notes.md
   • doc/Play Store/full_description.md   ← or: "no changes needed"
   • doc/Play Store/short_description.md  ← or: "no changes needed"
+  • doc/Play Store/release_notes.md      ← always regenerated
   • pubspec.yaml
   • web/privacy.html                     ← or: "no changes needed"
 

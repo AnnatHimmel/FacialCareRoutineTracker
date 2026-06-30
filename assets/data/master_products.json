@@ -1,4 +1,5 @@
 {
+  "_generated": "DO NOT EDIT MANUALLY (humans or Claude). This bundled master list is the offline-first fallback and is a generated artifact. Edit content in Supabase (ddrxzzeplokmkzizailn), then regenerate with: dart scripts/sync_from_supabase.dart. See doc/ARCHITECTURE.md and doc/DECISIONS.md (MOD-DEC-MASTER-SYNC-001).",
   "contentVersion": "1.1.0",
   "categories": [
     {

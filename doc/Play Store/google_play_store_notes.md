@@ -4,49 +4,50 @@ This document tracks what needs to be done in the Play Console for each release 
 
 ---
 
-## Next release: Contact us, override order indication & bug fixes
+## Next release: Sub-category display fix, custom products in order screen & bug fixes
 
-**Version:** `1.4.0+8` (from `1.3.1+7`). Minor bump — two new user-facing capabilities, several bug fixes, no schema changes.
+**Version:** `1.5.0+9` (from `1.4.0+8`). Minor bump — custom products now appear in Order Customization screen (new capability), plus several bug fixes.
 
-### What changed since `1.3.1+7`
+### What changed since `1.4.0+8`
 
-New features:
-- **"Contact us" option in Settings** — users can now reach the developer directly from within the app.
-- **Manual order override indicator on My Day screen** — when a product's order has been manually overridden, a visual chip now appears on the daily routine to make the override visible.
-- **Manual order notification moved to order screens** — the chip/notification for overridden order now appears in the Order Customization and related screens, improving discoverability.
+New capability:
+- **Custom products in Order Customization screen** — custom (user-added) products now appear alongside master-list products in the drag-to-reorder screen. Previously they were missing from that screen and could not be reordered.
 
-Bug fixes (also in this build, from the earlier `1.3.1+7` prep):
-- **Routine summary not appearing during onboarding** — write-race condition fixed.
-- **Flipped chevron icons in LTR (English) layout** — fixed across all affected screens.
-- **Vertical day headers in Weekly Glance (Hebrew)** — day labels now display correctly.
-- **Products order bug with removed manually-overridden products** — order is now stable when overridden products are removed.
-- **Home icon in app bar when navigating from My Shelf** — tapping the Weekly Glance card from My Shelf now correctly shows a home icon instead of a back arrow.
+Bug fixes:
+- **Sub-category shown correctly in product details** — the sub-category dropdown in the product detail/edit sheet was always empty due to a stale offline bundle. Now displays the correct value.
+- **Daily frequency restored for certain products** — one sunscreen product was incorrectly capped at 3×/week in the offline bundle and in any stored schedule derived from it. The bundle is corrected and a one-time startup migration heals existing installations automatically.
+- **Stale offline cache cleared** — cache key bumped so existing devices discard any outdated bundle and load fresh content on next launch.
+
+Internal / tooling:
+- `flutter analyze` warnings resolved.
+- e2e test runner configuration fixed.
+- Bundled master JSON is now a generated artifact (regenerated from Supabase at every release); `_generated` header added to both bundle files.
 
 **No new Android permissions.** No `AndroidManifest.xml` changes.
 
-**No new external network calls.** All changes are local.
+**No new external network calls.** All changes are local (bundle regeneration is a build-time step, not a runtime call).
 
 ---
 
 ### App description update
 
-Updated `doc/Play Store/full_description.md` to add "contact us" capability to the feature list.
+No change to `doc/Play Store/full_description.md` — custom products were already in the feature list; the Order screen fix is an enhancement to that existing capability, not a new feature.
 
 ---
 
 ### Screenshots
 
-Refreshed screenshot set in place under `assets/for_play_store/screenshots/` (EN + HE). Consider updating My Day screen screenshot if the override chip is visually prominent.
+No screenshot update needed — no visible UI changes on the main screens.
 
 ---
 
 ### What's New (250-char limit)
 
 **Hebrew:**
-> עכשיו ניתן ליצור קשר מתוך האפליקציה. שגרת היום מציגה אינדיקציה על מוצרים שסדרם שונה ידנית. תיקוני באגים ושיפורי ממשק.
+> תיקוני באגים: תת-קטגוריית המוצר מוצגת כעת בצורה נכונה; מוצרים מותאמים אישית מופיעים כעת במסך התאמת הסדר; תדירות מוצרים הוקפאה בגרסה הישנה — תוקנה אוטומטית.
 
 **English (if maintained):**
-> New: contact us from the app. Manual order overrides are now shown on the daily screen. Bug fixes and UI improvements.
+> Bug fixes: product sub-category now displays correctly; custom products now appear in the order screen; a product's frequency cap from an older version is auto-corrected on launch.
 
 ---
 
@@ -64,18 +65,29 @@ Refreshed screenshot set in place under `assets/for_play_store/screenshots/` (EN
 
 ### Internal checklist before submission
 
-- [ ] `version` in `pubspec.yaml` updated to `1.4.0+8` (versionCode 7 → 8)
+- [ ] `version` in `pubspec.yaml` updated to `1.5.0+9` (versionCode 8 → 9)
 - [ ] Signed with the same keystore (never change the signing key)
 - [ ] `flutter build appbundle --release` completes without errors
-- [ ] Smoke-test: "Contact us" visible in Settings; override chip appears on My Day screen for overridden products; onboarding summary screen appears; chevrons correct in both Hebrew and English
-- [ ] Screenshots updated if the override chip is visually prominent on My Day
-- [ ] `doc/Play Store/full_description.md` updated — copy the new "contact us" bullet into Play Console
+- [ ] Smoke-test: open a product in the detail sheet → sub-category shows correctly; open Order Customization → custom products are present and draggable; prod-007 (Relief Sun) shows 7 days in Schedule Setup after first launch
+- [ ] `doc/Play Store/full_description.md` — no change this release
 - [ ] `doc/Play Store/short_description.md` — no change this release
 - [ ] No Data safety / permissions / privacy-policy actions needed this release
 
 ---
 
 ## Release history
+
+### Released as `1.4.0+8` — Contact us, override order indication & bug fixes
+
+Minor bump from `1.3.1+7`. Two new user-facing capabilities, several bug fixes, no schema changes.
+
+New features: "Contact us" option in Settings; manual order override indicator on My Day screen; override notification moved to Order Customization screen.
+
+Bug fixes: routine summary write-race (onboarding); flipped chevrons in English layout; vertical day headers in Weekly Glance (Hebrew); order stability with removed overridden products; home icon from My Shelf entry point.
+
+No new permissions, no new network calls, no privacy policy change.
+
+---
 
 ### Released as `1.3.1+7` — Bug fixes (onboarding summary & chevron icons)
 
