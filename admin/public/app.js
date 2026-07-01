@@ -202,7 +202,6 @@ function readCard(card) {
     categoryId: card.querySelector('.cat-select').value || null,
     comment: (commentHe || commentEn) ? { he: commentHe || null, en: commentEn || null } : null,
     isDeprecated: card.querySelector('.f-deprecated').checked,
-    addedInVersion: '1.0.0',
     morningConfig: morningEnabled ? {
       order: parseInt(card.querySelector('.f-morning-order').value, 10) || 0,
       frequency: readFreq('morning'),

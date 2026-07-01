@@ -71,11 +71,10 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (master) {
-          final customProds =
-              ref.watch(customProductsProvider).valueOrNull ?? [];
+          final allProducts =
+              ref.watch(allProductsProvider).valueOrNull ?? const <MasterProduct>[];
           final productMap = {
-            for (final p in master.products) p.id: p,
-            for (final cp in customProds) cp.id: cp.toMasterProduct(),
+            for (final p in allProducts) p.id: p,
           };
 
           return CustomScrollView(

@@ -32,7 +32,6 @@ MasterProduct _daily(String id, String name, {String catId = 'cat1'}) =>
       name: name,
       categoryId: catId,
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
 
@@ -42,7 +41,6 @@ MasterProduct _weekly(String id, String name, {String catId = 'cat1'}) =>
       name: name,
       categoryId: catId,
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(3)),
     );
 

@@ -142,6 +142,8 @@ class _FakeSettings implements SettingsRepository {
   @override Future<void> setWeeklyPhotoReminderDismissedDate(String isoDate) async {}
   @override Future<bool> getWeeklyReminderEnabled() async => true;
   @override Future<void> setWeeklyReminderEnabled(bool value) async {}
+  @override Future<Set<String>?> getKnownProductIds() async => null;
+  @override Future<void> setKnownProductIds(Set<String> ids) async {}
 }
 
 // ── Test data ─────────────────────────────────────────────────────────────────
@@ -152,7 +154,6 @@ MasterProduct _product(String id, String name, String categoryId) =>
       name: name,
       categoryId: categoryId,
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
 
@@ -342,7 +343,6 @@ void main() {
         name: 'קרם לחות',
         categoryId: 'cat1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
         eveningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );

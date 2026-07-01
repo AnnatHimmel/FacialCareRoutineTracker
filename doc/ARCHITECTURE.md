@@ -162,7 +162,7 @@ to `assets/images/products/<url-basename>`, so every product must ship a matchin
 | **StreakCalculator** | Computes current and longest streak per UC-13 grace rules; reads DayRecords | UserDataRepository, DayBoundaryService |
 | **IncompatibilityChecker** | Evaluates admin-authored rules against user's current selection/schedule; distinguishes daily↔daily from day-dependent clashes; respects muted conflicts | MasterContentRepo, UserDataRepository |
 | **DayBoundaryService** | Pure function: maps a `DateTime` to the effective `LocalDate` (subtracts 1 day if before 06:00) | none |
-| **ReconciliationService** | Compares installed master-list content version to last-known version; identifies new, deprecated, and changed products; preserves user data | MasterContentRepo, UserDataRepository, SettingsRepository |
+| **ReconciliationService** | Detects new products by diffing the current master product-ID set against a persisted snapshot (`SettingsRepository.getKnownProductIds/setKnownProductIds`); identifies deprecated products the user has selected; preserves user data. `acknowledgeUpdate(version, masterProductIds)` persists the snapshot. No longer uses `addedInVersion` semver for new-product detection. | MasterContentRepo, UserDataRepository, SettingsRepository |
 | **ExportImportService** | Serializes full user dataset + photos into a ZIP archive; deserializes and drives Replace/Merge flow | UserDataRepository, PhotoRepository, SettingsRepository |
 | **MasterContentRepositoryImpl** | Loads and parses bundled JSON assets; in-memory cached after first load | Flutter asset bundle |
 | **RemoteCachedMasterContentRepositoryImpl** | Three-tier load: in-memory → SharedPrefs version-guarded cache → bundled fallback; background Supabase refresh | MasterContentRepositoryImpl, SupabaseMasterContentDataSource, SharedPrefsMasterContentCache |
@@ -174,7 +174,7 @@ to `assets/images/products/<url-basename>`, so every product must ship a matchin
 | **SettingsRepository** | Key-value store for app settings: last export date, last known master version, schema version, onboarding/locale/gender, demo flags, weekly skin-reminder dismiss date | SharedPreferences |
 | **RefreshableRepository** | Marker interface (`refresh()`) implemented by `RemoteCachedMasterContentRepositoryImpl`; lets the app trigger a background Supabase refresh without coupling to the concrete impl | none |
 | **PremiumScreen (S15)** | UI stub in v1.0 — no `PremiumRepository` interface exists yet; the license-activation screen is a placeholder hookpoint for UC-21 | none in v1.0 |
-| **RoutineScheduler** | Single gateway for all routine data (selections, weekday schedules, order overrides) and product ordering; owns every routine device read/write; orchestrates RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver, ProductSorter | UserDataRepository, RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver |
+| **RoutineService** | Single gateway for all routine data (selections, weekday schedules, order overrides) and product ordering; owns every routine device read/write; orchestrates RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver, ProductSorter | UserDataRepository, RoutineResolver, WeekGlanceBuilder, IncompatibilityChecker, ConflictResolver |
 
 ### 2.3 Interface Contracts
 
@@ -201,7 +201,7 @@ getConflictsForSchedule(productId, slot, proposedWeekdays) → List<ConflictInfo
 // ConflictInfo: {ruleId, productA, productB, scope, isMuted}
 ```
 
-**RoutineScheduler**
+**RoutineService**
 ```
 // Reactive reads (delegate to UserDataRepository)
 watchSelections(slot: Slot) → Stream<List<ProductSelection>>
@@ -271,23 +271,29 @@ replaceAllData(export: UserDataExport) → Future<void>
 
 ### 3.0 Routine data — single source of truth
 
-Only `RoutineScheduler` (`lib/domain/services/routine_scheduler.dart`) may read or write routine device data — that is, `ProductSelection`, `WeekdaySchedule`, and `OrderOverride` records. No feature screen or provider accesses `UserDataRepository` directly for these three tables; every routine read/write is funnelled through the scheduler's `watch*` streams and mutation methods.
+Only `RoutineService` (`lib/domain/services/routine_service.dart`) may read or write routine device data — that is, `ProductSelection`, `WeekdaySchedule`, and `OrderOverride` records. No feature screen or provider accesses `UserDataRepository` directly for these three tables; every routine read/write is funnelled through the scheduler's `watch*` streams and mutation methods.
+
+**`RoutineService` also owns the merged product catalogue.** `allProducts(MasterContent)` and `watchAllProducts(MasterContent)` return the merged list of `master.products` plus each `UserCustomProduct.toMasterProduct()` (with `editable == true`). All derived reads (`orderForDay`, `manualOrderChangesForSlot`, `warningsForDay`, `weekGlance`, `addProduct`, `fixProblems`, `buildRoutineSummary`, `ensureDefaultSchedules`) fetch custom products internally — the old `extraProducts` parameter has been removed from every call site. Exception: `healStaleAutoSpreadSchedules` is master-only by design. `allProductsProvider` (`StreamProvider<List<MasterProduct>>`) in `root_providers.dart` is the single merged product read every screen uses; `customProductsProvider` delegates to `routineServiceProvider.watchCustomProducts()`. Screens no longer assemble the merged list themselves.
+
+**`RoutineService` also owns custom-product CRUD.** `watchCustomProducts()`, `getCustomProduct(id)`, `upsertCustomProduct(p)`, and `deleteCustomProduct(id)` are pass-throughs on the service. Screens/sheets call these instead of going directly to `userDataRepositoryProvider`.
+
+**`MasterProduct.editable` is the sole custom-vs-master distinction.** It is a stored `bool` (default `false`) that marks user-authored products. The `addedInVersion` field has been removed from `MasterProduct`, the cache serializer, and `toMasterProduct()`. The matching Supabase column/RPC drop is staged in `supabase/05_drop_added_in_version.sql` for the next release (live clients on v8 still parse the field; the bundled JSON retains the now-ignored key until release-time regen).
 
 **Scope is routine-only.** Day records, skin log entries, muted conflicts, collection items, and category overrides remain on `UserDataRepository` and are not part of the scheduler's contract.
 
-**`effectiveDays` is the canonical rule.** The rule "which weekdays is a product active on for a given slot" was previously implemented independently in `RoutineResolver.resolve`, `WeekGlanceBuilder._buildActiveDays`, and the schedule setup screen's `_effectiveDays` helper. It is now defined once as `RoutineScheduler.effectiveDays(product, slot, schedules)` and called from all three sites. The semantics are: an explicit `WeekdaySchedule` row wins regardless of value (even an empty set means intentionally excluded); a `DailyRule` product with no row defaults to `{0..6}`; a `WeeklyMaxRule` product with no row defaults to `{}`.
+**`effectiveDays` is the canonical rule.** The rule "which weekdays is a product active on for a given slot" was previously implemented independently in `RoutineResolver.resolve`, `WeekGlanceBuilder._buildActiveDays`, and the schedule setup screen's `_effectiveDays` helper. It is now defined once as `RoutineService.effectiveDays(product, slot, schedules)` and called from all three sites. The semantics are: an explicit `WeekdaySchedule` row wins regardless of value (even an empty set means intentionally excluded); a `DailyRule` product with no row defaults to `{0..6}`; a `WeeklyMaxRule` product with no row defaults to `{}`.
 
 **`ProductSorter.adminComparator` is the canonical admin ordering.** All admin-default product ordering (the fallback when no user `OrderOverride` exists) runs through one comparator in `lib/domain/services/product_sorter.dart`. Its tiers, in order: (1) `category.order`; (2) `subCategory.order`, applied only when *both* products have a known sub-category (mixed null/unknown skips this tier so asymmetric Supabase data can't invert intent); (3) **moisture weight rule** — within `cat-moisturizer` and the same sub-category grouping, a product whose name contains "lotion" sorts before one containing "cream" (lotions are lighter, applied first), taking precedence over the numeric slot order; names with neither/both keywords are unaffected; (4) slot-specific `config.order`; (5) product id as a stable tiebreak.
 
-**Manual-order indicator is derived, not stored.** The Order Customization screen's "manual changes" chip + revert sheet read `slotManualOrderChangesProvider(slot)` (`root_providers.dart`), which calls `RoutineScheduler.manualOrderChangesForSlot`. The scheduler sorts the full selected slot set two ways — by the slot's global `OrderOverride` and by the admin/recommended comparator — and reports the products whose position differs (`MovedProduct.targetPosition` = the recommended position each returns to). Reverting is a plain `RoutineScheduler.deleteOrderOverride(slot)` (the global row); the screen also clears its local order state. No new persisted state is introduced — the chip is a pure read over the existing `OrderOverride` row.
+**Manual-order indicator is derived, not stored.** The Order Customization screen's "manual changes" chip + revert sheet read `slotManualOrderChangesProvider(slot)` (`root_providers.dart`), which calls `RoutineService.manualOrderChangesForSlot`. The scheduler sorts the full selected slot set two ways — by the slot's global `OrderOverride` and by the admin/recommended comparator — and reports the products whose position differs (`MovedProduct.targetPosition` = the recommended position each returns to). Reverting is a plain `RoutineService.deleteOrderOverride(slot)` (the global row); the screen also clears its local order state. No new persisted state is introduced — the chip is a pure read over the existing `OrderOverride` row.
 
-**One-time user-data migrations are gated by the user schema version.** `startupMigrationProvider` (`root_providers.dart`), watched fire-and-forget in `SkincareApp`, runs pending migrations when the persisted user schema version (`SettingsRepository.getUserSchemaVersion`, default 1) is below `_currentUserSchemaVersion`, then bumps it. **v2** calls `RoutineScheduler.healStaleAutoSpreadSchedules({master})`: when a master frequency is corrected from a weekly cap to `DailyRule` (e.g. prod-007), the old default-spread `WeekdaySchedule` row keeps winning via `effectiveDays`; the heal promotes any selected daily product whose row equals exactly `spreadN7(n)` to all-7, leaving empty (suppressed), all-7, and hand-picked rows untouched. Routine writes still go through the scheduler per §3.0.
+**One-time user-data migrations are gated by the user schema version.** `startupMigrationProvider` (`root_providers.dart`), watched fire-and-forget in `SkincareApp`, runs pending migrations when the persisted user schema version (`SettingsRepository.getUserSchemaVersion`, default 1) is below `_currentUserSchemaVersion`, then bumps it. **v2** calls `RoutineService.healStaleAutoSpreadSchedules({master})`: when a master frequency is corrected from a weekly cap to `DailyRule` (e.g. prod-007), the old default-spread `WeekdaySchedule` row keeps winning via `effectiveDays`; the heal promotes any selected daily product whose row equals exactly `spreadN7(n)` to all-7, leaving empty (suppressed), all-7, and hand-picked rows untouched. Routine writes still go through the scheduler per §3.0.
 
 **Write-drain-before-navigation contract on `ProductSelectionScreen`.** `_ProductSelectionScreenState` tracks every in-flight mutation future in `_pendingWrites: Set<Future<void>>` via `_track(op)`. The "Next" CTA (`_V3BottomTray.onNext`) is an `async` closure that calls `await _flushWrites()` before invoking `onDone` or navigating. This guarantees all `upsertSelection` / `_ensureCappedSchedule` / `_resolveSlotConflicts` writes have committed before `buildRoutineSummary` reads the database. Mutation call sites (`onToggle`, `onTimingChange`) pass their futures through `_track(...)` rather than discarding them (MOD-DEC-RACE-001).
 
 **`_loadSummary` logs and retries on build failure.** `_ProductsWizardScreenState` and `_OnboardingScreenState` each wrap `buildRoutineSummary` in a `_tryBuild` helper that logs exceptions via `debugPrint` instead of silently swallowing them. On a first failure, the callers wait one event-loop tick (`Future.delayed(Duration.zero)`) and retry once before falling back to `_afterRoutineSummary()`. This prevents silent routing past the summary screen on a transient race.
 
-**`buildRoutineSummary` is the "routine ready" derived read.** `RoutineScheduler.buildRoutineSummary({master})` returns a `RoutineBuildSummary` (`lib/domain/services/routine_build_summary.dart`) describing the auto-sorter's decisions for the post-build summary screen (S17). It composes existing pieces: it runs `fixProblems` (whose `RoutineFixResult` now carries an additive `changes: List<RoutineChange>` — each a slot + `RoutineChangeKind` {movedDays, reducedFrequency, movedSlot} + the resolver's localized text), counts distinct/per-slot selections, and derives `advisories` from `IncompatibilityChecker` — pairs that *still* co-occur on a weekday after the fix (i.e. user-muted pairs the resolver leaves alone). Keeping this on the scheduler preserves the single-source-of-truth rule; the screen (`RoutineReadySummaryScreen`) is a pure presentation widget fed the value object.
+**`buildRoutineSummary` is the "routine ready" derived read.** `RoutineService.buildRoutineSummary({master})` returns a `RoutineBuildSummary` (`lib/domain/services/routine_build_summary.dart`) describing the auto-sorter's decisions for the post-build summary screen (S17). It composes existing pieces: it runs `fixProblems` (whose `RoutineFixResult` now carries an additive `changes: List<RoutineChange>` — each a slot + `RoutineChangeKind` {movedDays, reducedFrequency, movedSlot} + the resolver's localized text), counts distinct/per-slot selections, and derives `advisories` from `IncompatibilityChecker` — pairs that *still* co-occur on a weekday after the fix (i.e. user-muted pairs the resolver leaves alone). Keeping this on the scheduler preserves the single-source-of-truth rule; the screen (`RoutineReadySummaryScreen`) is a pure presentation widget fed the value object.
 
 **Single entry point — the `/routine-ready` route (MOD-DEC-SUM-003).** Rather than each flow building the summary and showing the screen itself, every routine-changing commit point navigates to `context.go('/routine-ready')` once its mutations are persisted. `RoutineReadyRoute` (`lib/features/setup/routine_ready_route.dart`) calls `buildRoutineSummary` **passing the user's custom products as `extraProducts`** (centralizing the fix from MOD-DEC-SUM-002 so it can't regress per-call-site), renders `RoutineReadySummaryScreen`, and its CTA hands off to the shelf (`context.go('/collection')`); a null summary redirects to `/collection`. Commit points: `ScheduleSetupScreen._handleContinue` (products flow — home "add products" + Collection "+" FAB), `AddCustomProductSheet` add/edit/remove, and `OrderCustomizationScreen._save` (setup finish). Onboarding renders the summary in-tree immediately after sub-category approval (`categoryReview` stage); the CTA label is `routineReadyReviewSlotCta(slot)` — "נתחיל עם שגרת הבוקר" for a morning-first routine, "נתחיל עם שגרת הערב" for an evening-only routine — and advances to the first active slot's schedule step. Evening-only routines skip the AM schedule and AM order stages entirely. The evening-transition interstitial (`eveningTransition` stage) is removed. The wizard concludes on `WeekGlanceScreen` (onboarding mode: `onboarding: true`, no back button, CTA label `weekGlanceStartGlowingCta` — "הכול מסודר, אפשר להתחיל" → `/today`). This replaced three divergent mechanisms and the short-lived `/routine-summary?extra=` route.
 
@@ -298,7 +304,7 @@ Only `RoutineScheduler` (`lib/domain/services/routine_scheduler.dart`) may read 
 ```dart
 class MasterProduct {
   final String id;               // stable UUID, never changes across versions
-  final String? brand;           // NEW: extracted from admin content; may be null
+  final String? brand;           // extracted from admin content; may be null
   final String name;             // verbatim; may be Latin brand name
   final String? imageAsset;      // local path OR https:// URL (Supabase Storage)
   final String? comment;         // Hebrew admin note
@@ -308,9 +314,9 @@ class MasterProduct {
   final SlotConfig? morningConfig;
   final SlotConfig? eveningConfig;
   final bool isDeprecated;
-  final String addedInVersion;   // which content version introduced it
-  final List<String> ingredients; // NEW: ingredient list from admin/external source
-  final List<String> barcodes;   // NEW: EAN/UPC barcodes for scanner matching
+  final bool editable;           // true for user-authored custom products (default false)
+  final List<String> ingredients; // ingredient list from admin/external source
+  final List<String> barcodes;   // EAN/UPC barcodes for scanner matching
 }
 
 class SlotConfig {
@@ -627,7 +633,7 @@ All defined in `lib/shared/providers/root_providers.dart` unless noted.
 | `masterContentProvider` | `FutureProvider<MasterContent>` | Global — loaded once at startup via `masterContentRepositoryProvider.load()` |
 | `masterContentRefreshProvider` | `Provider<Future<void> Function()>` | Global — triggers background Supabase refresh + invalidates `masterContentProvider` |
 | `effectiveDateProvider` | `Provider<DateTime>` | Global — `todayEffectiveDate` from `DayBoundaryService` (06:00 boundary) |
-| `routineSchedulerProvider` | `Provider<RoutineScheduler>` | Global — single instance; owns all routine device access |
+| `routineServiceProvider` | `Provider<RoutineService>` | Global — single instance; owns all routine device access |
 | `dailyRoutineProvider(({String date, Slot slot}))` | `StreamProvider.family<List<MasterProduct>>` | Per-day per-slot; **scheduler-backed** — composes selections, schedules, effective order override, category overrides, and custom products via `RoutineResolver` |
 | `selectionsProvider(slot)` | `StreamProvider.family<List<ProductSelection>, Slot>` | Per-slot; **scheduler-backed** — delegates to `watchSelections` |
 | `allSchedulesProvider` | `StreamProvider<List<WeekdaySchedule>>` | Global; **scheduler-backed** — delegates to `watchAllSchedules` |
@@ -706,7 +712,7 @@ skincare_tracker/
 │   │   │   ├── settings_repository.dart
 │   │   │   └── refreshable_repository.dart
 │   │   └── services/
-│   │       ├── routine_scheduler.dart        # Single gateway for all routine device data
+│   │       ├── routine_service.dart        # Single gateway for all routine device data
 │   │       ├── routine_resolver.dart
 │   │       ├── week_glance_builder.dart
 │   │       ├── product_sorter.dart
@@ -824,7 +830,8 @@ skincare_tracker/
 │   ├── 01_schema.sql
 │   ├── 02_seed.sql
 │   ├── 03_add_ingredients.sql
-│   └── 04_add_barcodes.sql
+│   ├── 04_add_barcodes.sql
+│   └── 05_drop_added_in_version.sql    # staged; apply after all v8 clients are retired
 │
 ├── doc/
 │   ├── skincare-tracker-prd.md
@@ -902,10 +909,10 @@ Dependencies flow from foundation to feature. Each step assumes prior steps are 
 | UC-1b Incompatibility rules | `assets/data/incompatibility_rules.json`; `IncompatibilityChecker` |
 | UC-2 Product deprecation | `MasterProduct.isDeprecated`; `RoutineResolver` (include deprecated if selected); `RoutineItemRow` deprecated variant |
 | UC-3 Release versioning | `MasterListManifest.contentVersion`; `assets/data/changelog.json` |
-| UC-4 Product selection (S1) | `SelectionFeature`; **`RoutineScheduler.addProduct/removeProduct`**; `MasterContentRepository` |
+| UC-4 Product selection (S1) | `SelectionFeature`; **`RoutineService.addProduct/removeProduct`**; `MasterContentRepository` |
 | UC-4b Incompatibility feedback | `IncompatibilityChecker`; `SoftWarningBanner` widget; `MutedConflicts` table |
-| UC-5 Schedule setup (S2) | `ScheduleFeature`; **`RoutineScheduler.setDays/toggleDay/removeDay/fixProblems`**; `WeekdayPicker` widget |
-| UC-6 Order customization (S3) | `OrderingFeature`; **`RoutineScheduler.setOrder/resetOrder`** |
+| UC-5 Schedule setup (S2) | `ScheduleFeature`; **`RoutineService.setDays/toggleDay/removeDay/fixProblems`**; `WeekdayPicker` widget |
+| UC-6 Order customization (S3) | `OrderingFeature`; **`RoutineService.setOrder/resetOrder`** |
 | UC-7 Revise setup | Navigation back to S1/S2/S3 from S11; `IncompatibilityChecker` re-evaluates on change |
 | UC-8 View today's routine (S4) | `DailyHomeFeature`; `RoutineResolver`; `DayBoundaryService` |
 | UC-9 Record product use | `UserDataRepository.toggleProductDone()`; `RoutineItemRow.onToggleDone` |
@@ -917,7 +924,7 @@ Dependencies flow from foundation to feature. Each step assumes prior steps are 
 | UC-15 Skin journal (S9) | `SkinJournalFeature`; `PhotoRepository.listAll()`; paginated gallery |
 | UC-16 Export | `ExportImportService.exportToArchive()`; `PhotoRepository`; `share_plus` |
 | UC-17 Import / Merge | `ExportImportService.startMerge()`; `MergeSession`; S12 conflict chooser UI |
-| UC-18 Post-update reconciliation (S14) | `ReconciliationService`; `UpdateReviewFeature`; `SettingsRepository.lastKnownMasterVersion` |
+| UC-18 Post-update reconciliation (S14) | `ReconciliationService`; `UpdateReviewFeature`; `SettingsRepository.getKnownProductIds/setKnownProductIds` (ID-snapshot mechanism — replaces `addedInVersion` semver comparison) |
 | UC-19 Version + changelog (S13) | `AboutFeature`; `MasterListManifest`; `assets/data/changelog.json` |
 | UC-20 Backup reminder (S16) | `BackupReminderFeature`; `SettingsRepository.lastExportDate`; `SoftWarningBanner` |
 | UC-21 Premium backup (deferred) | `PremiumRepository` stub interface; `S15` placeholder screen; archive format (UC-16) is the natural seed |

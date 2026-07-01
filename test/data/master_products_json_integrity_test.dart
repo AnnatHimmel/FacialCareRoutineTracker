@@ -129,8 +129,6 @@ void main() {
               reason: 'product $id: categoryId must be a string');
           expect(p['isDeprecated'], isA<bool>(),
               reason: 'product $id: isDeprecated must be a bool');
-          expect(p['addedInVersion'], isA<String>(),
-              reason: 'product $id: addedInVersion must be a string');
           expect(p.containsKey('morningConfig'), isTrue,
               reason: 'product $id: morningConfig key must exist');
           expect(p.containsKey('eveningConfig'), isTrue,

@@ -24,7 +24,6 @@ MasterProduct prod(
       categoryId: categoryId,
       subCategoryId: subCategoryId,
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: SlotConfig(order: morningOrder, frequencyRule: const DailyRule()),
       eveningConfig: eveningOrder == null
           ? null

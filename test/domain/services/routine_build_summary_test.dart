@@ -14,7 +14,7 @@ import 'package:skincare_tracker/domain/enums/rule_scope.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 import 'package:skincare_tracker/domain/services/routine_build_summary.dart';
-import 'package:skincare_tracker/domain/services/routine_scheduler.dart';
+import 'package:skincare_tracker/domain/services/routine_service.dart';
 
 // ── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -33,7 +33,6 @@ const _dailyAm = MasterProduct(
   categoryId: 'cat-treat',
   morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
   isDeprecated: false,
-  addedInVersion: '1.0.0',
 );
 
 // Daily product present in BOTH slots (for the distinct-count check).
@@ -44,7 +43,6 @@ const _dailyBoth = MasterProduct(
   morningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
   eveningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
   isDeprecated: false,
-  addedInVersion: '1.0.0',
 );
 
 // Capped (3×/week) product, morning slot only.
@@ -54,7 +52,6 @@ const _capped3 = MasterProduct(
   categoryId: 'cat-treat',
   morningConfig: SlotConfig(order: 3, frequencyRule: WeeklyMaxRule(3)),
   isDeprecated: false,
-  addedInVersion: '1.0.0',
 );
 
 // A second daily morning product, conflicting with _dailyAm.
@@ -64,7 +61,6 @@ const _dailyAm2 = MasterProduct(
   categoryId: 'cat-treat',
   morningConfig: SlotConfig(order: 4, frequencyRule: DailyRule()),
   isDeprecated: false,
-  addedInVersion: '1.0.0',
 );
 
 IncompatibilityRule _rule(String id, String a, String b) => IncompatibilityRule(
@@ -91,12 +87,12 @@ MasterContent _master(
 void main() {
   late AppDatabase db;
   late UserDataRepositoryImpl repo;
-  late RoutineScheduler scheduler;
+  late RoutineService scheduler;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
     repo = UserDataRepositoryImpl(db);
-    scheduler = RoutineScheduler(repo);
+    scheduler = RoutineService(repo);
   });
 
   tearDown(() async {

@@ -10,13 +10,14 @@ import 'package:skincare_tracker/domain/entities/master_list_manifest.dart';
 import 'package:skincare_tracker/domain/entities/master_product.dart';
 import 'package:skincare_tracker/domain/entities/order_override.dart';
 import 'package:skincare_tracker/domain/entities/product_selection.dart';
+import 'package:skincare_tracker/domain/entities/user_custom_product.dart';
 import 'package:skincare_tracker/domain/entities/weekday_schedule.dart';
 import 'package:skincare_tracker/domain/enums/rule_scope.dart';
 import 'package:skincare_tracker/domain/enums/slot.dart';
 import 'package:skincare_tracker/domain/repositories/master_content_repository.dart';
 import 'package:skincare_tracker/domain/services/day_boundary_service.dart';
 import 'package:skincare_tracker/domain/services/routine_resolver.dart';
-import 'package:skincare_tracker/domain/services/routine_scheduler.dart';
+import 'package:skincare_tracker/domain/services/routine_service.dart';
 import 'package:skincare_tracker/domain/services/week_glance_builder.dart';
 
 // ── Fixture helpers ────────────────────────────────────────────────────────
@@ -37,7 +38,27 @@ const _dailyProduct = MasterProduct(
   categoryId: 'cat-cleanse',
   morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
   isDeprecated: false,
-  addedInVersion: '1.0.0',
+);
+
+// A custom product with WeeklyMaxRule(2) in the morning slot.
+final _customProduct = UserCustomProduct(
+  id: 'custom-prod-1',
+  name: 'My Custom Serum',
+  categoryId: 'cat-treat',
+  inMorning: true,
+  inEvening: false,
+  isDaily: false,
+  maxTimesPerWeek: 2,
+  lastModified: DateTime(2026),
+);
+
+// A custom product that conflicts with _conflictA within morning slot.
+const _conflictRuleCustom = IncompatibilityRule(
+  id: 'rule-custom-ca',
+  entityA: RuleTarget(type: RuleTargetType.product, id: 'custom-prod-1'),
+  entityB: RuleTarget(type: RuleTargetType.product, id: 'prod-conflict-a'),
+  scope: RuleScope.withinSlot,
+  reason: 'custom product conflicts with Vitamin C',
 );
 
 // A product with WeeklyMaxRule(3) in the morning slot only.
@@ -47,7 +68,6 @@ const _weeklyProduct = MasterProduct(
   categoryId: 'cat-treat',
   morningConfig: SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(3)),
   isDeprecated: false,
-  addedInVersion: '1.0.0',
 );
 
 // Conflicting pair — both in the morning slot.
@@ -57,7 +77,6 @@ const _conflictA = MasterProduct(
   categoryId: 'cat-treat',
   morningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
   isDeprecated: false,
-  addedInVersion: '1.0.0',
 );
 
 const _conflictB = MasterProduct(
@@ -66,7 +85,6 @@ const _conflictB = MasterProduct(
   categoryId: 'cat-treat',
   morningConfig: SlotConfig(order: 3, frequencyRule: DailyRule()),
   isDeprecated: false,
-  addedInVersion: '1.0.0',
 );
 
 const _conflictRule = IncompatibilityRule(
@@ -95,12 +113,12 @@ MasterContent _buildMaster() => MasterContent(
 void main() {
   late AppDatabase db;
   late UserDataRepositoryImpl repo;
-  late RoutineScheduler scheduler;
+  late RoutineService scheduler;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
     repo = UserDataRepositoryImpl(db);
-    scheduler = RoutineScheduler(repo);
+    scheduler = RoutineService(repo);
   });
 
   tearDown(() async {
@@ -115,7 +133,7 @@ void main() {
         () {
       // Given: a DailyRule product and an empty schedule list
       // When: effectiveDays is called
-      final result = RoutineScheduler.effectiveDays(
+      final result = RoutineService.effectiveDays(
         _dailyProduct,
         Slot.morning,
         const [],
@@ -130,7 +148,7 @@ void main() {
         () {
       // Given: a WeeklyMaxRule product and an empty schedule list
       // When: effectiveDays is called
-      final result = RoutineScheduler.effectiveDays(
+      final result = RoutineService.effectiveDays(
         _weeklyProduct,
         Slot.morning,
         const [],
@@ -153,7 +171,7 @@ void main() {
       );
 
       // When: effectiveDays is called — explicit row wins even when empty
-      final result = RoutineScheduler.effectiveDays(
+      final result = RoutineService.effectiveDays(
         _dailyProduct,
         Slot.morning,
         [explicitEmptyRow],
@@ -1455,6 +1473,294 @@ void main() {
 
       expect(healed, 0);
       expect(await rowDays(_dailyProduct, Slot.morning), {0, 2, 4});
+    });
+  });
+
+  // ── Group: custom product integration ───────────────────────────────────────
+
+  group('custom product integration', () {
+    // ── 1. allProducts returns master + custom with editable==true ─────────
+
+    test(
+        'allProducts returns master products followed by custom.toMasterProduct() with editable true',
+        () async {
+      final master = _buildMaster();
+      await repo.upsertCustomProduct(_customProduct);
+
+      final all = await scheduler.allProducts(master);
+
+      // master products come first
+      final masterIds = master.products.map((p) => p.id).toList();
+      for (var i = 0; i < masterIds.length; i++) {
+        expect(all[i].id, equals(masterIds[i]));
+      }
+
+      // custom product is at the end
+      final custom = all.where((p) => p.id == _customProduct.id).toList();
+      expect(custom, hasLength(1), reason: 'custom product must appear in allProducts');
+      expect(custom.first.editable, isTrue,
+          reason: 'custom products converted via toMasterProduct() have editable=true');
+    });
+
+    // ── 2. watchAllProducts emits merged list and re-emits on add ──────────
+
+    test(
+        'watchAllProducts emits merged list and re-emits when a custom product is added',
+        () async {
+      final master = _buildMaster();
+
+      // Collect two emissions
+      final emissions = <List<MasterProduct>>[];
+      final sub = scheduler.watchAllProducts(master).listen(emissions.add);
+
+      // First emission: no customs yet
+      await Future<void>.delayed(Duration.zero);
+      expect(emissions, isNotEmpty);
+      expect(
+        emissions.last.any((p) => p.id == _customProduct.id),
+        isFalse,
+        reason: 'first emission must not include custom product before upsert',
+      );
+
+      // Add a custom product and wait for re-emission
+      await repo.upsertCustomProduct(_customProduct);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(
+        emissions.last.any((p) => p.id == _customProduct.id),
+        isTrue,
+        reason: 'watchAllProducts must re-emit after a custom product is added',
+      );
+      await sub.cancel();
+    });
+
+    // ── 3. manualOrderChangesForSlot counts a custom product ────────────────
+
+    test(
+        'manualOrderChangesForSlot counts a custom product that was moved in the override',
+        () async {
+      final master = _buildMaster();
+      await repo.upsertCustomProduct(_customProduct);
+
+      // Select the custom product and the daily product in morning
+      await repo.upsertSelection(ProductSelection(
+        id: 'sel-custom',
+        productId: _customProduct.id,
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: DateTime(2026),
+      ));
+      await repo.upsertSelection(ProductSelection(
+        id: 'sel-daily-mc',
+        productId: _dailyProduct.id,
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: DateTime(2026),
+      ));
+
+      // Set a global override that puts the custom product before the daily product
+      // (admin order would be: daily first [order=1, cat-cleanse], custom second [order=999, cat-treat])
+      await scheduler.setOrder(
+        slot: Slot.morning,
+        weekday: null,
+        orderedIds: [_customProduct.id, _dailyProduct.id],
+      );
+
+      final result = await scheduler.manualOrderChangesForSlot(
+        master: master,
+        slot: Slot.morning,
+      );
+
+      expect(result.hasOverride, isTrue);
+      // Both products were swapped relative to admin order — the custom product
+      // must appear in the moved list (previously it was dropped because
+      // manualOrderChangesForSlot only consulted master.products).
+      expect(
+        result.moved.any((m) => m.product.id == _customProduct.id),
+        isTrue,
+        reason: 'custom product moved in override must appear in ManualOrderChanges.moved',
+      );
+    });
+
+    // ── 4. warningsForDay includes a custom product in conflict detection ────
+
+    test(
+        'warningsForDay includes a custom product in conflict detection',
+        () async {
+      // Build a master that has the custom conflict rule
+      final master = MasterContent(
+        products: [_conflictA, _conflictB, _dailyProduct, _weeklyProduct],
+        categories: [_catCleanse, _catTreat],
+        subcategories: const [],
+        rules: [_conflictRule, _conflictRuleCustom],
+        manifest: _manifest,
+      );
+
+      await repo.upsertCustomProduct(_customProduct);
+
+      // Select custom product and conflictA in morning
+      await repo.upsertSelection(ProductSelection(
+        id: 'sel-custom-warn',
+        productId: _customProduct.id,
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: DateTime(2026),
+      ));
+      await repo.upsertSelection(ProductSelection(
+        id: 'sel-ca-warn',
+        productId: _conflictA.id,
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: DateTime(2026),
+      ));
+      // Custom product is WeeklyMaxRule(2), needs a schedule row to be active
+      await repo.upsertSchedule(WeekdaySchedule(
+        id: 'sch-custom-warn',
+        productId: _customProduct.id,
+        slot: Slot.morning,
+        weekdays: const {0, 1},
+        lastModified: DateTime(2026),
+      ));
+
+      final warnings = await scheduler.warningsForDay(
+        master: master,
+        slot: Slot.morning,
+        weekday: 0,
+      );
+
+      expect(
+        warnings.conflicts,
+        isNotEmpty,
+        reason: 'conflict between a custom product and a master product must be detected',
+      );
+    });
+
+    // ── 5. ensureDefaultSchedules seeds a schedule for a custom weekly product
+
+    test(
+        'ensureDefaultSchedules seeds a default spread schedule for a selected custom weekly-capped product',
+        () async {
+      final master = _buildMaster();
+      await repo.upsertCustomProduct(_customProduct); // WeeklyMaxRule(2)
+
+      await repo.upsertSelection(ProductSelection(
+        id: 'sel-custom-sched',
+        productId: _customProduct.id,
+        slot: Slot.morning,
+        isSelected: true,
+        lastModified: DateTime(2026),
+      ));
+
+      await scheduler.ensureDefaultSchedules(master: master);
+
+      final schedules = await repo.watchAllSchedules().first;
+      final row = schedules
+          .where((s) => s.productId == _customProduct.id && s.slot == Slot.morning)
+          .firstOrNull;
+
+      expect(row, isNotNull,
+          reason: 'ensureDefaultSchedules must seed a schedule row for a custom capped product');
+      expect(
+        row!.weekdays.length,
+        equals(2),
+        reason: 'default spread must match maxTimesPerWeek=2',
+      );
+    });
+
+    // ── 6. addProduct returns a non-zero index for a custom product ──────────
+
+    test(
+        'addProduct returns a valid (non-negative) admin-sorted index for a custom product',
+        () async {
+      final master = _buildMaster();
+      await repo.upsertCustomProduct(_customProduct); // WeeklyMaxRule(2)
+
+      // Also add the daily product so there are multiple products in the slot
+      await scheduler.addProduct(
+        master: master,
+        productId: _dailyProduct.id,
+        slot: Slot.morning,
+      );
+
+      final index = await scheduler.addProduct(
+        master: master,
+        productId: _customProduct.id,
+        slot: Slot.morning,
+      );
+
+      // Custom product (cat-treat, order=999) sorts after dailyProduct
+      // (cat-cleanse, order=1) so it should get index > 0 in the sorted list.
+      expect(index, greaterThanOrEqualTo(0),
+          reason: 'addProduct must return a valid index for a custom product');
+      // Specifically expect it to be > 0 since there is one product that sorts before it
+      expect(index, greaterThan(0),
+          reason: 'custom product with higher slot order must sort after master daily product');
+    });
+
+    // ── 7. CRUD pass-throughs ────────────────────────────────────────────────
+
+    test(
+        'watchCustomProducts delegates to repo',
+        () async {
+      await repo.upsertCustomProduct(_customProduct);
+
+      final products = await scheduler.watchCustomProducts().first;
+
+      expect(
+        products.any((p) => p.id == _customProduct.id),
+        isTrue,
+        reason: 'watchCustomProducts must return products from the repo',
+      );
+    });
+
+    test(
+        'getCustomProduct returns the product by id',
+        () async {
+      await repo.upsertCustomProduct(_customProduct);
+
+      final result = await scheduler.getCustomProduct(_customProduct.id);
+
+      expect(result, isNotNull);
+      expect(result!.id, equals(_customProduct.id));
+    });
+
+    test(
+        'getCustomProduct returns null for unknown id',
+        () async {
+      final result = await scheduler.getCustomProduct('nonexistent-id');
+
+      expect(result, isNull);
+    });
+
+    test(
+        'upsertCustomProduct persists to repo',
+        () async {
+      await scheduler.upsertCustomProduct(_customProduct);
+
+      final products = await repo.watchCustomProducts().first;
+      expect(
+        products.any((p) => p.id == _customProduct.id),
+        isTrue,
+        reason: 'upsertCustomProduct must persist through to repo',
+      );
+    });
+
+    test(
+        'deleteCustomProduct soft-deletes via repo (product becomes deprecated)',
+        () async {
+      await repo.upsertCustomProduct(_customProduct);
+
+      await scheduler.deleteCustomProduct(_customProduct.id);
+
+      // deleteCustomProduct is a soft-delete: the row stays but isDeprecated=true.
+      // The product must not appear as an active (non-deprecated) custom product.
+      final products = await repo.watchCustomProducts().first;
+      final found = products.where((p) => p.id == _customProduct.id).firstOrNull;
+      expect(
+        found == null || found.isDeprecated,
+        isTrue,
+        reason: 'deleteCustomProduct must soft-delete (isDeprecated=true) the product in the repo',
+      );
     });
   });
 }

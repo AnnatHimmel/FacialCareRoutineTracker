@@ -70,7 +70,6 @@ AS $$
         'comment',        json_build_object('he', p.comment_he, 'en', p.comment_en),
         'categoryId',     p.category_id,
         'isDeprecated',   p.is_deprecated,
-        'addedInVersion', p.added_in_version,
         'ingredients',    COALESCE(p.ingredients, '[]'::jsonb),
         'barcodes',       COALESCE(p.barcodes, '[]'::jsonb),
         'morningConfig',  CASE WHEN p.morning_order IS NOT NULL THEN

@@ -908,7 +908,7 @@ Will be replaced post-v1.0 with a key-entry form + cloud backup controls.
 
 ### S17 — Routine Ready Summary
 
-**Purpose:** Shown every time the auto-sorter builds a routine — at onboarding/setup completion, and after each shelf add/remove — to surface the decisions the sorter made. Reference: `auto-reorder message ref.jpg`. Backed by `RoutineScheduler.buildRoutineSummary` → `RoutineBuildSummary`; pure presentation widget (`RoutineReadySummaryScreen`). Reached through the shared `/routine-ready` route (`RoutineReadyRoute`), which builds the summary and supplies the CTA — see MOD-DEC-SUM-003.
+**Purpose:** Shown every time the auto-sorter builds a routine — at onboarding/setup completion, and after each shelf add/remove — to surface the decisions the sorter made. Reference: `auto-reorder message ref.jpg`. Backed by `RoutineService.buildRoutineSummary` → `RoutineBuildSummary`; pure presentation widget (`RoutineReadySummaryScreen`). Reached through the shared `/routine-ready` route (`RoutineReadyRoute`), which builds the summary and supplies the CTA — see MOD-DEC-SUM-003.
 
 **Wireframe:**
 ```

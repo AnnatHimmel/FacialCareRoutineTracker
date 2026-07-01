@@ -7,6 +7,7 @@ import '../../core/l10n/hebrew_date_strings.dart' show HebrewDateStrings, Englis
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
+import '../../domain/entities/master_product.dart';
 import '../../domain/entities/skin_log_entry.dart';
 import '../../domain/services/calendar_stats.dart';
 import '../../domain/enums/day_completion_state.dart';
@@ -435,8 +436,7 @@ class _DayDetailSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     final skinLogAsync = ref.watch(_skinLogProvider(date));
-    final masterAsync = ref.watch(masterContentProvider);
-    final customProducts = ref.watch(customProductsProvider).valueOrNull ?? [];
+    final allProductsList = ref.watch(allProductsProvider).valueOrNull ?? const <MasterProduct>[];
 
     final parts = date.split('-');
     final day = int.parse(parts[2]);
@@ -461,16 +461,9 @@ class _DayDetailSection extends ConsumerWidget {
         .expand((r) => r.recordedProductIds)
         .toSet();
 
-    final productNames = <String, String>{};
-    final master = masterAsync.valueOrNull;
-    if (master != null) {
-      for (final p in master.products) {
-        productNames[p.id] = p.name;
-      }
-    }
-    for (final p in customProducts) {
-      productNames[p.id] = p.name;
-    }
+    final productNames = <String, String>{
+      for (final p in allProductsList) p.id: p.name,
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

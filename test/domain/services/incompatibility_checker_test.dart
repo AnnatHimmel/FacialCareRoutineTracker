@@ -13,7 +13,6 @@ MasterProduct _prod(String id, {String? subCategoryId}) => MasterProduct(
       categoryId: 'cat-1',
       subCategoryId: subCategoryId,
       isDeprecated: false,
-      addedInVersion: '1.0',
       morningConfig: null,
       eveningConfig: null,
     );

@@ -127,6 +127,8 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
       });
     }
 
+    final allProductsAsync = ref.watch(allProductsProvider);
+
     return masterAsync.when(
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -141,7 +143,8 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
           for (final s in evening.where((s) => s.isSelected)) s.productId,
         };
 
-        final products = master.products
+        final allProducts = allProductsAsync.valueOrNull ?? const <MasterProduct>[];
+        final products = allProducts
             .where((p) => !p.isDeprecated && selectedIds.contains(p.id))
             .toList()
           ..sort(ProductSorter.adminComparator(
@@ -207,7 +210,7 @@ class _CategoryReviewScreenState extends ConsumerState<CategoryReviewScreen> {
                                 builder: (_) => AddCustomProductSheet(
                                   viewProduct: product,
                                   isUserProduct:
-                                      product.addedInVersion == 'custom',
+                                      product.editable,
                                 ),
                               ),
                             ),

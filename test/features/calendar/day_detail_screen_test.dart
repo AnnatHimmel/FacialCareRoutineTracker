@@ -91,7 +91,6 @@ const _product = MasterProduct(
   name: 'קרם לחות',
   categoryId: 'cat1',
   isDeprecated: false,
-  addedInVersion: '1.0.0',
   morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
 );
 

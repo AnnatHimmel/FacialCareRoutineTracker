@@ -129,7 +129,6 @@ MasterProduct _product(String id, String name, String catId,
       categoryId: catId,
       subCategoryId: subCatId,
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
 

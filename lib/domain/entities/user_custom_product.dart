@@ -89,8 +89,8 @@ class UserCustomProduct {
       morningConfig: inMorning ? SlotConfig(order: 999, frequencyRule: rule) : null,
       eveningConfig: inEvening ? SlotConfig(order: 999, frequencyRule: rule) : null,
       isDeprecated: isDeprecated,
-      addedInVersion: 'custom',
       ingredients: ingredientsList,
+      editable: true,
     );
   }
 

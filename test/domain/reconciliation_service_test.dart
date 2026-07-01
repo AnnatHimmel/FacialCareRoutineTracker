@@ -26,11 +26,22 @@ class FakeMasterRepo implements MasterContentRepository {
   Future<MasterContent> load() async => content;
 }
 
+/// In-memory SettingsRepository that supports both the legacy version pref
+/// and the new known-product-IDs snapshot pref.
 class FakeSettingsRepo implements SettingsRepository {
   final String? lastKnownVersion;
-  FakeSettingsRepo(this.lastKnownVersion);
+  final Set<String>? initialKnownProductIds;
+  String? _savedVersion;
+  Set<String>? _savedProductIds;
+
+  FakeSettingsRepo(this.lastKnownVersion, {Set<String>? knownProductIds})
+      : initialKnownProductIds = knownProductIds;
+
   @override Future<String?> getLastKnownMasterVersion() async => lastKnownVersion;
-  @override Future<void> setLastKnownMasterVersion(String v) async {}
+  @override Future<void> setLastKnownMasterVersion(String v) async { _savedVersion = v; }
+  @override Future<Set<String>?> getKnownProductIds() async => initialKnownProductIds;
+  @override Future<void> setKnownProductIds(Set<String> ids) async { _savedProductIds = ids; }
+
   @override Future<String?> getLastExportDate() async => null;
   @override Future<void> setLastExportDate(String d) async {}
   @override Future<int> getUserSchemaVersion() async => 1;
@@ -118,13 +129,12 @@ class FakeUserRepo implements UserDataRepository {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-MasterProduct product(String id, String addedInVersion, {bool deprecated = false}) =>
+MasterProduct product(String id, {bool deprecated = false}) =>
     MasterProduct(
       id: id,
       name: id,
       categoryId: 'cat',
       isDeprecated: deprecated,
-      addedInVersion: addedInVersion,
     );
 
 MasterContent masterWith(String contentVersion, List<MasterProduct> products) =>
@@ -147,25 +157,88 @@ ProductSelection selected(String productId) => ProductSelection(
       lastModified: DateTime(2026),
     );
 
+/// Build a service with an optional pre-seeded known-ID snapshot.
 ReconciliationService makeService({
   required MasterContent content,
   required String? lastKnown,
+  Set<String>? knownProductIds,
   List<ProductSelection> selections = const [],
-}) =>
-    ReconciliationService(
-      FakeMasterRepo(content),
-      FakeUserRepo(selections),
-      FakeSettingsRepo(lastKnown),
-    );
+}) {
+  final settings = FakeSettingsRepo(lastKnown, knownProductIds: knownProductIds);
+  return ReconciliationService(
+    FakeMasterRepo(content),
+    FakeUserRepo(selections),
+    settings,
+  );
+}
+
+/// Build a service and expose the settings fake so tests can inspect persisted state.
+(ReconciliationService, FakeSettingsRepo) makeServiceWithSettings({
+  required MasterContent content,
+  required String? lastKnown,
+  Set<String>? knownProductIds,
+  List<ProductSelection> selections = const [],
+}) {
+  final settings = FakeSettingsRepo(lastKnown, knownProductIds: knownProductIds);
+  final svc = ReconciliationService(
+    FakeMasterRepo(content),
+    FakeUserRepo(selections),
+    settings,
+  );
+  return (svc, settings);
+}
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
-  group('no update when versions match', () {
-    test('returns isUpdateDetected: false when lastKnown == currentVersion', () async {
+  // ── First-run (knownProductIds snapshot is null) ──────────────────────────
+
+  group('first run — no snapshot yet', () {
+    test('seeds the snapshot with current non-deprecated IDs and returns no update', () async {
+      final master = masterWith('1.0.0', [
+        product('p1'),
+        product('p2'),
+        product('dep', deprecated: true),
+      ]);
+      final (svc, settings) = makeServiceWithSettings(
+        content: master,
+        lastKnown: null, // never set
+        knownProductIds: null, // no snapshot
+      );
+
+      final result = await svc.reconcile();
+
+      expect(result.isUpdateDetected, isFalse);
+      expect(result.newProducts, isEmpty);
+      // Snapshot should be seeded with non-deprecated IDs
+      expect(settings._savedProductIds, equals({'p1', 'p2'}));
+    });
+
+    test('first run with existing version pref but no ID snapshot also seeds', () async {
+      // Edge case: user had old app with version pref but no ID snapshot
+      final master = masterWith('1.1.0', [product('p1'), product('p2')]);
+      final (svc, settings) = makeServiceWithSettings(
+        content: master,
+        lastKnown: '1.0.0', // version pref exists
+        knownProductIds: null, // but no ID snapshot
+      );
+
+      final result = await svc.reconcile();
+
+      expect(result.isUpdateDetected, isFalse);
+      expect(result.newProducts, isEmpty);
+      expect(settings._savedProductIds, equals({'p1', 'p2'}));
+    });
+  });
+
+  // ── Version early-out ─────────────────────────────────────────────────────
+
+  group('version early-out', () {
+    test('returns no update when versions match AND snapshot exists', () async {
       final svc = makeService(
-        content: masterWith('1.0.0', [product('p1', '1.0.0')]),
+        content: masterWith('1.0.0', [product('p1')]),
         lastKnown: '1.0.0',
+        knownProductIds: {'p1'},
       );
       final result = await svc.reconcile();
       expect(result.isUpdateDetected, isFalse);
@@ -173,89 +246,153 @@ void main() {
     });
   });
 
-  group('newProducts filter — BUG 2', () {
-    // BUG: filter was `!isDeprecated && !selectedIds.contains(id)`
-    // — returned every non-selected product regardless of addedInVersion
-    // FIX: must require addedInVersion > lastKnown (semver)
+  // ── New product detection via ID diff ─────────────────────────────────────
 
-    test('product added at same version as lastKnown → NOT in newProducts', () async {
+  group('newProducts — ID-snapshot diff', () {
+    test('product in snapshot → NOT in newProducts', () async {
       final svc = makeService(
-        content: masterWith('1.1.0', [product('p1', '1.0.0')]),
+        content: masterWith('1.1.0', [product('p1')]),
         lastKnown: '1.0.0',
+        knownProductIds: {'p1'},
       );
       final result = await svc.reconcile();
-      expect(result.isUpdateDetected, isTrue);
+      // p1 was in the last-known snapshot → not new
       expect(result.newProducts.map((p) => p.id), isNot(contains('p1')));
     });
 
-    test('product added in version newer than lastKnown → IS in newProducts', () async {
+    test('product NOT in snapshot → IS in newProducts', () async {
       final svc = makeService(
-        content: masterWith('1.1.0', [product('p1', '1.1.0')]),
+        content: masterWith('1.1.0', [product('p1'), product('p2')]),
         lastKnown: '1.0.0',
+        knownProductIds: {'p1'}, // p2 not in snapshot
       );
       final result = await svc.reconcile();
       expect(result.isUpdateDetected, isTrue);
-      expect(result.newProducts.map((p) => p.id), contains('p1'));
-    });
-
-    test('product added in older version → NOT in newProducts', () async {
-      final svc = makeService(
-        content: masterWith('1.1.0', [product('p1', '0.9.0')]),
-        lastKnown: '1.0.0',
-      );
-      final result = await svc.reconcile();
+      expect(result.newProducts.map((p) => p.id), contains('p2'));
       expect(result.newProducts.map((p) => p.id), isNot(contains('p1')));
     });
 
     test('already-selected new product is excluded', () async {
       final svc = makeService(
-        content: masterWith('1.1.0', [product('p1', '1.1.0')]),
+        content: masterWith('1.1.0', [product('p1'), product('p2')]),
         lastKnown: '1.0.0',
-        selections: [selected('p1')],
+        knownProductIds: {'p1'},
+        selections: [selected('p2')],
       );
       final result = await svc.reconcile();
-      expect(result.newProducts.map((p) => p.id), isNot(contains('p1')));
+      expect(result.newProducts.map((p) => p.id), isNot(contains('p2')));
     });
 
     test('deprecated new product is excluded', () async {
       final svc = makeService(
-        content: masterWith('1.1.0', [product('p1', '1.1.0', deprecated: true)]),
+        content: masterWith('1.1.0', [product('dep', deprecated: true)]),
         lastKnown: '1.0.0',
+        knownProductIds: {}, // dep not in snapshot
       );
       final result = await svc.reconcile();
-      expect(result.newProducts.map((p) => p.id), isNot(contains('p1')));
+      expect(result.newProducts, isEmpty);
     });
 
     test('mix: only truly-new non-selected non-deprecated products appear', () async {
       final svc = makeService(
         content: masterWith('1.2.0', [
-          product('old', '1.0.0'),                          // same as lastKnown → exclude
-          product('new', '1.1.0'),                          // newer → include
-          product('also-new', '1.2.0'),                     // newer → include
-          product('selected', '1.1.0'),                     // newer but selected → exclude
-          product('deprecated', '1.1.0', deprecated: true), // newer but deprecated → exclude
+          product('old'),                          // in snapshot → exclude
+          product('new1'),                         // not in snapshot → include
+          product('new2'),                         // not in snapshot → include
+          product('sel'),                          // not in snapshot but selected → exclude
+          product('dep', deprecated: true),        // not in snapshot but deprecated → exclude
         ]),
         lastKnown: '1.0.0',
-        selections: [selected('selected')],
+        knownProductIds: {'old'},
+        selections: [selected('sel')],
       );
       final result = await svc.reconcile();
       final ids = result.newProducts.map((p) => p.id).toSet();
-      expect(ids, containsAll(['new', 'also-new']));
+      expect(ids, containsAll(['new1', 'new2']));
       expect(ids, isNot(contains('old')));
-      expect(ids, isNot(contains('selected')));
-      expect(ids, isNot(contains('deprecated')));
+      expect(ids, isNot(contains('sel')));
+      expect(ids, isNot(contains('dep')));
     });
   });
+
+  // ── newlyDeprecatedSelected ───────────────────────────────────────────────
 
   group('newlyDeprecatedSelected', () {
     test('selected deprecated product appears in newlyDeprecatedSelected', () async {
       final svc = makeService(
-        content: masterWith('1.1.0', [product('p1', '1.0.0', deprecated: true)]),
+        content: masterWith('1.1.0', [product('p1', deprecated: true)]),
         lastKnown: '1.0.0',
+        knownProductIds: {'p1'},
         selections: [selected('p1')],
       );
       final result = await svc.reconcile();
       expect(result.newlyDeprecatedSelected.map((p) => p.id), contains('p1'));
+    });
+
+    test('isUpdateDetected true when only deprecated-selected', () async {
+      final svc = makeService(
+        content: masterWith('1.1.0', [product('p1', deprecated: true)]),
+        lastKnown: '1.0.0',
+        knownProductIds: {'p1'},
+        selections: [selected('p1')],
+      );
+      final result = await svc.reconcile();
+      expect(result.isUpdateDetected, isTrue);
+    });
+  });
+
+  // ── acknowledgeUpdate persists BOTH version and ID set ───────────────────
+
+  group('acknowledgeUpdate', () {
+    test('persists version and current master non-deprecated IDs', () async {
+      final master = masterWith('1.1.0', [
+        product('p1'),
+        product('p2'),
+        product('dep', deprecated: true),
+      ]);
+      final (svc, settings) = makeServiceWithSettings(
+        content: master,
+        lastKnown: '1.0.0',
+        knownProductIds: {'p1'},
+      );
+
+      final currentIds = {'p1', 'p2'}; // non-deprecated
+      await svc.acknowledgeUpdate('1.1.0', currentIds);
+
+      expect(settings._savedVersion, '1.1.0');
+      expect(settings._savedProductIds, equals({'p1', 'p2'}));
+    });
+
+    test('after acknowledgeUpdate, reconcile with same content returns no update', () async {
+      final master = masterWith('1.1.0', [product('p1'), product('p2')]);
+      final (svc, settings) = makeServiceWithSettings(
+        content: master,
+        lastKnown: '1.1.0',
+        knownProductIds: {'p1', 'p2'},
+      );
+
+      // Make sure version-match early-out works with up-to-date snapshot
+      final result = await svc.reconcile();
+      expect(result.isUpdateDetected, isFalse);
+    });
+  });
+
+  // ── currentMasterProductIds in ReconciliationResult ──────────────────────
+
+  group('ReconciliationResult.currentMasterProductIds', () {
+    test('contains all non-deprecated product IDs', () async {
+      final svc = makeService(
+        content: masterWith('1.1.0', [
+          product('p1'),
+          product('p2'),
+          product('dep', deprecated: true),
+        ]),
+        lastKnown: '1.0.0',
+        knownProductIds: {'p1'},
+      );
+      final result = await svc.reconcile();
+      expect(result.currentMasterProductIds, containsAll(['p1', 'p2']));
+      expect(result.currentMasterProductIds, isNot(contains('dep')));
     });
   });
 }

@@ -16,7 +16,6 @@ MasterProduct _product(
       name: id,
       categoryId: 'cat1',
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: morning,
       eveningConfig: evening,
     );

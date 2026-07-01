@@ -31,7 +31,6 @@ MasterProduct prod(
       categoryId: categoryId,
       subCategoryId: subCategoryId,
       isDeprecated: isDeprecated,
-      addedInVersion: '1.0.0',
       morningConfig:
           SlotConfig(order: morningOrder, frequencyRule: morningFreq),
       eveningConfig: eveningOrder == null
@@ -526,7 +525,6 @@ void main() {
           name: 'p1',
           categoryId: 'catEvening',
           isDeprecated: false,
-          addedInVersion: '1.0.0',
           eveningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
         );
 

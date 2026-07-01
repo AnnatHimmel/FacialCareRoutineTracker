@@ -45,7 +45,6 @@ MasterProduct _product(String id) => MasterProduct(
       name: 'Product $id',
       categoryId: 'cat-1',
       isDeprecated: false,
-      addedInVersion: '1.0.0',
     );
 
 MasterContent _contentWith(List<String> productIds, {String version = '1.0.0'}) =>

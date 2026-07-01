@@ -15,7 +15,6 @@ MasterContent _minimal() => const MasterContent(
           name: 'Snail Cream',
           categoryId: 'cat-1',
           isDeprecated: false,
-          addedInVersion: '1.0.0',
         ),
       ],
       categories: [
@@ -88,7 +87,6 @@ void main() {
             name: 'Other',
             categoryId: 'cat-1',
             isDeprecated: false,
-            addedInVersion: '1.0.0',
           ),
         ],
         categories: [

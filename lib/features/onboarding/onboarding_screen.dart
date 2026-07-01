@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../domain/enums/slot.dart';
-import '../../domain/entities/master_product.dart';
 import '../../domain/repositories/master_content_repository.dart';
 import '../../domain/services/routine_build_summary.dart';
 import '../../shared/providers/root_providers.dart';
@@ -97,12 +96,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // Populates _summary for the routineSummary stage. Mirrors the logic in
   // RoutineReadyRoute._build(). Falls back to _afterRoutineSummary() if the
   // summary cannot be built so the flow never dead-ends.
-  Future<RoutineBuildSummary?> _tryBuild(
-      MasterContent master, List<MasterProduct> extraProducts) async {
+  Future<RoutineBuildSummary?> _tryBuild(MasterContent master) async {
     try {
-      return await ref.read(routineSchedulerProvider).buildRoutineSummary(
+      return await ref.read(routineServiceProvider).buildRoutineSummary(
             master: master,
-            extraProducts: extraProducts,
           );
     } catch (e, st) {
       debugPrint('[Onboarding] buildRoutineSummary failed: $e\n$st');
@@ -122,12 +119,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _afterRoutineSummary();
       return;
     }
-    final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
-    final extraProducts = customProds.map((c) => c.toMasterProduct()).toList();
-    RoutineBuildSummary? summary = await _tryBuild(master, extraProducts);
+    RoutineBuildSummary? summary = await _tryBuild(master);
     if (summary == null && mounted) {
       await Future<void>.delayed(Duration.zero);
-      summary = await _tryBuild(master, extraProducts);
+      summary = await _tryBuild(master);
     }
     if (!mounted) return;
     if (summary == null) {

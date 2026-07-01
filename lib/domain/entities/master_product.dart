@@ -62,9 +62,9 @@ class MasterProduct {
   final SlotConfig? morningConfig;
   final SlotConfig? eveningConfig;
   final bool isDeprecated;
-  final String addedInVersion;
   final List<String> ingredients;
   final List<String> barcodes;
+  final bool editable;
 
   const MasterProduct({
     required this.id,
@@ -78,9 +78,9 @@ class MasterProduct {
     this.morningConfig,
     this.eveningConfig,
     required this.isDeprecated,
-    required this.addedInVersion,
     this.ingredients = const [],
     this.barcodes = const [],
+    this.editable = false,
   });
 
   SlotConfig? configForSlot(Slot slot) =>
@@ -102,7 +102,7 @@ class MasterProduct {
         other.morningConfig != morningConfig ||
         other.eveningConfig != eveningConfig ||
         other.isDeprecated != isDeprecated ||
-        other.addedInVersion != addedInVersion) {
+        other.editable != editable) {
       return false;
     }
     if (other.ingredients.length != ingredients.length) {
@@ -142,9 +142,9 @@ class MasterProduct {
         morningConfig,
         eveningConfig,
         isDeprecated,
-        addedInVersion,
         Object.hashAll(ingredients),
         Object.hashAll(barcodes),
+        editable,
       );
 
   MasterProduct copyWith({
@@ -159,9 +159,9 @@ class MasterProduct {
     SlotConfig? morningConfig,
     SlotConfig? eveningConfig,
     bool? isDeprecated,
-    String? addedInVersion,
     List<String>? ingredients,
     List<String>? barcodes,
+    bool? editable,
   }) =>
       MasterProduct(
         id: id ?? this.id,
@@ -175,9 +175,9 @@ class MasterProduct {
         morningConfig: morningConfig ?? this.morningConfig,
         eveningConfig: eveningConfig ?? this.eveningConfig,
         isDeprecated: isDeprecated ?? this.isDeprecated,
-        addedInVersion: addedInVersion ?? this.addedInVersion,
         ingredients: ingredients ?? this.ingredients,
         barcodes: barcodes ?? this.barcodes,
+        editable: editable ?? this.editable,
       );
 }
 

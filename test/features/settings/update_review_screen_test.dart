@@ -57,6 +57,8 @@ class _StubSR implements SettingsRepository {
   @override Future<void> setWeeklyPhotoReminderDismissedDate(String isoDate) async {}
   @override Future<bool> getWeeklyReminderEnabled() async => true;
   @override Future<void> setWeeklyReminderEnabled(bool value) async {}
+  @override Future<Set<String>?> getKnownProductIds() async => null;
+  @override Future<void> setKnownProductIds(Set<String> ids) async {}
 }
 
 class _StubUDR implements UserDataRepository {
@@ -114,7 +116,7 @@ class _FakeReconciliationService extends ReconciliationService {
   Future<ReconciliationResult> reconcile() async => fixedResult;
 
   @override
-  Future<void> acknowledgeUpdate(String version) async {
+  Future<void> acknowledgeUpdate(String version, Set<String> masterProductIds) async {
     acknowledged = true;
     acknowledgedVersion = version;
   }
@@ -128,7 +130,6 @@ MasterProduct _product(String id, String name, {bool isDeprecated = false}) =>
       name: name,
       categoryId: 'cat1',
       isDeprecated: isDeprecated,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
 
@@ -171,6 +172,7 @@ void main() {
         newProducts: [],
         newlyDeprecatedSelected: [],
         currentContentVersion: '1.0.0',
+        currentMasterProductIds: {},
       ));
 
       await tester.pumpWidget(_wrap(svc));
@@ -185,6 +187,7 @@ void main() {
         newProducts: [_product('p1', 'סרום ויטמין C')],
         newlyDeprecatedSelected: [],
         currentContentVersion: '1.1.0',
+        currentMasterProductIds: const {'p1'},
       ));
 
       await tester.pumpWidget(_wrap(svc));
@@ -200,6 +203,7 @@ void main() {
         newProducts: [],
         newlyDeprecatedSelected: [_product('p2', 'קרם ישן', isDeprecated: true)],
         currentContentVersion: '1.1.0',
+        currentMasterProductIds: const {},
       ));
 
       await tester.pumpWidget(_wrap(svc));
@@ -216,6 +220,7 @@ void main() {
         newProducts: [],
         newlyDeprecatedSelected: [],
         currentContentVersion: '1.1.0',
+        currentMasterProductIds: {},
       ));
 
       await tester.pumpWidget(_wrap(svc));

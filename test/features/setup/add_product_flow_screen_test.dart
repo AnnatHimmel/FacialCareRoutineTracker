@@ -127,7 +127,6 @@ MasterProduct _amProduct(String id, String name, String catId) => MasterProduct(
       name: name,
       categoryId: catId,
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
 
@@ -137,7 +136,6 @@ MasterProduct _flexProduct(String id, String name, String catId) =>
       name: name,
       categoryId: catId,
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
       eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
@@ -222,7 +220,6 @@ void main() {
         name: 'מוצר ישן',
         categoryId: 'cat-serum',
         isDeprecated: true,
-        addedInVersion: '1.0.0',
         morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
       final master = _masterWith([

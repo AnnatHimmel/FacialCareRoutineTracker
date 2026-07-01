@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../entities/master_product.dart';
 import '../entities/order_override.dart';
 import '../entities/product_selection.dart';
+import '../entities/user_custom_product.dart';
 import '../entities/weekday_schedule.dart';
 import '../enums/rule_scope.dart';
 import '../enums/slot.dart';
@@ -118,12 +119,12 @@ class ManualOrderChanges {
   int get count => moved.length;
 }
 
-// ── RoutineScheduler ──────────────────────────────────────────────────────────
+// ── RoutineService ────────────────────────────────────────────────────────────
 
-class RoutineScheduler {
+class RoutineService {
   final UserDataRepository _repo;
 
-  RoutineScheduler(this._repo);
+  RoutineService(this._repo);
 
   // ── Static helpers ──────────────────────────────────────────────────────────
 
@@ -180,6 +181,35 @@ class RoutineScheduler {
   Future<OrderOverride?> getEffectiveOrderOverride(Slot slot, int weekday) =>
       _repo.getEffectiveOrderOverride(slot, weekday);
 
+  // ── master+custom merge ──────────────────────────────────────────────────────
+
+  /// Returns master products followed by all custom products (as MasterProduct).
+  /// Custom entries have [MasterProduct.editable] == true.
+  Future<List<MasterProduct>> allProducts(MasterContent master) async {
+    final customs = await _repo.watchCustomProducts().first;
+    return [...master.products, ...customs.map((c) => c.toMasterProduct())];
+  }
+
+  /// Stream of the merged master+custom product list. Re-emits whenever the
+  /// custom product list changes.
+  Stream<List<MasterProduct>> watchAllProducts(MasterContent master) =>
+      _repo.watchCustomProducts().map(
+            (customs) => [...master.products, ...customs.map((c) => c.toMasterProduct())]);
+
+  // ── custom product CRUD pass-throughs ────────────────────────────────────────
+
+  Stream<List<UserCustomProduct>> watchCustomProducts() =>
+      _repo.watchCustomProducts();
+
+  Future<UserCustomProduct?> getCustomProduct(String id) async =>
+      (await _repo.watchCustomProducts().first).firstWhereOrNull((p) => p.id == id);
+
+  Future<void> upsertCustomProduct(UserCustomProduct p) =>
+      _repo.upsertCustomProduct(p);
+
+  Future<void> deleteCustomProduct(String id) =>
+      _repo.deleteCustomProduct(id);
+
   // ── orderForDay ─────────────────────────────────────────────────────────────
 
   /// Returns products active for [weekday]+[slot] in effective order.
@@ -224,10 +254,11 @@ class RoutineScheduler {
         ? null
         : {for (final o in catOverrideList) o.productId: o.categoryId};
 
+    final mergedProducts = await allProducts(master);
     return RoutineResolver().resolve(
       date: _dateForWeekday(weekday),
       slot: slot,
-      allProducts: master.products,
+      allProducts: mergedProducts,
       categories: master.categories,
       subcategories: master.subcategories,
       selections: selections,
@@ -272,7 +303,8 @@ class RoutineScheduler {
           (s) => s.productId == id && s.slot == slot && s.weekdays.isEmpty,
         );
 
-    final products = master.products
+    final mergedProducts = await allProducts(master);
+    final products = mergedProducts
         .where((p) =>
             !p.isDeprecated &&
             selectedIds.contains(p.id) &&
@@ -418,8 +450,9 @@ class RoutineScheduler {
     Set<String> selectedIds(List<ProductSelection> sels) =>
         sels.where((s) => s.isSelected).map((s) => s.productId).toSet();
 
+    final mergedProducts = await allProducts(master);
     List<MasterProduct> slotProductsFor(Slot s, Set<String> ids) =>
-        master.products
+        mergedProducts
             .where((p) =>
                 !p.isDeprecated &&
                 ids.contains(p.id) &&
@@ -451,7 +484,6 @@ class RoutineScheduler {
 
   Future<WeekGlance> weekGlance({
     required MasterContent master,
-    List<MasterProduct> extraProducts = const [],
   }) async {
     final morningSelections = await _repo.watchSelections(Slot.morning).first;
     final eveningSelections = await _repo.watchSelections(Slot.evening).first;
@@ -467,8 +499,9 @@ class RoutineScheduler {
     final morningOrderOverride = await _repo.watchOrderOverride(Slot.morning).first;
     final eveningOrderOverride = await _repo.watchOrderOverride(Slot.evening).first;
 
+    final mergedProducts = await allProducts(master);
     return const WeekGlanceBuilder().build(
-      allProducts: [...master.products, ...extraProducts],
+      allProducts: mergedProducts,
       categories: master.categories,
       subcategories: master.subcategories,
       rules: master.rules,
@@ -490,11 +523,10 @@ class RoutineScheduler {
     required MasterContent master,
     required String productId,
     required Slot slot,
-    List<MasterProduct> extraProducts = const [],
   }) async {
     // Custom products are not in master.products — look in the combined list.
-    final allProducts = [...master.products, ...extraProducts];
-    final product = allProducts.firstWhereOrNull((p) => p.id == productId);
+    final mergedProducts = await allProducts(master);
+    final product = mergedProducts.firstWhereOrNull((p) => p.id == productId);
 
     // Upsert selection
     final existingSelections = await _repo.watchSelections(slot).first;
@@ -543,7 +575,7 @@ class RoutineScheduler {
         .where((s) => s.isSelected)
         .map((s) => s.productId)
         .toSet();
-    final selectedProducts = allProducts
+    final selectedProducts = mergedProducts
         .where((p) =>
             selectedIds.contains(p.id) && p.configForSlot(slot) != null)
         .toList();
@@ -564,7 +596,7 @@ class RoutineScheduler {
       if (existingIds.contains(productId)) return existingIds;
       int insertAt = 0;
       for (int i = 0; i < existingIds.length; i++) {
-        final existing = allProducts.firstWhereOrNull((p) => p.id == existingIds[i]);
+        final existing = mergedProducts.firstWhereOrNull((p) => p.id == existingIds[i]);
         if (existing != null && cmp(existing, product) <= 0) insertAt = i + 1;
       }
       return [...existingIds.sublist(0, insertAt), productId, ...existingIds.sublist(insertAt)];
@@ -740,7 +772,6 @@ class RoutineScheduler {
   Future<RoutineFixResult> fixProblems({
     required MasterContent master,
     required Slot slot,
-    List<MasterProduct> extraProducts = const [],
   }) async {
     final morningSelections = await _repo.watchSelections(Slot.morning).first;
     final eveningSelections = await _repo.watchSelections(Slot.evening).first;
@@ -748,12 +779,12 @@ class RoutineScheduler {
     final mutedConflicts = await _repo.watchMutedConflicts().first;
     final mutedRuleIds = mutedConflicts.map((m) => m.ruleId).toSet();
 
-    final allProducts = [...master.products, ...extraProducts];
+    final mergedProducts = await allProducts(master);
 
     Set<String> selectedIds(List<ProductSelection> sels) =>
         sels.where((s) => s.isSelected).map((s) => s.productId).toSet();
 
-    List<MasterProduct> slotProducts(Slot s, Set<String> ids) => allProducts
+    List<MasterProduct> slotProducts(Slot s, Set<String> ids) => mergedProducts
         .where((p) =>
             !p.isDeprecated &&
             ids.contains(p.id) &&
@@ -900,7 +931,7 @@ class RoutineScheduler {
       // from the pre-persist snapshot, for the summary's change classification.
       final beforeDaysByKey = <String, Set<int>>{};
       for (final m in supplemented) {
-        final p = allProducts.where((p) => p.id == m.productId).firstOrNull;
+        final p = mergedProducts.where((p) => p.id == m.productId).firstOrNull;
         if (p == null) continue;
         beforeDaysByKey['${m.productId}|${m.slot.name}'] =
             sd.effectiveDays(p, m.slot, schedules);
@@ -950,7 +981,7 @@ class RoutineScheduler {
         if (before.isNotEmpty && after.isEmpty) {
           final otherSlot =
               m.slot == Slot.morning ? Slot.evening : Slot.morning;
-          final p = allProducts.where((p) => p.id == m.productId).firstOrNull;
+          final p = mergedProducts.where((p) => p.id == m.productId).firstOrNull;
           if (p?.configForSlot(otherSlot) != null) movedSlot = true;
         }
         beforeTotal += before.length;
@@ -988,21 +1019,19 @@ class RoutineScheduler {
   /// products that oxidize together and cannot be separated).
   Future<RoutineBuildSummary> buildRoutineSummary({
     required MasterContent master,
-    List<MasterProduct> extraProducts = const [],
   }) async {
     final fix = await fixProblems(
       master: master,
       slot: Slot.morning,
-      extraProducts: extraProducts,
     );
 
     final morningSelections = await _repo.watchSelections(Slot.morning).first;
     final eveningSelections = await _repo.watchSelections(Slot.evening).first;
 
-    final allProducts = [...master.products, ...extraProducts];
+    final mergedProducts = await allProducts(master);
 
     bool isLive(String id, Slot s) {
-      final p = allProducts.firstWhereOrNull((p) => p.id == id);
+      final p = mergedProducts.firstWhereOrNull((p) => p.id == id);
       return p != null && !p.isDeprecated && p.configForSlot(s) != null;
     }
 
@@ -1020,7 +1049,7 @@ class RoutineScheduler {
     final mutedRuleIds = mutedConflicts.map((m) => m.ruleId).toSet();
 
     List<MasterProduct> slotProducts(Slot s, Set<String> ids) =>
-        allProducts
+        mergedProducts
             .where((p) =>
                 !p.isDeprecated &&
                 ids.contains(p.id) &&
@@ -1187,7 +1216,8 @@ class RoutineScheduler {
     Set<String> selectedIds(List<ProductSelection> sels) =>
         sels.where((s) => s.isSelected).map((s) => s.productId).toSet();
 
-    List<MasterProduct> slotProducts(Slot s, Set<String> ids) => master.products
+    final mergedProducts = await allProducts(master);
+    List<MasterProduct> slotProducts(Slot s, Set<String> ids) => mergedProducts
         .where((p) =>
             !p.isDeprecated &&
             ids.contains(p.id) &&

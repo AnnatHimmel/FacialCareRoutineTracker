@@ -13,9 +13,9 @@ import 'routine_ready_summary_screen.dart';
 /// persisted — replacing the three divergent mechanisms that previously showed
 /// the summary inconsistently.
 ///
-/// It builds the [RoutineBuildSummary] itself from the scheduler (passing the
-/// user's custom products as `extraProducts`, the omission of which was the
-/// original "custom product invisible" bug), then hands off to the shelf
+/// It builds the [RoutineBuildSummary] itself from the scheduler (which now
+/// fetches custom products internally via [RoutineService.allProducts], so
+/// no `extraProducts` argument is needed), then hands off to the shelf
 /// (`/collection`) via the summary's single CTA. If the summary can't be built
 /// it redirects straight to the shelf so the flow never dead-ends.
 class RoutineReadyRoute extends ConsumerStatefulWidget {
@@ -32,12 +32,8 @@ class _RoutineReadyRouteState extends ConsumerState<RoutineReadyRoute> {
     MasterContent? master = ref.read(masterContentProvider).valueOrNull;
     master ??= await ref.read(masterContentProvider.future);
     if (master == null) return null;
-    final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
-    final extraProducts =
-        customProds.map((c) => c.toMasterProduct()).toList();
-    return ref.read(routineSchedulerProvider).buildRoutineSummary(
+    return ref.read(routineServiceProvider).buildRoutineSummary(
           master: master,
-          extraProducts: extraProducts,
         );
   }
 

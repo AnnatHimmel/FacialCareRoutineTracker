@@ -22,7 +22,6 @@ import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/services/schedule_days.dart';
 import '../../domain/entities/order_override.dart';
 import '../../domain/entities/product_selection.dart';
-import '../../domain/entities/user_custom_product.dart';
 import '../../domain/services/pao_calculator.dart';
 import '../../domain/services/product_classifier.dart';
 import '../../domain/enums/slot.dart';
@@ -42,7 +41,7 @@ import '../../domain/services/export_import_service.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../domain/services/reconciliation_service.dart';
 import '../../domain/services/routine_resolver.dart';
-import '../../domain/services/routine_scheduler.dart';
+import '../../domain/services/routine_service.dart';
 import '../../domain/services/streak_calculator.dart';
 import '../../domain/services/week_glance_builder.dart';
 
@@ -100,8 +99,8 @@ final routineResolverProvider = Provider(
   (ref) => RoutineResolver(),
 );
 
-final routineSchedulerProvider = Provider<RoutineScheduler>(
-  (ref) => RoutineScheduler(ref.watch(userDataRepositoryProvider)),
+final routineServiceProvider = Provider<RoutineService>(
+  (ref) => RoutineService(ref.watch(userDataRepositoryProvider)),
 );
 
 final streakCalculatorProvider = Provider(
@@ -127,13 +126,16 @@ final reconciliationServiceProvider = Provider(
 final silentStartupProvider = FutureProvider<void>((ref) async {
   final svc = ref.read(reconciliationServiceProvider);
   final result = await svc.reconcile();
-  await svc.acknowledgeUpdate(result.currentContentVersion);
+  await svc.acknowledgeUpdate(
+    result.currentContentVersion,
+    result.currentMasterProductIds,
+  );
 });
 
 /// Seeds any missing default schedules on cold start, before the home screen
 /// renders.
 ///
-/// Bug 1 fix: [RoutineScheduler.fixProblems] is intentionally NOT called here.
+/// Bug 1 fix: [RoutineService.fixProblems] is intentionally NOT called here.
 /// Conflict resolution is advisory only (PRD §UC-4b) — it must never silently
 /// overwrite a schedule the user has deliberately set. The "Fix problems"
 /// action is surfaced explicitly in the UI when the user opts in.
@@ -145,7 +147,7 @@ final silentStartupProvider = FutureProvider<void>((ref) async {
 /// are left untouched.
 final conflictAutoFixProvider = FutureProvider<int>((ref) async {
   final master = await ref.read(masterContentProvider.future);
-  final s = ref.read(routineSchedulerProvider);
+  final s = ref.read(routineServiceProvider);
 
   await s.ensureDefaultSchedules(master: master);
 
@@ -274,7 +276,7 @@ final masterContentProvider = FutureProvider<MasterContent>(
 ///
 /// v2: heal stale auto-spread schedules left behind when a product's master
 /// frequency was corrected to daily (see
-/// [RoutineScheduler.healStaleAutoSpreadSchedules]).
+/// [RoutineService.healStaleAutoSpreadSchedules]).
 const _currentUserSchemaVersion = 2;
 
 final startupMigrationProvider = FutureProvider<void>((ref) async {
@@ -284,7 +286,7 @@ final startupMigrationProvider = FutureProvider<void>((ref) async {
 
   final master = await ref.read(masterContentProvider.future);
   await ref
-      .read(routineSchedulerProvider)
+      .read(routineServiceProvider)
       .healStaleAutoSpreadSchedules(master: master);
 
   await settings.setUserSchemaVersion(_currentUserSchemaVersion);
@@ -297,7 +299,7 @@ final effectiveDateProvider = Provider<DateTime>(
 final selectionsProvider =
     StreamProvider.family<List<ProductSelection>, Slot>(
   (ref, slot) =>
-      ref.watch(routineSchedulerProvider).watchSelections(slot),
+      ref.watch(routineServiceProvider).watchSelections(slot),
 );
 
 final mutedConflictsProvider = StreamProvider<List<MutedConflict>>(
@@ -305,7 +307,7 @@ final mutedConflictsProvider = StreamProvider<List<MutedConflict>>(
 );
 
 final allSchedulesProvider = StreamProvider(
-  (ref) => ref.watch(routineSchedulerProvider).watchAllSchedules(),
+  (ref) => ref.watch(routineServiceProvider).watchAllSchedules(),
 );
 
 /// The global (all-day) custom product order for a slot, as set on the Order
@@ -314,16 +316,18 @@ final allSchedulesProvider = StreamProvider(
 final orderOverrideProvider =
     StreamProvider.family<OrderOverride?, Slot>(
   (ref, slot) =>
-      ref.watch(routineSchedulerProvider).watchOrderOverride(slot),
+      ref.watch(routineServiceProvider).watchOrderOverride(slot),
 );
 
 final allDayRecordsProvider = StreamProvider(
   (ref) => ref.watch(userDataRepositoryProvider).watchAllDayRecords(),
 );
 
-final customProductsProvider = StreamProvider<List<UserCustomProduct>>(
-  (ref) => ref.watch(userDataRepositoryProvider).watchCustomProducts(),
-);
+/// Merged master + custom product list. Re-emits whenever custom products change.
+final allProductsProvider = StreamProvider<List<MasterProduct>>((ref) async* {
+  final master = await ref.watch(masterContentProvider.future);
+  yield* ref.watch(routineServiceProvider).watchAllProducts(master);
+});
 
 // ── Barcode lookup ────────────────────────────────────────────────────────────
 
@@ -407,9 +411,10 @@ final dailyRoutineProvider =
     StreamProvider.family<List<MasterProduct>, _DailyRoutineParams>(
   (ref, params) async* {
     final masterContent = await ref.watch(masterContentProvider.future);
+    final allProducts = await ref.watch(allProductsProvider.future);
     final boundary = ref.watch(dayBoundaryServiceProvider);
     final resolver = ref.watch(routineResolverProvider);
-    final scheduler = ref.watch(routineSchedulerProvider);
+    final scheduler = ref.watch(routineServiceProvider);
     final userRepo = ref.watch(userDataRepositoryProvider);
     // Re-run this stream generator whenever the order override changes so the
     // daily routine immediately reflects a new drag order without requiring a
@@ -420,7 +425,6 @@ final dailyRoutineProvider =
     final dayOfWeek = effectiveDate.weekday % 7; // Sun=0…Sat=6
 
     await for (final selections in scheduler.watchSelections(params.slot)) {
-      final customProds = await userRepo.watchCustomProducts().first;
       final schedules = await scheduler.watchAllSchedules().first;
       final orderOverride =
           await scheduler.getEffectiveOrderOverride(params.slot, dayOfWeek);
@@ -428,11 +432,6 @@ final dailyRoutineProvider =
       final catOverrides = {
         for (final o in catOverrideList) o.productId: o.categoryId,
       };
-
-      final allProducts = [
-        ...masterContent.products,
-        ...customProds.map((p) => p.toMasterProduct()),
-      ];
 
       final resolved = resolver.resolve(
         date: effectiveDate,
@@ -463,13 +462,14 @@ final slotManualOrderChangesProvider =
     FutureProvider.family<ManualOrderChanges, Slot>(
   (ref, slot) async {
     final masterContent = await ref.watch(masterContentProvider.future);
-    final scheduler = ref.watch(routineSchedulerProvider);
+    final scheduler = ref.watch(routineServiceProvider);
 
     // Recompute whenever anything that affects the order or product set changes.
     ref.watch(orderOverrideProvider(slot));
     ref.watch(selectionsProvider(slot));
     ref.watch(allSchedulesProvider);
     ref.watch(categoryOverridesProvider);
+    ref.watch(allProductsProvider);
 
     return scheduler.manualOrderChangesForSlot(
       master: masterContent,
@@ -490,13 +490,12 @@ final weekGlanceProvider = FutureProvider<WeekGlance>((ref) async {
   ref.watch(selectionsProvider(Slot.morning));
   ref.watch(selectionsProvider(Slot.evening));
   ref.watch(allSchedulesProvider);
-  final customProds = ref.watch(customProductsProvider).valueOrNull ?? [];
+  ref.watch(allProductsProvider);
   ref.watch(mutedConflictsProvider);
   ref.watch(orderOverrideProvider(Slot.morning));
   ref.watch(orderOverrideProvider(Slot.evening));
-  return ref.watch(routineSchedulerProvider).weekGlance(
+  return ref.watch(routineServiceProvider).weekGlance(
     master: master,
-    extraProducts: customProds.map((p) => p.toMasterProduct()).toList(),
   );
 });
 
@@ -504,8 +503,9 @@ final dayWarningsProvider =
     FutureProvider.family<DayWarnings, ({Slot slot, int weekday})>(
   (ref, p) async {
     final master = await ref.watch(masterContentProvider.future);
+    ref.watch(allProductsProvider);
     return ref
-        .watch(routineSchedulerProvider)
+        .watch(routineServiceProvider)
         .warningsForDay(master: master, slot: p.slot, weekday: p.weekday);
   },
 );

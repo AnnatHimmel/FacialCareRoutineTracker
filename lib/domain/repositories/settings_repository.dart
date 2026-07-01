@@ -44,4 +44,11 @@ abstract class SettingsRepository {
   /// toggle. When false the reminder card never appears.
   Future<bool> getWeeklyReminderEnabled();
   Future<void> setWeeklyReminderEnabled(bool value);
+
+  /// Snapshot of the master product IDs that were present the last time the
+  /// user acknowledged a content update (or on first run). Used by
+  /// [ReconciliationService] to detect newly-added products.
+  /// Returns null if never set (first run).
+  Future<Set<String>?> getKnownProductIds();
+  Future<void> setKnownProductIds(Set<String> ids);
 }

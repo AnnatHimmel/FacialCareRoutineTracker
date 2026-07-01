@@ -10,11 +10,10 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/product_selection.dart';
 import '../../domain/entities/sub_category.dart';
-import '../../domain/entities/user_custom_product.dart';
 import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/conflict_resolver.dart';
-import '../../domain/services/routine_scheduler.dart';
+import '../../domain/services/routine_service.dart';
 import '../../domain/services/default_schedule.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../domain/services/product_sorter.dart';
@@ -182,7 +181,7 @@ class _ProductSelectionScreenState
     _hasChanges = true;
     final isOn = selMap.containsKey(product.id);
     if (isOn) {
-      final scheduler = ref.read(routineSchedulerProvider);
+      final scheduler = ref.read(routineServiceProvider);
       await scheduler.removeProduct(productId: product.id, slot: Slot.morning);
       await scheduler.removeProduct(productId: product.id, slot: Slot.evening);
     } else {
@@ -208,7 +207,7 @@ class _ProductSelectionScreenState
     List<ProductSelection> eveningSelections,
   ) async {
     if (!enabled) {
-      final scheduler = ref.read(routineSchedulerProvider);
+      final scheduler = ref.read(routineServiceProvider);
       await scheduler.removeProduct(productId: product.id, slot: slot);
     } else {
       final list = slot == Slot.morning ? morningSelections : eveningSelections;
@@ -222,7 +221,7 @@ class _ProductSelectionScreenState
     bool isSelected,
     List<ProductSelection> existing,
   ) async {
-    final scheduler = ref.read(routineSchedulerProvider);
+    final scheduler = ref.read(routineServiceProvider);
     final matches = existing
         .where((s) => s.productId == product.id && s.slot == slot)
         .toList();
@@ -261,7 +260,7 @@ class _ProductSelectionScreenState
   /// is newly selected. Mirrors the core logic of [conflictAutoFixProvider] but
   /// runs inline so the fix is applied in the same session as the selection.
   Future<void> _resolveSlotConflicts(
-    RoutineScheduler scheduler,
+    RoutineService scheduler,
     String newProductId,
     Slot slot,
   ) async {
@@ -276,11 +275,7 @@ class _ProductSelectionScreenState
       newProductId,
     };
 
-    final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
-    final allProducts = [
-      ...master.products,
-      ...customProds.map((p) => p.toMasterProduct()),
-    ];
+    final allProducts = ref.read(allProductsProvider).valueOrNull ?? const <MasterProduct>[];
 
     final slotProducts = allProducts
         .where((p) => selectedIds.contains(p.id) && p.configForSlot(slot) != null)
@@ -360,7 +355,7 @@ class _ProductSelectionScreenState
   /// the given slot has no schedule. No-op for daily products or when a schedule
   /// already exists.
   Future<void> _ensureCappedSchedule(
-    RoutineScheduler scheduler,
+    RoutineService scheduler,
     MasterProduct product,
     Slot slot,
   ) async {
@@ -393,17 +388,16 @@ class _ProductSelectionScreenState
       backgroundColor: Colors.transparent,
       builder: (_) => AddCustomProductSheet(
         viewProduct: product,
-        isUserProduct: product.addedInVersion == 'custom',
+        isUserProduct: product.editable,
       ),
     );
   }
 
-  void _editCustomProduct(BuildContext context, MasterProduct product) {
-    final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
-    final UserCustomProduct? customProd = customProds
-        .cast<UserCustomProduct?>()
-        .firstWhere((p) => p?.id == product.id, orElse: () => null);
-    if (customProd == null) return;
+  Future<void> _editCustomProduct(BuildContext context, MasterProduct product) async {
+    final customProd = await ref
+        .read(routineServiceProvider)
+        .getCustomProduct(product.id);
+    if (customProd == null || !context.mounted) return;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -427,7 +421,8 @@ class _ProductSelectionScreenState
     final masterAsync = ref.watch(masterContentProvider);
     final morningAsync = ref.watch(selectionsProvider(Slot.morning));
     final eveningAsync = ref.watch(selectionsProvider(Slot.evening));
-    final customAsync = ref.watch(customProductsProvider);
+
+    final allProductsAsync = ref.watch(allProductsProvider);
 
     final body = masterAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -438,11 +433,7 @@ class _ProductSelectionScreenState
         final selMap = _buildSelMap(morning, evening);
         final categories = [...master.categories]
           ..sort((a, b) => a.order.compareTo(b.order));
-        final customProds = customAsync.valueOrNull ?? [];
-        final allProducts = [
-          ...master.products,
-          ...customProds.map((p) => p.toMasterProduct()),
-        ];
+        final allProducts = allProductsAsync.valueOrNull ?? const <MasterProduct>[];
 
         if (widget.isTabDestination) {
           return _buildBrowse(context, allProducts, categories,
@@ -1485,7 +1476,7 @@ class _SelectRow extends StatefulWidget {
 class _SelectRowState extends State<_SelectRow> {
   bool _infoOpen = false;
 
-  bool get _isCustom => widget.product.addedInVersion == 'custom';
+  bool get _isCustom => widget.product.editable;
 
   bool get _isFlexible =>
       widget.product.morningConfig != null &&

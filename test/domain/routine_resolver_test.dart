@@ -17,7 +17,6 @@ void main() {
         name: 'Product $id',
         categoryId: 'cat',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         morningConfig: SlotConfig(order: order, frequencyRule: const DailyRule()),
       );
 
@@ -27,7 +26,6 @@ void main() {
         name: 'Product $id',
         categoryId: 'cat',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         eveningConfig: SlotConfig(
           order: order,
           frequencyRule: WeeklyMaxRule(max),
@@ -157,7 +155,6 @@ void main() {
         name: 'Old Product',
         categoryId: 'cat',
         isDeprecated: true,
-        addedInVersion: '1.0.0',
         morningConfig: SlotConfig(order: 0, frequencyRule: DailyRule()),
       );
       final result = resolver.resolve(

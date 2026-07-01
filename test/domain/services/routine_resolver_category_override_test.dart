@@ -17,7 +17,6 @@ MasterProduct prod(String id, String categoryId) => MasterProduct(
       categoryId: categoryId,
       imageAsset: '',
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
       eveningConfig: null,
     );

@@ -15,7 +15,6 @@ void main() {
         name: id,
         categoryId: categoryId,
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
 
   MasterProduct makeSubProduct(
@@ -29,7 +28,6 @@ void main() {
         categoryId: categoryId,
         subCategoryId: subCategoryId,
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
 
   IncompatibilityRule subCategoryRule(

@@ -9,11 +9,17 @@ class ReconciliationResult {
   final List<MasterProduct> newlyDeprecatedSelected;
   final String currentContentVersion;
 
+  /// The set of non-deprecated master product IDs at the time of this
+  /// reconciliation. Callers should pass this back to [ReconciliationService.acknowledgeUpdate]
+  /// so the ID snapshot is persisted for the next diff.
+  final Set<String> currentMasterProductIds;
+
   const ReconciliationResult({
     required this.isUpdateDetected,
     required this.newProducts,
     required this.newlyDeprecatedSelected,
     required this.currentContentVersion,
+    required this.currentMasterProductIds,
   });
 }
 
@@ -26,15 +32,40 @@ class ReconciliationService {
 
   Future<ReconciliationResult> reconcile() async {
     final masterContent = await _masterRepo.load();
-    final lastKnown = await _settings.getLastKnownMasterVersion();
     final currentVersion = masterContent.manifest.contentVersion;
 
-    if (lastKnown == null || lastKnown == currentVersion) {
+    // Compute the current set of non-deprecated master product IDs.
+    final currentIds = masterContent.products
+        .where((p) => !p.isDeprecated)
+        .map((p) => p.id)
+        .toSet();
+
+    final knownIds = await _settings.getKnownProductIds();
+
+    // First run: no snapshot yet. Seed and report no update.
+    if (knownIds == null) {
+      await _settings.setKnownProductIds(currentIds);
+      await _settings.setLastKnownMasterVersion(currentVersion);
       return ReconciliationResult(
         isUpdateDetected: false,
         newProducts: [],
         newlyDeprecatedSelected: [],
         currentContentVersion: currentVersion,
+        currentMasterProductIds: currentIds,
+      );
+    }
+
+    // Version early-out: if the content version hasn't changed we can skip the
+    // expensive user-data load, but still surface deprecated-selected products
+    // on the rare chance a product was deprecated in a same-version bundle update.
+    final lastKnown = await _settings.getLastKnownMasterVersion();
+    if (lastKnown != null && lastKnown == currentVersion) {
+      return ReconciliationResult(
+        isUpdateDetected: false,
+        newProducts: [],
+        newlyDeprecatedSelected: [],
+        currentContentVersion: currentVersion,
+        currentMasterProductIds: currentIds,
       );
     }
 
@@ -44,12 +75,12 @@ class ReconciliationService {
         .map((s) => s.productId)
         .toSet();
 
-    // Products added strictly after lastKnown and not yet selected
+    // Products whose IDs are NOT in the last-known snapshot, not deprecated, not selected.
     final newProducts = masterContent.products
         .where((p) =>
             !p.isDeprecated &&
             !selectedIds.contains(p.id) &&
-            _isNewerVersion(p.addedInVersion, lastKnown))
+            !knownIds.contains(p.id))
         .toList();
 
     final newlyDeprecatedSelected = masterContent.products
@@ -57,27 +88,22 @@ class ReconciliationService {
         .toList();
 
     return ReconciliationResult(
-      isUpdateDetected: true,
+      isUpdateDetected: newProducts.isNotEmpty || newlyDeprecatedSelected.isNotEmpty,
       newProducts: newProducts,
       newlyDeprecatedSelected: newlyDeprecatedSelected,
       currentContentVersion: currentVersion,
+      currentMasterProductIds: currentIds,
     );
   }
 
-  Future<void> acknowledgeUpdate(String version) =>
-      _settings.setLastKnownMasterVersion(version);
-
-  /// Returns true if [candidate] is strictly newer than [reference] by semver.
-  static bool _isNewerVersion(String candidate, String reference) {
-    final c = _parts(candidate);
-    final r = _parts(reference);
-    for (var i = 0; i < 3; i++) {
-      if (c[i] > r[i]) return true;
-      if (c[i] < r[i]) return false;
-    }
-    return false; // equal
+  /// Persists [version] as the last-known content version and [masterProductIds]
+  /// as the snapshot of known product IDs. Both are used by the next [reconcile]
+  /// call to detect new products via ID diff.
+  Future<void> acknowledgeUpdate(
+    String version,
+    Set<String> masterProductIds,
+  ) async {
+    await _settings.setLastKnownMasterVersion(version);
+    await _settings.setKnownProductIds(masterProductIds);
   }
-
-  static List<int> _parts(String v) =>
-      v.split('.').map((s) => int.tryParse(s) ?? 0).toList();
 }

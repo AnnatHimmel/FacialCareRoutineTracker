@@ -11,7 +11,6 @@ MasterProduct _product({bool deprecated = false, String name = 'Test Product'}) 
       categoryId: 'cat1',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
       isDeprecated: deprecated,
-      addedInVersion: '1.0.0',
     );
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -171,7 +170,6 @@ void main() {
         categoryId: 'cat1',
         morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
 
       await tester.pumpWidget(_wrap(

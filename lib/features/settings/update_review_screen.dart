@@ -20,11 +20,14 @@ class UpdateReviewScreen extends ConsumerStatefulWidget {
 class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
   bool _acknowledging = false;
 
-  Future<void> _acknowledge(String version) async {
+  Future<void> _acknowledge(
+    String version,
+    Set<String> masterProductIds,
+  ) async {
     setState(() => _acknowledging = true);
     try {
       final service = ref.read(reconciliationServiceProvider);
-      await service.acknowledgeUpdate(version);
+      await service.acknowledgeUpdate(version, masterProductIds);
       if (mounted) context.go('/today');
     } finally {
       if (mounted) setState(() => _acknowledging = false);
@@ -212,7 +215,10 @@ class _UpdateReviewScreenState extends ConsumerState<UpdateReviewScreen> {
                 child: FilledButton(
                   onPressed: _acknowledging
                       ? null
-                      : () => _acknowledge(result.currentContentVersion),
+                      : () => _acknowledge(
+                            result.currentContentVersion,
+                            result.currentMasterProductIds,
+                          ),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.onPrimary,

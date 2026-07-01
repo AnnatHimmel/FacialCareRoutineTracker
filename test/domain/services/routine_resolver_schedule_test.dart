@@ -17,7 +17,6 @@ MasterProduct _dailyBiSlot(String id) => MasterProduct(
       name: id,
       categoryId: 'cat-serum',
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
       eveningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );

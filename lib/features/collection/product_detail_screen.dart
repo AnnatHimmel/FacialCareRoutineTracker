@@ -12,7 +12,6 @@ import '../../core/theme/app_colors.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/collection_item.dart';
 import '../../domain/entities/master_product.dart';
-import '../../domain/entities/user_custom_product.dart';
 import '../../domain/enums/collection_status.dart';
 import '../../domain/services/pao_calculator.dart';
 import '../../shared/providers/root_providers.dart';
@@ -101,9 +100,35 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final masterAsync = ref.watch(masterContentProvider);
+    final allProductsAsync = ref.watch(allProductsProvider);
     final collectionAsync = ref.watch(collectionItemsProvider);
-    final customAsync = ref.watch(customProductsProvider);
     final isPro = ref.watch(isProDemoProvider);
+
+    // Show loading until both master content and the merged product list are ready.
+    if (masterAsync.isLoading || allProductsAsync.isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: GlowAppBar(showBack: true),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (masterAsync.hasError) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: const GlowAppBar(showBack: true),
+        body: Center(child: Text(masterAsync.error.toString())),
+      );
+    }
+    if (allProductsAsync.hasError) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: const GlowAppBar(showBack: true),
+        body: Center(child: Text(allProductsAsync.error.toString())),
+      );
+    }
+
+    final master = masterAsync.value!;
+    final allProducts = allProductsAsync.value!;
 
     return PopScope(
       canPop: false,
@@ -120,35 +145,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         if (action == 'save' || action == 'discard') Navigator.of(context).pop();
         // null = stay on screen
       },
-      child: masterAsync.when(
-        loading: () => const Scaffold(
-          backgroundColor: AppColors.surface,
-          appBar: GlowAppBar(showBack: true),
-          body: Center(child: CircularProgressIndicator()),
-        ),
-        error: (e, _) => Scaffold(
-          backgroundColor: AppColors.surface,
-          appBar: const GlowAppBar(showBack: true),
-          body: Center(child: Text(e.toString())),
-        ),
-        data: (master) {
-          // Look up product — master first, then custom.
-          MasterProduct? product = master.products.cast<MasterProduct?>()
+      child: Builder(
+        builder: (context) {
+          // Look up product from the merged list (master + custom).
+          final MasterProduct? product = allProducts.cast<MasterProduct?>()
               .firstWhere((p) => p?.id == widget.productId, orElse: () => null);
-
-          bool isCustom = false;
-          UserCustomProduct? customProduct;
-          if (product == null) {
-            final customs = customAsync.valueOrNull ?? [];
-            customProduct = customs.cast<UserCustomProduct?>().firstWhere(
-              (c) => c?.id == widget.productId,
-              orElse: () => null,
-            );
-            if (customProduct != null) {
-              product = customProduct.toMasterProduct();
-              isCustom = true;
-            }
-          }
 
           if (product == null) {
             return Scaffold(
@@ -158,11 +159,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             );
           }
 
-          // Resolve category name.
+          // Resolve category name — requires master categories.
           Category? category;
           try {
             category = master.categories
-                .firstWhere((c) => c.id == product!.categoryId);
+                .firstWhere((c) => c.id == product.categoryId);
           } catch (_) {
             category = null;
           }
@@ -256,10 +257,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ],
 
                           // Custom product edit shortcut
-                          if (isCustom && customProduct != null) ...[
+                          if (product.editable) ...[
                             const SizedBox(height: 12),
                             _EditCustomProductButton(
-                              customProduct: customProduct,
+                              productId: widget.productId,
                             ),
                           ],
 
@@ -302,19 +303,25 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 // ── Edit custom product shortcut ───────────────────────────────────────────────
 
 class _EditCustomProductButton extends ConsumerWidget {
-  final UserCustomProduct customProduct;
-  const _EditCustomProductButton({required this.customProduct});
+  final String productId;
+  const _EditCustomProductButton({required this.productId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     return GestureDetector(
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => AddCustomProductSheet(initialProduct: customProduct),
-      ),
+      onTap: () async {
+        final customProduct =
+            await ref.read(routineServiceProvider).getCustomProduct(productId);
+        if (customProduct == null) return;
+        if (!context.mounted) return;
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => AddCustomProductSheet(initialProduct: customProduct),
+        );
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(

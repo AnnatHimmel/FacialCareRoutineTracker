@@ -10,7 +10,6 @@ void main() {
         name: 'Snail 96',
         categoryId: 'cat-1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
       expect(p.brand, 'COSRX');
     });
@@ -22,7 +21,6 @@ void main() {
         name: 'Generic Cleansing Gel',
         categoryId: 'cat-1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
       expect(p.brand, isNull);
     });
@@ -34,7 +32,6 @@ void main() {
         name: 'Snail 96',
         categoryId: 'cat-1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
       const b = MasterProduct(
         id: 'p1',
@@ -42,7 +39,6 @@ void main() {
         name: 'Snail 96',
         categoryId: 'cat-1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
       const c = MasterProduct(
         id: 'p1',
@@ -50,7 +46,6 @@ void main() {
         name: 'Snail 96',
         categoryId: 'cat-1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
       expect(a == b, isFalse);
       expect(a == c, isTrue);
@@ -63,7 +58,6 @@ void main() {
         name: 'Snail 96',
         categoryId: 'cat-1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
       expect(p.copyWith(brand: 'Other').brand, 'Other');
       expect(p.copyWith(brand: null).brand, isNull);
@@ -75,7 +69,6 @@ void main() {
         name: 'Old Product',
         categoryId: 'cat-1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       );
       expect(p.brand, isNull);
     });

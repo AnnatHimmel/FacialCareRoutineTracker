@@ -39,7 +39,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final eveningSelections =
         ref.watch(selectionsProvider(Slot.evening)).valueOrNull ?? [];
     final masterAsync = ref.watch(masterContentProvider);
-    final customProducts = ref.watch(customProductsProvider).valueOrNull ?? [];
+    final allProductsList = ref.watch(allProductsProvider).valueOrNull ?? const <MasterProduct>[];
     final collectionItems =
         ref.watch(collectionItemsProvider).valueOrNull ?? [];
     final paoCalc = ref.watch(paoCalculatorProvider);
@@ -61,17 +61,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         body: Center(child: Text(l.genericError(e.toString()))),
       ),
       data: (master) {
-        final selectedMasterProducts = master.products
-            .where((p) => selectedIds.contains(p.id) && !p.isDeprecated)
+        final allDisplayProducts = allProductsList
+            .where((p) => !p.isDeprecated &&
+                (selectedIds.contains(p.id) || p.editable))
             .toList();
-
-        final customAsMaster = customProducts
-            .map((c) => c.toMasterProduct())
-            .toList();
-        final allDisplayProducts = [
-          ...selectedMasterProducts,
-          ...customAsMaster,
-        ];
 
         // Resolves a product's "Category · Sub-category" chip label (or just the
         // category when there is no sub-category). Returns null when neither is
@@ -494,7 +487,7 @@ class _InUseSliver extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 builder: (_) => AddCustomProductSheet(
                   viewProduct: product,
-                  isUserProduct: product.addedInVersion == 'custom',
+                  isUserProduct: product.editable,
                 ),
               ),
             ),
@@ -693,7 +686,7 @@ class _SealedSliver extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 builder: (_) => AddCustomProductSheet(
                   viewProduct: product,
-                  isUserProduct: product.addedInVersion == 'custom',
+                  isUserProduct: product.editable,
                 ),
               ),
             ),
@@ -849,7 +842,7 @@ class _ArchiveSliver extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 builder: (_) => AddCustomProductSheet(
                   viewProduct: product,
-                  isUserProduct: product.addedInVersion == 'custom',
+                  isUserProduct: product.editable,
                 ),
               ),
             ),
@@ -1142,7 +1135,7 @@ class _FreeProductSliver extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 builder: (_) => AddCustomProductSheet(
                   viewProduct: product,
-                  isUserProduct: product.addedInVersion == 'custom',
+                  isUserProduct: product.editable,
                 ),
               ),
                 ),

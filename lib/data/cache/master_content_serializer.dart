@@ -74,7 +74,7 @@ abstract final class MasterContentSerializer {
         'categoryId': p.categoryId,
         'subCategoryId': p.subCategoryId,
         'isDeprecated': p.isDeprecated,
-        'addedInVersion': p.addedInVersion,
+        'editable': p.editable,
         'morningConfig':
             p.morningConfig != null ? _slotConfigToJson(p.morningConfig!) : null,
         'eveningConfig':
@@ -213,7 +213,7 @@ abstract final class MasterContentSerializer {
           ? null
           : _parseSlotConfig(m['eveningConfig'] as Map<String, dynamic>),
       isDeprecated: m['isDeprecated'] as bool,
-      addedInVersion: m['addedInVersion'] as String,
+      editable: m['editable'] as bool? ?? false,
       ingredients:
           (m['ingredients'] as List<dynamic>?)?.cast<String>() ?? const [],
       barcodes:

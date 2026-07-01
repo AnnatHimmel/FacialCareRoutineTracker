@@ -22,7 +22,7 @@ import '../../domain/enums/slot.dart';
 import '../../shared/widgets/product_thumb.dart' show userPhotoProvider;
 import '../../domain/services/category_helpers.dart';
 import '../../domain/services/default_schedule.dart';
-import '../../domain/services/routine_scheduler.dart';
+import '../../domain/services/routine_service.dart';
 import '../../domain/services/product_classifier.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/soft_icon_button.dart';
@@ -395,11 +395,9 @@ class _AddCustomProductSheetState
   /// full comment map is available on save (preserving all locales).
   Future<void> _loadCustomProduct() async {
     if (!mounted) return;
-    final customs = ref.read(customProductsProvider).valueOrNull ?? [];
-    final custom = customs.cast<UserCustomProduct?>().firstWhere(
-      (c) => c?.id == widget.viewProduct!.id,
-      orElse: () => null,
-    );
+    final custom = await ref
+        .read(routineServiceProvider)
+        .getCustomProduct(widget.viewProduct!.id);
     if (custom == null || !mounted) return;
     setState(() => _loadedCustomProduct = custom);
   }
@@ -823,10 +821,8 @@ class _AddCustomProductSheetState
             'ingredients=${product.ingredients} | comment=${product.comment}');
       }
 
-      final userRepo = ref.read(userDataRepositoryProvider);
-      await userRepo.upsertCustomProduct(product);
-
-      final scheduler = ref.read(routineSchedulerProvider);
+      final scheduler = ref.read(routineServiceProvider);
+      await scheduler.upsertCustomProduct(product);
 
       if (_isEditing) {
         final morningSelections =
@@ -878,7 +874,7 @@ class _AddCustomProductSheetState
   }
 
   Future<void> _updateSlot(
-    RoutineScheduler scheduler,
+    RoutineService scheduler,
     String productId,
     Slot slot,
     bool shouldBeSelected,
@@ -907,7 +903,7 @@ class _AddCustomProductSheetState
   /// selected slot, so it never ends up selected with a slot but no days
   /// (PRD §15.5). Skips a slot that already has a schedule (e.g. when editing).
   Future<void> _seedSpreadSchedule(
-    RoutineScheduler scheduler,
+    RoutineService scheduler,
     String productId,
     bool inMorning,
     bool inEvening,
@@ -962,12 +958,10 @@ class _AddCustomProductSheetState
       if (deleteId == null) return;
 
       // Determine which slots to deselect. Prefer initialProduct (edit flow)
-      // over viewProduct (view flow); fall back to the loaded custom product.
+      // over viewProduct (view flow); fall back to a service lookup.
+      final scheduler = ref.read(routineServiceProvider);
       final customProd = widget.initialProduct ??
-          (ref.read(customProductsProvider).valueOrNull ?? [])
-              .cast<UserCustomProduct?>()
-              .firstWhere((p) => p?.id == deleteId, orElse: () => null);
-      final scheduler = ref.read(routineSchedulerProvider);
+          await scheduler.getCustomProduct(deleteId);
       if (customProd != null) {
         if (customProd.inMorning) {
           await scheduler.removeProduct(
@@ -979,13 +973,11 @@ class _AddCustomProductSheetState
         }
       }
 
-      await ref
-          .read(userDataRepositoryProvider)
-          .deleteCustomProduct(deleteId);
+      await scheduler.deleteCustomProduct(deleteId);
 
       // Hand off to the shared /routine-ready route, which re-runs the
-      // auto-sorter (with custom products as extraProducts) and shows the
-      // "routine ready" summary before returning to the shelf.
+      // auto-sorter (fetching custom products internally via allProducts) and
+      // shows the "routine ready" summary before returning to the shelf.
       if (!mounted) return;
       final router = GoRouter.maybeOf(context);
       Navigator.of(context).pop(); // close the sheet

@@ -150,7 +150,6 @@ MasterProduct _amProduct(String id, String name, String catId) =>
       name: name,
       categoryId: catId,
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
 

@@ -5,7 +5,7 @@ import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/enums/slot.dart';
-import '../../domain/services/routine_scheduler.dart';
+import '../../domain/services/routine_service.dart';
 import '../providers/root_providers.dart';
 import 'product_thumb.dart';
 
@@ -104,7 +104,7 @@ class _ManualOrderSheet extends ConsumerWidget {
               child: FilledButton.icon(
                 onPressed: () async {
                   await ref
-                      .read(routineSchedulerProvider)
+                      .read(routineServiceProvider)
                       .deleteOrderOverride(slot);
                   onReverted?.call();
                   if (context.mounted) Navigator.of(context).pop();

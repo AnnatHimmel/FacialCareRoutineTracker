@@ -31,7 +31,6 @@ MasterContent _makeContent({
             ? SlotConfig(order: 2, frequencyRule: eveningFreq)
             : null,
         isDeprecated: false,
-        addedInVersion: '1.0.0',
       ),
     ],
     categories: [
@@ -178,7 +177,6 @@ void main() {
         'comment': {'he': null, 'en': null},
         'categoryId': 'cat-1',
         'isDeprecated': false,
-        'addedInVersion': '1.0.0',
         'morningConfig': null,
         'eveningConfig': null,
         'ingredients': ['Niacinamide', 'Panthenol'],
@@ -196,7 +194,6 @@ void main() {
         'comment': {'he': null, 'en': null},
         'categoryId': 'cat-1',
         'isDeprecated': false,
-        'addedInVersion': '1.0.0',
         'morningConfig': null,
         'eveningConfig': null,
         // no 'ingredients' key
@@ -214,7 +211,6 @@ void main() {
             name: 'Moisturizer',
             categoryId: 'cat-1',
             isDeprecated: false,
-            addedInVersion: '1.0.0',
             ingredients: ['Ceramide', 'Hyaluronic Acid'],
           ),
         ],
@@ -246,7 +242,6 @@ void main() {
         'comment': {'he': null, 'en': null},
         'categoryId': 'cat-1',
         'isDeprecated': false,
-        'addedInVersion': '1.0.0',
         'morningConfig': null,
         'eveningConfig': null,
         'barcodes': ['8809968130239', '1234567890123'],
@@ -265,7 +260,6 @@ void main() {
         'comment': {'he': null, 'en': null},
         'categoryId': 'cat-1',
         'isDeprecated': false,
-        'addedInVersion': '1.0.0',
         'morningConfig': null,
         'eveningConfig': null,
         // no 'barcodes' key — mimics old cached JSON
@@ -283,7 +277,6 @@ void main() {
             name: 'Rice Toner',
             categoryId: 'cat-1',
             isDeprecated: false,
-            addedInVersion: '1.0.0',
             barcodes: ['8809968130239'],
           ),
         ],
@@ -313,7 +306,6 @@ void main() {
           'comment': {'he': null, 'en': null},
           'categoryId': 'cat-serum',
           'isDeprecated': false,
-          'addedInVersion': '1.0.0',
           'morningConfig': null,
           'eveningConfig': null,
         };
@@ -338,7 +330,6 @@ void main() {
             categoryId: 'cat-serum',
             subCategoryId: 'sub-niacinamide',
             isDeprecated: false,
-            addedInVersion: '1.0.0',
           ),
         ],
         categories: [

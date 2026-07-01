@@ -159,20 +159,15 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
     // Without this guard, an uncaught throw turns _save into an unhandled
     // future and the screen stays frozen on the placement step.
     try {
-      final scheduler = ref.read(routineSchedulerProvider);
-      final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
-      final extraProducts =
-          customProds.map((c) => c.toMasterProduct()).toList();
+      final scheduler = ref.read(routineServiceProvider);
       final slots = _chosenSlots ?? _defaultSlots(p);
       final now = DateTime.now();
       for (final slot in slots) {
         // addProduct is idempotent — finds/reuses existing selection row.
-        // extraProducts lets it handle custom products without throwing.
         await scheduler.addProduct(
             master: master,
             productId: p.id,
-            slot: slot,
-            extraProducts: extraProducts);
+            slot: slot);
         // setDays is idempotent — finds existing schedule row, creates if absent.
         await scheduler.setDays(
             productId: p.id, slot: slot, days: _chosenDays);
@@ -191,10 +186,9 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
       // summary shown on the success step. Falls back to the simple confirmation
       // if the summary can't be built.
       // ignore: avoid_print
-      print('[AddProduct] calling buildRoutineSummary, extraProducts=${extraProducts.length}');
+      print('[AddProduct] calling buildRoutineSummary');
       try {
-        _summary = await scheduler.buildRoutineSummary(
-            master: master, extraProducts: extraProducts);
+        _summary = await scheduler.buildRoutineSummary(master: master);
         // ignore: avoid_print
         print('[AddProduct] buildRoutineSummary OK: total=${_summary?.totalProducts} '
             'morning=${_summary?.morningCount} evening=${_summary?.eveningCount} '
@@ -243,7 +237,7 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
     }
 
     final masterAsync = ref.watch(masterContentProvider);
-    final customAsync = ref.watch(customProductsProvider);
+    final allProductsAsync = ref.watch(allProductsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -255,11 +249,7 @@ class _AddProductFlowScreenState extends ConsumerState<AddProductFlowScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(l.genericError(e))),
         data: (master) {
-          final customProds = customAsync.valueOrNull ?? [];
-          final allProducts = [
-            ...master.products,
-            ...customProds.map((p) => p.toMasterProduct()),
-          ];
+          final allProducts = allProductsAsync.valueOrNull ?? const <MasterProduct>[];
 
           return switch (_step) {
             _Step.search => _SearchStep(

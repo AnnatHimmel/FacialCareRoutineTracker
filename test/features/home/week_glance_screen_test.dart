@@ -179,7 +179,6 @@ const _morningProductRealData = MasterProduct(
   name: 'RealData Morning Cleanser',
   categoryId: 'cat-cleanser',
   isDeprecated: false,
-  addedInVersion: '1.0.0',
   morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
 );
 
@@ -188,7 +187,6 @@ const _eveningProductARealData = MasterProduct(
   name: 'RealData Evening Serum A',
   categoryId: 'cat-serum',
   isDeprecated: false,
-  addedInVersion: '1.0.0',
   eveningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
 );
 
@@ -197,7 +195,6 @@ const _eveningProductBRealData = MasterProduct(
   name: 'RealData Evening Serum B',
   categoryId: 'cat-serum',
   isDeprecated: false,
-  addedInVersion: '1.0.0',
   eveningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
 );
 

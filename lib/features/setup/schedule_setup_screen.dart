@@ -10,7 +10,7 @@ import '../../domain/entities/weekday_schedule.dart';
 import '../../domain/enums/slot.dart';
 import '../../domain/services/incompatibility_checker.dart';
 import '../../domain/services/product_sorter.dart';
-import '../../domain/services/routine_scheduler.dart';
+import '../../domain/services/routine_service.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glass_bottom_nav.dart';
 import '../../shared/widgets/glow_app_bar.dart';
@@ -124,10 +124,10 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     final product =
         master?.products.where((p) => p.id == productId).firstOrNull;
     final currentDays = product != null
-        ? RoutineScheduler.effectiveDays(product, _activeSlot, schedules)
+        ? RoutineService.effectiveDays(product, _activeSlot, schedules)
         : <int>{};
     final updated = Set<int>.from(currentDays)..remove(dayId);
-    await ref.read(routineSchedulerProvider).setDays(
+    await ref.read(routineServiceProvider).setDays(
           productId: productId,
           slot: _activeSlot,
           days: updated,
@@ -138,14 +138,14 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
   Future<void> _toggleDayForProduct(MasterProduct p, int dayId) async {
     final schedules = ref.read(allSchedulesProvider).valueOrNull ?? [];
     final current =
-        RoutineScheduler.effectiveDays(p, _activeSlot, schedules);
+        RoutineService.effectiveDays(p, _activeSlot, schedules);
     final updated = Set<int>.from(current);
     if (updated.contains(dayId)) {
       updated.remove(dayId);
     } else {
       updated.add(dayId);
     }
-    await ref.read(routineSchedulerProvider).setDays(
+    await ref.read(routineServiceProvider).setDays(
           productId: p.id,
           slot: _activeSlot,
           days: updated,
@@ -154,20 +154,18 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
 
   /// Auto-fix all conflicts/overuse for the active slot.
   ///
-  /// Delegates to [RoutineScheduler.fixProblems], which handles conflict
+  /// Delegates to [RoutineService.fixProblems], which handles conflict
   /// resolution, overuse pruning, and persistence. Surfaces a "what changed"
   /// dialog with an Undo that re-applies the inverse mutations.
   Future<void> _autoFix() async {
     final l = AppLocalizations.of(context)!;
-    final scheduler = ref.read(routineSchedulerProvider);
+    final scheduler = ref.read(routineServiceProvider);
     final master = ref.read(masterContentProvider).valueOrNull;
     if (master == null) return;
 
-    final customProds = ref.read(customProductsProvider).valueOrNull ?? [];
     final result = await scheduler.fixProblems(
       master: master,
       slot: _activeSlot,
-      extraProducts: customProds.map((c) => c.toMasterProduct()).toList(),
     );
 
     if (result.isEmpty) return;
@@ -267,7 +265,6 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
     final eveningAsync = ref.watch(selectionsProvider(Slot.evening));
     final schedulesAsync = ref.watch(allSchedulesProvider);
     final mutedAsync = ref.watch(mutedConflictsProvider);
-    final customAsync = ref.watch(customProductsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -283,12 +280,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           final schedules = schedulesAsync.valueOrNull ?? [];
           final mutedIds =
               (mutedAsync.valueOrNull ?? []).map((m) => m.ruleId).toSet();
-          final customProds = customAsync.valueOrNull ?? [];
-
-          final allProducts = [
-            ...master.products,
-            ...customProds.map((p) => p.toMasterProduct()),
-          ];
+                final allProducts = ref.watch(allProductsProvider).valueOrNull ?? const <MasterProduct>[];
 
           final morningSelectedIds = morningSelections
               .where((s) => s.isSelected)
@@ -335,11 +327,11 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
               .toList();
           final narrowed = daily
               .where((p) =>
-                  RoutineScheduler.effectiveDays(p, _activeSlot, schedules).length < 7)
+                  RoutineService.effectiveDays(p, _activeSlot, schedules).length < 7)
               .toList();
           final everyDay = daily
               .where((p) =>
-                  RoutineScheduler.effectiveDays(p, _activeSlot, schedules).length == 7)
+                  RoutineService.effectiveDays(p, _activeSlot, schedules).length == 7)
               .toList();
           final flexed = [...occasional, ...narrowed]
             ..sort(ProductSorter.adminComparator(
@@ -371,7 +363,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                   ? Icons.wb_sunny_rounded
                   : Icons.dark_mode_rounded;
 
-          final scheduler = ref.read(routineSchedulerProvider);
+          final scheduler = ref.read(routineServiceProvider);
           final otherSlotProducts =
               _activeSlot == Slot.morning ? eveningProducts : morningProducts;
 
@@ -427,7 +419,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
             } else {
               final firstProductDay = List.generate(7, (d) => d).firstWhere(
                 (d) => activeProducts.any(
-                    (p) => RoutineScheduler.effectiveDays(p, _activeSlot, schedules).contains(d)),
+                    (p) => RoutineService.effectiveDays(p, _activeSlot, schedules).contains(d)),
                 orElse: () => today,
               );
               priorityDay = issueDays.isEmpty ? firstProductDay : today;
@@ -467,12 +459,12 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
           // ── days mode helpers ──
           final selectedDayProducts = activeProducts
               .where((p) =>
-                  RoutineScheduler.effectiveDays(p, _activeSlot, schedules)
+                  RoutineService.effectiveDays(p, _activeSlot, schedules)
                       .contains(_selectedDay))
               .toList();
           final notSelectedDayProducts = activeProducts
               .where((p) =>
-                  !RoutineScheduler.effectiveDays(p, _activeSlot, schedules)
+                  !RoutineService.effectiveDays(p, _activeSlot, schedules)
                       .contains(_selectedDay))
               .toList();
 
@@ -482,7 +474,7 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
             for (int d = 0; d < 7; d++) {
               counts[d] = activeProducts
                   .where((p) =>
-                      RoutineScheduler.effectiveDays(p, _activeSlot, schedules).contains(d))
+                      RoutineService.effectiveDays(p, _activeSlot, schedules).contains(d))
                   .length;
             }
             return counts;
@@ -716,10 +708,10 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                               _openProductId == p.id
                                                   ? null
                                                   : p.id),
-                                      selectedDays: RoutineScheduler.effectiveDays(
+                                      selectedDays: RoutineService.effectiveDays(
                                           p, _activeSlot, schedules),
                                       onChanged: (days, existing) =>
-                                          ref.read(routineSchedulerProvider).setDays(
+                                          ref.read(routineServiceProvider).setDays(
                                             productId: p.id,
                                             slot: _activeSlot,
                                             days: days,
@@ -747,9 +739,9 @@ class _ScheduleSetupScreenState extends ConsumerState<ScheduleSetupScreen> {
                                       _openProductId =
                                           _openProductId == id ? null : id),
                                   effectiveDays: (p) =>
-                                      RoutineScheduler.effectiveDays(p, _activeSlot, schedules),
+                                      RoutineService.effectiveDays(p, _activeSlot, schedules),
                                   onChanged: (id, days, existing) =>
-                                      ref.read(routineSchedulerProvider).setDays(
+                                      ref.read(routineServiceProvider).setDays(
                                         productId: id,
                                         slot: _activeSlot,
                                         days: days,

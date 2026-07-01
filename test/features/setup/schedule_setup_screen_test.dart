@@ -110,7 +110,6 @@ MasterProduct _weeklyProduct(String id, String name) => MasterProduct(
       name: name,
       categoryId: 'cat1',
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(3)),
     );
 
@@ -119,7 +118,6 @@ MasterProduct _dailyProduct(String id, String name) => MasterProduct(
       name: name,
       categoryId: 'cat1',
       isDeprecated: false,
-      addedInVersion: '1.0.0',
       morningConfig: const SlotConfig(order: 1, frequencyRule: DailyRule()),
     );
 
@@ -406,7 +404,6 @@ void main() {
         name: 'סרום ויטמין C',
         categoryId: 'cat1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         morningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
       const morningProd2 = MasterProduct(
@@ -414,7 +411,6 @@ void main() {
         name: 'נייר רך',
         categoryId: 'cat1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         morningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
       );
       const eveningProd1 = MasterProduct(
@@ -422,7 +418,6 @@ void main() {
         name: 'קרם לילה',
         categoryId: 'cat1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         eveningConfig: SlotConfig(order: 1, frequencyRule: DailyRule()),
       );
       const eveningProd2 = MasterProduct(
@@ -430,7 +425,6 @@ void main() {
         name: 'שמן',
         categoryId: 'cat1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         eveningConfig: SlotConfig(order: 2, frequencyRule: DailyRule()),
       );
 
@@ -507,7 +501,6 @@ void main() {
         name: 'סרום רטינול',
         categoryId: 'cat1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         morningConfig: SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(2)),
       );
 
@@ -548,7 +541,6 @@ void main() {
         name: 'סרום רטינול 2',
         categoryId: 'cat1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         morningConfig: SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(2)),
       );
 
@@ -653,7 +645,6 @@ void main() {
         name: 'פילינג',
         categoryId: 'cat1',
         isDeprecated: false,
-        addedInVersion: '1.0.0',
         morningConfig: SlotConfig(order: 1, frequencyRule: WeeklyMaxRule(1)),
       );
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../domain/repositories/settings_repository.dart';
 
@@ -16,6 +18,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyWeeklyPhotoReminderDismissed =
       'weekly_photo_reminder_dismissed_date';
   static const _keyWeeklyReminderEnabled = 'weekly_photo_reminder_enabled';
+  static const _keyKnownProductIds = 'known_product_ids';
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
@@ -130,4 +133,16 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<void> setWeeklyReminderEnabled(bool value) async =>
       (await _prefs).setBool(_keyWeeklyReminderEnabled, value);
+
+  @override
+  Future<Set<String>?> getKnownProductIds() async {
+    final raw = (await _prefs).getString(_keyKnownProductIds);
+    if (raw == null) return null;
+    final list = (jsonDecode(raw) as List<dynamic>).cast<String>();
+    return list.toSet();
+  }
+
+  @override
+  Future<void> setKnownProductIds(Set<String> ids) async =>
+      (await _prefs).setString(_keyKnownProductIds, jsonEncode(ids.toList()));
 }

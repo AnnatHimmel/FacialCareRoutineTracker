@@ -72,13 +72,13 @@ class _OrderCustomizationScreenState
 
     // Route through scheduler.setOrder so the deterministic-id rule is applied
     // in one place, preventing duplicate rows on rapid drags.
-    final scheduler = ref.read(routineSchedulerProvider);
+    final scheduler = ref.read(routineServiceProvider);
     await scheduler.setOrder(slot: slot, weekday: null, orderedIds: ids);
   }
 
   Future<void> _resetOrder(Slot slot) async {
     setState(() => _localOrder[slot] = null);
-    final scheduler = ref.read(routineSchedulerProvider);
+    final scheduler = ref.read(routineServiceProvider);
     await scheduler.deleteOrderOverride(slot);
   }
 
@@ -112,12 +112,9 @@ class _OrderCustomizationScreenState
         ref.watch(_orderOverrideProvider(Slot.evening));
 
     final schedulesAsync = ref.watch(allSchedulesProvider);
-    // Custom products participate in the routine everywhere else (Daily Home,
-    // Week Glance, Schedule Setup) — include them here too so they can be
-    // reordered instead of silently tailing the admin order.
-    final customProducts = (ref.watch(customProductsProvider).valueOrNull ?? [])
-        .map((c) => c.toMasterProduct())
-        .toList();
+    // All products (master + custom) from the unified provider so custom items
+    // can be reordered instead of silently tailing the admin order.
+    final allProducts = ref.watch(allProductsProvider).valueOrNull ?? const <MasterProduct>[];
     // Category overrides so the Order screen sorts identically to Daily Home.
     final catOverrideList =
         ref.watch(categoryOverridesProvider).valueOrNull ?? [];
@@ -154,7 +151,7 @@ class _OrderCustomizationScreenState
 
           final morningProducts = _sortedProducts(
             master,
-            customProducts,
+            allProducts,
             morningSelectedIds,
             Slot.morning,
             morningOverride,
@@ -164,7 +161,7 @@ class _OrderCustomizationScreenState
           );
           final eveningProducts = _sortedProducts(
             master,
-            customProducts,
+            allProducts,
             eveningSelectedIds,
             Slot.evening,
             eveningOverride,
@@ -382,7 +379,7 @@ class _OrderCustomizationScreenState
 
   List<MasterProduct> _sortedProducts(
     MasterContent master,
-    List<MasterProduct> customProducts,
+    List<MasterProduct> allProducts,
     Set<String> selectedIds,
     Slot slot,
     OrderOverride? override,
@@ -396,7 +393,7 @@ class _OrderCustomizationScreenState
           (s) => s.productId == id && s.slot == slot && s.weekdays.isEmpty,
         );
 
-    final products = [...master.products, ...customProducts]
+    final products = allProducts
         .where((p) =>
             !p.isDeprecated &&
             selectedIds.contains(p.id) &&
@@ -513,13 +510,13 @@ class _OrderCustomizationScreenState
 final _orderOverrideProvider =
     StreamProvider.family<OrderOverride?, Slot>(
   (ref, slot) =>
-      ref.watch(routineSchedulerProvider).watchOrderOverride(slot),
+      ref.watch(routineServiceProvider).watchOrderOverride(slot),
 );
 
 final _perDayOverridesProvider =
     StreamProvider.family<List<OrderOverride>, Slot>(
   (ref, slot) =>
-      ref.watch(routineSchedulerProvider).watchPerDayOrderOverrides(slot),
+      ref.watch(routineServiceProvider).watchPerDayOrderOverrides(slot),
 );
 
 // ── Onboarding single-slot header ────────────────────────────────────────────
@@ -891,7 +888,7 @@ class _PerDayOrderSheetState extends ConsumerState<_PerDayOrderSheet> {
 
     // Route through scheduler.setOrder so the deterministic-id rule is applied
     // in one place, preventing duplicate rows on rapid drags.
-    final scheduler = ref.read(routineSchedulerProvider);
+    final scheduler = ref.read(routineServiceProvider);
     await scheduler.setOrder(
       slot: widget.slot,
       weekday: widget.weekday,
@@ -900,7 +897,7 @@ class _PerDayOrderSheetState extends ConsumerState<_PerDayOrderSheet> {
   }
 
   Future<void> _clearDayOrder() async {
-    final scheduler = ref.read(routineSchedulerProvider);
+    final scheduler = ref.read(routineServiceProvider);
     await scheduler.deletePerDayOrderOverride(widget.slot, widget.weekday);
     if (mounted) Navigator.of(context).pop();
   }

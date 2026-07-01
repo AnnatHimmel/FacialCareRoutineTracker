@@ -230,7 +230,7 @@ class _BarcodeScanViewState extends ConsumerState<BarcodeScanView> {
           .where((p) => !p.isDeprecated && p.barcodes.contains(barcode))
           .firstOrNull;
       if (match != null) {
-        final scheduler = ref.read(routineSchedulerProvider);
+        final scheduler = ref.read(routineServiceProvider);
         final morningList = await scheduler.watchSelections(Slot.morning).first;
         final eveningList = await scheduler.watchSelections(Slot.evening).first;
         final alreadyMorning = match.morningConfig == null ||
@@ -273,7 +273,7 @@ class _BarcodeScanViewState extends ConsumerState<BarcodeScanView> {
   }
 
   Future<void> _addMasterProduct(MasterProduct product) async {
-    final scheduler = ref.read(routineSchedulerProvider);
+    final scheduler = ref.read(routineServiceProvider);
     final morningList = await scheduler.watchSelections(Slot.morning).first;
     final eveningList = await scheduler.watchSelections(Slot.evening).first;
 
