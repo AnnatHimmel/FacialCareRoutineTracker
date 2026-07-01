@@ -11,7 +11,6 @@ import '../../features/calendar/day_detail_screen.dart';
 import '../../features/settings/about_screen.dart';
 import '../../features/settings/export_import_screen.dart';
 import '../../features/settings/merge_conflict_screen.dart';
-import '../../features/settings/premium_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/settings/update_review_screen.dart';
 import '../../features/journal/skin_journal_screen.dart';
@@ -227,10 +226,6 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/update-review',
       builder: (context, state) => _withSafeZone(const UpdateReviewScreen()),
-    ),
-    GoRoute(
-      path: '/premium',
-      builder: (context, state) => _withSafeZone(const PremiumScreen()),
     ),
   ],
 );

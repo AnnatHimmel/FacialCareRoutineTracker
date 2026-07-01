@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import 'upgrade_sheet.dart';
-
 class StreakWidget extends StatelessWidget {
   final int currentStreak;
   final int longestStreak;
   final int gracesUsed;
   final int gracesTotal;
-  final bool showMilestonePitch;
 
   const StreakWidget({
     super.key,
@@ -18,7 +14,6 @@ class StreakWidget extends StatelessWidget {
     required this.longestStreak,
     required this.gracesUsed,
     this.gracesTotal = 3,
-    this.showMilestonePitch = false,
   });
 
   static const Color _white = Color(0xFFFFFFFF);
@@ -28,12 +23,8 @@ class StreakWidget extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final gracesLeft = (gracesTotal - gracesUsed).clamp(0, gracesTotal);
 
-    final headline = showMilestonePitch
-        ? l.streakMilestoneTitle
-        : (currentStreak > 0 ? l.streakOnTrack : l.streakStartToday);
-    final subtext = showMilestonePitch
-        ? l.streakMilestoneSub
-        : l.streakPersonalBest(longestStreak);
+    final headline = currentStreak > 0 ? l.streakOnTrack : l.streakStartToday;
+    final subtext = l.streakPersonalBest(longestStreak);
 
     return Container(
       clipBehavior: Clip.hardEdge,
@@ -166,15 +157,11 @@ class StreakWidget extends StatelessWidget {
                 ),
               ),
 
-              if (showMilestonePitch)
-                _MilestonePitchCard(l: l)
-              else ...[
-                Container(height: 1, color: Colors.white.withAlpha(51)),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                  child: _GraceMeter(total: gracesTotal, left: gracesLeft),
-                ),
-              ],
+              Container(height: 1, color: Colors.white.withAlpha(51)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: _GraceMeter(total: gracesTotal, left: gracesLeft),
+              ),
             ],
           ),
         ],
@@ -183,110 +170,6 @@ class StreakWidget extends StatelessWidget {
   }
 }
 
-// ── Milestone pitch card ──────────────────────────────────────────────────────
-
-class _MilestonePitchCard extends StatelessWidget {
-  final AppLocalizations l;
-  const _MilestonePitchCard({required this.l});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Circle icon
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: Color(0xfff7e8c8),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.add_a_photo,
-                size: 20,
-                color: Color(0xff8f6a15),
-              ),
-            ),
-            const SizedBox(width: 10),
-            // Text column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l.streakPitchTitle,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF251815),
-                    ),
-                  ),
-                  Text(
-                    l.streakPitchSub,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11.5,
-                      color: const Color(0xFF56423E),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Gold gradient CTA button
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xffb3892a), Color(0xff8f6a15)],
-                ),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: TextButton.icon(
-                onPressed: () => showUpgradeSheet(context),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                icon: const Icon(
-                  Icons.workspace_premium,
-                  size: 14,
-                  color: Colors.white,
-                ),
-                label: Text(
-                  l.streakPitchCta,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _GraceMeter extends StatelessWidget {
   final int total;

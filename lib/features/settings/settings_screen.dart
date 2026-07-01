@@ -10,9 +10,6 @@ import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/backup_reminder_banner.dart';
 import '../../shared/widgets/glow_app_bar.dart';
 import '../../shared/widgets/glow_card.dart';
-import '../../shared/widgets/pro_tag.dart';
-import '../../shared/widgets/upgrade_sheet.dart';
-import '../../core/config/feature_flags.dart';
 
 final _userProfileProvider = FutureProvider<({String? name, String? gender})>(
   (ref) async {
@@ -31,8 +28,6 @@ class SettingsScreen extends ConsumerWidget {
     final l = AppLocalizations.of(context)!;
     final appVersion = ref.watch(appVersionProvider).valueOrNull ?? '';
     final profileAsync = ref.watch(_userProfileProvider);
-    final isPro = ref.watch(isProDemoProvider);
-
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: GlowAppBar(title: l.navSettings),
@@ -44,77 +39,11 @@ class SettingsScreen extends ConsumerWidget {
             onEdit: () => _showEditProfileSheet(context, ref, l),
             onLogout: () => _confirmLogout(context, ref, l),
             l: l,
-            isPro: isPro,
           ),
 
-          if (kProFeaturesEnabled) ...[
-            const SizedBox(height: 16),
-            const _DemoModeCard(),
-          ],
           const SizedBox(height: 16),
           const BackupReminderBanner(),
           const SizedBox(height: 16),
-
-          // ── Gold PRO upsell card (hidden when PRO demo is active) ───────────
-          if (!isPro && kProFeaturesEnabled) ...[
-            GestureDetector(
-              onTap: () => showUpgradeSheet(context),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xffb3892a), Color(0xff8f6a15)],
-                  ),
-                  borderRadius: BorderRadius.circular(26),
-                  boxShadow: AppColors.glowLg,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.workspace_premium_rounded,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l.settingsProTitle,
-                            style: AppTypography.labelMd.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            l.settingsProSubtitle,
-                            style: AppTypography.labelSm.copyWith(
-                              color: Colors.white.withAlpha(217),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_left_rounded
-                          : Icons.chevron_right_rounded,
-                      textDirection: TextDirection.ltr,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
 
           // ── Standard settings group ─────────────────────────────────────────
           _SettingsGroupCard(
@@ -166,14 +95,12 @@ class _ProfileCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onLogout;
   final AppLocalizations l;
-  final bool isPro;
 
   const _ProfileCard({
     required this.profileAsync,
     required this.onEdit,
     required this.onLogout,
     required this.l,
-    required this.isPro,
   });
 
   @override
@@ -209,31 +136,6 @@ class _ProfileCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
-                    if (kProFeaturesEnabled) ...[
-                      if (isPro)
-                        Row(
-                          children: [
-                            Text(
-                              l.settingsAccountPro,
-                              style: AppTypography.labelSm.copyWith(
-                                color: AppColors.onSurfaceVariant,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            const ProTag(size: ProTagSize.small),
-                          ],
-                        )
-                      else
-                        Text(
-                          l.settingsAccountFree,
-                          style: AppTypography.labelSm.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                            fontSize: 12,
-                          ),
-                        ),
-                    ],
                   ],
                 ),
               ),
@@ -757,181 +659,6 @@ Future<void> _confirmLogout(
     // assigns default spread schedules and re-resolves all conflicts from scratch.
     ref.invalidate(conflictAutoFixProvider);
     if (context.mounted) context.go('/');
-  }
-}
-
-// ── Demo Mode Card ─────────────────────────────────────────────────────────────
-
-class _DemoModeCard extends ConsumerWidget {
-  const _DemoModeCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context)!;
-    final isPro = ref.watch(isProDemoProvider);
-    final isMilestone = ref.watch(milestoneDemoProvider);
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Color(0xfffdf8ec)],
-        ),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xffeddfb8)),
-        boxShadow: AppColors.glow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header: icon + title
-          Row(
-            children: [
-              const Icon(Icons.science_rounded, color: Color(0xff8f6a15), size: 20),
-              const SizedBox(width: 8),
-              Text(
-                l.settingsDemoTitle,
-                style: AppTypography.labelMd.copyWith(
-                  color: const Color(0xff6b5413),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            l.settingsDemoDesc,
-            style: AppTypography.labelSm.copyWith(
-              color: AppColors.onSurfaceVariant,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Segmented pill toggle
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(9999),
-              border: Border.all(
-                color: AppColors.outlineVariant.withAlpha(102),
-              ),
-            ),
-            child: Row(
-              children: [
-                // Free half
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () =>
-                        ref.read(isProDemoProvider.notifier).state = false,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(vertical: 9),
-                      decoration: BoxDecoration(
-                        color: !isPro ? AppColors.onSurface : Colors.transparent,
-                        borderRadius: BorderRadius.circular(9999),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        l.settingsDemoFree,
-                        style: AppTypography.labelMd.copyWith(
-                          color: !isPro
-                              ? Colors.white
-                              : AppColors.onSurfaceVariant,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // PRO half
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () =>
-                        ref.read(isProDemoProvider.notifier).state = true,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(vertical: 9),
-                      decoration: BoxDecoration(
-                        gradient: isPro
-                            ? const LinearGradient(
-                                colors: [Color(0xffb3892a), Color(0xff8f6a15)],
-                              )
-                            : null,
-                        borderRadius: BorderRadius.circular(9999),
-                      ),
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'PRO',
-                            style: AppTypography.labelMd.copyWith(
-                              color: isPro
-                                  ? Colors.white
-                                  : AppColors.onSurfaceVariant,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.workspace_premium_rounded,
-                            size: 14,
-                            color: isPro
-                                ? Colors.white
-                                : AppColors.onSurfaceVariant,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 24, color: Color(0xffeddfb8)),
-          // Milestone row
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l.settingsDemoMilestone,
-                      style: AppTypography.labelMd.copyWith(
-                        color: AppColors.onSurface,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l.settingsDemoMilestoneDesc,
-                      style: AppTypography.labelSm.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Switch(
-                value: isMilestone,
-                onChanged: (v) =>
-                    ref.read(milestoneDemoProvider.notifier).state = v,
-                activeThumbColor: AppColors.primary,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }
 

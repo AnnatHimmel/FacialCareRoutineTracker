@@ -242,13 +242,6 @@ final onboardingCompletedProvider = FutureProvider<bool>(
 /// Update by reading `.notifier` and setting `.state`.
 final appLocaleProvider = StateProvider<Locale>((ref) => const Locale('he'));
 
-// ── Demo-only PRO toggle (Settings → "תצוגת הדגמה") ──────────────────────────
-/// Toggles the Glow PRO experience across screens. In-memory: resets on restart.
-final isProDemoProvider = StateProvider<bool>((ref) => false);
-
-/// Forces the day-7 streak milestone / conversion banner on the Today screen.
-final milestoneDemoProvider = StateProvider<bool>((ref) => false);
-
 /// Reads saved language and gender from settings and syncs [appLocaleProvider].
 /// - English → Locale('en') regardless of gender
 /// - Hebrew + male → Locale('he', 'MA')

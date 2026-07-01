@@ -10,13 +10,9 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/entities/day_record.dart';
 import '../../domain/entities/master_product.dart';
 import '../../domain/entities/skin_log_entry.dart';
-import '../../domain/enums/collection_status.dart';
-import '../../domain/enums/pao_tone.dart';
 import '../../domain/enums/slot.dart';
 import '../../shared/providers/root_providers.dart';
 import '../../shared/widgets/glow_app_bar.dart';
-import '../../shared/widgets/pro_tag.dart';
-import '../../core/config/feature_flags.dart';
 import '../../shared/widgets/product_thumb.dart';
 import '../../shared/widgets/routine_item_row.dart';
 import '../../shared/widgets/slot_section_header.dart';
@@ -210,23 +206,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
         ref.watch(_dayRecordProvider((date: dateStr, slot: Slot.morning)));
     final eveningRecordAsync =
         ref.watch(_dayRecordProvider((date: dateStr, slot: Slot.evening)));
-    final collectionItems = ref.watch(collectionItemsProvider).valueOrNull ?? [];
-    final pao = ref.watch(paoCalculatorProvider);
-    final now = DateTime.now();
-    final nearExpiryIds = <String>{};
-    for (final item in collectionItems) {
-      if (item.status == CollectionStatus.inUse && item.openedDate != null) {
-        final progress = pao.compute(
-          openedDate: item.openedDate,
-          paoMonths: item.paoMonths,
-          now: now,
-        );
-        if (progress.tone == PaoTone.warn || progress.tone == PaoTone.bad) {
-          nearExpiryIds.add(item.productId);
-        }
-      }
-    }
-
     final morningProducts = morningRoutineAsync.valueOrNull ?? [];
     final eveningProducts = eveningRoutineAsync.valueOrNull ?? [];
     final morningRecord = morningRecordAsync.valueOrNull;
@@ -245,8 +224,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
         morningProducts.where((p) => morningRecorded.contains(p.id)).length;
     final eveningDone =
         eveningProducts.where((p) => eveningRecorded.contains(p.id)).length;
-
-    final isPro = ref.watch(isProDemoProvider);
 
     final skinLogs = ref.watch(_allSkinLogsProvider).valueOrNull ?? const [];
     final reminderEnabled =
@@ -339,29 +316,12 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     ),
                   ),
 
-                if (kProFeaturesEnabled && (isPro ? nearExpiryIds.isNotEmpty : true))
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      child: _AttentionRow(
-                        count: isPro ? nearExpiryIds.length : 0,
-                      ),
-                    ),
-                  ),
-
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (isPro && kProFeaturesEnabled) ...[
-                          const SizedBox(height: 4),
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [ProTag()],
-                          ),
-                        ],
                         const SizedBox(height: 8),
                         _ViewModeControl(
                           viewMode: _viewMode,
@@ -380,8 +340,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     products: morningProducts,
                     record: morningRecord,
                     doneCount: morningDone,
-                    nearExpiryIds: nearExpiryIds,
-                    isPro: isPro,
                   ),
 
                 if (morningProducts.isNotEmpty && eveningProducts.isNotEmpty)
@@ -393,8 +351,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                     products: eveningProducts,
                     record: eveningRecord,
                     doneCount: eveningDone,
-                    nearExpiryIds: nearExpiryIds,
-                    isPro: isPro,
                   ),
 
                 if (morningProducts.isEmpty && eveningProducts.isEmpty)
@@ -436,8 +392,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
     required List<MasterProduct> products,
     required DayRecord? record,
     required int doneCount,
-    required Set<String> nearExpiryIds,
-    required bool isPro,
   }) {
     final isExpanded = _sectionExpanded[slot] ?? true;
     final recorded = record?.recordedProductIds.toSet() ?? {};
@@ -489,7 +443,6 @@ class _DailyHomeScreenState extends ConsumerState<DailyHomeScreen>
                           stepNumber: index + 1,
                           isDone: isDone,
                           showName: _showNames,
-                          warn: isPro && kProFeaturesEnabled && nearExpiryIds.contains(product.id),
                           onTap: record != null
                               ? () => _toggleProduct(record, product.id)
                               : null,
@@ -776,7 +729,6 @@ class _ProductGridTile extends ConsumerWidget {
   final int stepNumber;
   final bool isDone;
   final bool showName;
-  final bool warn;
   final VoidCallback? onTap;
 
   const _ProductGridTile({
@@ -785,7 +737,6 @@ class _ProductGridTile extends ConsumerWidget {
     required this.stepNumber,
     required this.isDone,
     required this.showName,
-    this.warn = false,
     this.onTap,
   });
 
@@ -858,27 +809,6 @@ class _ProductGridTile extends ConsumerWidget {
                       start: 8,
                       child: _StepBadge(number: stepNumber, isDone: isDone),
                     ),
-                    if (warn)
-                      PositionedDirectional(
-                        top: 8,
-                        end: 8,
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: const Color(0xfff7e8c8),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                            boxShadow: AppColors.soft,
-                          ),
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.schedule_rounded,
-                            size: 18,
-                            color: Color(0xff8a5a17),
-                          ),
-                        ),
-                      ),
                   ],
                 ),
               ),
@@ -981,68 +911,6 @@ class _StepBadge extends StatelessWidget {
           color: isDone ? Colors.white : AppColors.primary,
           fontWeight: FontWeight.w700,
           fontSize: 22,
-        ),
-      ),
-    );
-  }
-}
-
-// ── Attention row ─────────────────────────────────────────────────────────────
-
-class _AttentionRow extends StatelessWidget {
-  final int count;
-
-  const _AttentionRow({required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final hasWarnings = count > 0;
-    return GestureDetector(
-      onTap: () => context.go('/collection'),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Color(0xfffdf6e3)],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xffeddfb8)),
-          boxShadow: AppColors.glowSm,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              hasWarnings
-                  ? Icons.schedule_outlined
-                  : Icons.lightbulb_outline_rounded,
-              size: 20,
-              color: const Color(0xff8a5a17),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                hasWarnings
-                    ? l.homeAttentionCount(count)
-                    : l.homeAttentionNone,
-                style: AppTypography.labelMd.copyWith(
-                  color: AppColors.onSurface,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-            Icon(
-              Directionality.of(context) == TextDirection.rtl
-                  ? Icons.chevron_left
-                  : Icons.chevron_right,
-              size: 18,
-              color: AppColors.outline,
-              textDirection: TextDirection.ltr,
-            ),
-          ],
         ),
       ),
     );
