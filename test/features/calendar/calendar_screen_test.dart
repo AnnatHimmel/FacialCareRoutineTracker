@@ -149,13 +149,13 @@ void main() {
       expect(find.text(prevLabel), findsOneWidget);
     });
 
-    testWidgets('tapping day cell navigates to /day/:date', (tester) async {
+    testWidgets('tapping day cell shows inline day detail section', (tester) async {
       _useTallSurface(tester);
       await tester.pumpWidget(_wrap());
       await tester.pumpAndSettle();
 
-      // Go to a past month so we can tap any day
-      await tester.tap(find.byIcon(Icons.chevron_right));
+      // Go to a past month so we can tap any day without future-date restriction
+      await tester.tap(find.byIcon(Icons.chevron_left));
       await tester.pumpAndSettle();
 
       // Tap day '1' — the screen expands an inline detail section (not navigation)

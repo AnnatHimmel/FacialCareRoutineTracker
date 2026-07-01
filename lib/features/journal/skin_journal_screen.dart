@@ -240,6 +240,26 @@ class _AdherenceCard extends StatelessWidget {
                 shadow = null;
               }
 
+              final circle = Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: fillColor,
+                  shape: BoxShape.circle,
+                  boxShadow: shadow,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '${day.day}',
+                  style: AppTypography.labelMd.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                    height: 1,
+                  ),
+                ),
+              );
+
               return Column(
                 children: [
                   Text(
@@ -251,25 +271,13 @@ class _AdherenceCard extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 4),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: fillColor,
-                      shape: BoxShape.circle,
-                      boxShadow: shadow,
+                  if (isFuture)
+                    circle
+                  else
+                    GestureDetector(
+                      onTap: () => context.push('/skin-log/$dayStr'),
+                      child: circle,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${day.day}',
-                      style: AppTypography.labelMd.copyWith(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: textColor,
-                        height: 1,
-                      ),
-                    ),
-                  ),
                 ],
               );
             }),
